@@ -1,0 +1,136 @@
+---
+title: '深度报告拆解 A：deep-research-report 到 Blog 的章节化重构'
+description: '将 deep-research-report.md 按章节拆成博客资产：本体判断、谱系、空白、题库、红队；补齐实验指标与长期维护节奏。'
+publishDate: '2026-03-22'
+updatedDate: '2026-03-22'
+category: research
+tags:
+  - research
+  - depth-ontology
+  - report-deconstruction
+  - transformer
+  - mve
+  - maintenance
+language: zh
+---
+
+## 源文件与目标
+
+- 源文件：`/home/yarizakurahime/blog/Research/deep-research-report.md`
+- 文件规模：351 行（长篇总纲型文档）
+- 核心目标：把“一份不可持续维护的大文档”，拆成“可发布 + 可迭代 + 可回链”的研究博客体系。
+
+这份 A 报告的价值不在“信息量大”，而在它已经给出了完整研究流水线：
+1. 先判定问题本体
+2. 再补历史谱系
+3. 再找真实空白
+4. 再落到可发题库
+5. 最后用红队审计做止损
+
+Blog 拆解必须保持这条因果链，不能只做摘要。
+
+## A 报告章节骨架（原文解剖）
+
+| 原始章节 | 原文作用 | Blog 化后的承载 |
+|---|---|---|
+| 研究基准 | 定义判卷标准（三维质疑法 + 科研操作系统） | 拆进 Part 1 与 Part 5 的方法章节 |
+| 问题本体判断 | 定义“修补 residual vs 重写 depth” | [Part 1：问题本体判断](/blog/research/depth-ontology-part1-problem) |
+| 研究谱系图 | 给出 2015-2026 关键论文链 | [Part 2：演化谱系](/blog/research/depth-ontology-part2-genealogy) |
+| 选题空白分析 | 识别 6 个仍未做透的空白 | [Part 3：六大研究空白](/blog/research/depth-ontology-part3-gaps) |
+| 候选题库（12 题） | 从空白落到可执行方向 | [Part 4：12 个研究方向](/blog/research/depth-ontology-part4-ideas) |
+| 严格文献表 | 一手来源与可追溯链接 | 分散到各篇文末参考与 Part 2 节点引用 |
+| 红队审计 | 防伪创新与 rebuttal 防线 | [Part 5：红队审计](/blog/research/depth-ontology-part5-redteam) |
+
+## 详细分析：A 报告的三类高价值资产
+
+### 1) 判断框架资产（可复用）
+
+A 报告最强的不是“列论文”，而是把研究问题重写成可判定结构：
+
+- `depth 是否只是离散层号`
+- `跨层聚合是否默认均匀`
+- `层间关系是否只允许链式局部更新`
+- `算力分配是否被固定深度绑死`
+
+这使后续每个方向都可以被统一评价，而不是依赖叙述技巧。
+
+### 2) 方向分流资产（可执行）
+
+A 报告按执行成本给了三档路径，这对博客维护极其关键：
+
+- 性价比模式：1-2 个月，先做可证伪模块
+- 标准模式：3-6 个月，做体系化验证
+- 极限模式：6-12+ 月，做范式重写
+
+这正好可以映射为 Blog 栏目的更新优先级，而不是“想到什么写什么”。
+
+### 3) 反证机制资产（可止损）
+
+A 报告明确要求：
+
+- 不只看最终分数
+- 必做 matched params / FLOPs / wallclock
+- 必给深度读写诊断（near/far read mass、depth entropy）
+
+这让系列文章具备“负结果也可积累”的能力，避免只展示成功样本。
+
+## 从 A 报告到 Blog 的拆分规则
+
+### 规则一：一章一目标
+
+每篇博客只负责一个核心问题，避免把“问题定义、证据、方案、审计”混在同一页。
+
+### 规则二：先机制后结论
+
+每篇先回答“默认公理被哪种机制松动”，再给结果或建议。
+
+### 规则三：每篇都必须带可执行指标
+
+统一纳入以下字段（至少三项）：
+
+- `hidden_rms_by_depth`
+- `grad_rms_by_depth`
+- `near_vs_far_read_mass`
+- `depth_read_entropy`
+- `matched_flops / matched_params / matched_wallclock`
+
+## 拆解后的阅读路径（给读者与作者）
+
+1. 从 [Part 1](/blog/research/depth-ontology-part1-problem) 先确定“你在修补什么”
+2. 读 [Part 2](/blog/research/depth-ontology-part2-genealogy) 建立历史坐标
+3. 用 [Part 3](/blog/research/depth-ontology-part3-gaps) 定位真实空白
+4. 在 [Part 4](/blog/research/depth-ontology-part4-ideas) 选可执行题
+5. 用 [Part 5](/blog/research/depth-ontology-part5-redteam) 做投稿前红队审计
+
+## 维护面板（按周执行）
+
+### 每周
+
+- 给 Part 2 追加新论文节点（若有）
+- 给 Part 3 更新“空白是否被填补”的状态
+
+### 每两周
+
+- 给 Part 4 更新每个方向的 MVE 进度（`未启动/进行中/止损/通过`）
+
+### 每月
+
+- 给 Part 5 补一轮“伪创新与 rebuttal 攻击面”
+- 汇总一次“失败实验记录”，避免重复踩坑
+
+## 当前拆解状态
+
+- [x] 已完成“总纲 -> 五篇主题文”的结构迁移
+- [x] 已完成系列互链与研究入口页聚合
+- [ ] 待补：Part 2 的“论文节点更新时间戳”字段
+- [ ] 待补：Part 4 每个方向的实验状态卡片
+- [ ] 待补：Part 5 负结果案例库（独立小节）
+
+## 快速入口
+
+- [Research 栏目主页](/blog/research)
+- [Part 1：问题本体判断](/blog/research/depth-ontology-part1-problem)
+- [Part 2：2015-2026 演化谱系](/blog/research/depth-ontology-part2-genealogy)
+- [Part 3：六大研究空白](/blog/research/depth-ontology-part3-gaps)
+- [Part 4：12 个可发方向](/blog/research/depth-ontology-part4-ideas)
+- [Part 5：红队审计](/blog/research/depth-ontology-part5-redteam)

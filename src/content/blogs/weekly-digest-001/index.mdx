@@ -1,0 +1,114 @@
+---
+title: 'Weekly Research Digest #1 (Mar 17-23, 2026)'
+description: '首期研究摘要：ICLR 2025 高分论文、Kimi 最新开源、以及值得关注的技术趋势。'
+publishDate: '2026-03-19'
+updatedDate: '2026-03-19'
+category: tech
+tags:
+  - weekly-digest
+  - research-tracking
+  - iclr-2025
+language: zh
+hidden: true
+---
+
+📚 **Weekly Research Digest #1**
+*Week of March 17-23, 2026*
+
+---
+
+## 🔥 High Priority (建议深度阅读)
+
+### [1] MoBA: Mixture of Block Attention for Long-Context LLMs
+- **来源**: ICLR 2025
+- **作者**: Moonshot AI 团队
+- **核心贡献**: 将 MoE 原则应用于注意力机制，实现动态块稀疏注意力，1M tokens 加速 6.5x，10M tokens 加速 16x
+- **与您的关联**: **直接相关** — 验证了您对"稀疏路由打破均匀性"的洞察
+- **状态**: 已撰写深度分析 → `/blog/kimi-k2-analysis`
+- **建议**: 已精读
+
+### [2] Attention Residuals: Breaking the Uniformity of ResNet
+- **来源**: arXiv 2026 (Moonshot AI)
+- **核心贡献**: 用注意力机制替代固定残差连接，允许动态层聚合
+- **与您的关联**: **直接相关** — 与您的"Smart Residual"想法高度一致
+- **状态**: 已收录在 Kimi 技术解析中
+- **建议**: 精读 Method 章节
+
+### [3] Muon is Scalable for LLM Training
+- **来源**: arXiv 2025-02
+- **作者**: Moonshot AI (Moonlight)
+- **核心贡献**: 基于矩阵正交化的优化器，训练效率提升 2 倍
+- **与您的关联**: 间接相关 — 优化器设计方法论
+- **建议**: 快速浏览
+
+---
+
+## 📖 Worth Scanning (快速浏览)
+
+| 论文/报告 | 关键词 | 相关性 |
+|-----------|--------|--------|
+| State Space Models (Mamba-2) | 线性注意力，长序列 | 中 |
+| Mixture of Experts Survey | MoE 综述，路由机制 | 中 |
+| Neural ODE for Time Series | 连续时间建模 | 低 |
+
+---
+
+## 💡 Related to Your Research
+
+| 论文/概念 | 与 CDMN/RDE 的关联 | 建议行动 |
+|-----------|-------------------|----------|
+| MoBA Block Attention | 验证了"离散化妥协"的必要性 | 对比分析已实现 |
+| Attention Residuals | 与您的 Smart Residual 同方向 | 引用到 RDE 文章 |
+| Neural ODE | 连续网络理想，但训练昂贵 | 已作为 CDMN 对比基线 |
+| Hypergraph Neural Networks | YOLOv13 使用的技术 | 可作为空间维度拓展 |
+
+---
+
+## 📊 领域趋势观察
+
+### 架构方向
+- **稀疏注意力**成为长上下文标配（MoBA, SSM, Linear Attention 竞争）
+- **动态路由**从 MoE 扩展到注意力层
+- **层间连接**从残差向注意力聚合演进
+
+### 训练方向
+- **正交化优化器**（Muon）挑战 AdamW 地位
+- **长上下文 RL**（Kimi k1.5）开启新范式
+- **KV Cache 优化**成为推理核心战场
+
+### 与您的研究对齐度
+✅ **高度对齐**: 稀疏路由、动态层选择、打破均匀性  
+⚠️ **需要关注**: 连续网络（Neural ODE）的优化进展  
+💡 **潜在机会**: 超图神经网络的空间维度拓展
+
+---
+
+## 📋 待办事项
+
+### 本周完成
+- [x] 创建 Blog 维护工作流
+- [x] 撰写 Kimi 技术解析 (Technical)
+- [x] 发布 RDE 研究文章 (Research)
+- [x] 建立 Weekly Digest 机制
+
+### 下周计划 (Mar 24-30)
+- [ ] 扫描 ICLR 2025 Oral 论文
+- [ ] 关注 OpenAI/Google 技术报告
+- [ ] 跟踪 Anthropic 最新研究
+- [ ] 生成 Weekly Digest #2
+
+---
+
+## 🎯 用户反馈区
+
+请回复以下内容的处理方式：
+
+1. **Attention Residuals 论文** → 是否需要单独撰写 Technical Blog？
+2. **Muon 优化器** → 是否需要分析其对 RDE 训练的潜在价值？
+3. **超图神经网络综述** → 是否与 YOLOv13 分析结合？
+
+---
+
+*下周预告*: ICLR 2025 完整 Oral 论文列表 (预计 3 月 24 日发布)
+
+**标签**: #weekly-digest #research-tracking

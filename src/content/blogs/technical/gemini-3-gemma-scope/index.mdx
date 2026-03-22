@@ -1,0 +1,105 @@
+---
+title: 'Gemini 3 Gemma Scope 2 详解'
+description: '深度解读 DeepMind 发布的 Gemma Scope 2：AI 实验室有史以来最大的开源可解释性工具'
+publishDate: '2025-12-19'
+updatedDate: '2026-03-19'
+category: technical
+tags:
+  - deepmind
+  - gemini-3
+  - gemma-scope
+  - interpretability
+  - safety
+language: zh
+---
+
+## 概述
+
+Gemma Scope 2 是 DeepMind 于 2025年12月19日发布的可解释性工具，是 AI 实验室有史以来最大的开源可解释性工具发布。本文为 Gemma 3 全系列模型提供深度行为分析能力。
+
+## 技术规格
+
+- **来源**: [Gemma Scope 2 Technical Paper](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/Gemma_Scope_2_Technical_Paper.pdf)
+- **发布日期**: 2025-12-19
+- **官方博客**: [DeepMind Blog](https://deepmind.google/blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/)
+
+| 指标 | 数值 |
+|------|------|
+| 支持模型 | Gemma 3 全系列（270M-27B 参数） |
+| 数据存储量 | ~110 PB |
+| 参数训练量 | 1 万亿 |
+| 训练技术 | Matryoshka 训练技术 |
+
+## 核心特性
+
+### 1. Skip-transcoders
+
+支持跨层特征传递和转换，提供更丰富的模型内部表示分析。
+
+### 2. Cross-layer transcoders
+
+跨层 transcoders 允许分析不同层之间的信息流动和转换模式。
+
+### 3. Matryoshka 训练技术
+
+使用 Matryoshka 表示学习技术，支持多尺度特征分析。
+
+## 支持的行为分析
+
+Gemma Scope 2 支持分析以下复杂行为：
+
+- **Jailbreaks** - 越狱攻击机制
+- **拒绝机制** - 模型如何拒绝有害请求
+- **CoT 忠实性** - 思维链的忠实度分析
+- **多步推理** - 复杂推理过程追踪
+- **聊天版本行为** - 对话模式分析
+
+## 覆盖范围
+
+### 模型规模
+
+| 模型规模 | 参数量 |
+|----------|--------|
+| 最小 | 270M |
+| 最大 | 27B |
+| 覆盖 | 全系列 |
+
+### 分析层次
+
+- **每层 SAEs** - 稀疏自编码器
+- **每层 Transcoders** - 转换器分析
+- **跨层连接** - 层间信息流动
+
+## 应用场景
+
+### 1. AI 安全研究
+
+- 识别潜在的误对齐行为
+- 分析模型脆弱性
+- 改进安全训练方法
+
+### 2. 模型开发
+
+- 理解模型内部机制
+- 优化模型架构
+- 调试异常行为
+
+### 3. 学术研究
+
+- 可解释性方法验证
+- 新发现发表
+- 开源社区协作
+
+## 历史意义
+
+Gemma Scope 2 是 AI 实验室有史以来最大的开源可解释性工具发布，标志着：
+
+1. **透明度提升** - 大模型内部机制公开化
+2. **安全协作** - 全球研究者共同参与安全研究
+3. **技术标准化** - 可解释性工具的开源标准
+
+## 延伸阅读
+
+- [Gemma Scope 2 技术论文 (PDF)](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/Gemma_Scope_2_Technical_Paper.pdf)
+- [Gemma Scope 2 官方博客](https://deepmind.google/blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/)
+- [Gemma 3 技术报告](https://deepmind.google/gemini-3/)

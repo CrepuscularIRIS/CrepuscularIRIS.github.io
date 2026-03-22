@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets'
-import { Button, Card, Icon, Label, Spoiler } from '@/components/user'
+import { Button, Icon, Label } from '@/components/user'
 import GitHubActivityCalendar from '@/components/home/GitHubActivityCalendar.astro'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import Section from '@/components/home/Section.astro'
@@ -53,19 +53,11 @@ import config from '@/site-config'
 
     <div id='content' class='animate flex flex-col gap-y-10 md:w-4/5 lg:w-5/6'>
       <Section title='About'>
-        <p class='text-muted-foreground'>在此处写入你的个人介绍。建议内容超过一行以获得更好的视觉效果。这是一个基于 Axi-Theme 的博客主题。你可以在这里展示你的项目、经历和想法。
+        <p class='text-muted-foreground'>
+          这里记录我在工程圈子与科研圈子的长期实践：模型评估、系统架构、论文解读、
+          以及可复现的项目迭代。内容以真实来源、可验证结论和持续更新为准。
         </p>
         <Button title='More about me' class='w-fit self-end' href='/about' style='ahead' />
-      </Section>
-      <Section title='Education'>
-        <Card
-          as='a'
-          heading='你的学校 / 组织'
-          subheading='你的学位 / 职位'
-          date='开始时间 - 结束时间'
-          href='#'
-        >
-        </Card>
       </Section>
       <Section title='Statistics'>
         <BlogStats blogStartDate={config.personal?.blogStartDate ? new Date(config.personal.blogStartDate) : new Date('2024-06-15')} />

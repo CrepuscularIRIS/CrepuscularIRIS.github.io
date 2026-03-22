@@ -3,9 +3,6 @@ import { Image } from 'astro:assets'
 
 import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
-import Sponsors from '@/components/projects/Sponsors.astro'
-import alipay from '@/assets/alipay-qrcode.jpg'
-import wechat from '@/assets/wechat-qrcode.jpg'
 import config from '@/site-config'
 
 import { Button, Icon } from '@/components/user'
@@ -13,69 +10,63 @@ import type { iconsType } from '@/types'
 
 const headings = [
   { depth: 2, slug: 'projects', text: 'Projects' },
-  { depth: 2, slug: 'sponsorship', text: 'Sponsorship' }
+  { depth: 2, slug: 'beatless', text: 'Beatless' }
 ]
 ---
 
 <PageLayout title='Projects' {headings} info={{ slug: '/projects', hideComment: true }}>
   <div class='mb-8 flex items-center justify-between'>
-    <p class='text-muted-foreground'>如果你觉得我的项目还不错，可以赞助我，让我有动力继续做下去。</p>
-    <Button title='Checkout sponsorship' class='w-fit' href='#sponsorship'>
-      <Icon class='size-5' name='receive-money' slot='before' />
-    </Button>
+    <p class='text-muted-foreground'>这里是 Lacia 参与的项目和系统架构设计。</p>
   </div>
 
   <h2 id='projects' class='mb-8 text-2xl font-semibold'>Projects</h2>
   <ProjectSection
     project={[
       {
-        name: '项目 1',
-        description: '项目描述 1。你可以在这里介绍项目的主要功能。',
+        name: 'Beatless',
+        description: 'AI 代理编排系统架构设计。一套完整的认知架构与工作流方法论，包含 Lacia、Methode、Satonus、Kouka、Snowdrop 五个核心代理角色的协作框架。',
         image: 'lumina.webp',
-        links: [{ type: 'site', href: '#' }]
-      },
-      {
-        name: '项目 2',
-        description: '项目描述 2。你可以在这里介绍项目的主要功能。',
-        image: 'byddl.webp',
         links: [
-          { type: 'site', href: '#' },
-          { type: 'github', href: '#' }
+          { type: 'github', href: 'https://github.com/CrepuscularIRIS/Beatless' },
+          { type: 'site', href: '#' }
         ]
       }
     ]}
   />
 
-  <!-- sponsorship -->
-  <h2 id='sponsorship'>Sponsorship</h2>
-  <p>请在赞助后留言或主动联系我，可以被放入赞助人列表，祝你开心。</p>
-  <div class='flex flex-col justify-center gap-4 sm:flex-row'>
-    {
-      [
-        { name: 'WeChat', icon: 'wechat-pay', image: wechat },
-        { name: 'Alipay', icon: 'alipay', image: alipay }
-      ].map((item) => (
-        <div class='group relative justify-center overflow-hidden rounded-xl border bg-white'>
-          <div class='absolute bottom-0 end-0 start-0 top-0 flex items-center justify-center transition-opacity group-hover:opacity-0'>
-            <Icon class='size-20' name={item.icon as iconsType} />
-          </div>
-          <Image
-            class='mx-auto my-0 max-w-60 opacity-30 blur-sm transition-opacity group-hover:opacity-100 group-hover:blur-none'
-            src={item.image}
-            alt={item.name}
-            loading='lazy'
-          />
-        </div>
-      ))
-    }
+  <h2 id='beatless' class='mb-6 text-2xl font-semibold mt-12'>Beatless 架构</h2>
+  <div class='prose prose-lg max-w-none'>
+    <p>
+      Beatless 是一套 AI 代理编排系统的认知架构设计，采用分层协作模式：
+    </p>
+    
+    <div class='grid grid-cols-1 md:grid-cols-2 gap-4 my-8'>
+      <div class='p-4 rounded-lg border bg-card'>
+        <h3 class='text-lg font-semibold mb-2'>Lacia (005)</h3>
+        <p class='text-sm text-muted-foreground'>中枢代理。任务路由、流程编排、跨代理协调。</p>
+      </div>
+      <div class='p-4 rounded-lg border bg-card'>
+        <h3 class='text-lg font-semibold mb-2'>Methode (004)</h3>
+        <p class='text-sm text-muted-foreground'>执行代理。快速实施、代码落地、工具调用。</p>
+      </div>
+      <div class='p-4 rounded-lg border bg-card'>
+        <h3 class='text-lg font-semibold mb-2'>Satonus (003)</h3>
+        <p class='text-sm text-muted-foreground'>验收代理。质量审查、标准合规、最终交付。</p>
+      </div>
+      <div class='p-4 rounded-lg border bg-card'>
+        <h3 class='text-lg font-semibold mb-2'>Kouka (001)</h3>
+        <p class='text-sm text-muted-foreground'>攻坚代理。高压场景、故障恢复、极限优化。</p>
+      </div>
+      <div class='p-4 rounded-lg border bg-card md:col-span-2'>
+        <h3 class='text-lg font-semibold mb-2'>Snowdrop (002)</h3>
+        <p class='text-sm text-muted-foreground'>探索代理。发散思考、方案生成、边界突破。</p>
+      </div>
+    </div>
+
+    <p>
+      更多详情见 <a href='https://github.com/CrepuscularIRIS/Beatless' target='_blank' class='text-primary hover:underline'>GitHub 仓库</a>。
+    </p>
   </div>
-  <p>感谢这些人的支持：</p>
-  <Sponsors
-    sponsors={[
-      { name: '赞助者 1', amount: '10.0', date: '202X-XX-XX' },
-      { name: '赞助者 2', amount: '50.0', date: '202X-XX-XX' }
-    ]}
-  />
 </PageLayout>
 
 <script

@@ -1,0 +1,104 @@
+---
+title: 'Claude Opus 4.6 System Card 详解'
+description: '深度解读 Claude Opus 4.6 官方 System Card：安全评估、能力边界与对齐机制'
+publishDate: '2026-03-06'
+updatedDate: '2026-03-19'
+category: technical
+tags:
+  - claude
+  - opus-4-6
+  - system-card
+  - safety
+  - alignment
+language: zh
+---
+
+## 概述
+
+Claude Opus 4.6 是 Anthropic 于 2026年3月6日发布的旗舰级大语言模型，首个支持 1M token 上下文窗口的 Opus 级模型。本文深度解读其官方 System Card 的安全评估与技术细节。
+
+## 关键技术指标
+
+- **来源**: [Claude Opus 4.6 System Card](https://www.anthropic.com/claude-opus-4-6-system-card)
+- **日期**: 2026-03-06
+
+| 指标 | 数值 |
+|------|------|
+| 上下文窗口 | 1M token |
+| 输出 token | 128k |
+| Terminal-Bench 2.0 | 最高分 |
+| Humanity's Last Exam | 领先 |
+| GDPval-AA vs GPT-5.2 | 高 144 Elo 分（约 70% 胜率） |
+| BrowseComp | 最佳表现 |
+| SWE-bench Verified | 81.42%（优化后） |
+| BigLaw Bench | 90.2%（Claude 模型中最高） |
+| API 定价 | $5/$25 per million tokens |
+
+## 核心能力
+
+### 1. Adaptive Thinking
+
+动态推理深度选择，根据查询复杂度调整思考过程。
+
+### 2. Context Compaction
+
+长上下文压缩功能，优化大文档处理效率。
+
+### 3. Effort 控制
+
+4 级控制选项：low / medium / high / max
+
+## 安全评估
+
+### 新增网络安全探针
+
+- 新增 6 个网络安全探针
+- 检测滥用风险
+
+### Automated Behavioral Audit
+
+- 显示低误对齐行为率
+- 包含复杂拒绝测试
+- 隐蔽有害行为检测
+
+### 评估维度
+
+- 用户福祉
+- 复杂拒绝测试
+- 隐蔽有害行为检测
+- 网络安全滥用风险
+
+## 可解释性方法
+
+System Card 中提到使用 interpretability 新方法理解模型行为，用于分析模型内部机制。
+
+> ⚠️ **存疑/待核实**: 部分文献提及的 "Attention Residuals" 术语在官方文档中未明确使用，可能指代稀疏自编码器(SAEs)或其他机制可解释性技术。建议核实准确来源。
+
+## 第三方验证
+
+20+ 合作伙伴的早期访问验证：
+
+| 合作伙伴 | 验证场景 |
+|----------|----------|
+| Notion | 复杂请求执行 |
+| Replit | Agentic workflows |
+| Sourcegraph | 并行子代理 |
+| Windsurf | 调试和代码库理解 |
+| Box | 金融推理 QA 提升 10% |
+| Lovable | 设计系统 |
+| Figma | Figma Make |
+
+## 与 Opus 4.5 对比
+
+| 特性 | Opus 4.5 | Opus 4.6 |
+|------|----------|----------|
+| 上下文窗口 | 200K | 1M |
+| Terminal-Bench | 基准 | SOTA |
+| 输出 token | 8K | 128K |
+| Context Compaction | 不支持 | 支持 |
+| Adaptive Thinking | 不支持 | 支持 |
+
+## 延伸阅读
+
+- [Claude Opus 4.6 System Card (PDF)](https://www.anthropic.com/claude-opus-4-6-system-card)
+- [Claude Opus 4.6 发布公告](https://www.anthropic.com/news/claude-opus-4-6)

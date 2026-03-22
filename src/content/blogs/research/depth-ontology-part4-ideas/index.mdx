@@ -1,0 +1,359 @@
+---
+title: '深度本体论 Part 4：12 个可发方向与 MVE 地图'
+description: '把两份报告中的空白转成 12 个可执行选题：每题含核心命题、与近邻工作的关键差异、最小可行验证、止损线与投稿建议。'
+publishDate: '2026-03-22'
+updatedDate: '2026-03-22'
+category: research
+tags:
+  - deep-learning
+  - transformer
+  - depth-ontology
+  - research-direction
+  - mve
+  - top-conference
+language: zh
+---
+
+> **系列导航**：本文是「深度本体论」五篇系列的第四篇，聚焦 **12 个可发研究方向**。
+> → [Part 1：问题本体判断](/blog/research/depth-ontology-part1-problem) ｜ [Part 2：2015-2026 演化谱系](/blog/research/depth-ontology-part2-genealogy) ｜ [Part 3：六大研究空白](/blog/research/depth-ontology-part3-gaps) ｜ [Part 5：红队审计](/blog/research/depth-ontology-part5-redteam)
+
+---
+
+## 这 12 个方向怎么读
+
+本文不是“点子清单”，而是“执行清单”。每个方向都按同一模板展开：
+
+1. **核心命题**：要推翻哪条默认公理  
+2. **关键差异**：和最近邻工作比，结构上到底新在哪  
+3. **MVE（最小可行验证）**：最小成本跑什么实验能快速判生死  
+4. **止损线**：到什么指标就要果断放弃  
+5. **投稿建议**：更匹配 ICLR / NeurIPS / ICML / ACL 的哪类评审口味
+
+---
+
+## 总览矩阵（先看全景）
+
+| # | 方向 | 主攻空白 | 周期 | 风险 |
+|---|------|---------|------|------|
+| 1 | Rotary Depth Coordinates | 深度相位寻址 | 1-2 月 | 中 |
+| 2 | PoDE（极坐标深度嵌入） | what/where 解耦 | 1-2 月 | 中高 |
+| 3 | GreenDepth（积分核深度） | 连续深度算子 | 3-6 月 | 高 |
+| 4 | SlotDepth（对象化深度记忆） | slot 化工作台 | 1-3 月 | 中 |
+| 5 | Unitary Phase Transport | 守恒传播介质 | 1-2 月 | 中 |
+| 6 | Predictive Error Routing | error routing 残差 | 3-6 月 | 中高 |
+| 7 | HyperDepth Orchestration | 超图式层调度 | 3-6 月 | 高 |
+| 8 | Budgeted Depth Memory | 动态算力 + 深度检索 | 1-3 月 | 中 |
+| 9 | Discretization-Invariant Depth | 跨层数泛化 | 2-4 月 | 中高 |
+| 10 | Phase-Constrained DEQ | 隐式平衡 + 相位约束 | 3-6 月 | 高 |
+| 11 | Depthwise Controller（LSTM/GRU） | 深度门控控制器 | 1-2 月 | 中 |
+| 12 | Depth Geometry Diagnostics Suite | 统一诊断协议 | 1-2 月 | 低中 |
+
+---
+
+## 1) Rotary Depth Coordinates
+
+**题目草案**：Beyond Layer Indices: Rotary Depth Coordinates for Transformer Memory
+
+### 核心命题
+深度不该只是离散层号，而应成为**可对齐的连续相位坐标**。
+
+### 最接近工作与关键差异
+- 最近邻：AttnRes / DCA（在离散层集合上做深度注意力）
+- 差异：AttnRes 的 depth key 仍是 layer index；本方向把 depth 编码为连续相位 `theta(l)`，强调跨样本可对齐和可插值。
+
+### MVE 设计
+- 模型：12-24 层 decoder-only
+- 改动：在跨层读取时加 phase-aligned scoring
+- 指标：`phase_alignment_score`、`near_vs_far_read_mass`
+
+### 一票否决
+若远层读取质量长期塌缩到近邻（例如 far mass 始终 < 10%），判定失败。
+
+### 投稿建议
+ICLR / NeurIPS（机制创新 + 诊断型论文）。
+
+---
+
+## 2) PoDE（Polar Depth Embeddings）
+
+**题目草案**：PoDE: Polar Depth Embeddings for Disentangled Content-Depth Addressing
+
+### 核心命题
+把 depth 检索中的 `what`（内容）与 `where`（深度坐标）显式解耦。
+
+### 最接近工作与关键差异
+- 最近邻：PoPE（位置解耦）、RoPE（旋转编码）
+- 差异：PoPE 只处理序列位置；PoDE 把解耦迁移到**深度维度**。
+
+### MVE 设计
+- 构造两类任务：只依赖内容、只依赖深度坐标
+- 对比：AttnRes vs PoDE
+- 指标：解耦诊断准确率、深度检索熵
+
+### 一票否决
+若“内容-only/深度-only”诊断任务不能分离，说明只是重参数化包装。
+
+### 投稿建议
+ICLR（表示学习与归纳偏置）。
+
+---
+
+## 3) GreenDepth（连续积分核深度）
+
+**题目草案**：GreenDepth: Learning Integral Operators over Continuous Transformer Depth
+
+### 核心命题
+把深度读取从“离散层注意力”升级为“连续域积分算子”。
+
+### 最接近工作与关键差异
+- 最近邻：Neural Operator / FNO、AttnRes
+- 差异：AttnRes 是 `attention over layers`；GreenDepth 是 `integral operator over depth field`。
+
+### MVE 设计
+- 用 8 个 depth knots 学低秩 `K(t,s)`
+- 关键实验：12 层训练，24/48 层测试（插值）
+- 指标：跨层数泛化、wallclock 增量
+
+### 一票否决
+若 12→24/48 层性能明显崩塌，离散化不变性主张不成立。
+
+### 投稿建议
+NeurIPS / ICML（算子学习 + 大模型架构交叉）。
+
+---
+
+## 4) SlotDepth（对象化深度工作台）
+
+**题目草案**：SlotDepth: Object-Centric Memory Slots Across Network Depth
+
+### 核心命题
+不再保留全历史层张量，而是维护少量可查询 depth slots。
+
+### 最接近工作与关键差异
+- 最近邻：Slot Attention、Perceiver IO、AttnRes block
+- 差异：AttnRes block 仍是按层分组；SlotDepth 是按语义自组织对象槽。
+
+### MVE 设计
+- 16 层模型 + 4/8 slots
+- 每层只读写 slots，不直连全历史层
+- 指标：`slot_usage_entropy`、`slot_specialization`、`far_layer_recall`
+
+### 一票否决
+若 slots 长期退化为“平均池化”或仅 1-2 个槽被使用，判定失败。
+
+### 投稿建议
+NeurIPS（结构化记忆与可解释机制）。
+
+---
+
+## 5) Unitary Phase Transport（守恒残差输运）
+
+**题目草案**：Phase Residual Transport: Unitary Depth Updates for Stable Sequence Models
+
+### 核心命题
+把深度传播视为受约束介质：`h_{l+1} = U_l h_l + g(h_l)`，`U_l` 近正交/酉。
+
+### 最接近工作与关键差异
+- 最近邻：Unitary RNN、HNN、DeepNorm、mHC
+- 差异：DeepNorm 是稳定训练技巧；本方向把守恒作为深度传播的一阶公理。
+
+### MVE 设计
+- 对照：Pre-LN / DeepNorm / Unitary Transport
+- 指标：`hidden_rms_by_depth`、`grad_rms_by_depth`、`jacobian_spectral_proxy`
+- 必须附加：远层读取能力指标，不只看稳定性
+
+### 一票否决
+若只提升稳定性却不提升远层检索/长程任务，视为“优化 trick”。
+
+### 投稿建议
+ICLR（理论-机制兼顾）。
+
+---
+
+## 6) Predictive Error Routing（预测误差路由）
+
+**题目草案**：Predictive Residual Coding: Error-Driven Communication Across Depth
+
+### 核心命题
+层间主通道从 feature routing 改为 error routing。
+
+### 最接近工作与关键差异
+- 最近邻：PredNet、Meta-PCN
+- 差异：传统 PCN 多在浅层小模型验证；这里目标是迁移到可扩展 Transformer 深度通信。
+
+### MVE 设计
+- 在 ResNet/小型 Transformer 的末段残差替换为误差传播块
+- 指标：`error_energy_by_depth`、显存峰值、收敛步数、推理时延
+
+### 一票否决
+若推理延迟大幅上升且收益仅体现在“更平滑训练”，停止。
+
+### 投稿建议
+NeurIPS（若强调机制）/ ICML（若强调优化理论）。
+
+---
+
+## 7) HyperDepth Orchestration（超图层调度）
+
+**题目草案**：HyperDepth Orchestration: Dynamic Hypergraph Routing over Layers
+
+### 核心命题
+把 pairwise 层关系升级为 group-wise 超边关系。
+
+### 最接近工作与关键差异
+- 最近邻：HGNN、IHGNN、AttnRes、Hyper-Connections
+- 差异：AttnRes 对每层打分；HyperDepth 对“层组合模板”建模。
+
+### MVE 设计
+- 先做 block-level 超图（降低复杂度）
+- 可微离散选择：Gumbel-top-k
+- 指标：`hyperedge_entropy`、模板稳定度、任务语义对应性
+
+### 一票否决
+若超边选择接近随机高熵且不随任务变化，判定为无效复杂化。
+
+### 投稿建议
+ICLR / NeurIPS（高风险高回报）。
+
+---
+
+## 8) Budgeted Depth Memory（预算化深度记忆）
+
+**题目草案**：Budgeted Depth Memory: Token-wise Halting Meets Depth Retrieval
+
+### 核心命题
+把“是否继续走深层”与“是否触发深度检索”联合建模。
+
+### 最接近工作与关键差异
+- 最近邻：ACT、Mixture-of-Depths
+- 差异：MoD 主要做 compute routing；本方向把 memory retrieval 强绑定进预算决策。
+
+### MVE 设计
+- 添加 token-level halting + depth retrieval gate
+- 指标：matched FLOPs 下任务质量、halting 分布、检索触发占比
+
+### 一票否决
+若性能提升主要来自更多 FLOPs 或更长 wallclock，直接否决。
+
+### 投稿建议
+ICML / ACL（效率与推理成本导向）。
+
+---
+
+## 9) Discretization-Invariant Depth（跨离散化深度）
+
+**题目草案**：Discretization-Invariant Depth: Training at 12 Layers, Testing at 48
+
+### 核心命题
+深度机制应跨层数离散化稳定，而非绑定某个固定层数。
+
+### 最接近工作与关键差异
+- 最近邻：Neural Operator 离散化不变思想、AttnRes/DCA
+- 差异：把“跨层数泛化”设为主指标，而不是附加实验。
+
+### MVE 设计
+- 训练 12 层，测试 24/48 层
+- 指标：性能退化曲线、梯度统计稳定性、检索模式漂移
+
+### 一票否决
+若跨层数泛化失败，说明“深度几何”主张不足。
+
+### 投稿建议
+NeurIPS（方法 + 诊断协议组合更稳）。
+
+---
+
+## 10) Phase-Constrained DEQ（相位约束平衡场）
+
+**题目草案**：Equilibrium Depth Fields with Phase Constraints
+
+### 核心命题
+在 DEQ 的 fixed-point 框架中加入相位/守恒约束，形成“平衡流形”。
+
+### 最接近工作与关键差异
+- 最近邻：DEQ、ODE/连续深度
+- 差异：传统 DEQ 强调隐式深度；本方向强调“隐式深度 + 可寻址相位结构”。
+
+### MVE 设计
+- 小模型先做收敛性可视化
+- 指标：求解稳定性、收敛速度、相位一致性
+
+### 一票否决
+若求解器频繁不收敛或仅靠技巧性 damping 才稳定，暂停主线推进。
+
+### 投稿建议
+NeurIPS（隐式层理论方向）。
+
+---
+
+## 11) Depthwise Controller（跨深度门控控制器）
+
+**题目草案**：Depthwise LSTM as Depth Memory Controller
+
+### 核心命题
+跨层融合不一定非要 attention，可由轻量门控控制器完成。
+
+### 最接近工作与关键差异
+- 最近邻：Highway/ReZero 类门控、depth-wise recurrent 变体
+- 差异：明确将控制器定位为 depth memory manager，而非额外残差分支。
+
+### MVE 设计
+- 控制器：LSTM/GRU（低维）
+- 指标：远层读取偏好、参数效率、延迟开销
+
+### 一票否决
+若控制器只学到“强近层偏好”，且成本高于 AttnRes，无继续价值。
+
+### 投稿建议
+AAAI / EMNLP（工程可落地版本）。
+
+---
+
+## 12) Depth Geometry Diagnostics Suite（统一诊断协议）
+
+**题目草案**：Depth Geometry Diagnostics Suite
+
+### 核心命题
+先建立共同“判卷标准”，再讨论谁是新范式。
+
+### 最接近工作与关键差异
+- 最近邻：各论文零散 ablation
+- 差异：本方向目标是标准化评估协议，而非追单点 SOTA。
+
+### MVE 设计
+- 开源统一工具链：
+  - `hidden_rms_by_depth`
+  - `grad_rms_by_depth`
+  - `depth_read_entropy`
+  - `near_vs_far_read_mass`
+  - `matched_flops/params/wallclock`
+- 复现实验：DenseFormer / DCA / AttnRes / HC
+
+### 一票否决
+若协议不能稳定复现论文结论，优先修协议而不是发新模型。
+
+### 投稿建议
+NeurIPS Datasets & Benchmarks / TMLR（复现与评测基建）。
+
+---
+
+## 落地优先级（建议执行顺序）
+
+1. **先跑 1 + 12**：深度相位寻址 + 诊断套件  
+2. **再跑 4 或 5**：SlotDepth 或守恒输运（根据团队工程能力选一条）  
+3. **最后冲 3 / 7 / 10**：高风险方向只在前两步出现强信号时投入
+
+---
+
+## 结论
+
+两份报告给出的“方向池”很大，但真正能形成论文飞轮的不是“概念最激进”，而是“**先被 MVE 证实可行**”。  
+Part 4 的核心就是把宏大叙事压缩成可执行路线：每个方向都必须先通过止损线，再谈规模化。
+
+---
+
+## 延伸阅读
+
+- [Part 3：六大研究空白的盲区地图](/blog/research/depth-ontology-part3-gaps)
+- [Part 5：红队审计与 rebuttal 防线](/blog/research/depth-ontology-part5-redteam)
+

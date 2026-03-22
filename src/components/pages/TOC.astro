@@ -78,24 +78,23 @@ const toc = generateToc(headings)
       })
 
       this.tocLinks.forEach(({ element: el, progressBar: bar, slug }, i) => {
+        if (!this.headingProgress[slug]) return
         const { inView, progress } = this.headingProgress[slug]
-        if (this.headingProgress[slug]) {
-          el.classList.toggle('highlight', inView)
-          el.classList.toggle('highlight-bg-translucent', inView)
-          el.classList.toggle(
-            'rounded-t-2xl',
-            inView && (i == 0 || !this.headingProgress[this.tocLinks[i - 1]?.slug].inView)
-          )
-          el.classList.toggle(
-            'rounded-b-2xl',
-            inView &&
-              (i == this.tocLinks.length - 1 ||
-                !this.headingProgress[this.tocLinks[i + 1]?.slug].inView)
-          )
-          bar.classList.toggle('readed', !inView && progress == 1)
-          bar.classList.toggle('highlight-bg', inView)
-          bar.style.setProperty('height', `${progress * 90}%`)
-        }
+        el.classList.toggle('highlight', inView)
+        el.classList.toggle('highlight-bg-translucent', inView)
+        el.classList.toggle(
+          'rounded-t-2xl',
+          inView && (i == 0 || !this.headingProgress[this.tocLinks[i - 1]?.slug]?.inView)
+        )
+        el.classList.toggle(
+          'rounded-b-2xl',
+          inView &&
+            (i == this.tocLinks.length - 1 ||
+              !this.headingProgress[this.tocLinks[i + 1]?.slug]?.inView)
+        )
+        bar.classList.toggle('readed', !inView && progress == 1)
+        bar.classList.toggle('highlight-bg', inView)
+        bar.style.setProperty('height', `${progress * 90}%`)
       })
     }
 

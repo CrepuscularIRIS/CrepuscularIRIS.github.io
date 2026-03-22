@@ -1,0 +1,102 @@
+---
+title: 'Claude Sonnet 4.6 技术分析'
+description: '深度分析 Claude Sonnet 4.6 的技术架构、性能基准与 Opus 4.6 的差异'
+publishDate: '2026-03-06'
+updatedDate: '2026-03-19'
+category: technical
+tags:
+  - claude
+  - sonnet-4-6
+  - architecture
+  - comparison
+language: zh
+---
+
+## 概述
+
+Claude Sonnet 4.6 是 Anthropic 于 2026年3月6日发布的 Claude Pro 和 Free 用户默认模型。本文分析其技术规格、性能表现以及与 Opus 4.6 的架构差异。
+
+## 关键技术指标
+
+- **来源**: [Claude Sonnet 4.6 System Card](https://anthropic.com/claude-sonnet-4-6-system-card)
+- **日期**: 2026-03-06
+
+| 指标 | 数值 |
+|------|------|
+| 上下文窗口 | 1M token |
+| OSWorld 计算机使用 | 显著提升 |
+| OfficeQA | 与 Opus 4.6 相当 |
+| 用户偏好 vs Sonnet 4.5 | 70% |
+| 用户偏好 vs Opus 4.5 | 59% |
+| API 定价 | $3/$15 per million tokens |
+
+## 架构定位
+
+### 与 Opus 4.6 的差异
+
+| 维度 | Sonnet 4.6 | Opus 4.6 |
+|------|------------|----------|
+| 目标用户 | Pro/Free 默认 | 企业级/高端推理 |
+| 定价 | $3/$15 | $5/$25 |
+| Terminal-Bench | 良好 | SOTA |
+| SWE-bench | 良好 | 81.42% |
+| 过度工程倾向 | 较少 | 较多 |
+| "懒惰"行为 | 较少 | 较多 |
+
+### 性格评估
+
+Sonnet 4.6 被评为：
+- **温暖** - 友好的交互风格
+- **诚实** - 透明的推理过程
+- **亲社会** - 以用户福祉为导向
+- **有时幽默** - 适度的幽默感
+
+## 性能基准
+
+### OSWorld 计算机使用
+
+Sonnet 4.6 在计算机使用基准上比 Sonnet 4.5 有显著提升，与 Opus 4.6 相当。
+
+### Vending-Bench Arena
+
+展现长期策略规划能力：
+1. 前期投资产能
+2. 后期转向盈利
+
+这种长期规划能力在智能体任务中尤为重要。
+
+## 安全评估
+
+### 提示注入抵抗力
+
+- 显著优于 Sonnet 4.5
+- 与 Opus 4.6 相当
+
+### 计算机使用安全
+
+在计算机使用安全方面比 Sonnet 4.5 有显著提升，与 Opus 4.6 相当。
+
+## API 功能
+
+- **Web 搜索和 fetch 工具**: 自动过滤处理结果
+- **代码执行**: 全面可用
+- **记忆**: 全面可用
+- **程序化工具调用**: 全面可用
+- **工具搜索**: 全面可用
+- **工具使用示例**: 全面可用
+
+## 选择建议
+
+| 场景 | 推荐模型 |
+|------|----------|
+| 日常对话、轻量级任务 | Sonnet 4.6 |
+| 复杂代码生成、深度推理 | Opus 4.6 |
+| 长文档分析 | 两者皆可（均支持 1M 上下文） |
+| 成本敏感场景 | Sonnet 4.6 |
+| 最高性能要求 | Opus 4.6 |
+
+## 延伸阅读
+
+- [Claude Sonnet 4.6 System Card (PDF)](https://anthropic.com/claude-sonnet-4-6-system-card)
+- [Claude Sonnet 4.6 发布公告](https://www.anthropic.com/news/claude-sonnet-4-6)
+- [Claude Opus 4.6 System Card](./opus-4-6-system-card)

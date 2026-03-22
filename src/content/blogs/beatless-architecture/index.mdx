@@ -1,0 +1,378 @@
+---
+title: 'Beatless：个人 AI 任务调度系统架构'
+description: '从需求到实现：一个基于任务队列、多 Agent 协作的个人 AI 调度系统的设计哲学与工程实践。'
+publishDate: '2026-03-19'
+updatedDate: '2026-03-19'
+category: engineering
+tags:
+  - beatless
+  - agent-system
+  - task-queue
+  - architecture
+  - workflow
+language: zh
+---
+
+## 引言：为什么需要 Beatless？
+
+在使用 AI 助手的过程中，我发现一个核心问题：**单会话的上下文限制和状态丢失**。
+
+当我让 AI 完成一个复杂任务时：
+1. 任务可能跨越多天
+2. 需要多个专业 Agent 协作
+3. 中间状态需要持久化
+4. 需要优先级调度和错误恢复
+
+现有的对话模式无法解决这些问题。于是我设计了 **Beatless**——一个个人 AI 任务调度系统。
+
+---
+
+## 核心设计理念
+
+### 1. 任务即真相（Task as Source of Truth）
+
+```yaml
+# TASKS.yaml 是唯一任务真相源
+meta:
+  schema_version: 3
+  shift_id: SHIFT-20260318-1530
+  
+tasks:
+  - id: BT-RESEARCH-20260319-001
+    title: "深度调研：神经网络架构"
+    status: in_progress
+    assigned_agent: gemini-researcher
+```
+
+所有状态、进度、上下文都存储在结构化任务中，而非对话历史。
+
+### 2. 队列驱动的调度
+
+```
+Backlog → Ready → In Progress → Review → Done
+                ↓         ↓
+             Blocked  Dead Letter
+```
+
+- **Backlog**: 待办任务池
+- **Ready**: 可执行任务
+- **In Progress**: 执行中（上限 3 个并行）
+- **Review**: 等待验收
+- **Done**: 已完成
+- **Blocked**: 阻塞（等待外部输入）
+
+### 3. Agent 专业化分工
+
+| Agent | 角色 | 专长 | 超时 |
+|-------|------|------|------|
+| **Lacia** | 调度中枢 | 路由、收敛、回执 | 600s |
+| **Methode** | 执行引擎 | 代码实现、产出 | 1800s |
+| **Satonus** | 评审验收 | 质量控制、文档化 | 600s |
+| **Gemini-Researcher** | 学术研究 | 论文分析、理论推导 | 900s |
+| **Codex-Builder** | 工程实现 | 代码、架构、复现 | 1800s |
+
+### 4. Compass 协议：分阶段执行
+
+复杂任务强制分阶段：
+```
+Research → Implement → Review
+```
+
+- **Research**: 收集信息、分析可行性
+- **Implement**: 执行实现
+- **Review**: 独立验收
+
+Builder 和 Validator 必须分离，避免自说自话。
+
+---
+
+## 系统架构
+
+### 数据流
+
+```
+用户输入
+    ↓
+Lacia（调度器）
+    ↓
+读取 TASKS.yaml
+    ↓
+决策：路由到哪个 Agent？
+    ↓
+sessions_spawn（创建子会话）
+    ↓
+Agent 执行
+    ↓
+生成报告
+    ↓
+更新 TASKS.yaml
+    ↓
+Receipt（回执）
+```
+
+### 核心组件
+
+#### 1. 任务队列系统 (TASKS.yaml)
+
+```yaml
+meta:
+  schema_version: 3
+  shift_id: SHIFT-20260318-1530
+  updated_at: '2026-03-19T10:04:00+08:00'
+  owner: CrepuscularIRIS
+  orchestrator: lacia
+
+policies:
+  compass_protocol:
+    enabled: true
+    phases: [research, implement, review]
+  
+  budgets:
+    max_tasks_per_shift: 18
+    max_parallel_subtasks: 3
+    max_expert_calls_per_shift: 6
+
+queues:
+  backlog: []
+  ready: []
+  in_progress: []
+  review: []
+  done: []
+  blocked: []
+```
+
+#### 2. 调度引擎 (Lacia)
+
+决策树：
+```python
+if review queue non-empty:
+    dispatch_satonus()  # 优先验收
+elif in_progress has artifacts:
+    push_to_review()    # 推进到验收
+elif ready non-empty:
+    route_and_dispatch()  # 执行就绪任务
+elif blocked with retries left:
+    retry_and_promote()   # 重试阻塞任务
+else:
+    heartbeat_ok()        # 系统空闲
+```
+
+#### 3. Agent 路由规则
+
+| 任务类型 | 首选 Agent | 备选 Agent |
+|----------|-----------|-----------|
+| 日常编码 | claude-generalist | codex-builder |
+| 开源复现 | codex-builder | gemini-researcher |
+| 学术证明 | gemini-researcher | claude-architect-opus |
+| 架构决策 | claude-architect-opus | - |
+
+#### 4. Receipt 系统
+
+每个任务完成必须输出：
+```markdown
+DONE: 已完成项
+DOING: 进行中项
+BLOCKED: 阻塞项
+NEXT: 下一步行动
+VERDICT: PASS | FAIL | PARTIAL
+```
+
+### 文件结构
+
+```
+~/.openclaw/
+├── workspace-lacia/           # 工作目录
+│   ├── memory/                # 持久记忆
+│   │   └── 2026-03-19.md
+│   └── SOUL.md               # 系统人格
+├── beatless/                  # Beatless 核心
+│   ├── TASKS.yaml            # 任务队列
+│   ├── protocols/            # 协议定义
+│   │   ├── CORE_PROTOCOL.md
+│   │   ├── ROUTING_PROTOCOL.md
+│   │   └── RECEIPT_PROTOCOL.md
+│   ├── templates/            # 调度模板
+│   │   ├── dispatch-methode.template.md
+│   │   └── dispatch-codex-builder.template.md
+│   └── logs/                 # 执行日志
+└── claw/                     # 报告输出
+    └── Report/
+        ├── research/
+        ├── reports/
+        └── final-summary-latest.md
+```
+
+---
+
+## 工作流程示例
+
+### 场景：深度调研神经网络架构
+
+**Step 1: 任务创建**
+```yaml
+# 用户向 Lacia 提出需求
+title: "深度调研：神经网络架构的第一性原理错误"
+type: research
+priority: high
+```
+
+**Step 2: Lacia 调度**
+```python
+# 分析任务类型 → Research → 需要 Gemini-Researcher
+# 检查预算 → 6 expert calls remaining → OK
+# 创建子会话
+sessions_spawn(
+    agent_id="gemini-researcher",
+    timeout=1800,
+    task="..."
+)
+```
+
+**Step 3: Agent 执行**
+```
+Gemini-Researcher 并行搜索：
+- Kimi 技术架构
+- 脑启发离散近似
+- 工程实现策略
+
+生成报告：
+- /claw/Report/kimi-research-codex.md
+- /claw/Report/brain-inspired-discrete-approximation.md
+- /claw/Report/discrete-approximation-engineering.md
+```
+
+**Step 4: 验收**
+```markdown
+## Receipt
+
+DONE: 3份深度研究报告
+DOING: 0
+BLOCKED: 0
+NEXT: 用户审阅后进入 Phase 2（实现验证）
+VERDICT: PASS
+```
+
+**Step 5: 状态更新**
+```yaml
+queues:
+  done:
+    - BT-RESEARCH-20260319-001
+```
+
+---
+
+## 关键设计决策
+
+### 1. 为什么用 YAML 而不是数据库？
+
+- **可读性**：人类可以直接阅读和编辑
+- **版本控制**：天然支持 Git 版本管理
+- **可移植性**：纯文本，任何环境都能解析
+- **透明性**：任务状态完全可见
+
+### 2. 为什么强制分阶段（Compass）？
+
+**反模式**：让同一个 Agent 既做研究又做实现
+- 容易陷入确认偏误
+- 缺乏独立验证
+- 质量难以保证
+
+**正解**：Research → Implement → Review 分离
+- Research 提供客观信息
+- Implement 专注执行
+- Review 独立验收
+
+### 3. 为什么限制并行任务数？
+
+```yaml
+budgets:
+  max_tasks_per_shift: 18
+  max_parallel_subtasks: 3
+  max_expert_calls_per_shift: 6
+```
+
+- **认知负荷**：人类无法同时跟踪太多并行任务
+- **资源限制**：API 调用有速率限制
+- **质量控制**：并行过多导致每个任务质量下降
+
+---
+
+## 使用场景
+
+### 场景 1：个人研究项目管理
+
+管理多个并行的研究想法：
+- 神经网络架构研究
+- 可视化效果探索
+- 代码实现验证
+
+Beatless 自动分配 Agent、跟踪进度、生成报告。
+
+### 场景 2：长期任务追踪
+
+跨越多天的复杂任务：
+- Day 1: Research 阶段
+- Day 2: Implement 阶段
+- Day 3: Review 和迭代
+
+任务状态持久化在 TASKS.yaml，随时可恢复。
+
+### 场景 3：多 Agent 协作
+
+并行派遣多个 Agent：
+- Gemini-Researcher：理论分析
+- Codex-Builder：代码实现
+- 两者独立执行，结果合并
+
+---
+
+## 技术栈
+
+| 组件 | 技术 |
+|------|------|
+| 任务存储 | YAML |
+| 调度引擎 | Python + OpenClaw |
+| Agent 运行时 | Subagent / ACP |
+| 报告生成 | Markdown |
+| 版本控制 | Git |
+
+---
+
+## 局限性与未来改进
+
+### 当前局限
+
+1. **人工介入点**：任务创建和最终验收仍需人类
+2. **错误恢复**：复杂错误仍需人工诊断
+3. **上下文限制**：子 Agent 的上下文仍有限制
+
+### 未来方向
+
+1. **自动任务分解**：大任务自动拆分为子任务
+2. **学习优化**：根据历史数据优化路由策略
+3. **多模态支持**：集成代码、图像、音频处理
+4. **分布式执行**：跨机器并行执行
+
+---
+
+## 结语
+
+Beatless 的核心价值：**将个人 AI 使用从"对话模式"提升到"项目管理模式"**。
+
+不再是：
+> "帮我做这个..."
+
+而是：
+> "创建一个任务，分配给合适的 Agent，跟踪进度，验收结果。"
+
+这是从**工具使用**到**工作流编排**的跃迁。
+
+---
+
+## 参考
+
+- 系统协议：`~/.openclaw/beatless/protocols/`
+- 调度模板：`~/.openclaw/beatless/templates/`
+- 当前任务：`~/.openclaw/beatless/TASKS.yaml`
+
+**状态**：v3 稳定运行中

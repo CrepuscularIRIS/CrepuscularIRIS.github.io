@@ -6,6 +6,7 @@ import vercel from '@astrojs/vercel'
 import cloudflare from '@astrojs/cloudflare'
 // Integrations
 import AstroAxiIntegration from './src/axi-integration.ts'
+import react from '@astrojs/react'
 import { defineConfig } from 'astro/config'
 // Rehype & remark packages
 import rehypeKatex from 'rehype-katex'
@@ -60,6 +61,7 @@ export default defineConfig({
   },
 
   integrations: [
+    react(),
     // astro-axi will automatically add sitemap, mdx & tailwind
     // sitemap(),
     // mdx(),

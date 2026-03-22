@@ -1,0 +1,130 @@
+---
+title: '深度报告拆解 B：Transformer 残差重构报告的工程化 Blog 化'
+description: '将 Transformer 深度残差重构选题.md 清洗并拆分为博客系列：A-F 六段映射、12 题执行入口、红队审计与长期维护策略。'
+publishDate: '2026-03-22'
+updatedDate: '2026-03-22'
+category: research
+tags:
+  - research
+  - transformer
+  - residual-connection
+  - report-deconstruction
+  - research-planning
+  - content-maintenance
+language: zh
+---
+
+## 源文件与目标
+
+- 源文件：`/home/yarizakurahime/blog/Research/Transformer 深度残差重构选题.md`
+- 文件规模：356 行
+- 目标：把“顶会选题侦察报告”转换为“能持续迭代的研究博客体系”。
+
+B 报告相对 A 报告更偏工程执行，优势是“选题直接可立项”，但原稿存在文档导出噪声，不能直接发布。
+
+## 原稿噪声诊断（必须先清洗）
+
+### 噪声 1：文档导出残留图片块
+
+原稿包含大量 `data:image/png;base64,...` 片段，直接发布会导致：
+
+- 页面体积异常膨胀
+- 可读性严重下降
+- 后续 diff 与版本管理几乎不可维护
+
+### 噪声 2：脚注编号风格不统一
+
+原文大量“数字引用”与口语化跳转并存，读者难以追踪证据链。
+
+### 噪声 3：章节间存在叙事重复
+
+A/B/C/D/F 多处重复“公理批判”段落。保留原样会让文章冗长但信息增量有限。
+
+## B 报告 A-F 六段的 Blog 映射
+
+| 原报告段落 | 目标问题 | Blog 承载页 |
+|---|---|---|
+| A. 问题本体判断 | 修补 residual 还是重写 depth | [Part 1：问题本体判断](/blog/research/depth-ontology-part1-problem) |
+| B. 研究谱系图 | 2015-2026 演化脉络 | [Part 2：演化谱系](/blog/research/depth-ontology-part2-genealogy) |
+| C. 选题空白分析 | 哪些空白真实存在 | [Part 3：研究空白](/blog/research/depth-ontology-part3-gaps) |
+| D. 12 个候选题 | 可执行方向与 MVE | [Part 4：12 个研究方向](/blog/research/depth-ontology-part4-ideas) |
+| E. 严格文献表 | 一手来源与可追溯性 | 融入 Part 2 和各文末参考 |
+| F. 红队审计 | rebuttal 防线与止损纪律 | [Part 5：红队审计](/blog/research/depth-ontology-part5-redteam) |
+
+## 详细分析：B 报告的增量价值
+
+### 1) 题目级落地能力更强
+
+B 报告不是“方向词”，而是“题目草案 + 机制 + MVE + 风险”，可直接转成实验 backlog。
+
+### 2) 更贴近审稿场景
+
+B 报告对审稿攻击面的描述更直接，尤其强调：
+
+- 机制是否等价于旧方法改写
+- 增益是否来自算力/参数增加
+- 推理延迟是否可接受
+
+这些内容已被纳入 Part 5 的红队协议。
+
+### 3) 更适合做项目管理
+
+B 报告天然适合拆成“状态驱动”的 Blog：
+
+- 方向状态：`未启动/验证中/通过 MVE/止损`
+- 对照状态：`Iso-Parameter/Iso-FLOPs/Iso-Wallclock`
+- 风险状态：`可投稿/需补对照/建议放弃`
+
+## 清洗与改写策略（执行版）
+
+1. 去除 base64 图像和导出残片，仅保留文本与可维护公式。
+2. 把脚注式引用改写为“结论-证据-风险”三段式。
+3. 将重复叙述折叠到系列主文（Part 1-5），避免同义段落反复出现。
+4. 所有跨文链接统一改成 `/blog/research/...`，避免路由 404。
+
+## 从 B 报告抽取出的“执行模板”
+
+### 模板 1：单方向立项卡（用于 Part 4）
+
+- 问题：要打破哪条默认公理
+- 近邻：最接近工作是谁
+- 差异：结构差异而非命名差异
+- MVE：最小实验怎么跑
+- 止损线：到什么指标必须停
+
+### 模板 2：投稿前审计卡（用于 Part 5）
+
+- 三个公平对照是否齐全
+- 深度读写行为是否可观察
+- 是否有负对照排除“换皮创新”
+
+## 维护节奏建议
+
+### 每周
+
+- 更新“12 题状态面板”（仅更新状态，不重写全文）
+
+### 每两周
+
+- 对正在跑的方向补“审稿攻击面自检”
+
+### 每月
+
+- 汇总一次“失败方向归档”，并回写到红队章节
+
+## 当前拆解状态
+
+- [x] A-F 结构已映射到五篇系列
+- [x] 报告噪声已通过博客重写规避
+- [x] 跨文链接已统一到 `/blog/research/...`
+- [ ] 待补：Part 4 的“方向状态卡片”可视化
+- [ ] 待补：Part 5 的“失败样本回放”专栏
+
+## 快速入口
+
+- [Research 栏目主页](/blog/research)
+- [Part 1：问题本体判断](/blog/research/depth-ontology-part1-problem)
+- [Part 2：演化谱系](/blog/research/depth-ontology-part2-genealogy)
+- [Part 3：研究空白](/blog/research/depth-ontology-part3-gaps)
+- [Part 4：12 个研究方向](/blog/research/depth-ontology-part4-ideas)
+- [Part 5：红队审计](/blog/research/depth-ontology-part5-redteam)

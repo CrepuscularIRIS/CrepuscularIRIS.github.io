@@ -1,0 +1,108 @@
+---
+title: 'Kimi 2025 论文综述: MoBA 与长上下文技术'
+description: 'Moonshot AI (Kimi) 2025年论文综述：MoBA 长上下文注意力机制与相关研究'
+publishDate: '2025-12-31'
+updatedDate: '2026-03-19'
+category: research
+tags:
+  - kimi
+  - moonshot-ai
+  - moba
+  - long-context
+  - attention
+  - paper-survey
+  - '2025'
+language: zh
+---
+
+## 概述
+
+本文综述 Moonshot AI (Kimi) 团队在 2025 年的重要论文发表，重点介绍 MoBA (Mixture of Block Attention) 及其在长上下文大语言模型中的应用。
+
+## 已确认论文
+
+### MoBA: Mixture of Block Attention for Long-Context LLMs
+
+- **arXiv**: [2502.13189](https://arxiv.org/abs/2502.13189)
+- **发布日期**: 2025-02-18
+- **作者**: Enzhe Lu, Zhejun Jiang 等 23 人
+- **机构**: Moonshot AI
+- **GitHub**: [MoonshotAI/MoBA](https://github.com/MoonshotAI/MoBA)
+- **核验状态**: ✅ 已确认
+
+#### 核心创新
+
+1. **MoE 原理应用于注意力机制**
+   - 全上下文分块处理
+   - 每个查询 token 学习关注最相关的 KV 块
+
+2. **无参数 Top-K 门控**
+   - 动态选择最相关的注意力块
+   - 无需额外训练参数
+
+3. **全/稀疏注意力无缝切换**
+   - 灵活支持两种注意力模式
+   - 生产环境已部署
+
+#### 技术指标
+
+| 指标 | 数值 |
+|------|------|
+| 最高加速比 | 40x (32K 序列、1 头、2048 块、topk=3) |
+| 生产部署 | 已在 Kimi 生产环境部署 |
+| 开源实现 | 提供 naive 和 efficient 两种后端 |
+
+## 相关研究
+
+### VMoBA: Video Mixture-of-Block Attention
+
+- **arXiv**: [2506.15465](https://arxiv.org/abs/2506.15465)
+- **发布日期**: 2025-06
+- **说明**: MoBA 在视频扩散模型中的应用扩展
+
+## 存疑/待核实论文
+
+### Attention Residuals
+
+> ⚠️ **存疑/待核实**: 在 Anthropic 官方博客、System Card、研究论文库中 **未找到** 标题为 "Attention Residuals" 的特定论文。Opus 4.6 和 Sonnet 4.6 的 System Card 中提到"使用 interpretability 新方法理解模型行为"，但未明确使用该术语。
+> 
+> **可能指代**:
+> 1. 稀疏自编码器 (SAEs) 相关技术
+> 2. Anthropic 内部研究项目名称
+> 3. 与"残差连接"或"注意力机制"相关论文的误记
+> 
+> **建议**: 向原始信息来源确认准确的论文标题或 arXiv 编号
+
+## 其他潜在论文
+
+由于检索限制，以下论文可能已发表但未被收录：
+
+- 建议在 Google Scholar 搜索 "Moonshot AI" 或 "Kimi" 相关作者
+- 访问 Moonshot AI 官方研究页面获取完整列表
+
+## 学术核验总结
+
+| 论文 | 核验状态 | 说明 |
+|------|----------|------|
+| MoBA (arXiv:2502.13189) | ✅ 确认 | 所有信息准确 |
+| VMoBA (arXiv:2506.15465) | ✅ 确认 | 视频扩散模型应用 |
+| Attention Residuals | ⚠️ 存疑 | 未找到确切匹配 |
+
+## 延伸阅读
+
+- [MoBA 论文 (arXiv)](https://arxiv.org/abs/2502.13189)
+- [MoBA GitHub](https://github.com/MoonshotAI/MoBA)
+- [VMoBA 论文 (arXiv)](https://arxiv.org/abs/2506.15465)
+- [Moonshot AI 官网](https://www.moonshot.cn/)
+
+## 引用
+
+```bibtex
+@article{lu2025moba,
+  title={MoBA: Mixture of Block Attention for Long-Context LLMs},
+  author={Lu, Enzhe and Jiang, Zhejun and others},
+  journal={arXiv preprint arXiv:2502.13189},
+  year={2025},
+  doi={10.48550/arXiv.2502.13189}
+}
+```

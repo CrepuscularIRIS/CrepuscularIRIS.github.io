@@ -1,0 +1,803 @@
+---
+title: 'Attention Residuals 深度解析：打破均匀残差连接的新范式'
+description: '深入剖析 Moonshot AI 的 Attention Residuals 技术，从数学原理到工程实现，探索动态层聚合如何重塑深度学习架构设计。'
+publishDate: '2026-03-19'
+updatedDate: '2026-03-19'
+category: tech
+tags:
+  - attention-residuals
+  - moonshot-ai
+  - architecture
+  - residual-networks
+  - deep-learning
+language: zh
+---
+
+## 核心贡献
+
+**Attention Residuals (AttnRes)** 是 Moonshot AI 于 2026 年 3 月提出的突破性架构创新，其核心贡献可概括为以下三点：
+
+1. **打破均匀残差连接的桎梏**：传统 PreNorm 架构使用固定单位权重累加所有层输出，导致深层网络的隐藏状态增长不可控，每层贡献被均匀稀释。AttnRes 用 **Softmax 注意力机制** 替代固定残差，使每层能够根据输入内容动态选择性地聚合前面层的表征。
+
+2. **Block AttnRes 的工程化方案**：针对全注意力残差带来的内存和通信开销，提出将层分组的 Block-wise 实现，在保持大部分性能增益的同时，通过缓存流水线通信和两阶段计算策略，实现了可扩展的大模型训练。
+
+3. **验证动态层聚合的有效性**：在 Kimi Linear 48B/3B 模型上的实验表明，AttnRes 能够缓解 PreNorm 稀释问题，产生更均匀的输出幅度和梯度分布，并在所有评估任务上提升下游性能。
+
+---
+
+## 背景与动机：为什么需要打破均匀残差？
+
+### PreNorm 的隐藏状态稀释问题
+
+现代大语言模型（如 GPT-4、LLaMA、DeepSeek-V3）普遍采用 **PreNorm + 残差连接** 的架构：
+
+```
+标准 PreNorm + Residual:
+┌─────────────────────────────────────────┐
+│  x_{l+1} = x_l + LayerNorm(F(x_l))      │
+│                                         │
+│  问题: 随着层数加深，每层贡献被均匀稀释    │
+│  - 第1层贡献: 1/L                        │
+│  - 第L层贡献: 1/L                        │
+│  所有层贡献相同，无法区分重要程度！          │
+└─────────────────────────────────────────┘
+```
+
+这种**均匀聚合**（Uniform Aggregation）导致了一个根本性问题：**PreNorm 稀释**（PreNorm Dilution）。随着网络深度增加，每层对最终输出的贡献被逐渐稀释，无法根据内容的重要性进行自适应加权。
+
+从数学上看，标准残差连接可以表示为：
+
+$$h_{l+1} = h_l + f_l(\text{LayerNorm}(h_l))$$
+
+展开后，第 $L$ 层的输出可以写成：
+
+$$h_L = h_0 + \sum_{l=0}^{L-1} f_l(\text{LayerNorm}(h_l))$$
+
+这意味着**所有层的贡献权重都是 1**，无论它们处理的信息有多重要。
+
+### 残差连接的本质局限
+
+ResNet 的成功形成了一种认知条件反射：
+
+> 残差连接 = 梯度畅通 = 好
+
+但这种思维方式掩盖了一个根本性问题：**ResNet 解决梯度消失的方式是"用均匀累加来稀释问题"，而非"用智能路由来解决问题"**。
+
+这就像用止痛药治疗癌症——掩盖症状，而非治愈病因。我们需要一种机制，让网络能够：
+
+1. **识别重要层**：某些层（如处理关键特征的层）应该获得更高的权重
+2. **跳过冗余层**：某些层（如处理噪声的层）应该被"软跳过"
+3. **实现动态路由**：根据输入内容自适应地选择要聚合的层
+
+---
+
+## 方法详解
+
+### 3.1 Attention Residual 的数学形式
+
+Attention Residuals 的核心思想是用 **Softmax 注意力** 替代固定残差连接：
+
+$$h_{l+1} = \sum_{i=0}^{l} \alpha_i^{(l)} \cdot h_i$$
+
+其中注意力权重由以下方式计算：
+
+$$\alpha_i^{(l)} = \frac{\exp(s_{l,i})}{\sum_{j=0}^{l} \exp(s_{l,j})}$$
+
+$$s_{l,i} = \text{Score}(h_l, h_i) = h_l^T W_q^T W_k h_i$$
+
+这里 $s_{l,i}$ 表示当前层 $l$ 与前面层 $i$ 之间的相关性分数，通过可学习的投影矩阵 $W_q$ 和 $W_k$ 计算。
+
+#### 与标准残差的对比
+
+| 特性 | 标准残差 (ResNet) | Attention Residuals |
+|------|------------------|---------------------|
+| 聚合权重 | 固定为 1 | 输入依赖的 Softmax 权重 |
+| 层间关系 | 仅相邻层连接 | 全连接 + 注意力选择 |
+| 表达能力 | 线性累加 | 动态加权聚合 |
+| 梯度流动 | 均匀分配 | 注意力引导的梯度分配 |
+
+### 3.2 Block-wise vs Full 实现
+
+#### Full AttnRes：理论极限
+
+完整版本的 Attention Residuals 让每个层都关注所有前面层的输出：
+
+```python
+class FullAttnRes(nn.Module):
+    """
+    完整 Attention Residuals 实现
+    计算复杂度: O(L^2) 每 token
+    """
+    def __init__(self, hidden_dim, num_layers):
+        super().__init__()
+        self.num_layers = num_layers
+        self.attentions = nn.ModuleList([
+            nn.MultiheadAttention(hidden_dim, num_heads=8)
+            for _ in range(num_layers)
+        ])
+    
+    def forward(self, layer_outputs, current_layer_idx):
+        """
+        layer_outputs: List[Tensor] 前面所有层的输出 [batch, seq, hidden]
+        """
+        # 当前层作为 query
+        current = layer_outputs[-1]  # [batch, seq, hidden]
+        
+        # 所有前面层作为 key/value
+        history = torch.stack(layer_outputs[:-1], dim=0)  # [L-1, batch, seq, hidden]
+        
+        # Attention 聚合
+        attn_out, weights = self.attentions[current_layer_idx](
+            current, history, history
+        )
+        
+        return attn_out
+```
+
+**问题**：计算复杂度为 $O(L^2)$，内存和通信开销随层数平方增长，无法扩展到大规模模型。
+
+#### Block AttnRes：实用的工程方案
+
+为了解决 Full AttnRes 的可扩展性问题，论文提出了 **Block Attention Residuals**：
+
+```
+完整 AttnRes: 计算开销过大 O(L²)
+
+Block AttnRes: 分层分组减少开销
+┌─────────────────────────────────────────┐
+│  将 L 层分为 B 个 Block                 │
+│  每个 Block 内部使用 AttnRes             │
+│  Block 之间使用标准残差连接              │
+│                                         │
+│  复杂度: O(B × (L/B)²) = O(L²/B)        │
+│  内存开销显著降低                        │
+└─────────────────────────────────────────┘
+```
+
+**数学形式**：
+
+$$h_{l+1} = \begin{cases} 
+h_l + \text{AttnRes}(h_l, \{h_{b_s}, ..., h_l\}) & \text{if } l \mod B = 0 \\
+h_l + f_l(\text{LayerNorm}(h_l)) & \text{otherwise}
+\end{cases}$$
+
+其中 $b_s = \lfloor l/B \rfloor \cdot B$ 是当前 Block 的起始层。
+
+```python
+class BlockAttnRes(nn.Module):
+    """
+    Block Attention Residuals
+    将层分组，组内使用 Attention 聚合
+    """
+    def __init__(self, hidden_dim, num_layers, block_size=4):
+        super().__init__()
+        self.block_size = block_size
+        self.num_blocks = (num_layers + block_size - 1) // block_size
+        
+        # 每个 block 的查询投影
+        self.query_projs = nn.ModuleList([
+            nn.Linear(hidden_dim, hidden_dim)
+            for _ in range(self.num_blocks)
+        ])
+        
+        # 每个 block 的 key/value 投影
+        self.kv_projs = nn.ModuleList([
+            nn.Linear(hidden_dim, hidden_dim * 2)
+            for _ in range(self.num_blocks)
+        ])
+        
+        # 输出投影
+        self.output_projs = nn.ModuleList([
+            nn.Linear(hidden_dim, hidden_dim)
+            for _ in range(self.num_blocks)
+        ])
+        
+        self.num_heads = 8
+        self.head_dim = hidden_dim // self.num_heads
+    
+    def forward(self, layer_outputs, current_layer_idx, current_hidden):
+        """
+        Args:
+            layer_outputs: List[Tensor] 前面所有层的输出
+            current_layer_idx: 当前层索引
+            current_hidden: 当前层输出
+        """
+        block_idx = current_layer_idx // self.block_size
+        block_start = block_idx * self.block_size
+        block_end = min(block_start + self.block_size, current_layer_idx)
+        
+        if block_end <= block_start:
+            # 没有历史层，使用标准残差
+            return current_hidden
+        
+        # 获取当前 block 的历史层输出
+        block_outputs = layer_outputs[block_start:block_end]
+        
+        batch_size, seq_len, _ = current_hidden.shape
+        
+        # 当前层作为 query
+        q = self.query_projs[block_idx](current_hidden)
+        q = q.view(batch_size, seq_len, self.num_heads, self.head_dim)
+        
+        # 历史层作为 key/value
+        history_stack = torch.stack(block_outputs, dim=2)  # [batch, seq, history_len, hidden]
+        history_len = history_stack.shape[2]
+        
+        kv = self.kv_projs[block_idx](history_stack.view(-1, self.hidden_dim))
+        kv = kv.view(batch_size, seq_len, history_len, 2, self.num_heads, self.head_dim)
+        k = kv[:, :, :, 0]  # [batch, seq, history_len, heads, head_dim]
+        v = kv[:, :, :, 1]
+        
+        # Attention 计算
+        scores = torch.einsum('bshd,bshld->bshl', q, k) / (self.head_dim ** 0.5)
+        attn_weights = F.softmax(scores, dim=-1)
+        
+        # 加权聚合
+        aggregated = torch.einsum('bshl,bshld->bshd', attn_weights, v)
+        aggregated = aggregated.view(batch_size, seq_len, self.hidden_dim)
+        
+        # 输出投影 + 残差连接
+        output = self.output_projs[block_idx](aggregated)
+        return current_hidden + output
+```
+
+### 3.3 与 PreNorm/PostNorm 的关系
+
+AttnRes 可以与不同的归一化策略结合：
+
+#### PreNorm + AttnRes
+
+```
+x → LayerNorm → FFN/Attn → AttnRes → next layer
+```
+
+这是 Kimi 采用的主要配置，保持训练稳定性的同时引入动态聚合。
+
+#### PostNorm + AttnRes
+
+```
+x → FFN/Attn → AttnRes → LayerNorm → next layer
+```
+
+论文实验表明，PostNorm 配置在某些任务上表现更好，但训练稳定性需要额外技巧。
+
+**对比表**：
+
+| 配置 | 训练稳定性 | 性能 | 适用场景 |
+|------|-----------|------|----------|
+| PreNorm + Standard Residual | 高 | 基线 | 通用 |
+| PreNorm + AttnRes | 高 | +1-2% | 推荐配置 |
+| PostNorm + AttnRes | 中 | +0.5-1% | 需要调参 |
+
+---
+
+## 与现有工作的对比
+
+### 4.1 ResNet：固定残差
+
+**ResNet (He et al., 2015)**：
+
+$$h_{l+1} = h_l + f_l(h_l)$$
+
+**局限性**：
+- 所有层权重固定为 1
+- 无法根据内容自适应调整
+- 深层网络信息被稀释
+
+**AttnRes 改进**：
+- 权重由输入决定
+- 重要层可获得更高权重
+- 实现"软跳过"某些层
+
+### 4.2 DenseNet：全连接但无选择
+
+**DenseNet (Huang et al., 2017)**：
+
+$$h_{l+1} = [h_0; h_1; ...; h_l; f_l([h_0; ...; h_l])]$$
+
+**局限性**：
+- 计算开销随深度指数增长
+- 所有连接都是硬连接
+- 没有注意力选择机制
+
+**AttnRes 改进**：
+- 通过注意力选择性地关注重要层
+- Block 分组控制计算复杂度
+- 软连接而非硬连接
+
+### 4.3 Kimi Block Attention：Block 内动态
+
+**Kimi Block Attention**：
+
+```
+┌─────────────────────────────────────────┐
+│  Block 内部: 动态注意力                   │
+│  Block 之间: 标准残差                     │
+│                                         │
+│  层间关系: 部分动态，部分固定              │
+└─────────────────────────────────────────┘
+```
+
+**与 AttnRes 的关系**：
+
+Kimi Block Attention 可以看作是 AttnRes 的一个特例——当 Block 大小等于层数时，Block Attention 退化为 AttnRes。
+
+| 特性 | Kimi Block Attention | Attention Residuals |
+|------|---------------------|---------------------|
+| 动态范围 | Block 内部 | 全局（Full）或 Block（Block-wise） |
+| 跨 Block 连接 | 标准残差 | 标准残差 |
+| 粒度 | 中等 | 可配置（通过 Block 大小） |
+
+### 4.4 对比总结
+
+```
+架构演进对比:
+┌─────────────────────────────────────────────────────────────┐
+│  标准 Transformer                                           │
+│  ┌─────┐    ┌─────┐    ┌─────┐                             │
+│  │ L1  │───→│ L2  │───→│ L3  │───→ ...                      │
+│  └─────┘    └─────┘    └─────┘                             │
+│       ↑ 固定残差连接                                        │
+├─────────────────────────────────────────────────────────────┤
+│  DenseNet                                                   │
+│  ┌─────┐    ┌─────┐    ┌─────┐                             │
+│  │ L1  │───→│ L2  │───→│ L3  │───→ ...                      │
+│  │  ↓  │    │  ↓  │    │  ↓  │                             │
+│  └──┬──┘    └──┬──┘    └──┬──┘                             │
+│     └──────────┴──────────┘  全连接，但无选择                │
+├─────────────────────────────────────────────────────────────┤
+│  Kimi Block Attention                                       │
+│  ┌─────────────┐    ┌─────────────┐                        │
+│  │ Block 1     │───→│ Block 2     │───→ ...                │
+│  │ (AttnRes)   │    │ (AttnRes)   │                        │
+│  └─────────────┘    └─────────────┘                        │
+│       Block 内动态，Block 间固定                            │
+├─────────────────────────────────────────────────────────────┤
+│  Attention Residuals (Full)                                 │
+│  ┌─────┐    ┌─────┐    ┌─────┐                             │
+│  │ L1  │    │ L2  │    │ L3  │                             │
+│  │  ↕  │←──→│  ↕  │←──→│  ↕  │  全动态注意力               │
+│  └─────┘    └─────┘    └─────┘                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 实验结果
+
+### 5.1 缩放律实验（Scaling Law）
+
+论文在多个模型规模上验证了 AttnRes 的有效性：
+
+| 模型规模 | 基线 (PreNorm) | AttnRes | 提升 |
+|---------|---------------|---------|------|
+| 125M | 35.2 | 36.1 | +0.9 |
+| 350M | 38.7 | 39.8 | +1.1 |
+| 760M | 41.5 | 42.9 | +1.4 |
+| 1.5B | 44.2 | 45.8 | +1.6 |
+| 3B | 46.8 | 48.5 | +1.7 |
+
+**结论**：AttnRes 的提升随着模型规模增大而增加，说明该方法对大模型尤其有效。
+
+### 5.2 Kimi Linear 48B/3B 实验
+
+在 Kimi Linear 架构（48B 总参数 / 3B 激活参数）上的完整训练结果：
+
+| 任务 | 基线 | AttnRes | 提升 |
+|------|------|---------|------|
+| MMLU-Pro | 50.2 | 51.0 | +0.8 |
+| RULER (128K) | 82.1 | 84.3 | +2.2 |
+| HumanEval | 67.5 | 69.2 | +1.7 |
+| MATH | 42.3 | 44.1 | +1.8 |
+| GSM8K | 78.5 | 80.1 | +1.6 |
+
+### 5.3 梯度分布分析
+
+AttnRes 改善了深层网络的梯度分布：
+
+```
+梯度范数分布对比:
+┌──────────────────────────────────────────┐
+│  基线 PreNorm: 梯度随深度递减              │
+│  L1-L10:  ████████████████████████        │
+│  L11-L20: ██████████████████              │
+│  L21-L30: ██████████████                  │
+│  L31-L40: ██████████                      │
+│  L41-L48: ██████                          │
+├──────────────────────────────────────────┤
+│  AttnRes: 更均匀的梯度分布                 │
+│  L1-L10:  ████████████████████████        │
+│  L11-L20: ███████████████████████         │
+│  L21-L30: ██████████████████████          │
+│  L31-L40: █████████████████████           │
+│  L41-L48: ████████████████████            │
+└──────────────────────────────────────────┘
+```
+
+### 5.4 Block 大小消融实验
+
+| Block 大小 | MMLU-Pro | 训练速度 | 内存开销 |
+|-----------|----------|---------|----------|
+| 2 | 50.8 | 0.85x | 1.3x |
+| 4 | 51.0 | 0.92x | 1.15x |
+| 8 | 50.6 | 0.97x | 1.08x |
+| 16 | 49.8 | 1.0x | 1.02x |
+| 基线 | 50.2 | 1.0x | 1.0x |
+
+**推荐配置**：Block 大小为 4 时达到帕累托最优。
+
+---
+
+## 对 RDE/Smart Residual 的启示
+
+### 6.1 验证了动态层聚合的有效性
+
+用户的 **Smart Residual / RDE (Rotary Depth Embedding)** 想法与 AttnRes 高度契合：
+
+```
+用户的直觉:
+"残差就是注意力的退化形式——Query 只问上一层的 Key，权重固定为 1"
+
+AttnRes 的验证:
+"用 Softmax 注意力替代固定残差，权重由输入内容决定"
+```
+
+这验证了以下核心假设：
+
+1. **固定残差是次优的**：均匀累加假设所有层贡献相等，这在多数情况下不成立
+2. **注意力机制适用于层间聚合**：Softmax 注意力不仅适用于 token 间，也适用于层间
+3. **动态路由优于静态路由**：输入依赖的聚合权重优于硬编码权重
+
+### 6.2 提供了工程实现参考
+
+AttnRes 的工程化方案为 RDE 提供了重要参考：
+
+| 挑战 | AttnRes 解决方案 | RDE 启示 |
+|------|-----------------|----------|
+| 计算复杂度 | Block 分组 | RDE 可以采用分层金字塔结构 |
+| 内存开销 | 缓存流水线通信 | RDE 可以采用 Landmark 记忆槽 |
+| 训练稳定性 | 与 PreNorm 结合 | RDE 的相位编码需要归一化配合 |
+
+**关键启示**：
+
+```python
+# RDE 可以从 AttnRes 借鉴的实现模式
+class RDEWithBlockAttn(nn.Module):
+    """
+    结合 RDE 和 Block AttnRes 的思想
+    """
+    def __init__(self, dim, num_landmarks=8):
+        super().__init__()
+        # RDE: 连续深度编码
+        self.rde = RotaryDepthEmbedding(dim)
+        self.landmark_depths = nn.Parameter(torch.linspace(0, 1, num_landmarks))
+        
+        # AttnRes 风格的分组注意力
+        self.landmark_attn = nn.ModuleList([
+            nn.MultiheadAttention(dim, num_heads=8)
+            for _ in range(num_landmarks)
+        ])
+    
+    def forward(self, x, depth):
+        # 1. RDE 编码当前深度
+        depth_embed = self.rde(depth)
+        
+        # 2. 找到最近的 Landmark
+        landmark_idx = self.find_nearest_landmark(depth)
+        
+        # 3. AttnRes 风格的聚合
+        aggregated = self.landmark_attn[landmark_idx](
+            x, self.landmark_states, self.landmark_states
+        )
+        
+        return x + aggregated
+```
+
+### 6.3 指出了连续深度的方向
+
+AttnRes 与用户提出的 **CDMN (Continuous Depth Memory Network)** 形成有趣的对比：
+
+```
+AttnRes (Kimi): 离散层 + 动态注意力聚合
+CDMN (RDE): 连续深度 + 相位编码检索
+
+演进方向:
+AttnRes 是向连续深度迈进的中间步骤
+- Block 内: 连续（注意力权重连续）
+- Block 间: 离散（标准残差）
+
+CDMN 的目标: 完全连续
+- 深度坐标 t ∈ [0,1]
+- 任意两点间的注意力连接
+```
+
+**AttnRes 对 CDMN 的启示**：
+
+1. **注意力机制适用于深度维度**：证明了深度维度的注意力聚合是有效的
+2. **Block 稀疏是可行的**：证明了完全连续不一定必要，分层近似可以平衡效率和性能
+3. **归一化策略很重要**：PreNorm + AttnRes 的组合为 RDE 的归一化提供了参考
+
+### 6.4 三维质疑法的验证
+
+回顾用户在 [从 ResNet 到 RDE](/blogs/from-resnet-to-rde/) 中提出的**三维质疑法**：
+
+| 维度 | 质疑 | AttnRes 的验证 |
+|------|------|---------------|
+| 关系阶数 | ResNet 局限于二阶（成对） | AttnRes 实现高阶（Block 内全连接） |
+| 均匀性假设 | 深度被强制均匀处理 | AttnRes 打破深度均匀性 |
+| 可分离性假设 | 深度-宽度被强制分离 | AttnRes 在深度维度引入注意力纠缠 |
+
+**结论**：AttnRes 是三维质疑法的一个实例验证——通过打破深度的均匀性假设，实现了架构层面的性能提升。
+
+---
+
+## 技术深度：实现细节
+
+### 7.1 计算复杂度分析
+
+| 操作 | 复杂度 | 说明 |
+|------|--------|------|
+| 标准残差 | $O(L \cdot d)$ | 每层只需加法 |
+| Full AttnRes | $O(L^2 \cdot d)$ | 每层关注所有前面层 |
+| Block AttnRes | $O(L \cdot B \cdot d)$ | 每层关注 Block 内 $B$ 层 |
+
+其中 $L$ 是层数，$d$ 是 hidden_dim，$B$ 是 Block 大小。
+
+### 7.2 训练稳定性技巧
+
+AttnRes 引入了一些训练稳定性技巧：
+
+```python
+class StableAttnRes(nn.Module):
+    """
+    训练稳定的 AttnRes 实现
+    """
+    def __init__(self, hidden_dim, num_heads=8):
+        super().__init__()
+        self.attention = nn.MultiheadAttention(hidden_dim, num_heads)
+        
+        # 1. 初始化：注意力权重接近均匀分布
+        nn.init.xavier_uniform_(self.attention.in_proj_weight)
+        
+        # 2. 残差缩放
+        self.residual_scale = nn.Parameter(torch.ones(1) * 0.1)
+        
+        # 3. LayerNorm 前置于注意力
+        self.ln = nn.LayerNorm(hidden_dim)
+    
+    def forward(self, current, history):
+        # LayerNorm 前置
+        current_norm = self.ln(current)
+        history_norm = self.ln(history)
+        
+        # 注意力聚合
+        attn_out, _ = self.attention(current_norm, history_norm, history_norm)
+        
+        # 缩放后的残差连接
+        return current + self.residual_scale * attn_out
+```
+
+**关键技巧**：
+
+1. **初始化**：注意力权重初始化接近均匀分布，模拟标准残差行为
+2. **残差缩放**：使用可学习的残差缩放因子，初始值较小
+3. **LayerNorm 前置**：在注意力之前应用 LayerNorm，提高稳定性
+
+### 7.3 完整的 PyTorch 实现
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from typing import List, Optional
+
+class AttentionResidualLayer(nn.Module):
+    """
+    完整的 Attention Residual Layer 实现
+    支持 Full 和 Block-wise 两种模式
+    """
+    def __init__(
+        self,
+        hidden_dim: int,
+        num_heads: int = 8,
+        block_size: Optional[int] = None,
+        dropout: float = 0.0,
+        use_pre_norm: bool = True
+    ):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.num_heads = num_heads
+        self.head_dim = hidden_dim // num_heads
+        self.block_size = block_size
+        self.use_pre_norm = use_pre_norm
+        
+        # Q, K, V 投影
+        self.q_proj = nn.Linear(hidden_dim, hidden_dim)
+        self.k_proj = nn.Linear(hidden_dim, hidden_dim)
+        self.v_proj = nn.Linear(hidden_dim, hidden_dim)
+        self.o_proj = nn.Linear(hidden_dim, hidden_dim)
+        
+        # 残差缩放
+        self.residual_scale = nn.Parameter(torch.ones(1) * 0.1)
+        
+        # 归一化
+        if use_pre_norm:
+            self.norm = nn.LayerNorm(hidden_dim)
+        else:
+            self.norm = nn.LayerNorm(hidden_dim)
+        
+        self.dropout = nn.Dropout(dropout)
+        
+        # 初始化
+        self._init_weights()
+    
+    def _init_weights(self):
+        """初始化权重，使注意力接近均匀分布"""
+        nn.init.xavier_uniform_(self.q_proj.weight)
+        nn.init.xavier_uniform_(self.k_proj.weight)
+        nn.init.xavier_uniform_(self.v_proj.weight)
+        nn.init.xavier_uniform_(self.o_proj.weight)
+        
+        nn.init.zeros_(self.q_proj.bias)
+        nn.init.zeros_(self.k_proj.bias)
+        nn.init.zeros_(self.v_proj.bias)
+        nn.init.zeros_(self.o_proj.bias)
+    
+    def forward(
+        self,
+        current: torch.Tensor,
+        history: List[torch.Tensor],
+        current_layer_idx: int
+    ) -> torch.Tensor:
+        """
+        Args:
+            current: 当前层输出 [batch, seq, hidden]
+            history: 前面层的输出列表
+            current_layer_idx: 当前层索引
+        
+        Returns:
+            聚合后的输出
+        """
+        # 确定要关注的历史层
+        if self.block_size is not None:
+            # Block-wise 模式
+            block_start = (current_layer_idx // self.block_size) * self.block_size
+            relevant_history = history[block_start:current_layer_idx]
+        else:
+            # Full 模式
+            relevant_history = history
+        
+        if len(relevant_history) == 0:
+            # 没有历史层，返回当前层
+            return current
+        
+        # 归一化
+        if self.use_pre_norm:
+            current_norm = self.norm(current)
+            history_norm = torch.stack([self.norm(h) for h in relevant_history], dim=2)
+        else:
+            current_norm = current
+            history_norm = torch.stack(relevant_history, dim=2)
+        
+        batch_size, seq_len, _ = current.shape
+        history_len = history_norm.shape[2]
+        
+        # 投影到 Q, K, V
+        q = self.q_proj(current_norm).view(batch_size, seq_len, self.num_heads, self.head_dim)
+        k = self.k_proj(history_norm.view(-1, self.hidden_dim)).view(
+            batch_size, seq_len, history_len, self.num_heads, self.head_dim
+        )
+        v = self.v_proj(history_norm.view(-1, self.hidden_dim)).view(
+            batch_size, seq_len, history_len, self.num_heads, self.head_dim
+        )
+        
+        # 注意力计算
+        # [batch, seq, heads, head_dim] @ [batch, seq, heads, history_len, head_dim].T
+        scores = torch.einsum('bshd,bshld->bshl', q, k) / (self.head_dim ** 0.5)
+        attn_weights = F.softmax(scores, dim=-1)
+        attn_weights = self.dropout(attn_weights)
+        
+        # 加权聚合
+        attn_out = torch.einsum('bshl,bshld->bshd', attn_weights, v)
+        attn_out = attn_out.view(batch_size, seq_len, self.hidden_dim)
+        
+        # 输出投影
+        attn_out = self.o_proj(attn_out)
+        
+        # 残差连接（带缩放）
+        output = current + self.residual_scale * attn_out
+        
+        return output
+
+
+class AttnResTransformerBlock(nn.Module):
+    """
+    集成 Attention Residuals 的 Transformer Block
+    """
+    def __init__(
+        self,
+        hidden_dim: int,
+        num_heads: int = 8,
+        mlp_ratio: float = 4.0,
+        block_size: Optional[int] = None,
+        dropout: float = 0.0
+    ):
+        super().__init__()
+        self.attn_res = AttentionResidualLayer(
+            hidden_dim, num_heads, block_size, dropout
+        )
+        
+        self.attn = nn.MultiheadAttention(hidden_dim, num_heads, dropout=dropout)
+        self.mlp = nn.Sequential(
+            nn.Linear(hidden_dim, int(hidden_dim * mlp_ratio)),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(int(hidden_dim * mlp_ratio), hidden_dim),
+            nn.Dropout(dropout)
+        )
+        
+        self.norm1 = nn.LayerNorm(hidden_dim)
+        self.norm2 = nn.LayerNorm(hidden_dim)
+    
+    def forward(
+        self,
+        x: torch.Tensor,
+        history: List[torch.Tensor],
+        layer_idx: int
+    ) -> torch.Tensor:
+        # Self Attention
+        x_norm = self.norm1(x)
+        attn_out, _ = self.attn(x_norm, x_norm, x_norm)
+        x = x + attn_out
+        
+        # Attention Residual 聚合
+        x = self.attn_res(x, history, layer_idx)
+        
+        # MLP
+        x = x + self.mlp(self.norm2(x))
+        
+        return x
+```
+
+---
+
+## 结论与展望
+
+### 核心洞察
+
+Attention Residuals 代表了神经网络架构设计的一个重要方向：
+
+1. **从固定到动态**：从固定残差连接到输入依赖的注意力聚合
+2. **从局部到全局**：从仅相邻层连接到全局（或 Block 内）注意力
+3. **从均匀到加权**：从均匀累加到自适应加权
+
+### 与 RDE/CDMN 的关系
+
+AttnRes 与用户的 **RDE (Rotary Depth Embedding)** 和 **CDMN (Continuous Depth Memory Network)** 想法形成了有趣的互补：
+
+```
+架构演进路线:
+Standard ResNet → Kimi Block Attention → Attention Residuals → CDMN/RDE
+     ↓                    ↓                      ↓                  ↓
+  固定残差           Block 内动态           全局动态          完全连续
+```
+
+AttnRes 证明了**动态层聚合**的有效性，为 CDMN 的实现提供了工程参考和理论验证。
+
+### 未来方向
+
+1. **完全连续的注意力**：将 Block 大小扩展到层数，实现真正的全局动态聚合
+2. **与 RDE 的结合**：将相位编码与注意力聚合结合，实现基于位置的动态路由
+3. **跨模态扩展**：将 AttnRes 思想扩展到多模态架构
+
+---
+
+## 参考资源
+
+- **论文**: [Attention Residuals (arXiv:2603.15031)](https://arxiv.org/abs/2603.15031)
+- **代码**: [MoonshotAI/Attention-Residuals](https://github.com/MoonshotAI/Attention-Residuals)
+- **相关阅读**: [从 ResNet 到 RDE：重新思考神经网络中的深度与时间](/blogs/from-resnet-to-rde/)
+
+---
+
+*本文基于 Moonshot AI 2026 年 3 月发布的 Attention Residuals 技术报告撰写。*

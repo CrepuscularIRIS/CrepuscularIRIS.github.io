@@ -1,0 +1,207 @@
+---
+title: '阅读清单：架构研究的核心材料与优先级'
+description: '基于研究目标筛选的核心材料清单，按优先级和路线分类，避免在无关文档上浪费时间。'
+publishDate: '2026-03-19'
+updatedDate: '2026-03-19'
+category: research
+tags:
+  - reading-list
+  - research-materials
+  - architecture
+  - paper-survey
+language: zh
+---
+
+## 说明
+
+本文档按**研究目标**筛选核心材料，明确优先级和路线分类，避免在无关文档上浪费时间。
+
+**原则**：
+- 优先 arXiv 论文和开源代码（架构灵感）
+- 谨慎对待 System Card / 发布页（产品/安全披露）
+- 标记 UNVERIFIED 的材料需独立核实
+
+---
+
+## 最高优先级：Attention Residuals
+
+### Kimi Attention Residuals
+
+| 字段 | 信息 |
+|------|------|
+| **来源** | arXiv (待补充完整链接) |
+| **类型** | 论文 + 开源代码 |
+| **路线** | 路线 A - 挑战 Residual |
+| **价值** | **最高** - 直接对应当前困惑 |
+| **核心贡献** | 用 depth-wise attention 替换固定残差累加 |
+| **状态** | 待阅读 |
+
+**为什么优先**：
+- 直接回应"Residual 是妥协"的核心困惑
+- 提供从固定累加到学习权重的具体路径
+- 有开源实现，可复现验证
+
+---
+
+## 高优先级：Orchestration 路线
+
+### 1. BLIP-2 / Q-Former
+
+| 字段 | 信息 |
+|------|------|
+| **论文** | BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image Encoders and Large Language Models |
+| **arXiv** | https://arxiv.org/abs/2301.12597 |
+| **路线** | 路线 B - Query-based selection |
+| **核心概念** | Q-Former: 轻量级查询 Transformer，筛选而非堆砌信息 |
+
+### 2. Perceiver IO
+
+| 字段 | 信息 |
+|------|------|
+| **论文** | Perceiver IO: A General Architecture for Structured Inputs & Outputs |
+| **arXiv** | https://arxiv.org/abs/2107.14795 |
+| **路线** | 路线 B - Memory + Retrieval |
+| **核心概念** | Latent array + cross-attention retrieval |
+
+**与 CDMN 的关联**：
+- Perceiver 的 latent array ≈ CDMN 的 depth landmarks
+- Cross-attention ≈ RoPE phase retrieval
+- 关键差异：Perceiver 离散 latent，CDMN 目标连续 depth
+
+---
+
+## 中优先级：体系化技术报告
+
+### Kimi K2 / K2.5
+
+| 材料 | 链接 | 价值 |
+|------|------|------|
+| Kimi K2: Open Agentic Intelligence | [arXiv 待补充] | 体系化：agentic + MoE + multimodal |
+| Kimi K2.5: Visual Agentic Intelligence | [arXiv 待补充] | 视觉 agentic 能力 |
+| 官方 GitHub | https://github.com/MoonshotAI | 代码实现 |
+
+**为什么中等优先级**：
+- 更宏观的体系化报告，非专注于"residual vs attention"问题
+- 适合在理清核心困惑后扩展阅读
+
+### MiniMax 系列
+
+| 材料 | 来源 | 关键问题 |
+|------|------|----------|
+| Why M2 is Full Attention | MiniMax 文档 | 为什么回到 full attention？ |
+| M2.5 Post-Training | MiniMax 文档 | Agent RL / tool use |
+| M1 / 01 Lightning Attention | arXiv | 长上下文设计理由 |
+
+**研究价值**：
+- 帮助判断工业界是在"修 attention"还是"重塑 residual"
+- M2 回到 full attention 的决定值得深入理解
+
+---
+
+## 低优先级（对你当前研究）
+
+### OpenAI / Anthropic / Google 官方材料
+
+| 材料 | 类型 | 信息密度 | 建议 |
+|------|------|----------|------|
+| GPT-5.4 System Card | 产品/安全披露 | 低 | 不看架构细节 |
+| Claude Opus 4.6 System Card | 产品/安全披露 | 低 | 关注 agentic 定义 |
+| Gemini 3.1 Pro Model Card | 产品/安全披露 | 低 | 确认能力边界 |
+
+**为什么不优先**：
+- 这类材料主要关注能力边界、安全评估、部署 framing
+- 对"residual 是否是过渡产物"这类架构哲学问题帮助有限
+- 如果需要了解工业界优化目标，可稍后快速浏览
+
+---
+
+## 连续潜变量路线
+
+### VAE / β-VAE
+
+| 材料 | arXiv | 核心概念 |
+|------|-------|----------|
+| Auto-Encoding Variational Bayes (VAE) | https://arxiv.org/abs/1312.6114 | Encoder-decoder + KL |
+| β-VAE: Learning Basic Visual Concepts | https://arxiv.org/abs/1804.03599 | Disentanglement trade-off |
+
+**研究价值**：
+- 不是直接解决 residual/attention 问题
+- 但提供"连续潜变量 vs 离散优化"的训练哲学视角
+- 与 CDMN 的"连续深度"目标有方法论共鸣
+
+---
+
+## 统一记录字段
+
+阅读任何材料时，统一记录以下字段：
+
+```
+- core_object: 层 / block / latent / memory / phase
+- update_form: add / concat / attention / recurrent / integral-like retrieval
+- selection_granularity: token / channel / layer / block / latent slot
+- stability_trick: norm / spectral / unitary / clipping / muP / optimizer
+- inductive_bias: causal / bidirectional / routing / sparse / dense / continuous
+- optimized_for: benchmark / agent tool use / long context / safety / training stability
+```
+
+---
+
+## 最小实验清单（待执行）
+
+基于阅读后的验证计划：
+
+### 实验 1：三种 Residual 变体对比
+在同构 Transformer 上实现：
+1. 经典 Residual: `h_{l+1} = h_l + f(h_l)`
+2. AttnRes: `h_{l+1} = Σ α_i · h_i`
+3. Query-over-depth: `h(t) = retrieve(depth_memory, query)`
+
+观察指标：
+- hidden state norm 随深度是否单调膨胀
+- 每层梯度分布是否更均匀
+- 长程依赖任务是否更受益
+- 计算/显存代价是否可接受
+
+### 实验 2：RDE 验证
+- 实现 Rotary Depth Embedding
+- 验证 depth retrieval 是否存在稳定收益
+- 先不追全连续化，只验证"相位寻址"可行性
+
+---
+
+## 红队审计：避坑指南
+
+### 1. 不要把 System Card 当技术细节论文
+- System Card 主要讲能力边界和安全评估
+- 架构细节极少，信息密度低
+
+### 2. 不要把 Kimi AttnRes 误当成"连续深度"
+- AttnRes 仍是离散层之间的选择性聚合
+- 只是把固定累加换成 learned aggregation
+- 不是真正的连续化
+
+### 3. 不要过早在异构 backbone 上验证 RDE
+- 先选表示空间尽量同构的 Transformer 变体
+- 避免把"表示不兼容"误判成"理论错误"
+
+### 4. 不要把 VAE 和 Orchestration 混成一类结论
+- VAE：连续潜变量建模妥协
+- Q-Former / Perceiver：查询式编排与读写机制
+- 它们是互补，不是替代
+
+---
+
+## 当前阅读状态
+
+| 材料 | 状态 | 优先级 |
+|------|------|--------|
+| Attention Residuals | 待获取完整链接 | **最高** |
+| BLIP-2 / Q-Former | 待深入阅读 | 高 |
+| Perceiver IO | 待深入阅读 | 高 |
+| Kimi K2 / K2.5 | 待补充链接 | 中 |
+| MiniMax M2/M2.5 | 待阅读 | 中 |
+| VAE / β-VAE | 已了解核心概念 | 低（对你当前） |
+
+---
+
+**标签**: #reading-list #research-materials #paper-survey
