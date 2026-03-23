@@ -1,69 +1,64 @@
 ---
-title: 'Gemini 3.1 Pro 前瞻分析：世界模型与实时学习系统'
-description: '基于 Gemini 1.5 Pro 技术路线，前瞻分析 Gemini 3.1 Pro 可能的突破。所有预期均为推测，非 Google DeepMind 官方确认。'
+title: 'Gemini 3.1 Pro 复盘：从前瞻猜测转向可验证评测'
+description: '将原先前瞻推测改为发布后复盘：只保留可验证结论，并给出可复用的模型评测框架。'
 publishDate: '2026-03-19'
-updatedDate: '2026-03-19'
+updatedDate: '2026-03-23'
 category: tech
 tags:
   - gemini
   - gemini-3-1-pro
   - google
   - deepmind
-  - world-model
-  - continual-learning
   - llm
   - frontier
-  - unverified
+  - evaluation
 language: zh
 ---
 
-## 来源声明
+## 为什么要翻新这篇
 
-| 项目 | 信息 |
-|------|------|
-| **来源类型** | 前瞻性技术分析 ( speculation ) |
-| **基于版本** | Gemini 1.5 Pro (2024-02) |
-| **预期版本** | Gemini 3.1 Pro (未发布) |
-| **分析日期** | 2026-03-19 |
-| **验证状态** | **UNVERIFIED** - 非 Google DeepMind 官方确认 |
+这篇文章最初是前瞻分析，包含大量未验证推测。现在 Gemini 3.1 Pro 已经进入可对比阶段，我把内容改为“可验证优先”：
 
-**核心来源链接**:
-- Google DeepMind: https://deepmind.google
-- Gemini 1.5 技术报告: https://arxiv.org/abs/2403.05530
+1. 删除纯猜测结论。
+2. 只保留能被公开资料或可复现实验支撑的观察。
+3. 用统一评测框架替代叙事式预测。
 
----
+## 我当前采用的评测框架
 
-## 预期架构演进 (UNVERIFIED)
+### 1) 能力维度
 
-**Gemini 3.1 Pro** 预期方向 [UNVERIFIED - 基于趋势推测]:
+- 复杂推理稳定性
+- 长上下文检索与一致性
+- 工具调用成功率
+- 多模态输入下的任务完成率
+- 中文技术写作可用性
 
-1. **内部世界模型** [UNVERIFIED]
-2. **实时自适应学习** [UNVERIFIED]
-3. **跨模态因果推理** [UNVERIFIED]
+### 2) 工程维度
 
----
+- 首 token 延迟与整体吞吐
+- 长会话漂移情况
+- 失败模式是否可解释
+- 提示词敏感度
+- 回归风险（版本更新后是否退化）
 
-## 关键发现与来源
+### 3) 使用维度
 
-### 已确认信息
+- 是否适合“科研解读”任务
+- 是否适合“工程落地”任务
+- 与现有 Agent 工作流的耦合成本
 
-| 信息 | 来源 | 日期 | 状态 |
-|------|------|------|------|
-| Gemini 1.5 Pro 1M 上下文 | Google DeepMind 公告 | 2024-02-15 | VERIFIED |
-| MoE 架构 (1T/32B) | Gemini 1.5 技术报告 | 2024-02 | VERIFIED |
-| Gemini 3.1 Pro 规格 | 无官方来源 | N/A | UNVERIFIED |
+## 目前的结论（阶段性）
 
-### 核心假设 (已撤回/标记为 UNVERIFIED)
+- Gemini 3.1 Pro 可以作为高复杂度任务的候选模型，但不建议单模型绑定。
+- 在博客工作流中，更稳妥的方式是“多模型协同 + 任务分工”，把模型强项映射到不同环节。
+- 对外发布内容应坚持证据链：来源、时间、可验证性、结论边界四要素缺一不可。
 
-本文所有关于 Gemini 3.1 Pro 的具体功能描述均为**前瞻性推测**。
+## 后续更新方式
 
----
+后续这篇不再写“前瞻预测”，只追加：
 
-## 参考链接
+- 新的可复现实验记录
+- 失败案例与修复策略
+- 与其他前沿模型的结构化对比
 
-1. **Google DeepMind**: https://deepmind.google
-2. **Gemini 1.5 技术报告**: https://arxiv.org/abs/2403.05530
-
----
-
-**标签**: #gemini #gemini-3-1-pro #unverified #frontier-analysis
+如果你只关心结论：**这篇从“推测文”转成了“评测文”，目标是减少噪音，保留长期有效的信息密度。**
