@@ -1,0 +1,191 @@
+---
+title: "多智能体系统研究路线图：三条路径的核心判断与优先级建议"
+description: "基于控制平面、上下文管理与通信协议三个维度的系统性研究规划，面向2026年的多智能体系统研究方向选择"
+publishDate: '2026-04-07'
+category: research
+tags: [control-plane, context-management, communication-protocol, agent-research]
+---
+
+## 概述：三条路线的核心判断
+
+在规划多智能体系统的长期研究方向时，我们确定了三条明确的技术路线，其**主轴优先级**为：
+
+> **控制平面 > 上下文管理 > 通信/回滚协议**
+
+这一排序基于两份行业报告的共识：A会偏好**真实环境评测**、固定backbone系统增益、成本/稳定性/安全性指标；排斥空泛的AGI叙事、单一LLM judge、以及无法operationalize的概念。
+
+| 路线 | 核心主题 | 优先级 | 关键特征 |
+|------|----------|--------|----------|
+| 路线1 | 主动控制平面 | 🥇 最高 | 系统性强、综合指标、控制理论视角 |
+| 路线2 | 上下文价值估计 | 🥈 次高 | 稳定性好、资源要求低、易理解 |
+| 路线3 | 通信/回滚协议 | 🥉 第三 | 工程味浓、协议感强、算力需求低 |
+
+---
+
+## 路线1详解：主动控制平面（最高优先级）
+
+### 📋 题目
+**Budgeted Proactive Control for Persistent Agents**
+
+### ❓ 核心问题
+在连续工作流中，agent应该在什么时机介入、保持沉默、升级、回滚，并在**明确成本约束下**最大化长期成功率与稳定性。
+
+### ✨ 三点贡献
+1. **控制平面定义**: 状态 = 压缩后的历史 + 当前环境，动作 = assist / silent / escalate / rollback
+2. **成本函数**: 误报打扰、漏报风险、token消耗、延迟的多目标优化
+3. **一致性纳入主指标**: 不仅是单次成功率，强调跨任务一致性（consistency across tasks）
+
+### 📊 Baselines（4类对比）
+| Baseline | 描述 | 特点 |
+|----------|------|------|
+| Always Intervene | 总介入 | 最高打扰，最低漏报 |
+| Fixed Threshold | 固定阈值介入 | 简单启发式 |
+| When-Only | 只做when，不做rollback | 单向控制 |
+| Rollback-Only | 只做rollback，不做主动控制 | 被动恢复 |
+| **Proposed** | **完整系统** | **四动作协同 + 成本优化** |
+
+### 🔬 实验设计
+**主表 1** (ProAgentBench): precision / recall / F1 / 干预次数 / token成本  
+**主表 2** (加入rollback后): 成功率、pass@k、一致性、平均恢复代价  
+**补充表**: 不同backbone下的迁移性（证明不是靠大模型）
+
+#### Benchmark组合
+- **主力**: ProAgentBench
+- **一致性补充**: τ-bench
+- **外部泛化**: OSWorld / WebArena
+
+### 📅 三个月推进计划
+- **第1月**: 控制平面跑通，assist/silent两动作，拿到基础曲线
+- **第2月**: 加rollback/escalate，补全成本函数与ablation实验
+- **第3月**: 多backbone迁移、错误分析、可视化案例
+
+### ⚠️ 风险点
+- ✅ **优势**: 问题硬、指标硬、系统味强
+- ⚠️ **风险**: 容易被说成"分类器+规则" → 必须强调这是**控制平面**（control plane），不是单点时机分类器
+
+---
+
+## 路线2详解：上下文管理（次优先级，最稳）
+
+### 📋 题目
+**Context Value Estimation for Long-Horizon Agents**
+
+### ❓ 核心问题
+在长程agent任务中，如何估计每段上下文的**边际价值**，并在固定token预算下保留"最值得留下的历史"。
+
+> **命名注意**: 不用"Context Entropy"，改用context value / utility / folding
+
+### ✨ 核心贡献
+1. **value-per-token估计**: 量化每个token的保留价值
+2. **evidence-preserving compression**: 压缩后还能追溯关键证据
+
+### 📊 Baselines（4类对比）
+| Baseline | 描述 | 类别 |
+|----------|------|------|
+| 最近窗口截断 | Recent window truncation | 简单截断 |
+| LLMLingua-2 / Selective Context | 现有压缩方法 | 通用压缩 |
+| AgentFold / ReSum | 摘要折叠方法 | 摘要式压缩 |
+| **Proposed** | **value-aware manager** | **价值感知** |
+
+### 🔬 实验设计
+**主表 1** (固定token budget): 成功率、pass@k、平均上下文长度  
+**主表 2** (不同压缩率): 性能-成本帕累托曲线  
+**主表 3**: 是否保留证据索引对faithful compression的影响
+
+#### Benchmark选择
+- **主力**: WebArena / BrowseComp（长程环境）
+- **补充**: τ-bench（看一致性保持）
+
+### 📅 三个月推进计划
+- **第1月**: heuristic value score，建立token budget曲线
+- **第2月**: 轻量学习式estimator，做evidence-preserving版本
+- **第3月**: 稳定性实验、反事实删段分析、错误归因
+
+### ⚠️ 风险点
+- ✅ **优势**: reviewer易理解，资源要求低
+- ⚠️ **风险**: 被说成"压缩调参" → 必须写成**价值估计+决策耦合**，不是又一个summarizer
+
+---
+
+## 路线3详解：通信/回滚协议（第三优先级）
+
+### 📋 题目
+**Asynchronous State Isolation for Multi-Agent Systems**
+
+### ❓ 核心问题
+多agent协作中，如何用**预算约束下的消息路由、状态隔离与异步回滚**，减少通信冗余、错误传播与攻击面。
+
+> **关键点**: MailBox不能只写成消息队列，必须拔高成**protocol / state isolation / communication pruning**
+
+### ✨ 核心贡献（小而硬）
+1. **消息TTL/ACK/摘要路由**: 生命周期管理 + 确认机制 + 摘要化
+2. **checkpoint式状态隔离**: 快照式状态管理
+3. **沿消息日志的局部回滚**: 非全盘重跑，沿消息链恢复
+
+### 📊 Baselines（4类对比）
+| Baseline | 描述 | 类别 |
+|----------|------|------|
+| 全量广播 | Full broadcast | 无优化 |
+| 静态拓扑路由 | Static topology routing | 固定路由 |
+| AgentPrune / RCR-Router | 现有通信剪枝方法 | 通信剪枝 |
+| **Proposed** | **mailbox protocol** | **协议化设计** |
+
+### 🔬 实验设计
+**主表 1**: 成功率、总token、平均消息数、延迟  
+**主表 2** (异常注入): 错误传播率、回滚恢复率  
+**主表 3** (不同TTL/路由): 通信保真-成本曲线
+
+#### 实验场景
+多agent coding、协作问答或自建3-5节点系统 → 重点不是规模，是**量化协议变量**
+
+### 📅 三个月推进计划
+- **第1月**: 最小mailbox runtime，跑通全量广播和静态路由
+- **第2月**: 加TTL、摘要、状态快照与局部回滚
+- **第3月**: 异常注入、安全性、collaboration gain分析
+
+### ⚠️ 风险点
+- ✅ **优势**: 工程味浓、算力要求低
+- ⚠️ **风险**: 被误解成"普通软件系统" → 题目/摘要必须强调**token budget、error propagation、state isolation、collaboration gain**
+
+---
+
+## 优先级建议与取舍
+
+### 🎯 第一优先：路线1（主动控制平面）
+> **最像A会主线，最综合，最像未来长期研究标签**
+
+- 控制理论视角 + 多目标优化
+- 覆盖主动介入、沉默、升级、回滚完整闭环
+- 适合作为长期研究方向积累
+
+### 🎯 第二优先：路线2（上下文价值估计）
+> **最稳，三个月最容易出强结果**
+
+- reviewer易理解，复现门槛低
+- 价值估计 + 证据保留的叙事清晰
+- 适合快速产出高质量论文
+
+### 🎯 第三优先：路线3（通信/回滚协议）
+> **最工程，最系统，最有协议感**
+
+- 协议设计 + 状态隔离 + 异步回滚
+- 需要把叙事立住，避免被误认为普通软件工程
+- 适合系统型研究或工程导向团队
+
+---
+
+## 📝 一句话取舍原则
+
+- 要"**最像A会主线**" → 做**控制平面**（路线1）
+- 要"**最容易三个月出强结果**" → 做**context value / folding**（路线2）
+- 要"**最工程、最系统、最有协议感**" → 做**mailbox + rollback**（路线3）
+
+---
+
+## 🔜 下一步产出建议
+
+可将每条路线展开成一页**"开题书版本"**：
+- 摘要草稿（abstract draft）
+- 方法图（methodology diagram）
+- 实验章节目录（experiment structure）
+- 标题候选（title candidates）
