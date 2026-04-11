@@ -1,0 +1,255 @@
+---
+title: "MCP Goes Multi-Agent: The A2A Protocol Shift"
+description: "MCP started as a tool-calling spec. The 2026 A2A extension turns it into a standard for agent-to-agent discovery and delegation."
+publishDate: "2026-04-11"
+tags: [MCP, Agents, Architecture, Multi-Agent, Claude, Engineering]
+draft: false
+---
+
+When Anthropic open-sourced the Model Context Protocol in late 2024, it looked like a clean solution to a messy problem: give LLMs a standardized way to call external tools. JSON-RPC over stdio or HTTP, a registry of tool schemas, a few transport options. Useful, tidy, quickly adopted.
+
+The 2026 strategic roadmap from the Agentic AI Foundation changes that picture entirely. MCP is being extended into an Agent-to-Agent (A2A) communication standard — one where autonomous agents don't just call dumb tools, but discover, negotiate with, and delegate to *other agents*. The protocol is evolving from a connector into an infrastructure layer.
+
+This post is about what that means technically, and why it matters for anyone building systems where multiple AI agents need to collaborate.
+
+## The Original Problem MCP Solved
+
+To understand the upgrade, start with what the original protocol did well.
+
+Pre-MCP, connecting an LLM to external tools was bespoke: custom function schemas, custom serialization, custom error handling for each integration. Anthropic's original design standardized this into a simple model:
+
+```
+LLM ↔ MCP Client ↔ Transport (stdio/HTTP/SSE) ↔ MCP Server ↔ Tool/Resource
+```
+
+The MCP server exposes a manifest of available tools with JSON Schema definitions. The LLM calls a tool by name with typed arguments, gets back structured results. Each MCP server is a self-contained integration — a filesystem server, a Postgres server, a GitHub server.
+
+This worked extremely well for single-agent architectures. The problem emerges when you need multiple agents, each with their own tool sets, to work together on tasks that none of them can complete alone.
+
+## What A2A Actually Means
+
+The core architectural shift in the 2026 extension is the **Agent Card**.
+
+In the original protocol, MCP servers expose tools. In the A2A extension, agents expose capabilities — and other agents can discover them via a well-known endpoint:
+
+```
+GET https://sql-specialist.internal/.well-known/mcp-server
+```
+
+```json
+{
+  "mcp_version": "2026.03",
+  "identity": {
+    "name": "SQL Specialist Agent",
+    "version": "1.2.0",
+    "role": "DatabaseAdmin"
+  },
+  "capabilities": {
+    "tools": [
+      "query_database",
+      "generate_migration",
+      "explain_query_plan",
+      "validate_schema"
+    ],
+    "agent_delegation": {
+      "supported_protocols": ["mcp-a2a-v1"],
+      "max_context_window": 1000000,
+      "streaming": true
+    },
+    "constraints": {
+      "requires_auth": "oauth2.1-pkce",
+      "rate_limit": "100_req_per_minute"
+    }
+  },
+  "endpoints": {
+    "connect": "wss://sql-agent.internal/v1/stream",
+    "negotiate": "https://sql-agent.internal/v1/negotiate"
+  }
+}
+```
+
+An orchestrating agent (say, Claude Code) can fetch this card, understand what the SQL agent can do, and delegate specific sub-tasks to it — just as it would call a tool, but with the target being another autonomous agent that can itself reason and use further tools.
+
+This is the "TCP/IP of AI" analogy made concrete. Just as TCP/IP abstracts the physical network so that applications don't care whether data travels over fiber or WiFi, A2A over MCP abstracts the agent boundary so that an orchestrator doesn't care whether a sub-task is executed by a function call, a local script, or a remote specialized agent.
+
+## Transport: From Stdio to Stateless HTTP
+
+The original MCP protocol had a transport problem. Its WebSocket-based streaming worked well locally but broke in cloud environments where load balancers and container orchestrators don't maintain persistent connections reliably.
+
+The 2026 spec introduces **stateless, horizontally scalable transport**. Instead of maintaining a persistent connection state, agents negotiate context via JWT-encoded session tokens:
+
+```python
+import httpx
+import jwt
+from datetime import datetime, timedelta
+
+class MCPAgentClient:
+    def __init__(self, agent_card_url: str, auth_token: str):
+        self.card = self._fetch_card(agent_card_url)
+        self.auth_token = auth_token
+        self.session_token = None
+    
+    def _fetch_card(self, url: str) -> dict:
+        resp = httpx.get(f"{url}/.well-known/mcp-server")
+        resp.raise_for_status()
+        return resp.json()
+    
+    def negotiate_session(self, context_summary: dict) -> str:
+        """Exchange a compressed context summary for a session token."""
+        resp = httpx.post(
+            self.card["endpoints"]["negotiate"],
+            json={
+                "context": context_summary,
+                "requested_capabilities": ["query_database", "generate_migration"],
+                "ttl_seconds": 3600
+            },
+            headers={"Authorization": f"Bearer {self.auth_token}"}
+        )
+        self.session_token = resp.json()["session_token"]
+        return self.session_token
+    
+    def delegate_task(self, task: str, payload: dict) -> dict:
+        """Delegate a task to the remote agent using the session token."""
+        resp = httpx.post(
+            self.card["endpoints"]["connect"],
+            json={
+                "task": task,
+                "payload": payload,
+                "session_token": self.session_token
+            }
+        )
+        return resp.json()
+
+# Usage in an orchestrating agent
+sql_agent = MCPAgentClient(
+    agent_card_url="https://sql-specialist.internal",
+    auth_token=os.environ["SQL_AGENT_TOKEN"]
+)
+
+session = sql_agent.negotiate_session({
+    "project": "customer_data_migration",
+    "existing_schema": schema_json,
+    "target_db": "postgresql-15"
+})
+
+result = sql_agent.delegate_task(
+    task="generate_migration",
+    payload={"from_schema": old_schema, "to_schema": new_schema}
+)
+```
+
+The key property: the remote agent doesn't need to maintain in-memory state about this client between requests. The session token carries compressed context. This means you can deploy SQL agents behind a Kubernetes load balancer with 10 replicas, and the orchestrator doesn't care which replica handles each request.
+
+## The Heterogeneous Swarm Problem
+
+Why does this matter beyond clean architecture? Because the most capable multi-agent systems in production today are heterogeneous — they mix models and frameworks.
+
+A real task might require:
+- Claude Code for the orchestration and code generation
+- A specialized SQL agent fine-tuned on database migrations
+- A security scanner agent trained on CVE databases
+- A code review agent with deep knowledge of the target framework
+
+Pre-A2A, wiring these together required custom middleware for every pair. You'd write a Claude Code extension that knows how to call the SQL agent's specific API, another extension for the security scanner, and so on. Each integration is bespoke and breaks when either side updates.
+
+With A2A, each agent publishes an Agent Card. The orchestrator discovers capabilities at runtime. A standardized negotiation protocol handles auth and context. The orchestrator doesn't care that the SQL agent is a fine-tuned Llama model running on AWS and the security scanner is a GPT-4o deployment on Azure — it speaks MCP to both.
+
+```python
+class MultiAgentOrchestrator:
+    def __init__(self, agent_registry: list[str]):
+        self.agents = {}
+        for url in agent_registry:
+            client = MCPAgentClient(url, auth_token=get_token(url))
+            card = client.card
+            # Index agents by their declared capabilities
+            for tool in card["capabilities"]["tools"]:
+                self.agents.setdefault(tool, []).append(client)
+    
+    def route_task(self, task_type: str, payload: dict) -> dict:
+        """Route a task to the best available agent for the job."""
+        candidates = self.agents.get(task_type, [])
+        if not candidates:
+            raise ValueError(f"No agent available for task: {task_type}")
+        
+        # Simple selection: pick first available (production would add
+        # latency, load, and capability-score-based routing)
+        agent = candidates[0]
+        agent.negotiate_session({"task_type": task_type})
+        return agent.delegate_task(task_type, payload)
+
+# Orchestrator discovers agents from a registry at startup
+orchestrator = MultiAgentOrchestrator([
+    "https://sql-specialist.internal",
+    "https://security-scanner.internal", 
+    "https://code-reviewer.internal",
+])
+
+# Now route tasks without hardcoding which agent does what
+migration_result = orchestrator.route_task(
+    "generate_migration",
+    {"from_schema": old_schema, "to_schema": new_schema}
+)
+
+security_result = orchestrator.route_task(
+    "scan_for_vulnerabilities",
+    {"code": migration_result["generated_sql"]}
+)
+```
+
+## Observability: The Hidden Requirement
+
+One thing the new spec gets right that earlier agent frameworks got wrong: **observability is in the protocol**, not bolted on afterward.
+
+Every A2A delegation generates a trace ID. Every sub-task response includes structured metadata about what tools were invoked, how many tokens were consumed, and the confidence scores on the output. The orchestrator can log a complete execution trace without instrumenting each agent separately.
+
+```json
+{
+  "task_id": "task_7f3a2b",
+  "trace_id": "trace_a1b2c3d4",
+  "delegated_to": "SQL Specialist Agent v1.2.0",
+  "task": "generate_migration",
+  "status": "completed",
+  "duration_ms": 4230,
+  "tokens_consumed": 8420,
+  "tools_invoked": ["validate_schema", "generate_migration"],
+  "output_confidence": 0.94,
+  "warnings": ["Target table 'user_sessions' has no index on 'created_at'"]
+}
+```
+
+This makes debugging multi-agent failures tractable. When a complex workflow produces wrong output, you can inspect the trace and identify exactly which delegation went wrong, rather than reasoning about emergent behavior across a black-box agent soup.
+
+## What This Breaks
+
+Honest accounting: the A2A extension introduces complexity that the original protocol deliberately avoided.
+
+**Discovery latency**: Fetching Agent Cards at startup adds initialization time. For short-lived tasks, this overhead isn't worth it. The original direct tool-call pattern is still the right choice when you know exactly which tools you need.
+
+**Trust hierarchy**: When Agent A delegates to Agent B, which itself delegates to Agent C, you have a chain of trust that's hard to audit. The protocol includes RBAC constraints in Agent Cards, but enforcing them across organizational boundaries requires coordination that the spec doesn't fully solve.
+
+**Context window management**: The session token carries a compressed context summary. Compression is lossy. A sub-agent working from a summarized context will sometimes miss constraints that were obvious in the full context. This is the same problem as RAG retrieval quality, but for agent delegation.
+
+**Debugging tool attribution**: When an orchestrator delegates to 4 agents in parallel and one produces an error, the distributed trace helps — but understanding *why* a specific agent made a specific decision still requires inspecting that agent's internal state, which may not be accessible.
+
+These aren't reasons to avoid A2A. They're the tradeoffs to engineer around when deciding where agent boundaries belong.
+
+## The Practical Heuristic
+
+After working through the spec: use A2A delegation when the sub-task requires reasoning and tool use that the orchestrating model can't do well, and when the sub-task boundary is clean enough to summarize in a context token.
+
+Good candidates:
+- Database operations requiring specialized fine-tuning
+- Security scanning with up-to-date CVE knowledge
+- Domain-specific code review (e.g., infrastructure-as-code review by a compliance-trained agent)
+- Long-running tasks that shouldn't block the orchestrator
+
+Bad candidates:
+- Tasks that are just function calls dressed as agents
+- Sub-tasks with ambiguous inputs that require tight back-and-forth with the orchestrator
+- Anything where the full context is necessary for correct output and can't be summarized
+
+The shift from MCP as a connector to MCP as an agent mesh is real and important. But like every protocol evolution, the power comes from using it at the right level of abstraction — not from delegating everything to every available agent because you can.
+
+---
+
+*Sources: Agentic AI Foundation MCP 2026 Strategic Roadmap; Anthropic Model Context Protocol specification (2024); agent delegation patterns from Claude Code enterprise deployments.*
