@@ -1,0 +1,133 @@
+---
+title: "Aletheia & AlphaEvolve: DeepMind's AI Math Research"
+description: "DeepMind's generator-verifier split and evolutionary algorithm rewriting are changing what AI-assisted science looks like in practice."
+publishDate: "2026-04-12"
+tags: ["DeepMind", "Mathematical AI", "AlphaEvolve", "Formal Verification", "Research"]
+draft: false
+---
+
+Two DeepMind releases from late March/early April 2026 deserve more attention than they've received. Aletheia and AlphaEvolve are not incremental improvements to existing systems. They represent a structural change in how AI approaches mathematical reasoning — and the design decisions behind them are instructive for anyone building systems that need to produce *verifiably correct* outputs.
+
+## The Core Problem: Reasoning Hallucinations
+
+Language models hallucinate. In creative writing, hallucinations are style. In code generation, tests catch them. In mathematics, they're fatal: a plausible-sounding proof that contains a subtle error is worse than no proof at all, because it can propagate through citation.
+
+The naive fix — RLHF on mathematical outputs — doesn't scale to novel mathematics. You can train a model to write correct calculus by labeling enough undergraduate solutions. You can't train it to prove new conjectures by labeling them, because no labels exist yet.
+
+DeepMind's insight with Aletheia is architectural rather than training-based: **separate the internal reasoning process from the external communication of results**, and make the reasoning process formally verifiable.
+
+## Aletheia: The Generator-Verifier Architecture
+
+Aletheia operates in two distinct modes that share no internal state:
+
+**Generator mode**: The model works in a formal proof language (likely Lean 4 or a derivative). It generates candidate proof steps, explores branches, backtracks when it reaches dead ends. This reasoning is private — it never appears in the output. The model is essentially running a proof search in its internal "scratchpad."
+
+**Verifier mode**: The formal proof that the generator produces is checked by a separate, deterministic proof checker. The verifier has no language model in it — it's pure logic. If the proof passes verification, it passes. The model cannot talk its way through a wrong proof.
+
+The natural language explanation that humans see is then generated from the verified proof — not from the reasoning process. The model writes up what it proved, not what it tried.
+
+```
+Problem Statement
+      │
+      ▼
+┌─────────────────────┐
+│   Generator (LLM)   │  ← Works in formal proof language
+│   Proof Search      │  ← Internal, never exposed
+│   Backtracking      │
+└─────────┬───────────┘
+          │ Candidate formal proof
+          ▼
+┌─────────────────────┐
+│   Verifier          │  ← Deterministic, no LLM
+│   (Lean / HOL)      │  ← Binary: valid or not
+└─────────┬───────────┘
+          │ Verified proof object
+          ▼
+┌─────────────────────┐
+│   Explainer (LLM)   │  ← Generates human-readable writeup
+│                     │  ← Constrained to verified claims only
+└─────────────────────┘
+          │
+          ▼
+   Published result
+```
+
+This architecture eliminates a specific failure mode: a model that is confident but wrong. The generator can be uncertain, exploratory, even chaotic in its search — none of that matters as long as the verifier catches errors before they propagate.
+
+## Solving Open Erdős Problems
+
+The claim that Aletheia solved open Erdős problems warrants careful interpretation. Erdős conjectures range from elementary to extremely deep. "Solved" in this context most likely refers to the combinatorial/extremal graph theory problems that Erdős was fond of, where the problem statement is simple but the proof requires combinatorial ingenuity.
+
+What makes this meaningful isn't the specific problems — it's the capability class. *Level 2 publishable research* (per DeepMind's framing) means results that would be accepted in peer-reviewed journals if submitted by humans. Not contest math. Not theorem proving in textbooks. New results on open problems.
+
+For this to work, the generator needs to explore proof strategies at a level of abstraction that goes beyond instantiating known lemmas. The formal proof language is actually helpful here: it forces the model to be precise about what it's claiming at each step, which prevents the hand-wavy middle steps that characterize plausible-but-wrong informal proofs.
+
+The bottleneck is search efficiency. The space of valid proof steps is astronomically large. Aletheia presumably uses something like proof-state embeddings to guide the search — recognizing that certain intermediate configurations are "closer" to the goal — but the specifics aren't public yet.
+
+## AlphaEvolve: Rewriting the Rules That Train Models
+
+AlphaEvolve is a separate but complementary system. Where Aletheia proves mathematical theorems, AlphaEvolve *discovers better algorithms* — specifically, it rewrites the Python functions that define update rules in reinforcement learning.
+
+The evolutionary loop works like this:
+
+1. Start with the current best implementation of some mathematical function (e.g., a gradient update rule, a loss calculation, a sampling procedure)
+2. Gemini 2.5 Pro generates mutations: alternative implementations that are mathematically equivalent or nearly equivalent but might be computationally faster or empirically more effective
+3. Each mutation is evaluated on a benchmark suite
+4. The best-performing mutations survive and become the parent for the next generation
+
+```python
+# Conceptual AlphaEvolve loop (simplified)
+def evolve_algorithm(initial_fn: Callable, benchmark: Callable, generations: int = 100) -> Callable:
+    current_best = initial_fn
+    current_score = benchmark(initial_fn)
+    
+    for gen in range(generations):
+        # Gemini generates candidate mutations
+        candidates = generate_mutations(current_best, n=20)
+        
+        # Evaluate each candidate
+        scores = [benchmark(c) for c in candidates]
+        
+        # Select best
+        best_idx = max(range(len(scores)), key=lambda i: scores[i])
+        
+        if scores[best_idx] > current_score:
+            current_best = candidates[best_idx]
+            current_score = scores[best_idx]
+            print(f"Gen {gen}: improved to {current_score:.4f}")
+    
+    return current_best
+```
+
+This is not a new idea — program synthesis via evolution has a long history. What's new is using a frontier LLM as the mutation operator. Traditional evolutionary algorithms mutate code randomly (swap a constant, change an operator). Gemini can generate mutations that are semantically informed: it understands *why* an update rule might fail numerically, and proposes fixes that a random mutation would never find.
+
+The reported results — outperforming expert-designed algorithms on RL benchmarks — suggest this is finding non-obvious improvements. Whether those improvements are genuinely novel algorithmic insights or just hyperparameter-level tuning at the code level is worth examining more carefully when the full paper drops.
+
+## The Connecting Thread: Formal Structure as a Safety Net
+
+Both Aletheia and AlphaEvolve share a design principle: **use formal or empirical verification to filter the LLM's outputs before they're accepted as ground truth**.
+
+Aletheia does this with a formal proof checker. AlphaEvolve does this with benchmark evaluation. In both cases, the LLM is doing exploration and generation, but it cannot declare success — only a separate, objective evaluation step can do that.
+
+This is a pattern that generalizes beyond mathematics. Any domain where:
+- Correctness can be formally or empirically verified
+- The space of valid solutions is too large to search exhaustively
+- Expert human evaluation is expensive or slow
+
+...is a candidate for this architecture. Drug discovery (molecular simulation as verifier), compiler optimization (test suites as verifier), circuit design (simulation as verifier).
+
+The constraint is the verifier. In mathematics, formal proof systems provide a nearly perfect verifier for certain problem classes. In most applied domains, verification is expensive, noisy, or incomplete. The art is in designing evaluation pipelines that are cheap enough to run on thousands of candidates but faithful enough that passing the verifier means something.
+
+## What This Means for AI in Research
+
+The significance of Aletheia isn't that it solved some Erdős problems. It's that it demonstrates a viable architecture for AI systems that produce *trustworthy* novel contributions — not because the model is reliable, but because the verification layer makes unreliability irrelevant.
+
+For researchers in AI-adjacent fields: the question is no longer whether LLMs can assist with formal work. It's whether you have a verification pipeline good enough to exploit them. If your domain has a strong verifier, you can treat the LLM as an extremely powerful but unreliable hypothesis generator, and let the verifier do the quality control.
+
+AlphaEvolve points to a related but distinct capability: AI as an algorithm engineer. Not discovering proofs, but discovering *better implementations* of known mathematical operations. This is arguably more practically impactful in the near term — better RL update rules, better numerical methods, better matrix factorizations are immediately applicable.
+
+The framing of "AI doing science" has historically been more aspirational than operational. These two systems make it concrete: here is the architecture, here is the verification mechanism, here are the results. The next five years will be spent figuring out which scientific domains have cheap enough verifiers to exploit this pattern at scale.
+
+---
+
+*Aletheia and AlphaEvolve were announced by DeepMind in late March/early April 2026. For AlphaFold context on DeepMind's scientific AI trajectory, see [deepmind.google/research](https://deepmind.google/research).*

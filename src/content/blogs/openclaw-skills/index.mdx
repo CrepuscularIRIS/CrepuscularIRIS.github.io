@@ -1,141 +1,215 @@
 ---
-title: OpenClaw 新功能与 Skills 生态解读
-publishDate: 2026-03-18
-updatedDate: 2026-03-18
-description: 深入解析 OpenClaw 最新版本的核心功能更新，以及 Skills 生态系统的设计哲学与实践应用。
-category: engineering
-tags:
-  - openclaw
-  - ai-agent
-  - skills
-  - automation
-language: zh
-draft: true
+title: "OpenClaw Skills: Modular AI Workflows with Claude Code"
+description: "How the Claude Code skills ecosystem enables composable, harness-enforced workflows — and how to write skills that survive real projects."
+publishDate: "2026-03-18"
+tags: ["Claude Code", "Skills", "MCP", "Agent Engineering", "Automation"]
+draft: false
 ---
 
-## OpenClaw 简介
+The skills system in Claude Code (OpenClaw in my configuration) is the part of the platform that most users underuse. Most people install a skill, trigger it once, and move on. But skills are the mechanism that turns a general-purpose AI assistant into a specialized, disciplined engineering partner — one that knows your project's conventions, enforces your workflow constraints, and handles specific task types with reproducible quality.
 
-OpenClaw 是一个现代化的 AI Agent 管理平台，致力于将多种 AI 能力整合到统一的工作流中。通过模块化的 Skills 系统，用户可以快速扩展功能边界，实现从代码生成到自动化运维的各类任务。
+This post covers the architecture of the skills system, how to write skills worth using, and three production patterns that have meaningfully changed how I work.
 
-## 最新功能亮点
+## What a Skill Actually Is
 
-### 1. 多模型路由智能调度
-
-新版本引入了智能模型路由机制，能够根据任务复杂度自动选择最优模型：
-
-- **轻量级任务**（代码片段、简单问答）→ Kimi/glm-4-flash
-- **中等复杂度**（代码审查、文档生成）→ Claude-3.5-Sonnet
-- **高复杂度任务**（架构设计、复杂重构）→ o1-preview / Claude-3.7
-
-这种分层策略在保证质量的同时，将平均调用成本降低了 40% 以上。
-
-### 2. Skills 生态系统 2.0
-
-Skills 是 OpenClaw 的核心扩展机制，最新版本带来了显著改进：
-
-| 特性 | 说明 |
-|------|------|
-| 热加载 | Skills 更新无需重启服务 |
-| 依赖管理 | 自动解析和安装技能依赖 |
-| 版本锁定 | 支持语义化版本控制 |
-| 沙箱执行 | 敏感操作隔离运行 |
-
-### 3. 新增官方 Skills
-
-#### 🔍 Canary - 密钥扫描器
-
-自动扫描代码库中的敏感信息泄漏：
-
-```bash
-openclaw skill enable canary
-canary scan --path ./src --severity high
-```
-
-支持 40+ 种密钥模式识别，包括 AWS、Azure、GitHub、Slack 等主流服务。
-
-#### 🧠 BrainDB - 持久化记忆
-
-为 AI Agent 提供长期记忆能力：
-
-```javascript
-// 存储知识
-await brain.remember({
-  entity: "Project-Alpha",
-  type: "architecture",
-  content: "使用微服务架构，API Gateway 采用 Kong"
-});
-
-// 检索知识
-const context = await brain.recall("Project-Alpha 技术栈");
-```
-
-基于向量数据库实现语义检索，召回准确率达 98%。
-
-#### 🔧 Skill Creator - 技能生成器
-
-通过对话交互自动生成 Skills：
+A skill is a Markdown file that gets injected into Claude's context when invoked. That's it. The magic is in the structure.
 
 ```
-> create skill: 从网页提取表格数据并导出为 CSV
-✓ 正在分析需求...
-✓ 生成 skill 结构
-✓ 编写实现代码
-✓ 添加单元测试
-Skill "web-table-extractor" 已创建到 ~/.openclaw/skills/
+~/.claude/skills/
+├── git-workflow.md       # Activated by /git-workflow
+├── code-review.md        # Activated by /code-review
+├── python-patterns.md    # Activated by /python-patterns
+└── ml-paper-writing.md   # Activated by /ml-paper-writing
 ```
 
-## 实战：构建自定义 Skill
+When you call `/code-review`, Claude Code reads the skill file and prepends it to the conversation context before responding. The skill functions as a dense system-prompt injection: it can contain rules, checklists, examples, anti-patterns, domain knowledge, and structured output templates.
 
-以下是一个完整的 Skill 开发示例，实现 GitHub Issue 自动分析：
+This sounds simple, but the implications are significant. Skills are:
 
-```typescript
-// ~/.openclaw/skills/gh-analyzer/index.ts
-import { defineSkill, tool } from '@openclaw/core';
-import { github } from '@openclaw/integrations';
+- **Composable**: Multiple skills can be active simultaneously
+- **Versionable**: They're just text files in your dotfiles repo
+- **Shareable**: The same skill works for any project, any language
+- **Overridable**: Project-level skills in `.claude/skills/` take precedence over global ones
 
-export default defineSkill({
-  name: 'gh-issue-analyzer',
-  version: '1.0.0',
-  description: '分析 GitHub Issue 并生成修复建议',
-  
-  tools: {
-    analyze: tool({
-      input: z.object({
-        repo: z.string(),
-        issueNumber: z.number()
-      }),
-      
-      async execute({ repo, issueNumber }) {
-        const issue = await github.getIssue(repo, issueNumber);
-        const codeContext = await github.getCodeContext(issue);
-        
-        const analysis = await llm.generate({
-          prompt: `分析以下 Issue 并提供修复建议：
-          标题：${issue.title}
-          描述：${issue.body}
-          相关代码：${codeContext}`
-        });
-        
-        return {
-          summary: analysis.summary,
-          suggestedFix: analysis.fix,
-          confidence: analysis.confidence
-        };
-      }
-    })
-  }
-});
+The skill mechanism is essentially a *knowledge injection* system. You're not modifying the model. You're changing what the model knows about what you want.
+
+## The Quality Gap Between Weak and Strong Skills
+
+Most skills people share online are weak. They look like this:
+
+```markdown
+# Code Review
+Review this code for quality and security issues. Be thorough.
 ```
 
-## 性能优化建议
+This is barely better than just asking Claude to review code directly. A strong skill does several specific things differently:
 
-1. **技能懒加载**：大型技能按需加载，减少启动时间
-2. **缓存策略**：对高频调用结果设置 TTL 缓存
-3. **并发控制**：IO 密集型任务使用 Promise.all 批量处理
-4. **监控埋点**：关键路径添加性能指标采集
+**1. Encodes non-obvious judgment, not just intent**
 
-## 结语
+Weak: "Check for security issues"  
+Strong: "Flag any use of `eval()` or `exec()` with string inputs as CRITICAL. Flag SQL string concatenation as CRITICAL. Flag missing CSRF tokens on state-changing endpoints as HIGH. Flag missing rate limiting on auth endpoints as HIGH."
 
-OpenClaw 的 Skills 生态系统正在快速发展，社区已贡献超过 200+ 开源 Skills。无论是个人开发者还是企业团队，都能通过这一平台构建出符合自身需求的 AI 工作流。
+The model knows what security issues are. What it doesn't know is *your severity calibration* and *your specific stack's common failure modes*. Skills should encode that.
 
-> 📚 更多文档：[OpenClaw Skills Registry](https://docs.openclaw.io/skills)
+**2. Specifies output structure precisely**
+
+```markdown
+## Output Format
+
+For each finding, output:
+
+**[SEVERITY]** `file:line` — Description
+
+Severity levels: CRITICAL (ship-blocking) | HIGH (fix before merge) | MEDIUM (fix this sprint) | LOW (when convenient)
+
+End with a one-line verdict: APPROVE | REQUEST_CHANGES | BLOCK
+```
+
+Without an explicit format, Claude produces useful but inconsistent output. With a format, you can parse, filter, and act on the output programmatically.
+
+**3. Contains anti-patterns to avoid**
+
+```markdown
+## Do NOT do these
+- Don't suggest renaming variables unless the current name is genuinely misleading
+- Don't add docstrings to code you didn't modify
+- Don't refactor beyond what was requested
+- Don't flag style issues that ruff/black already enforce
+```
+
+These negative constraints are often more important than the positive instructions. They prevent the model from doing unhelpful things it would otherwise do by default.
+
+## Three Production Skills Worth Understanding
+
+### 1. The Harness-Enforced Git Workflow
+
+My `git-workflow` skill encodes Conventional Commits, branch naming, and PR structure — but more importantly, it encodes the *workflow sequence* that must be followed before any commit happens.
+
+The skill defines four sections: Pre-Commit Sequence, Commit Message Format, Types/Scopes, and Never Do.
+
+**Pre-Commit Sequence (mandatory):**
+1. Run `ruff check .` — fix all errors before proceeding
+2. Run `mypy src/` — fix all type errors before proceeding
+3. Run `pytest -x` — all tests must pass
+4. Verify no `.env` files or secrets are staged
+
+Only after these pass: construct the commit message.
+
+**Commit Message Format:**
+
+```text
+type(scope): short summary
+
+optional body — explain WHY, not WHAT
+```
+
+Types: `feat` | `fix` | `refactor` | `docs` | `test` | `chore` | `perf`  
+Scopes: `data` | `model` | `config` | `trainer` | `utils` | `workflow`
+
+**Never Do:** use `--no-verify`, commit to main, include unrelated changes in a commit.
+
+The "harness" aspect is that Claude will refuse to write a commit command until it has verified the sequence was followed. This sounds minor, but it changes commit discipline entirely — the skill functions as an enforced checklist, not just a reminder.
+
+### 2. The ML Experiment Documentation Skill
+
+In ML research, the thing that kills reproducibility is not forgetting to set seeds (you'll remember eventually). It's forgetting to record *why* you made a specific decision. Three months later, the config says `dropout=0.3` and you have no idea if that was principled or arbitrary.
+
+My `experiment-doc` skill fires after every training run and generates a structured experiment card:
+
+```markdown
+# Experiment Documentation Skill
+
+After every training run, generate:
+
+## Experiment Card Template
+
+**ID**: {timestamp}_{model_name}_{key_hyperparam}
+**Hypothesis**: What specifically are you testing? (one sentence)
+**Changed from baseline**: List *only* what changed
+**Expected outcome**: What do you predict, and why?
+**Actual result**: Metric values (val_loss, accuracy, etc.)
+**Interpretation**: Did it match the hypothesis? Why or why not?
+**Next experiment**: What does this result suggest to try next?
+
+## Anti-patterns to Avoid
+- Don't write "ran experiment with config X" — that's not a hypothesis
+- Don't record wall-clock time unless it's the variable being studied  
+- Don't copy-paste the full config — record only the delta
+```
+
+The card format enforces hypothesis-driven experimentation. You can't fill in "Hypothesis" and "Changed from baseline" without having thought about what you're actually testing. The skill makes implicit reasoning explicit.
+
+### 3. The Context-Aware Code Review
+
+Standard code review skills work at the file level. This one works at the *change* level and is context-aware:
+
+```markdown
+# Code Review — Diff-Aware
+
+## Before reviewing, determine:
+1. Is this a bug fix, new feature, or refactor? (check git commit message)
+2. What is the scope of the PR? (check files changed)
+3. What was the stated goal? (check PR description or issue)
+
+## Review scope should match change scope
+- Bug fix: Focus on the fix itself and potential regressions. Don't critique unrelated code.
+- New feature: Check for correctness, edge cases, and integration points.
+- Refactor: Verify behavior preservation. Check that tests cover the changed code paths.
+
+## For ML/data code specifically:
+- Flag any hardcoded dataset paths (should be in config)
+- Flag magic numbers in training loops (should be named constants or config)
+- Flag missing type annotations on public functions
+- Flag any mutable default arguments in dataclass or function definitions
+- Verify random seed is set and logged at experiment start
+
+## Severity for this codebase
+CRITICAL: Data leakage, incorrect gradient flow, loss function bugs
+HIGH: Missing seed, hardcoded paths, untested edge cases
+MEDIUM: Type annotations, naming conventions
+LOW: Style, readability
+```
+
+The ML-specific section encodes failure modes I've actually hit: data leakage from train/val split done wrong, gradient flow bugs from accidentally detached tensors, incorrect loss reduction causing scale issues. These aren't generic security best practices — they're a knowledge transfer from past mistakes into future reviews.
+
+## The Skill Development Loop
+
+Writing a good skill takes iteration. The pattern that works:
+
+1. **Start with a frustrating interaction**: Claude did something unhelpful or missed something obvious. Write down what it missed.
+
+2. **Encode the miss as a rule**: "Next time, when reviewing ML code, explicitly check for data leakage in train/val splits."
+
+3. **Add the negative**: "Don't suggest architectural changes in a bug fix review — that's scope creep."
+
+4. **Test on a real case**: Invoke the skill on the actual scenario that inspired it. Does it catch the issue?
+
+5. **Generalize carefully**: Extract the principle, not the specific instance. "Flag missing random seed at experiment start" generalizes better than "check line 47 of train.py for seed setting."
+
+The `/skill-improver` and `/skill-quality-reviewer` commands in my config automate parts of this loop — running the skill against a test case and critiquing its own output against the stated goals.
+
+## Skill Composition and Load Management
+
+One limitation worth naming: every active skill consumes context. Stack ten 2000-word skills and you've eaten 20K tokens before your actual conversation starts. This matters in long sessions.
+
+The discipline I've adopted: skills should be **narrow and purpose-specific**, not comprehensive. Instead of one giant "Python development" skill, I have:
+
+- `python-patterns.md` — idioms, anti-patterns (400 words)
+- `python-testing.md` — pytest patterns specifically (300 words)  
+- `python-security.md` — security-specific rules (200 words)
+
+Each is invoked when relevant, not loaded by default. The harness enforces this through hooks that check which task type is active before loading skills automatically.
+
+The right mental model for skills is not "knowledge base" — it's "expert colleague who specializes in this exact thing." You don't ask your database expert to sit in on every frontend review. You call them when it's database work.
+
+## Where This Leads
+
+The skills system is essentially a primitive form of the larger pattern DeepMind calls harness engineering: constrained, policy-governed AI behavior, where the model operates within explicit boundaries defined outside the model itself.
+
+The Claude Code skills architecture makes this accessible without infrastructure. You don't need a policy server or a governance layer. You need well-written Markdown files and the discipline to invoke them consistently.
+
+The ceiling on this approach is how well you can articulate your own expertise as structured rules. That turns out to be a useful exercise in itself — writing a skill forces you to make implicit knowledge explicit, which is half the value even if the skill is never used.
+
+---
+
+*The full skills directory for this configuration is maintained in the OpenClaw dotfiles repo. Related posts: [OpenClaw Agent Lifecycle](/blogs/openclaw-agent-lifecycle), [Harness Engineering for Autonomous ML](/blogs/harness-engineering-autonomous-ml).*

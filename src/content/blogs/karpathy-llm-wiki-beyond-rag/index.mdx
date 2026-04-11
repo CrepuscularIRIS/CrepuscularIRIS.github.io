@@ -1,0 +1,177 @@
+---
+title: "Beyond RAG: Karpathy's LLM Wiki Paradigm"
+description: "Why incremental Markdown compilation might beat vector search for long-horizon AI reasoning — and how to build it."
+publishDate: "2026-04-12"
+tags: ["RAG", "LLM", "Knowledge Base", "Andrej Karpathy", "Architecture"]
+draft: false
+---
+
+Andrej Karpathy published a post in early April proposing what he calls the **LLM Wiki** paradigm — a direct challenge to how nearly every production AI system handles memory today. The argument is surgical: RAG doesn't actually *learn*. It retrieves, re-reads, and re-reasons from raw documents on every single query. That's not a knowledge base. That's a filing cabinet with a fast lookup.
+
+The LLM Wiki idea is deceptively simple but architecturally significant. Instead of storing raw source documents and querying them, you deploy an LLM agent that *compiles* those documents into a living, structured, hyperlinked Markdown wiki — and keeps it up to date.
+
+## The Core Problem With RAG
+
+Standard RAG pipelines work like this: embed documents into vectors, store them, then at query time retrieve the top-k chunks and stuff them into the context window. The model then reasons over raw text it has never "processed" before.
+
+This creates a structural inefficiency. Every query restarts from zero. The model can't build compound understanding across documents. Contradictions between sources aren't resolved — they're just both retrieved and left for the model to sort out in-context, which it often doesn't. Staleness is invisible: a chunk from an outdated document looks identical to a fresh one.
+
+For simple factual Q&A over a bounded document set, this works fine. For long-horizon reasoning — maintaining a codebase context, tracking a research project, understanding a customer over months — it breaks down.
+
+## The LLM Wiki Architecture
+
+Karpathy's proposal inverts the relationship between retrieval and reasoning. The LLM isn't called at query time to reason over raw data. It's called *continuously* to maintain a structured knowledge base:
+
+```
+Raw Sources → LLM Librarian Agent → Structured Markdown Wiki → Query Interface
+```
+
+The agent's job is not to answer questions. Its job is to be a research librarian: read new documents, update the wiki, resolve conflicts, add cross-links, prune stale entries. Query answering then becomes trivially cheap — you're reading compiled knowledge, not reasoning over raw text.
+
+A minimal version of this looks like:
+
+```python
+import anthropic
+from pathlib import Path
+
+client = anthropic.Anthropic()
+
+WIKI_PATH = Path("./knowledge-wiki")
+
+def ingest_document(doc_text: str, doc_source: str) -> None:
+    """Ingest a new document into the wiki, updating relevant pages."""
+    
+    # Read the current wiki state
+    existing_pages = {
+        p.stem: p.read_text() 
+        for p in WIKI_PATH.glob("*.md")
+    }
+    wiki_index = "\n".join(f"- {name}" for name in existing_pages)
+    
+    response = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=4096,
+        messages=[{
+            "role": "user",
+            "content": f"""You are a research librarian maintaining a structured wiki.
+
+Current wiki pages:
+{wiki_index}
+
+New document from {doc_source}:
+{doc_text}
+
+Your tasks:
+1. Identify which existing wiki pages this document updates, contradicts, or extends
+2. Create new pages if needed for genuinely new topics
+3. For each page to create or update, output the full page content
+
+Output format:
+<page name="PageName">
+Full markdown content here, including links to related pages like [[RelatedPage]]
+</page>
+
+Resolve any contradictions explicitly. Link related concepts. Prune claims that are superseded."""
+        }]
+    )
+    
+    # Parse and write updated pages
+    import re
+    pages = re.findall(r'<page name="([^"]+)">(.*?)</page>', response.content[0].text, re.DOTALL)
+    for page_name, content in pages:
+        (WIKI_PATH / f"{page_name}.md").write_text(content.strip())
+    
+    print(f"Updated {len(pages)} wiki pages from {doc_source}")
+```
+
+The key shift: the LLM is doing *editorial work*, not answering questions. The output is structured knowledge that persists and compounds.
+
+## The Self-Healing Linter
+
+The more interesting part of Karpathy's proposal is a **linting mechanism**. Periodically — not on every ingestion, but as a background maintenance pass — the LLM scans the wiki for:
+
+- **Contradictions**: Page A says X, Page B says not-X
+- **Orphan pages**: Topics referenced by nothing else
+- **Stale facts**: Dated claims that newer pages have superseded
+- **Missing links**: Topics that should cross-reference but don't
+
+```python
+def lint_wiki() -> list[str]:
+    """Scan the wiki for contradictions, staleness, and missing links."""
+    
+    all_pages = {
+        p.stem: p.read_text() 
+        for p in WIKI_PATH.glob("*.md")
+    }
+    
+    # Feed entire wiki to the model for cross-page analysis
+    wiki_dump = "\n\n---\n\n".join(
+        f"# {name}\n{content}" 
+        for name, content in all_pages.items()
+    )
+    
+    response = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=8192,
+        messages=[{
+            "role": "user", 
+            "content": f"""Audit this knowledge wiki for quality issues.
+
+{wiki_dump}
+
+Find and report:
+1. Direct contradictions between pages (cite both pages and the conflicting claims)
+2. Circular or missing cross-links that should exist
+3. Pages that appear outdated given what other pages say
+4. Topics referenced but not yet documented
+
+For each issue, output:
+<issue type="contradiction|orphan|stale|missing" pages="Page1,Page2">
+Description of the issue and suggested resolution
+</issue>"""
+        }]
+    )
+    
+    # Parse issues and return them for review or auto-fix
+    import re
+    issues = re.findall(r'<issue[^>]*>(.*?)</issue>', response.content[0].text, re.DOTALL)
+    return [i.strip() for i in issues]
+```
+
+Run this nightly. Auto-fix low-risk issues (missing links, orphan cleanup). Flag contradictions for human review or a more careful resolution pass.
+
+## Why This Beats RAG for Long-Horizon Tasks
+
+The practical advantages compound over time:
+
+**1. Contradiction resolution happens once, at write time.** With RAG, if your document corpus has two papers that disagree, every query that retrieves both documents sees the contradiction. With a wiki, the librarian agent resolves it when the second paper is ingested. Queries never see the raw conflict.
+
+**2. Cross-document synthesis is baked in.** The wiki can have a "MoE Training Approaches" page that synthesizes insights from 20 papers. RAG can't do this — it can only retrieve, not synthesize at index time.
+
+**3. Staleness becomes explicit.** Wiki pages can carry modification timestamps and provenance. A RAG chunk from 2024 doesn't know it's been superseded by a 2026 paper. A wiki page can explicitly say "this was the consensus as of March 2026; see [[Updated Findings]] for revisions."
+
+**4. Query latency collapses.** Reading a wiki page is fast. Embedding, retrieving, then reasoning over 10 raw chunks is slow. For high-frequency queries over stable knowledge, the wiki approach is dramatically more efficient.
+
+## Where RAG Still Wins
+
+This isn't a wholesale replacement. RAG has genuine advantages in specific regimes:
+
+- **High document velocity**: If you're ingesting 10,000 new articles per day, you can't maintain a wiki at that rate without massive compute. RAG scales to large corpora more easily.
+- **Verbatim retrieval requirements**: Legal, regulatory, and compliance contexts often require exact original text. A wiki that paraphrases and synthesizes loses provenance.
+- **Cold-start freshness**: If you need to answer questions about a document ingested 5 minutes ago, RAG is ready. The wiki takes time to compile.
+
+The sweet spot for the LLM Wiki pattern is bounded, high-value knowledge that accumulates over months — a research project, a customer history, a codebase's architectural decisions, a personal knowledge base.
+
+## The Implementation Gap
+
+The harder problem isn't the architecture — it's the latent tension between wiki maintenance cost and wiki quality. Running an LLM librarian agent on every document ingestion is expensive. Running it lazily (batch mode) means the wiki can be stale between maintenance passes.
+
+The right solution is probably tiered: maintain a small "hot wiki" of frequently accessed, high-value knowledge compiled carefully, and keep a larger raw index for less critical material. The hot wiki gets the editorial treatment; the cold index gets standard RAG.
+
+Karpathy's framing is more philosophical than prescriptive — an argument about what knowledge bases *should* be, not a complete system design. But the core insight holds: retrieval systems that never synthesize their inputs are leaving intelligence on the table.
+
+The filing cabinet is not a library. A library has a librarian.
+
+---
+
+*Karpathy's original post: [karpathy.ai](https://karpathy.ai). Anthropic SDK documentation for agentic patterns: [docs.anthropic.com](https://docs.anthropic.com).*
