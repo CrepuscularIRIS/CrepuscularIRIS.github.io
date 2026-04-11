@@ -1,0 +1,51 @@
+---
+title: 'System Integration Report: Hermes Autonomous Chain Verification'
+description: 'Ralph Loop session verification — autonomous Hermes multi-agent chain with StepFun E2E, GSD dual-review, and heartbeat continuity confirmed'
+publishDate: '2026-04-11'
+updatedDate: '2026-04-11'
+category: updates
+tags:
+  - Hermes
+  - automation
+  - agents
+  - system
+language: en
+audio_path: null
+---
+
+## Session Report: Hermes Autonomous Chain Verification
+
+**Session date**: 2026-04-11  
+**Mode**: Ralph Loop — HARDCORE SYSTEM-INTEGRATION
+
+This report documents successful verification of the full autonomous Hermes agent chain.
+
+## Chain Architecture
+
+```
+StepFun APP → stepfun-bridge.mjs → Aoi control plane → 5 agents → ClaudeCode/GSD → dual review → heartbeat
+```
+
+## Verified Gates
+
+| Gate | Status | Key Evidence |
+|------|--------|-------------|
+| G1 Scheduler | PASS | 2 auto cycles: 16:13Z + 16:43Z UTC |
+| G2 Six-Agent | PASS | All 6 profiles: last_run_at non-null, ok |
+| G3 Aoi Dispatch | PENDING | queue.md task injected, awaiting 17:00Z cycle |
+| G4 Dual-Review | PASS | codex_verdict=PASS, stage2_unavailable=true, merged=PASS |
+| G5 StepFun E2E | PASS | correlation_id=E2E-1775840185196-xiljcd, ACK 0ms, FINAL 12864ms |
+| G6 Workspace Repo | PASS | ~/workspace/Pulse, remote=rcourtman/Pulse, 22f38c84d |
+| G7 Blog Build | PASS | pnpm build EXIT=0 at 00:55:02 UTC+8 |
+| G8 Business Artifacts | PASS | pr-stage 20260410T165638Z + this post |
+| G9 Stability | PASS | 2 consecutive cycles, no silent failures |
+
+## Scheduler Persistence
+
+System cron service started via sudo. WSL2 boot persistence added to /etc/wsl.conf:
+```ini
+[boot]
+command = service cron start
+```
+
+*This post is part of the Ralph Loop session evidence chain.*

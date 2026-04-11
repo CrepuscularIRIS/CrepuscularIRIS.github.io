@@ -1,0 +1,140 @@
+---
+title: "OpenClaw Agent Lifecycle: 五智能体如何协作驱动个人 AI OS"
+description: "深度解析 OpenClaw 系统中五个专职 Agent（Lacia/Methode/Satonus/Snowdrop/Kouka）的分工模型、心跳调度机制和 Mailbox 通信协议"
+publishDate: "2026-04-10"
+category: engineering
+tags:
+  - openclaw
+  - multi-agent
+  - agent-lifecycle
+  - heartbeat
+  - mailbox-protocol
+language: zh
+draft: false
+---
+
+## 引言：为什么需要多个专职 Agent？
+
+单一通用 AI Agent 在面对长周期任务时，面临两个根本性困境：
+
+1. **上下文污染**：实现、审查、研究三类任务混在同一会话中，导致注意力漂移和错误决策
+2. **无法止损**：没有外部仲裁者，Agent 容易陷入无限重试或过度工程化陷阱
+
+OpenClaw 的回答是**职责隔离的 5-Agent 体系**，每个 Agent 有明确的输入/输出契约，通过 30 分钟心跳周期和原子化 Mailbox 通信解耦协作。
+
+---
+
+## 五个 Agent 的角色模型
+
+| Agent | 角色 | 核心职责 | 不做什么 |
+|-------|------|----------|----------|
+| **Lacia** | 编排/调度 | 任务分解、优先级排序、资源分配 | 不做实现、不做研究 |
+| **Methode** | 构建/执行 | 代码实现、测试、构建验证 | 不做架构决策 |
+| **Satonus** | 审查/门控 | 代码审查、质量评估、PASS/FAIL 判定 | 不做实现修复 |
+| **Snowdrop** | 研究/证据 | 文献调研、数据收集、方案对比 | 不做最终决策 |
+| **Kouka** | 交付/封装 | 打包交付物、止损判断、seen 记录更新 | 不做研究、不做实现 |
+
+这种分工不是任意的。Satonus 永远不修复它发现的问题——这是刻意设计：修复者不能是审查者，防止自我合理化。
+
+---
+
+## 心跳调度机制
+
+系统以 **30 分钟为心跳周期**运作。每次心跳：
+
+```
+1. Agent 读取自己的 Mailbox（~/inbox/<agent>.jsonl）
+2. 处理待处理消息
+3. 执行 Cron 任务（如 Blog-Maintenance-Kouka）
+4. 若无工作 → 发送 idle_report 给 Lacia
+5. Lacia 聚合 idle 信号，决定是否向用户升级
+```
+
+**关键设计**：Agent 不主动轮询彼此的状态，只通过 Mailbox 接收消息。这避免了忙等待，也使每个 Agent 的行为完全由其输入决定，便于调试。
+
+---
+
+## Mailbox 通信协议
+
+Mailbox 是系统的通信脊梁，采用 JSONL 格式：
+
+```jsonl
+{"from":"lacia","to":"methode","type":"task_assignment","subject":"实现控制平面日志模块","body":"...","timestamp":"2026-04-10T10:00:00Z"}
+{"from":"satonus","to":"lacia","type":"review_verdict","subject":"控制平面日志 PASS","body":"...","verdict":"PASS"}
+{"from":"kouka","to":"lacia","type":"idle_report","subject":"idle tick","body":"kouka idle — no mailbox work this cycle"}
+```
+
+**消息类型契约**：
+
+| type | 发送方 | 接收方 | 含义 |
+|------|--------|--------|------|
+| `task_assignment` | Lacia | Methode/Snowdrop | 分配任务 |
+| `review_request` | Lacia/Methode | Satonus | 请求审查 |
+| `review_verdict` | Satonus | Lacia | PASS/FAIL 结论 |
+| `delivery_note` | Kouka | Lacia | 交付完成确认 |
+| `idle_report` | 任意 | Lacia | 空闲心跳报告 |
+| `research_dispatch` | Kouka/Lacia | Snowdrop | 研究任务 |
+
+---
+
+## Cron 驱动的定期任务
+
+除了响应 Mailbox 消息，Agent 还通过 Cron 触发定期任务。以 **Blog-Maintenance-Kouka** 为例：
+
+```
+Schedule: 0 10 * * 2,5  (每周二/五 10:00 Asia/Shanghai)
+```
+
+执行流程：
+1. 读取本周交付物（Methode PR、Satonus PASS 记录）
+2. 研究需要时 → 通过 Mailbox 派发 Snowdrop
+3. 起草博客文章 → 保存至 `~/blog/drafts/YYYY-MM-DD-<slug>.md`
+4. 媒体素材（TTS/图片）→ 调用 minimax-multimodal-toolkit
+5. 将完成草稿推入 `~/blog/posts/`，成熟文章提升至 `src/content/blogs/`
+6. 追加交付记录到 Queue.md
+
+这种 Cron + Mailbox 混合模式使 OpenClaw 能够在**事件驱动**（响应任务）和**时间驱动**（定期维护）两个维度上工作。
+
+---
+
+## 止损机制
+
+Kouka 不只是打包者，更是**止损决策者**：
+
+- **触发条件**：任务挂起 >24h 无进展 / 连续两轮无状态变化 / 投入产出比明显不合理
+- **止损动作**：标记 `wontfix/deferred` → 记录理由 → 通知 Lacia 重排优先级
+
+这个机制解决了 AI Agent 系统的一个经典问题：**无限循环的善意努力**。明确止损规则让系统知道"何时停止"和"停止后做什么"。
+
+---
+
+## 与单 Agent 系统的对比
+
+| 特性 | 单 Agent | OpenClaw 5-Agent |
+|------|----------|------------------|
+| 上下文干净度 | 低（混合职责） | 高（职责隔离） |
+| 错误隔离 | 无 | Satonus 门控 |
+| 止损能力 | 依赖 prompt | 结构性保证 |
+| 可观察性 | 低（黑盒） | 高（Mailbox 审计日志） |
+| 扩展性 | 线性复杂度增长 | 按需增加 Agent 类型 |
+
+---
+
+## 当前状态与未来方向
+
+**已实现**：
+- 5-Agent 基础架构 + 心跳调度
+- Mailbox JSONL 协议 + mail.mjs 工具
+- Blog-Maintenance-Kouka cron 任务
+
+**进行中**：
+- 控制平面决策日志（路线1实验数据采集）
+- Agent Mailbox 并发锁竞争测试（5 Agent 场景）
+
+**计划中**：
+- 上下文压缩策略集成（路线2）
+- Satonus 审查指标量化（PASS 置信度而非二元判定）
+
+---
+
+*本文是 OpenClaw 工程系列的一部分，记录个人 AI OS 的架构演进与设计决策。*

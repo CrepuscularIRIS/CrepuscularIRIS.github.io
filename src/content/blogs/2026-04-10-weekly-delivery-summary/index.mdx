@@ -1,0 +1,93 @@
+---
+title: "Beatless v4 架构与研究路线图：本周交付总结"
+description: "本周完成两篇核心文章的交付：Beatless v4 系统架构详解，以及面向 2026 年的多智能体研究路线图优先级分析。"
+publishDate: "2026-04-10"
+updatedDate: "2026-04-10"
+category: updates
+tags:
+  - beatless
+  - delivery-summary
+  - weekly-update
+  - research-roadmap
+language: zh
+---
+
+## 引言：本周交付概览
+
+本周（2026-04-07）完成了两篇重要文章的交付，分别覆盖工程架构和研究规划两个维度：
+
+1. **[Beatless：个人 AI 任务调度系统架构](/blog/beatless-architecture)** — 系统性梳理 Beatless v4 的核心设计，包括 Agent Mailbox 协议、控制平面机制和上下文管理策略。
+2. **[多智能体系统研究路线图：三条路径的核心判断与优先级建议](/blog/multi-agent-research-routes-2026)** — 面向 2026 年，明确三条研究路线的优先级排序与核心贡献框架。
+
+两篇文章相互呼应：前者是工程实践的总结，后者是从中提炼出的研究问题。
+
+---
+
+## 交付成果一：Beatless v4 架构详解
+
+**文章链接**：[/blog/beatless-architecture](/blog/beatless-architecture)
+
+### 核心创新点
+
+Beatless v4 围绕一个根本性问题而设计：**单会话 AI 的状态丢失与上下文碎片化**。面对跨天任务、多 Agent 协作和错误恢复需求，传统对话模式无法胜任。v4 的架构回应了这一问题：
+
+**1. Agent Mailbox 协议**
+- Agent 间通信通过原子化 JSONL 邮箱传递，避免共享内存竞争
+- 支持异步投递与优先级队列，解耦发送方与接收方
+
+**2. 控制平面（Control Plane）**
+- 将 Agent 行为抽象为四类动作：`assist / silent / escalate / rollback`
+- 基于任务状态机驱动调度，而非依赖 LLM 即时判断
+- 明确引入成本函数：误报打扰、漏报风险、token 消耗三目标联合优化
+
+**3. 上下文管理**
+- `TASKS.yaml` 作为唯一任务真相源（v4 schema），所有 Agent 从此同步状态
+- 分层上下文压缩：活跃任务保留完整历史，归档任务仅保留摘要
+- 30 分钟心跳周期触发状态快照，保证跨会话连续性
+
+这三项机制共同将 Beatless 从"个人自动化脚本"升级为一个具备持久状态、可推理调度的轻量 Agent OS。
+
+---
+
+## 交付成果二：2026 研究路线图
+
+**文章链接**：[/blog/multi-agent-research-routes-2026](/blog/multi-agent-research-routes-2026)
+
+### 三条路线优先级
+
+从 Beatless 的工程实践中提炼出三个具备学术价值的研究问题，优先级排序如下：
+
+| 优先级 | 路线 | 核心题目 |
+|--------|------|----------|
+| 🥇 最高 | 路线1：主动控制平面 | Budgeted Proactive Control for Persistent Agents |
+| 🥈 次高 | 路线2：上下文价值估计 | Context Value Estimation for Long-Horizon Agents |
+| 🥉 第三 | 路线3：通信/回滚协议 | Communication & Rollback Protocol for Multi-Agent Systems |
+
+**路线1（最优先）** 的核心判断：控制平面问题系统性最强，指标涵盖成功率与一致性，契合顶会偏好的"真实环境评测 + 固定 backbone 系统增益"范式，而非空泛的 AGI 叙事。
+
+**路线2** 稳定性好、资源需求低，适合作为路线1的补充研究，或在路线1推进受阻时的备选。
+
+**路线3** 工程味浓厚，更适合系统会议（如 OSDI/ATC），学术新颖性相对受限。
+
+---
+
+## 技术影响与后续计划
+
+### 短期（本月内）
+
+- 基于 Beatless v4 架构，完成路线1的实验框架设计
+- 在 `.openclaw/` 中增加控制平面日志模块，为后续实验采集真实数据
+- 验证 Agent Mailbox 在 5-Agent 并发场景下的锁竞争表现
+
+### 中期（Q2 2026）
+
+- 路线1 论文初稿：完成问题定义、成本函数建模和 baseline 设计
+- 将上下文压缩策略（路线2）集成进 Beatless 运行时，提供真实数据支撑
+
+### 长期目标
+
+Beatless 不只是个人工具——它是一个活的实验平台。每一次架构迭代都为研究问题提供更真实的数据来源，每一篇研究论文都反哺系统设计。这种**工程驱动研究、研究指导工程**的循环是 2026 年的核心工作模式。
+
+---
+
+*本文是每周交付总结系列的一部分，记录系统架构演进与研究路线决策。*
