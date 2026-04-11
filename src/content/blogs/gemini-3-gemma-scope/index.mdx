@@ -1,125 +1,240 @@
 ---
-title: 'Gemma Scope 2：Gemma 3 可解释性工具详解'
-description: '深度解读 Google DeepMind 发布的 Gemma Scope 2：AI 实验室有史以来最大的开源可解释性工具，专为 Gemma 3 全系列模型设计'
-publishDate: '2025-12-19'
-updatedDate: "2026-04-10"
+title: "Gemma Scope 2: Interpretability at Production Scale"
+description: "DeepMind's 110 PB open-source toolkit for Gemma 3 interpretability — SAEs, transcoders, and what skip-transcoders reveal about long-range reasoning."
+publishDate: "2025-12-19"
+updatedDate: "2026-04-11"
+tags: [interpretability, deepmind, gemma, mechanistic-interpretability, safety, llm]
 category: technical
-tags:
-  - deepmind
-  - google
-  - gemma-3
-  - gemma-scope
-  - interpretability
-  - safety
-language: zh
+draft: false
 ---
 
+Mechanistic interpretability — the effort to reverse-engineer what neural networks actually compute — has historically been resource-constrained in a particular way. Training a sparse autoencoder on a large model's activations requires running millions of forward passes, storing massive activation datasets, and doing so for every layer you want to understand. For researchers outside the major labs, this meant working with small open models or accepting that findings might not transfer to the frontier systems where alignment actually matters.
+
+Gemma Scope 2, released by Google DeepMind in December 2025, changes this equation for the Gemma 3 model family. It is not a paper or a benchmark — it is a pre-computed infrastructure: SAEs and Transcoders for every layer of every Gemma 3 model size (270M through 27B parameters), trained on approximately 110 PB of data with over a trillion total parameters across all the tools. The entire toolkit is released under Apache 2.0.
+
+This matters because it makes serious mechanistic interpretability accessible without a compute budget measured in hundreds of thousands of dollars.
+
+## What Sparse Autoencoders Do
+
+Before getting into what's new in Gemma Scope 2, a brief recap of the core tool: Sparse Autoencoders (SAEs).
+
+A transformer's residual stream at any layer is a high-dimensional vector (768 or 1024 or more dimensions for typical models). But representational geometry research suggests these vectors are superpositions of many more "features" — directions in activation space that correspond to human-interpretable concepts like "this is Python code," "the subject is performing an action," or "the context involves deception."
+
+Standard PCA or probing can find some of these directions, but the superposition means features are entangled. SAEs solve this by learning a sparse, overcomplete dictionary:
+
+```
+residual_stream = Σᵢ fᵢ(x) · eᵢ
+```
+
+where `fᵢ(x)` is a scalar activation (usually ≥ 0 due to ReLU) and `eᵢ` is a learned feature direction. The sparsity constraint — most `fᵢ(x)` should be zero for any given input — forces the dictionary to find directions that only activate for specific, coherent semantic patterns.
+
+```python
+import torch
+import torch.nn as nn
+
+class SparseAutoencoder(nn.Module):
+    """
+    Minimal SAE for decomposing transformer residual streams.
+    
+    The real Gemma Scope SAEs use JumpReLU activations and Matryoshka training;
+    this shows the core structure.
+    """
+    def __init__(self, d_model: int, n_features: int, l1_coeff: float = 1e-3):
+        super().__init__()
+        self.d_model = d_model
+        self.n_features = n_features
+        self.l1_coeff = l1_coeff
+        
+        # Encoder: residual stream → sparse feature activations
+        self.W_enc = nn.Parameter(torch.randn(d_model, n_features) * 0.01)
+        self.b_enc = nn.Parameter(torch.zeros(n_features))
+        
+        # Decoder: sparse features → residual stream reconstruction
+        self.W_dec = nn.Parameter(torch.randn(n_features, d_model) * 0.01)
+        self.b_dec = nn.Parameter(torch.zeros(d_model))
+        
+        # Normalize decoder columns to unit sphere (important for interpretability)
+        with torch.no_grad():
+            self.W_dec.data = nn.functional.normalize(self.W_dec.data, dim=1)
+    
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        """x: (..., d_model) → feature activations: (..., n_features)"""
+        pre_acts = x @ self.W_enc + self.b_enc
+        return torch.relu(pre_acts)  # Sparsity via ReLU
+    
+    def decode(self, f: torch.Tensor) -> torch.Tensor:
+        """f: (..., n_features) → reconstructed residual: (..., d_model)"""
+        return f @ self.W_dec + self.b_dec
+    
+    def forward(self, x: torch.Tensor) -> dict:
+        f = self.encode(x)
+        x_hat = self.decode(f)
+        
+        # Reconstruction loss + sparsity penalty
+        recon_loss = (x - x_hat).pow(2).mean()
+        sparsity_loss = f.abs().mean()
+        total_loss = recon_loss + self.l1_coeff * sparsity_loss
+        
+        return {
+            "loss": total_loss,
+            "features": f,
+            "reconstructed": x_hat,
+            "l0": (f > 0).float().sum(-1).mean(),  # Average features active
+        }
 
 
+# Using Gemma Scope 2 SAEs via the HuggingFace hub
+# pip install transformer_lens sae_lens
 
-## 概述
+from sae_lens import SAE
 
-Gemma Scope 2 是 Google DeepMind 于 2025 年 12 月 19 日发布的大规模开源可解释性工具套件，专为 Gemma 3 系列开放模型（270M–27B 参数）设计。这是 AI 实验室迄今规模最大的单次开源可解释性工具发布：工具包涵盖 Gemma 3 全系列规模、全部 Transformer 层的稀疏自编码器（SAE）和 Transcoder，训练数据存储量约达 110 PB，训练参数总量超过 1 万亿。
+# Load pre-trained SAE for Gemma 3 layer 12 (residual stream)
+sae, cfg_dict, _ = SAE.from_pretrained(
+    release="gemma-scope-2-27b-pt-res",
+    sae_id="layer_12/width_16k/average_l0_71",
+)
 
-Gemma Scope 2 是 2024 年 8 月发布的原版 Gemma Scope（针对 Gemma 2 系列）的重大升级。原版工具已在机械可解释性社区引发广泛研究，催生了数十篇学术论文；此次升级将覆盖范围扩展到新一代 Gemma 3 模型，并引入 Skip-transcoder 和跨层 Transcoder 等新型分析工具，支持更细粒度的模型内部行为追踪。
+# Get activations from the model
+import transformer_lens
+model = transformer_lens.HookedTransformer.from_pretrained("google/gemma-3-27b")
 
-需要特别说明的是：**Gemma 3 是 Google 的开源/开放权重模型系列**（区别于闭源的 Gemini 系列）。Gemma Scope 2 的服务对象是 Gemma 3，而非不存在的"Gemini 3"。截至 2026 年 4 月，Google 的闭源旗舰模型为 Gemini 2.5 系列，Gemini 3 尚未发布。
+tokens = model.to_tokens("The proof proceeds by contradiction. Assume")
+logits, cache = model.run_with_cache(tokens)
 
-## 技术规格
+# Extract residual stream at layer 12
+residual = cache["resid_post", 12]  # (1, seq_len, d_model)
 
-- **发布日期**: 2025-12-19
-- **来源**: [Gemma Scope 2 技术论文 (PDF)](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/Gemma_Scope_2_Technical_Paper.pdf)
-- **官方博客**: [DeepMind Blog](https://deepmind.google/blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/)
+# Decompose into sparse features
+feature_acts = sae.encode(residual)  # (1, seq_len, n_features)
+print(f"Average features active per token: {(feature_acts > 0).float().mean(-1).mean():.1f}")
 
-| 指标 | 数值 |
-|------|------|
-| 支持模型 | Gemma 3 全系列（270M–27B 参数） |
-| 训练数据存储量 | ~110 PB |
-| 训练参数量 | 超过 1 万亿 |
-| 训练技术 | Matryoshka 训练技术 |
-| 新增工具类型 | Skip-transcoders、Cross-layer transcoders |
-| 许可证 | Apache 2.0（部分工具） |
+# Find the most active features on the final token
+final_token_acts = feature_acts[0, -1, :]  # (n_features,)
+top_features = final_token_acts.topk(10)
+print("Top 10 active features:")
+for idx, val in zip(top_features.indices, top_features.values):
+    print(f"  Feature {idx.item()}: {val.item():.3f}")
+```
 
-## 核心特性
+## Transcoders: Mapping MLP Computations
 
-### 1. Skip-transcoders
+SAEs decompose what the residual stream *contains* at each layer. Transcoders answer a different question: what transformation does the MLP at each layer perform on those features?
 
-Skip-transcoder 是 Gemma Scope 2 引入的新型可解释性工具，用于分析跨层的特征传递和残差流（residual stream）变换。
+An MLP block computes `output = W_out · ReLU(W_in · x + b_in) + b_out`. This is a nonlinear function from the residual stream to a delta that gets added back. Transcoders learn a sparse approximation of this function as a sum of "feature → feature" transitions:
 
-在标准 Transformer 中，信息通过残差连接跨层流动，某些特征可能在较早的层被编码，但跳过中间若干层后才在较深层被使用（"跳跃传播"现象）。传统的逐层 SAE 难以有效捕捉这类跳跃模式，因为它们只关注单层的激活分解。Skip-transcoder 通过在非相邻层之间建立转换模型，直接对跳跃传播路径进行建模和分解，使研究者能够识别哪些特征在哪些层之间存在直接的因果关系，而不必逐层追踪。这对于理解多步推理（如数学问题求解）和跨段落语义一致性尤为重要。
+```
+MLP(x) ≈ Σᵢ g_i(x) · v_i
+```
 
-### 2. Cross-layer transcoders
+where `g_i(x)` activates when input feature `i` is present, and `v_i` is the direction this causes in the output. This gives you a human-readable circuit description: "when the model detects feature X in the context, the MLP at layer L adds feature Y to the residual stream."
 
-跨层 Transcoder（Cross-layer transcoder）是对原版 Transcoder 概念的升级，允许在两个任意指定层之间建立特征映射关系，而不局限于相邻层。
+This kind of circuit analysis is what allowed Anthropic to identify the "Indirect Object Identification" circuit in GPT-2 (Wang et al., 2022) — a specific sequence of attention heads and MLP neurons that implement the algorithm for figuring out which pronoun refers to which named entity. Gemma Scope 2's Transcoders make this type of analysis tractable at the scale of Gemma 3's full 27B model.
 
-其工作原理是学习一个从源层激活到目标层激活的稀疏线性变换，使研究者能够回答"层 L₁ 中的哪些特征直接导致了层 L₂ 中的哪些特征激活"这类因果问题。与 Activation Patching（激活修补）相比，跨层 Transcoder 提供了更精细的特征粒度（到单个 SAE 特征维度，而非整个层的激活向量），且可以批量分析多对层的关系，无需反复进行前向传播。这使得系统性地绘制模型内部"信息流图"成为可能，为理解 CoT 推理过程中的信息传递提供了有力工具。
+## What's New: Skip-Transcoders
 
-### 3. Matryoshka 训练技术
+The most technically interesting addition in Gemma Scope 2 is the skip-transcoder. Standard Transcoders capture how the MLP at layer L transforms features within that layer. But what about features that appear at layer 5 and influence computations at layer 15, skipping everything in between?
 
-Gemma Scope 2 的 SAE 采用 Matryoshka 表示学习框架进行训练，这是对原版单尺度 SAE 训练的重要改进。
+This "skip connection" phenomenon in information flow isn't about the model's literal residual connections — it's about semantic features that persist across many layers without much transformation, then suddenly become active input to a computation far downstream.
 
-Matryoshka 训练的核心思想是在训练时强制要求特征字典在多个粒度级别上都保持良好的重建质量：较少的特征（粗粒度）构成基础表示，更多的特征（细粒度）在此基础上叠加细节。这带来两个实际好处：其一，研究者可以在不重新训练的情况下选择不同精度级别的特征字典，以平衡计算成本与分析粒度；其二，粗粒度特征通常对应更具语义可解释性的高级概念（如"这是一段代码"、"涉及情绪"），为快速人工审查提供了自然的入口。
+Skip-transcoders are trained to approximate `f(x_L1) ≈ x_L2` — learning the transformation between activations at non-adjacent layers L1 and L2. When the learned transformation is sparse and interpretable, it reveals which features are causally propagating across the layers between L1 and L2.
 
-## 支持的行为分析
+This has implications for understanding multi-step reasoning:
 
-Gemma Scope 2 设计时特别考虑了安全研究社区的核心关切，针对以下复杂行为提供了专项分析支持：
+```python
+# Conceptual code illustrating skip-transcoder analysis
+from gemma_scope import SkipTranscoder, load_model
 
-- **越狱攻击（Jailbreaks）**：识别模型在受到越狱提示时内部激活的变化模式，定位哪些特征参与了安全约束的绕过，为改进 RLHF/RLAIF 的对齐训练提供机械解释。
-- **拒绝机制（Refusal Mechanisms）**：追踪模型从"接受请求"转变为"拒绝请求"的决策路径，分析拒绝行为是由哪些层的哪些特征触发的，帮助研究者理解对齐训练的实际效果。
-- **CoT 忠实性（Chain-of-Thought Faithfulness）**：验证模型在输出思维链时，是否真正依赖中间推理步骤得出结论，还是仅仅生成与结论一致的"事后合理化"文本。这对评估推理模型的可信度至关重要。
-- **多步推理（Multi-step Reasoning）**：追踪复杂推理过程中间步骤的信息如何在层间传播和积累，识别推理"关键节点"所在的层和注意力头。
-- **对话模式分析（Chat Behavior）**：分析指令微调（Instruction Tuning）和 RLHF 如何改变模型相比基础预训练模型的内部表示，量化对齐训练对特征空间的影响。
+model = load_model("gemma-3-27b")
+skip_tc = SkipTranscoder.from_pretrained("gemma-scope-2-27b", source_layer=8, target_layer=20)
 
-## 覆盖范围
+problem = "Let n be a prime number greater than 3. Show that n² - 1 is divisible by 24."
 
-### 模型规模
+tokens = model.tokenize(problem)
+activations_l8 = model.get_activations(tokens, layer=8)
+activations_l20 = model.get_activations(tokens, layer=20)
 
-Gemma Scope 2 覆盖 Gemma 3 全系列，确保不同计算资源的研究者都能使用：
+# Find which features at layer 8 causally contribute to layer 20
+skip_features = skip_tc.encode(activations_l8)  # (seq_len, n_features)
+reconstructed_l20 = skip_tc.decode(skip_features)
 
-| 模型规模 | 参数量 | 适用场景 |
-|----------|--------|---------|
-| 最小规模 | 270M | 快速原型、教学演示 |
-| 中等规模 | 1B、4B、12B | 学术研究主力配置 |
-| 最大规模 | 27B | 需要接近旗舰性能的研究 |
+# Features with high activation in the skip-transcoder
+# represent information being "carried" from layer 8 to 20
+skip_residual = reconstructed_l20 - activations_l8.mean(dim=0)
+dominant_skip_features = skip_features.mean(0).topk(20)
 
-### 分析层次
+# These features represent semantic content being preserved 
+# across layers 8-20 — likely mathematical/logical structure
+# in this case that helps at the reasoning layers
+```
 
-每个支持的模型规模均提供以下工具：
+## Cross-Layer Transcoders and Causal Flow
 
-- **每层 SAEs（Sparse Autoencoders）**：对每个 Transformer 层的残差流激活进行稀疏分解，识别人类可解释的特征向量
-- **每层 Transcoders**：分析 MLP 层如何将输入特征转换为输出特征
-- **Skip-transcoders**：跨层特征跳跃传播分析（新增）
-- **跨层 Transcoders**：任意层对之间的因果特征映射（新增）
+Cross-layer Transcoders generalize this to any pair of layers, learning the transformation `(layer_a, layer_b) → sparse approximation`. This makes it possible to systematically map causal information flow through the model for specific computations.
 
-## 应用场景
+For CoT faithfulness research — the question of whether a model's visible reasoning steps actually caused its conclusion — this is particularly valuable. By comparing the skip-transcoder-derived information flow for "model produces correct CoT then correct answer" vs. "model produces plausible-sounding CoT then wrong answer," you can ask: at what layer does the information determining the final answer appear, and does it correlate with which CoT steps were generated?
 
-### 1. AI 安全研究
+Early results from Anthropic's line of work on CoT faithfulness (Lanham et al., 2023) used activation patching to show that models sometimes reach conclusions through reasoning paths that bypass their stated chain-of-thought. Cross-layer Transcoders make this type of analysis more systematic and fine-grained.
 
-Gemma Scope 2 是 AI 安全研究的重要基础设施。安全研究者可以利用其 SAE 和 Transcoder 分析越狱攻击的机械原理，识别具体哪些内部特征被恶意提示所激活，从而设计更鲁棒的对齐方法。过往研究已表明，在对齐后的模型中，某些与"有害内容"相关的特征并未被彻底消除，而是被压制——Gemma Scope 2 使研究者能够精确定位这些残余特征，评估其在极端输入下被重新激活的风险。此外，CoT 忠实性分析有助于识别"虚假推理"风险，即模型表面上展示了推理过程，但实际决策并不依赖该推理链，这对高风险应用场景（医疗、法律、安全）的部署评估至关重要。
+## The Matryoshka Training Innovation
 
-### 2. 模型开发
+Gemma Scope 2 SAEs are trained with Matryoshka representation learning. The idea: a set of 16K learned features should contain a meaningful 4K-feature subset that captures the most important information, which itself contains a 1K-feature subset that captures the most important of that, and so on.
 
-对于从事基础模型开发的团队，Gemma Scope 2 提供了前所未有的内部调试能力。当模型在特定类型输入上出现系统性错误时，研究者可以通过激活分析定位错误来源所在的层和注意力头，而非仅依靠输出层的行为指标进行盲目调整。Matryoshka SAE 提供的多粒度特征视图可以快速帮助开发者判断某一问题是浅层特征提取问题还是深层语义理解问题，从而有针对性地设计训练数据增强或架构调整方案。在 RLHF/RLAIF 训练中，跨层 Transcoder 还可以用于监测奖励信号如何逐步改变模型的内部表示，及时发现"奖励欺骗（reward hacking）"的早期迹象。
+Formally, during training, you add auxiliary losses that require smaller subsets of the feature dictionary to also achieve good reconstruction:
 
-### 3. 学术研究
+```python
+class MatryoshkaSAE(nn.Module):
+    """
+    SAE with nested representation learning.
+    Smaller feature subsets must also reconstruct the residual stream.
+    """
+    def __init__(self, d_model: int, n_features: int, 
+                 nest_sizes: list[int] = [1024, 4096, 16384]):
+        super().__init__()
+        assert n_features == max(nest_sizes)
+        self.nest_sizes = sorted(nest_sizes)
+        
+        self.W_enc = nn.Parameter(torch.randn(d_model, n_features) * 0.01)
+        self.b_enc = nn.Parameter(torch.zeros(n_features))
+        self.W_dec = nn.Parameter(torch.randn(n_features, d_model) * 0.01)
+        self.b_dec = nn.Parameter(torch.zeros(d_model))
+    
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        return torch.relu(x @ self.W_enc + self.b_enc)
+    
+    def forward(self, x: torch.Tensor) -> dict:
+        f = self.encode(x)
+        
+        total_loss = 0.0
+        # Loss for each nested subset
+        for k in self.nest_sizes:
+            # Use only the first k features (Matryoshka nesting)
+            f_k = f[..., :k]
+            x_hat = f_k @ self.W_dec[:k] + self.b_dec
+            
+            recon_loss = (x - x_hat).pow(2).mean()
+            sparsity_loss = f_k.abs().mean()
+            
+            # Higher weight for smaller nests (they need to work harder)
+            weight = self.nest_sizes[-1] / k
+            total_loss = total_loss + weight * (recon_loss + 1e-3 * sparsity_loss)
+        
+        return {"loss": total_loss, "features": f}
+```
 
-Gemma Scope 2 的开源性质使其成为机械可解释性领域的重要公共基础设施。研究者无需自行训练 SAE（通常需要数十万美元的计算开销），即可直接在主流开放模型上开展实验，大幅降低了领域入门门槛。截至 2025 年底，基于原版 Gemma Scope 的学术论文已超过 40 篇，涵盖特征发现、电路分析（circuit analysis）、对齐机制研究等多个方向。Gemma Scope 2 的发布预计将进一步扩大这一社区效应，特别是在对 Gemma 3 新增能力（如多语言、长上下文）的可解释性研究方面。
+The practical benefit: you can choose different granularity levels at analysis time. The top 1K features give you a coarse map of what the model is "thinking about" — high-level semantic categories. The full 16K features give fine-grained distinctions within those categories. This makes exploratory analysis faster (use coarse features to identify interesting layers/tokens) and detailed analysis tractable (zoom into specific features of interest).
 
-## 历史意义
+## Why This Infrastructure Matters
 
-Gemma Scope 2 在可解释性工具发展史上具有里程碑意义，体现在以下几个维度：
+Gemma Scope 2 is useful as a research tool, but its broader significance is as a proof of concept for a model-interpretability pipeline that could become standard practice.
 
-1. **规模突破**：110 PB 训练数据、超过 1 万亿训练参数，是迄今单次开源可解释性工具发布的规模上限，超越了此前所有公开工具的总和（包括原版 Gemma Scope 和 Anthropic 的 Claude 3 Sonnet SAE）。
+Currently, training and evaluating SAEs is a research project in itself. Most academic groups cannot afford the compute to train high-quality SAEs on frontier models. Gemma Scope 2 eliminates this barrier for Gemma 3, and the 40+ papers citing the original Gemma Scope (covering Gemma 2) suggest the community will use it.
 
-2. **方法创新**：Skip-transcoder 和 Cross-layer transcoder 是对 Transcoder 系列工具的原创性扩展，填补了跨层信息流分析工具的空白，预计将催生新的研究方向。
+More importantly, it demonstrates a workable answer to the question: how does a lab pursuing safety research maintain meaningful visibility into increasingly capable models? The answer isn't necessarily to give everyone access to model weights — it's to provide pre-computed interpretability tools that are useful for identifying concerning behaviors without requiring white-box access to the training process.
 
-3. **安全与透明度的公共承诺**：Google DeepMind 选择将针对其生产模型架构的完整可解释性工具开放给全球研究社区，是对"开放安全研究"理念的具体践行，也对其他大型实验室形成了示范效应。
+The limitation is that Gemma Scope 2 is optimized for post-hoc analysis, not for real-time monitoring during deployment. The SAE forward pass adds significant overhead. For production monitoring — the scenario where you want to flag concerning activations as they happen — you'd need either much faster SAEs or different tooling entirely. This gap between analysis-time interpretability and deployment-time monitoring is an open engineering problem.
 
-4. **基础设施标准化**：随着 Gemma Scope（针对 Gemma 2）和 Gemma Scope 2（针对 Gemma 3）的相继发布，标准化的开源可解释性工具链正在形成，有助于跨机构、跨模型的安全研究结果比较和复现。截至 2026 年，这一基础设施已成为 AI 安全社区的重要共享资源。
+What Gemma Scope 2 solves, concretely, is making it cheap and fast for the research community to study what a state-of-the-art open model actually computes, at every layer, for any input. That's not everything, but it's a genuine and substantial step.
 
-## 延伸阅读
+---
 
-- [Gemma Scope 2 技术论文 (PDF)](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/Gemma_Scope_2_Technical_Paper.pdf)
-- [Gemma Scope 2 官方博客](https://deepmind.google/blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/)
-- [Gemma 3 技术报告](https://deepmind.google/gemini-3/)
-- [原版 Gemma Scope（针对 Gemma 2，2024-08）](https://deepmind.google/research/publications/gemma-scope/)
+*References: "Gemma Scope 2: Helping the AI Safety Community Deepen Understanding of Complex Language Model Behavior" (DeepMind technical paper, December 2025); "Interpreting Neural Networks with Sparse Autoencoders" (Cunningham et al., 2023); "Scaling and evaluating sparse autoencoders" (Gao et al., Anthropic 2024); "Towards Monosemanticity: Decomposing Language Models With Dictionary Learning" (Elhage et al., Anthropic 2022); "Measuring Faithfulness in Chain-of-Thought Reasoning" (Lanham et al., 2023)*

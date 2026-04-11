@@ -1,0 +1,289 @@
+---
+title: "Inference-Time Scaling: How Models Learn to Think"
+description: "OpenAI's o-series and reasoning models spend compute at inference to solve problems pretraining alone cannot. Here's how it works architecturally."
+publishDate: "2026-04-11"
+updatedDate: "2026-04-11"
+tags: [LLM, Reasoning, Architecture, Inference, OpenAI, DeepMind]
+category: technical
+draft: false
+---
+
+The prevailing story about language model improvements goes like this: bigger model, more data, better benchmark scores. Scaling laws made this predictable. But for complex reasoning tasks — olympiad math, multi-step code generation, long-horizon planning — raw scale eventually stops helping. The model gets better at autocompleting plausible text, not at actually working through hard problems.
+
+The o-series from OpenAI, released starting in late 2024, represents a different bet: instead of spending all your compute at training time, spend more of it at inference. Let the model think before it answers. This shift, broadly called **inference-time scaling** or **test-time compute**, has produced dramatic improvements on benchmarks where traditional scaling had plateaued — and the underlying mechanisms are worth understanding deeply.
+
+## Why Standard Autoregressive Generation Fails at Reasoning
+
+A standard LLM generates tokens one at a time, left to right. At each step, the model attends to everything it's seen and predicts the next token. The "reasoning" happens implicitly in the residual stream as context accumulates. This works remarkably well for a huge range of tasks, but it has a structural limitation for complex logical problems.
+
+When a human solves a hard math problem, they don't write the answer directly — they try an approach, realize it's wrong, back up, try something else, maintain a working memory of intermediate results, and revise conclusions based on what they've computed so far. Standard autoregressive generation has no native mechanism for any of this. It can produce a chain of reasoning tokens that looks like working, but it's producing them using the same forward-pass-then-predict mechanism it uses for everything else. There's no backtracking, no hypothesis testing, no genuine verification.
+
+The result is that standard models are brittle on tasks that require sustained multi-step inference. They fail not because they lack knowledge, but because the architecture doesn't give them the right affordances to apply it.
+
+## Chain-of-Thought as the First Step
+
+The insight from Wei et al. (2022) was simple: if you include worked examples in the prompt that show step-by-step reasoning, models do dramatically better on reasoning tasks. Not because you're teaching them new facts, but because the output format — a sequence of reasoning steps — gives the model more "working memory" through its own context window.
+
+```python
+# Without chain-of-thought
+prompt = "A bakery makes 48 cookies and sells 3/4 of them. How many remain?"
+# Model sees question, predicts answer directly
+
+# With chain-of-thought
+prompt = """A bakery makes 48 cookies and sells 3/4 of them. How many remain?
+Let's think step by step:
+1. The bakery starts with 48 cookies.
+2. They sell 3/4 of them: 48 × 3/4 = 36 cookies sold.
+3. Cookies remaining: 48 - 36 = 12.
+Answer: 12"""
+# Model has space to reason before committing to an answer
+```
+
+This is inference-time scaling in its simplest form: using extra tokens during generation to improve output quality. But it still relies on the model generating correct reasoning in a single forward pass. It doesn't allow backtracking or verification.
+
+## Best-of-N: The Simplest Scaling Approach
+
+The next step is to generate multiple candidate answers and select the best one. If a single generation has probability `p` of being correct, generating `N` independent samples and picking the best raises that probability toward `1 - (1-p)^N`. For hard math problems where a single generation might be correct 10% of the time, generating 64 samples and taking the best one can push accuracy well above 50%.
+
+```python
+import anthropic
+import asyncio
+
+client = anthropic.Anthropic()
+
+async def generate_candidate(problem: str, candidate_id: int) -> dict:
+    """Generate a single reasoning chain."""
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=2048,
+        temperature=0.8,  # Some diversity across candidates
+        messages=[{
+            "role": "user",
+            "content": f"Solve this step by step, showing all work:\n\n{problem}"
+        }]
+    )
+    return {
+        "id": candidate_id,
+        "reasoning": response.content[0].text
+    }
+
+def verify_answer(problem: str, candidate: str) -> tuple[bool, str]:
+    """Use the model itself to verify a candidate solution."""
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=256,
+        temperature=0,  # Deterministic for verification
+        messages=[{
+            "role": "user",
+            "content": f"""Problem: {problem}
+
+Proposed solution:
+{candidate}
+
+Is this solution logically correct? Check each step carefully.
+Reply with: CORRECT or INCORRECT, followed by a brief explanation."""
+        }]
+    )
+    verdict = response.content[0].text
+    return verdict.startswith("CORRECT"), verdict
+
+def best_of_n(problem: str, n: int = 8) -> str:
+    """Generate N solutions, return the first that passes verification."""
+    for i in range(n):
+        candidate = generate_candidate(problem, i)
+        is_valid, reason = verify_answer(problem, candidate["reasoning"])
+        if is_valid:
+            return candidate["reasoning"]
+    # If none verified, return the first candidate
+    return generate_candidate(problem, 0)["reasoning"]
+```
+
+The catch is cost: N times the tokens, N times the price. Best-of-N is also inefficient because you generate complete solutions before verifying them. Process Reward Models (PRMs) improve this by scoring intermediate reasoning steps, allowing early termination of bad branches.
+
+## The Process Reward Model Approach
+
+OpenAI's "Let's Verify Step by Step" (Lightman et al., 2023) demonstrated that training a reward model to score individual steps of a reasoning chain, rather than just the final answer, dramatically improves the efficiency of inference-time search. Instead of generating full solutions and picking the best, you can use the PRM to guide generation toward high-quality intermediate steps.
+
+The training signal for a PRM requires human labelers (or a stronger model) to annotate which steps in a reasoning chain are correct vs. incorrect. This is expensive to collect but the resulting reward model is powerful: it knows what a good reasoning step looks like, not just what a correct final answer looks like.
+
+With a PRM, you can run search strategies like beam search over reasoning steps:
+
+```python
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class ReasoningStep:
+    content: str
+    score: float
+    parent: Optional["ReasoningStep"] = None
+
+def score_step(problem: str, steps_so_far: str, new_step: str) -> float:
+    """
+    Approximate a PRM using an LLM judge.
+    A real PRM would be a fine-tuned classifier, not a prompted LLM,
+    but this illustrates the interface.
+    """
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=64,
+        temperature=0,
+        messages=[{
+            "role": "user",
+            "content": f"""Problem: {problem}
+Reasoning so far: {steps_so_far}
+New step: {new_step}
+
+Rate this step 0.0 to 1.0 based on: correctness, progress toward solution.
+Reply with only a number."""
+        }]
+    )
+    try:
+        return float(response.content[0].text.strip())
+    except ValueError:
+        return 0.5
+
+def beam_search_reasoning(
+    problem: str,
+    beam_width: int = 4,
+    max_steps: int = 10
+) -> str:
+    """
+    Simple beam search over reasoning steps guided by a step-level scorer.
+    """
+    initial = ReasoningStep(content="", score=1.0)
+    beams = [initial]
+
+    for step_num in range(max_steps):
+        candidates = []
+        for beam in beams:
+            # Generate multiple next-step candidates for each beam
+            for _ in range(beam_width):
+                response = client.messages.create(
+                    model="claude-sonnet-4-6",
+                    max_tokens=256,
+                    temperature=0.7,
+                    messages=[{
+                        "role": "user",
+                        "content": f"Problem: {problem}\n\nReasoning so far:\n{beam.content}\n\nWrite the next reasoning step only:"
+                    }]
+                )
+                next_step = response.content[0].text
+                score = score_step(problem, beam.content, next_step)
+                candidates.append(ReasoningStep(
+                    content=beam.content + "\n" + next_step,
+                    score=score,
+                    parent=beam
+                ))
+
+        # Keep top beam_width candidates
+        beams = sorted(candidates, key=lambda x: x.score, reverse=True)[:beam_width]
+
+        # Check if any beam has reached a conclusion
+        for beam in beams:
+            if "therefore" in beam.content.lower() or "answer:" in beam.content.lower():
+                return beam.content
+
+    return beams[0].content  # Return best beam's full chain
+```
+
+## What the o-Series Actually Does
+
+OpenAI hasn't published full technical details of the o-series architecture, but from the system card and public benchmarks, several things are clear:
+
+1. **Private chain-of-thought**: The o-series models generate "thinking" tokens that are not shown to the user. These reasoning tokens are trained separately from the final output, allowing the model to explore approaches that would look odd or incomplete if shown verbatim.
+
+2. **RL on reasoning quality**: The models are trained with reinforcement learning where the reward signal is based on correct final answers, not on human preference labels for individual tokens. This is related to DeepMind's work on AlphaProof (2024), which used RL to train a model that autonomously discovered proofs for IMO problems.
+
+3. **Variable compute budgets**: The "reasoning effort" parameter directly controls how many thinking tokens the model generates. Higher effort means more exploration before committing to an answer — and dramatically better performance on hard problems at the cost of latency.
+
+## DeepMind's AlphaProof and Autonomous Scientific Reasoning
+
+DeepMind's AlphaProof (2024) represents the most extreme version of inference-time scaling in the wild. For the 2024 International Mathematical Olympiad, AlphaProof solved 4 out of 6 problems — a silver-medal-equivalent performance — by combining a language model for generating proof candidates with a formal verification system (Lean) for checking them.
+
+The architecture is essentially inference-time scaling taken to its logical conclusion: generate a candidate proof, formally verify it, and if verification fails, use the failure mode to inform the next candidate. The "thinking" is measured not in tokens but in wall-clock time: AlphaProof was given up to three days per problem.
+
+```
+[Natural Language Problem]
+        ↓
+[LM: Generate formal problem statement in Lean]
+        ↓
+[Proof Search Loop]:
+    ↓
+    [LM: Generate candidate proof step]
+    ↓
+    [Lean: Verify proof step]
+    ↓
+    [If error: return error message as context, generate next step]
+    ↓
+    [If all steps verified: return complete proof]
+        ↓
+[Complete Formal Proof → Natural Language Solution]
+```
+
+This is the generator-verifier pattern at scale. The verifier is not a learned model but an external formal system with guaranteed correctness. The language model generates candidates, and the formal system provides hard feedback.
+
+## What This Means for Applications
+
+The practical implications of inference-time scaling are significant:
+
+**For hard reasoning tasks**: Best-of-N and beam search approaches are already accessible via standard API calls. If you're using LLMs for code generation, complex data analysis, or multi-step reasoning, explicitly sampling multiple completions and using a judge model to select the best one is often worth the 4-8x cost increase.
+
+**For latency-sensitive applications**: Inference-time compute trades speed for accuracy. An application that can tolerate 30-second responses can get dramatically better results on hard problems than one constrained to 2 seconds. The o-series design makes this tradeoff explicit.
+
+**For building verifiers**: The bottleneck in inference-time scaling is usually not generation — it's evaluation. A reliable way to score or verify candidate outputs dramatically improves the efficiency of the search process. For domains with ground-truth verification (code execution, formal proofs, unit tests), you essentially get a PRM for free.
+
+```python
+def solve_with_tests(problem_description: str, test_cases: list[dict]) -> str:
+    """
+    Use test execution as a ground-truth verifier for code generation.
+    This is inference-time scaling with a hard verifier.
+    """
+    import subprocess
+    
+    for attempt in range(10):
+        response = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1024,
+            temperature=0.7 if attempt > 0 else 0,
+            messages=[{
+                "role": "user", 
+                "content": f"Write Python code for: {problem_description}"
+            }]
+        )
+        code = response.content[0].text
+        
+        # Extract code block if wrapped in markdown
+        if "```python" in code:
+            code = code.split("```python")[1].split("```")[0]
+        
+        # Run test cases as hard verifier
+        all_pass = True
+        for test in test_cases:
+            full_code = code + "\n" + test["test"]
+            result = subprocess.run(
+                ["python", "-c", full_code],
+                capture_output=True, text=True, timeout=5
+            )
+            if result.returncode != 0:
+                all_pass = False
+                problem_description += f"\n\nPrevious attempt failed test: {test['test']}\nError: {result.stderr}"
+                break
+        
+        if all_pass:
+            return code
+    
+    return code  # Return last attempt if all fail
+```
+
+## The Deeper Point
+
+Inference-time scaling doesn't replace pretraining — it requires a capable base model to generate plausible candidates. But it changes the relationship between compute and capability in an important way.
+
+The traditional scaling paradigm says: if you want a model to solve harder problems, train a bigger model. Inference-time scaling says: if you want a model to solve harder problems, give it more time to think and a way to check its work. For tasks with reliable verifiers, this is often the more cost-effective path.
+
+The architectural insight generalizes beyond LLMs. AlphaGo's MCTS, AlphaFold's structure relaxation pipeline, and classical planning algorithms all use the same basic pattern: generate candidates, evaluate them, use evaluation feedback to guide the next generation. What's new with LLMs is that the generation step is flexible enough to apply this pattern to open-ended natural language tasks.
+
+---
+
+*References: "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models" (Wei et al., 2022); "Let's Verify Step by Step" (Lightman et al., 2023); OpenAI o1 System Card (2024); DeepMind AlphaProof technical blog post (2024); "Scaling LLM Test-Time Compute Optimally Can be More Effective than Scaling Model Parameters" (Snell et al., 2024)*

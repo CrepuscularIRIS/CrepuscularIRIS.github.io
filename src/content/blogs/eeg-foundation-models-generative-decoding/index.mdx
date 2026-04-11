@@ -1,0 +1,301 @@
+---
+title: "EEG Foundation Models: Toward Generative Brain Decoding"
+description: "How transformer-based foundation models pre-trained on large EEG corpora are replacing calibration-heavy classifiers for non-invasive BCI."
+publishDate: "2026-04-11"
+updatedDate: "2026-04-11"
+tags: [BCI, EEG, Neural-Decoding, Neuroscience, Deep-Learning, Foundation-Models]
+category: research
+draft: false
+---
+
+For most of the past decade, non-invasive brain-computer interfaces operated within a frustrating constraint: every user, every session, requires extensive calibration. A P300 speller might take 30 minutes to train before the system can reliably decode a new user's brain signals. Motor imagery classifiers drift between sessions. The gap between what invasive implants can do and what a scalp EEG headset can do remained enormous — not primarily because scalp EEG lacks information, but because classical machine learning approaches couldn't generalize across individuals.
+
+The architecture of standard EEG decoders reflects this constraint. An EEGNet or ShallowConvNet trained on one subject's data simply doesn't transfer to another. The spatial patterns of alpha oscillations during imagined movement vary too much across individuals, across electrode configurations, across days. The solution historically was more data from the target user, not better cross-subject generalization.
+
+Foundation models have started to change this calculus. The same scaling approach that let BERT transfer across NLP tasks — pre-train on massive diverse data, fine-tune on small labeled sets — is being applied to EEG. The results suggest we are at a genuine inflection point for non-invasive BCI.
+
+## What Makes EEG Hard
+
+Before getting into foundation models, it's worth being precise about what distinguishes EEG decoding from other sequence modeling tasks.
+
+**Signal-to-noise ratio**: Scalp EEG picks up electrical potentials that have diffused through skull and scalp, attenuating high-frequency content and mixing signals from large cortical regions. A single 64-channel EEG recording during a one-second epoch might contain only 50-200 Hz of useful signal bandwidth per channel, with significant contributions from muscle artifacts, eye blinks, and electrical noise.
+
+**Cross-subject variability**: The spatial layout of functional brain areas varies across individuals. The electrode that best captures motor imagery signals for one person may sit over a different functional region for another. This means that feature extractors that work for subject A often fail for subject B.
+
+**Non-stationarity**: EEG characteristics change within a session (due to fatigue, attention fluctuations) and across sessions (due to electrode placement drift, cognitive state). A model trained on morning data may degrade significantly by afternoon.
+
+**Label scarcity**: Collecting ground-truth EEG labels is expensive and limited. You can get at most a few hundred trials per session before a participant fatigues. This creates a fundamental bottleneck for supervised approaches.
+
+Foundation models address the last constraint most directly. Pre-training on massive unlabeled EEG corpora allows the model to learn generalizable representations of brain signals without requiring per-subject labeled data.
+
+## The Foundation Model Approach
+
+**BIOT** (Cross-Data Biosignal Foundation Model, 2023) represents an early attempt at a domain-wide foundation model for biosignals. It processes biosignal inputs as token sequences — time-series windows are chunked into patches, similar to Vision Transformer's image patches — and pre-trains with a masked reconstruction objective across diverse EEG, ECG, and PPG datasets.
+
+The key insight is treating temporal patches of biosignals as a modality analogous to word tokens: learn a general representation of "what this chunk of brain signal means" from massive unlabeled data, then fine-tune for specific downstream tasks with minimal labeled examples.
+
+**LaBraM** (Large Brain Model, Jiang et al., 2024) takes a similar approach but focuses specifically on EEG. It pre-trains on over 2,500 subjects and 90 million EEG segments, learning to predict masked patches of brain activity. After pre-training, it achieves competitive or state-of-the-art performance on abnormal detection, event type classification, and emotion recognition with far fewer labeled examples than task-specific models.
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from einops import rearrange
+
+class EEGPatchEmbedding(nn.Module):
+    """
+    Converts multichannel EEG time series into a sequence of patch embeddings.
+    
+    Input: (batch, channels, time) — raw EEG signals
+    Output: (batch, n_patches, embed_dim) — token sequence for transformer
+    """
+    def __init__(
+        self,
+        n_channels: int = 64,
+        patch_len: int = 64,      # Time steps per patch (at 256 Hz → 250ms)
+        embed_dim: int = 768,
+        max_freq: int = 128,      # For frequency-domain patch features
+    ):
+        super().__init__()
+        self.patch_len = patch_len
+        
+        # Channel-specific temporal convolutions (spatial filter per channel)
+        self.channel_conv = nn.Conv2d(
+            in_channels=1,
+            out_channels=embed_dim // 4,
+            kernel_size=(1, patch_len),
+            stride=(1, patch_len // 2),
+        )
+        
+        # Across-channel spatial mixing
+        self.spatial_mix = nn.Sequential(
+            nn.Linear(n_channels * (embed_dim // 4), embed_dim),
+            nn.LayerNorm(embed_dim),
+            nn.GELU(),
+        )
+        
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: (B, C, T)
+        B, C, T = x.shape
+        
+        # Apply temporal convolutions per channel
+        x_4d = x.unsqueeze(1)  # (B, 1, C, T)
+        feats = self.channel_conv(x_4d)  # (B, embed_dim//4, C, n_patches)
+        
+        n_patches = feats.shape[-1]
+        
+        # Reshape: for each patch, collect all channel features
+        feats = rearrange(feats, 'b d c p -> b p (c d)')
+        
+        # Spatially mix across channels
+        patches = self.spatial_mix(feats)  # (B, n_patches, embed_dim)
+        return patches
+
+
+class EEGFoundationModel(nn.Module):
+    """
+    Simplified EEG foundation model with masked autoencoding pre-training.
+    Based on the architecture pattern from LaBraM/BIOT.
+    """
+    def __init__(
+        self,
+        n_channels: int = 64,
+        patch_len: int = 64,
+        embed_dim: int = 768,
+        n_heads: int = 12,
+        n_layers: int = 8,
+        mask_ratio: float = 0.75,
+    ):
+        super().__init__()
+        self.mask_ratio = mask_ratio
+        self.embed_dim = embed_dim
+        
+        self.patch_embed = EEGPatchEmbedding(n_channels, patch_len, embed_dim)
+        
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=embed_dim,
+            nhead=n_heads,
+            dim_feedforward=embed_dim * 4,
+            dropout=0.1,
+            activation='gelu',
+            batch_first=True,
+        )
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
+        
+        # Reconstruction head for masked autoencoding
+        self.decoder = nn.Linear(embed_dim, patch_len * n_channels)
+        
+        # Learnable [CLS] token for downstream classification
+        self.cls_token = nn.Parameter(torch.randn(1, 1, embed_dim))
+        
+    def random_masking(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Apply random masking to patch tokens for MAE pre-training."""
+        B, N, D = x.shape
+        n_keep = int(N * (1 - self.mask_ratio))
+        
+        noise = torch.rand(B, N, device=x.device)
+        ids_shuffle = torch.argsort(noise, dim=1)
+        ids_restore = torch.argsort(ids_shuffle, dim=1)
+        
+        # Keep only unmasked patches
+        ids_keep = ids_shuffle[:, :n_keep]
+        x_masked = torch.gather(x, 1, ids_keep.unsqueeze(-1).expand(-1, -1, D))
+        
+        # Create mask: 1 = masked, 0 = visible
+        mask = torch.ones(B, N, device=x.device)
+        mask[:, :n_keep] = 0
+        mask = torch.gather(mask, 1, ids_restore)
+        
+        return x_masked, mask, ids_restore
+    
+    def forward_pretrain(self, x: torch.Tensor) -> dict:
+        """Pre-training forward pass with masked autoencoding."""
+        patches = self.patch_embed(x)         # (B, N, D)
+        patches_masked, mask, ids_restore = self.random_masking(patches)
+        
+        encoded = self.encoder(patches_masked) # (B, n_keep, D)
+        
+        # Simplified decoder: reconstruct all patches
+        # (In practice, add mask tokens back before decoding)
+        reconstructed = self.decoder(encoded)  # (B, n_keep, patch_len * C)
+        
+        return {"reconstructed": reconstructed, "mask": mask}
+    
+    def forward_finetune(self, x: torch.Tensor) -> torch.Tensor:
+        """Fine-tuning forward pass using [CLS] token for classification."""
+        patches = self.patch_embed(x)
+        
+        # Prepend [CLS] token
+        cls = self.cls_token.expand(x.shape[0], -1, -1)
+        tokens = torch.cat([cls, patches], dim=1)
+        
+        encoded = self.encoder(tokens)
+        cls_output = encoded[:, 0, :]  # Take [CLS] token
+        return cls_output  # Feed to task-specific head
+
+
+# Usage: fine-tune on motor imagery with few labeled examples
+def create_motor_imagery_classifier(n_classes: int = 4):
+    backbone = EEGFoundationModel(n_channels=64, embed_dim=512, n_layers=6)
+    
+    # Task-specific head
+    classifier = nn.Sequential(
+        nn.LayerNorm(512),
+        nn.Linear(512, 128),
+        nn.GELU(),
+        nn.Dropout(0.3),
+        nn.Linear(128, n_classes)
+    )
+    
+    return nn.Sequential(backbone, classifier)
+```
+
+## From Classification to Generative Decoding
+
+The most exciting frontier isn't classification — it's generation. Instead of mapping an EEG epoch to a discrete label (left hand, right hand, rest), generative models attempt to reconstruct the continuous stimulus the brain was processing.
+
+**Brain-to-image decoding** saw a step change with MindEye (Scotti et al., 2023) and subsequent work, primarily using fMRI. The approach: train a contrastive model that aligns fMRI representations with CLIP image embeddings, then use the aligned representation to retrieve or generate the perceived image. MindEye2 extended this to cross-subject generalization with dramatic improvements.
+
+The natural question is whether similar approaches work for EEG, which has lower spatial resolution but much lower acquisition cost (no MRI scanner required). Work from multiple groups in 2024-2025 showed that EEG-to-image generation is feasible with contrastive pre-training:
+
+```python
+import torch
+import torch.nn as nn
+
+class EEGCLIPAlignment(nn.Module):
+    """
+    Aligns EEG representations with a pre-trained vision encoder (CLIP-style).
+    Enables retrieval and generation from EEG without per-class labels.
+    """
+    def __init__(self, eeg_encoder: nn.Module, clip_dim: int = 512):
+        super().__init__()
+        self.eeg_encoder = eeg_encoder
+        
+        # Project EEG features to CLIP embedding space
+        self.eeg_proj = nn.Sequential(
+            nn.Linear(512, 512),  # Match eeg_encoder output dim
+            nn.GELU(),
+            nn.Linear(512, clip_dim),
+            nn.LayerNorm(clip_dim),
+        )
+        
+        # Temperature parameter for contrastive loss
+        self.temperature = nn.Parameter(torch.tensor(0.07))
+        
+    def forward(
+        self,
+        eeg: torch.Tensor,          # (B, C, T)
+        clip_features: torch.Tensor  # (B, clip_dim) — from frozen CLIP image encoder
+    ) -> dict:
+        # Get EEG representation via foundation model
+        eeg_repr = self.eeg_encoder.forward_finetune(eeg)  # (B, 512)
+        eeg_emb = self.eeg_proj(eeg_repr)  # (B, clip_dim)
+        
+        # Normalize embeddings
+        eeg_emb = F.normalize(eeg_emb, dim=-1)
+        clip_features = F.normalize(clip_features, dim=-1)
+        
+        # Contrastive loss (InfoNCE)
+        logits = torch.matmul(eeg_emb, clip_features.T) / self.temperature.exp()
+        
+        B = eeg.shape[0]
+        labels = torch.arange(B, device=eeg.device)
+        
+        loss = (
+            F.cross_entropy(logits, labels) +
+            F.cross_entropy(logits.T, labels)
+        ) / 2
+        
+        return {"loss": loss, "eeg_embeddings": eeg_emb}
+    
+    def decode_to_image(self, eeg: torch.Tensor, image_gallery: torch.Tensor) -> torch.Tensor:
+        """
+        Retrieve the closest image from a gallery given an EEG signal.
+        
+        Args:
+            eeg: (1, C, T) — single EEG epoch
+            image_gallery: (N, clip_dim) — CLIP embeddings of candidate images
+        Returns:
+            Index of most likely perceived image
+        """
+        eeg_repr = self.eeg_encoder.forward_finetune(eeg)
+        eeg_emb = F.normalize(self.eeg_proj(eeg_repr), dim=-1)
+        image_gallery = F.normalize(image_gallery, dim=-1)
+        
+        similarities = torch.matmul(eeg_emb, image_gallery.T)  # (1, N)
+        return similarities.argmax(dim=-1)
+```
+
+**Speech decoding** from EEG is harder than image retrieval because it requires continuous output rather than retrieval from a gallery. Recent work (Défossez et al., 2023; Benchetrit et al., 2023) from Meta showed that speech envelopes and phoneme sequences can be decoded from MEG with non-trivial accuracy using convolutional networks and contrastive learning. The extension to scalp EEG is an active research area.
+
+## The Zero-Calibration Promise
+
+The most practically significant aspect of EEG foundation models isn't their peak performance — it's the reduction in calibration requirements. Classical motor imagery decoders need 30-100 trials per class to achieve acceptable accuracy for a new user. Foundation models fine-tuned with as few as 5-20 trials per class can match or exceed the performance of fully supervised models trained from scratch.
+
+This matters for clinical deployment. An ALS patient using an EEG-based communication device may have severely limited motor control and fatigue rapidly. A system that requires 40 minutes of calibration before it can spell a single word is not useful. A system that adapts within 5 minutes is.
+
+The zero-calibration limit — where a model trained on a population generalizes to a completely new user with no adaptation data — is not yet achieved for most complex tasks, but the trajectory is clear. LaBraM reported meaningful transfer to held-out subjects without any fine-tuning on tasks like emotion recognition and abnormal EEG detection.
+
+## What Remains Hard
+
+Foundation models have not solved EEG decoding. Several fundamental challenges persist:
+
+**Semantic specificity**: Foundation models pre-trained with reconstruction objectives learn to represent the statistical structure of brain signals. What they don't learn is a grounded mapping from signal patterns to semantic content. Telling two internal speech phonemes apart requires grounded labels — the foundation model gives you good features to learn this mapping from, but you still need some labeled data.
+
+**Spatial resolution limits**: No amount of algorithmic improvement can fully overcome the physics of EEG's spatial resolution. Information about specific sub-centimeter cortical columns that is accessible to intracortical recordings is genuinely absent from scalp EEG. Foundation models can extract more of the available information, not conjure information that isn't there.
+
+**Individual anatomy**: Even with foundation models, cross-subject generalization is harder for individuals with atypical anatomy — stroke survivors, congenital abnormalities, post-surgical patients — who are often the most important clinical targets.
+
+**The inner speech problem**: Decoding imagined (unspoken) speech from EEG remains extremely challenging. The neural correlates are weaker than overt speech, more variable across individuals, and poorly characterized even in invasive recordings. Foundation models will help, but this problem likely requires better signal acquisition in addition to better algorithms.
+
+## Where This Is Going
+
+The convergence of three trends — large pre-trained models, self-supervised learning, and growing multi-site EEG datasets — is creating the conditions for non-invasive BCI to improve more in the next three years than in the previous decade.
+
+The most promising near-term applications are those with some tolerance for residual error and where even imperfect decoding is dramatically better than alternatives: communication devices for severely paralyzed patients, passive monitoring for epilepsy and sleep disorders, and cognitive workload monitoring for safety-critical environments.
+
+The longer-term trajectory, if foundation model scaling transfers to EEG the way it transferred to NLP and vision, is something qualitatively different: a system that learns what your brain signals mean from minimal labeled data, adapts continuously as it accumulates experience with you, and generalizes well enough to be useful across diverse tasks without per-task calibration. That's not science fiction — it's the logical endpoint of the trend that LaBraM and BIOT represent.
+
+---
+
+*References: "BIOT: Cross-Data Biosignal Foundation Model" (Yang et al., NeurIPS 2023); "Large Brain Model for Learning Generic Representations with Tremendous EEG Data in BCI" (Jiang et al., ICLR 2024); "MindEye2: Shared-Subject Models Enable fMRI-To-Image With 1 Hour of Data" (Scotti et al., 2024); "Decoding speech from non-invasive brain recordings" (Défossez et al., 2023); "Brain LLM: Representing Brain Signals via Large Language Models" (arXiv 2023)*
