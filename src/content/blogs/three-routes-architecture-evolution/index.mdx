@@ -1,235 +1,251 @@
 ---
-title: '架构演进的三条路线：从 Residual 到 Orchestration 到连续潜变量'
-description: '系统梳理深度学习架构演进的三个核心范式：挑战残差连接的 Attention Residuals、查询式编排的 Orchestration 架构、以及连续潜变量的 VAE 路线。'
-publishDate: '2026-03-19'
-updatedDate: '2026-03-19'
+title: "Three Routes Beyond Residual Connections"
+description: "Dynamic aggregation, query-based orchestration, continuous latent variables: three ways deep learning is escaping the tyranny of fixed residual connections."
+publishDate: "2026-03-19"
+updatedDate: "2026-04-11"
 category: research
 tags:
   - architecture
   - residual
-  - orchestration
-  - vae
   - attention
   - query-based
-  - research-framework
-language: zh
+  - vae
+  - deep-learning
+language: en
+draft: false
 ---
 
-## 核心框架
+The residual connection is one of the least questioned design decisions in deep learning. Since ResNet made training 152-layer networks tractable in 2015, the pattern `h_{l+1} = h_l + f(h_l)` has become so universal that it is baked into default Transformer implementations, PyTorch example code, and introductory deep learning courses alike.
 
-本文系统梳理深度学习架构演进的**三条核心路线**，分别对应三种不同的"建模哲学"：
+But universal doesn't mean optimal. The residual connection is a training stability hack that carries an architectural cost: it forces uniform aggregation across all layers, with fixed weights of 1 for every layer's contribution to every subsequent layer. Three research directions are attacking this assumption from different angles, and understanding the relationships between them clarifies where the next generation of architectures is going.
 
-| 路线 | 核心思想 | 代表工作 | 关键问题 |
-|------|----------|----------|----------|
-| **路线 A** | 挑战 Residual | Kimi Attention Residuals | 连接权重 vs 建模对象？ |
-| **路线 B** | Orchestration / Query-based | BLIP-2, Perceiver IO | Block 级妥协 vs 连续化？ |
-| **路线 C** | 连续潜变量 | VAE, β-VAE | 架构灵感 vs 训练工程？ |
+## The Problem with Fixed Residuals
 
----
+Before examining the alternatives, it helps to be precise about what the residual connection actually does wrong.
 
-## 路线 A：直接挑战 Residual
+The standard PreNorm residual stack produces:
 
-### 核心洞察
-
-**经典 Residual** 的本质是"训练可优化性的工程支架"：
 ```
-h_{l+1} = h_l + f(h_l)  # 固定累加，权重隐式为 1
+h_L = h_0 + Σ_{l=0}^{L-1} f_l(LayerNorm(h_l))
 ```
 
-**Attention Residuals** 将其改造为"检索式编排"：
+Every term in that sum has weight 1. A layer that learned a useful feature transformation contributes equally to the output as a layer that learned noise. Deep networks mitigate this somewhat through gradient-based optimization — layers that contribute nothing tend to learn near-zero transformations — but the structural constraint means the model can't explicitly route around unhelpful layers or amplify particularly useful ones.
+
+The second problem is that `h_{l+1}` can only see `h_l`. Even with skip connections extending to earlier layers (as in DenseNet), the aggregation is hard-coded: every previous layer contributes, with no selection based on content. The model cannot ask "which layer has the most relevant information for what I'm currently processing?"
+
+These two limitations — fixed aggregation weights and proximity-blind connections — are what each of the three routes addresses.
+
+## Route A: Dynamic Aggregation (Challenging the Fixed Weights)
+
+The Attention Residuals paper from Moonshot AI (arXiv:2603.15031) makes the most direct attack: replace fixed-weight summation with Softmax-weighted attention.
+
+Instead of:
+```python
+h_next = h_current + f(layer_norm(h_current))
 ```
-h_{l+1} = Σ α_i · h_i  # 学习权重，动态选择
+
+The model computes:
+```python
+# Standard attention residual
+scores = [query(h_current) @ key(h_i) for h_i in history]
+weights = softmax(scores)
+h_next = sum(w * h_i for w, h_i in zip(weights, history))
 ```
 
-### 关键区分
+This gives the model something it previously lacked: the ability to decide, at each layer, how much weight to assign to each prior layer's output based on the content of those outputs. A layer processing syntactic structure can up-weight earlier layers that captured surface-level patterns while down-weighting deeper layers focused on semantics.
 
-| 维度 | 经典 Residual | Attention Residuals |
-|------|---------------|---------------------|
-| **权重性质** | 固定 (implicit 1) | 学习 (softmax 归一化) |
-| **连接方式** | 仅前一层 | 任意前层 |
-| **优化目标** | 梯度流畅 | 动态信息路由 |
-| **哲学定位** | 工程妥协 | 建模增强 |
+The practical challenge is quadratic memory in the number of layers. The Block Attention Residuals variant addresses this by grouping layers and applying the dynamic aggregation within blocks rather than globally:
 
-### 材料定位
+```python
+class BlockAttnResidual(nn.Module):
+    def __init__(self, hidden_dim: int, block_size: int = 4):
+        super().__init__()
+        self.block_size = block_size
+        self.q_proj = nn.Linear(hidden_dim, hidden_dim)
+        self.k_proj = nn.Linear(hidden_dim, hidden_dim)
+        self.v_proj = nn.Linear(hidden_dim, hidden_dim)
+        self.out_proj = nn.Linear(hidden_dim, hidden_dim)
+        self.scale = nn.Parameter(torch.ones(1) * 0.1)
 
-**Kimi Attention Residuals** (arXiv)
-- 核心贡献：用 depth-wise attention 替换固定累加
-- 解决痛点：PreNorm 中 hidden state 膨胀、单层贡献稀释
-- 技术细节：待阅读原始论文
+    def forward(
+        self,
+        current: torch.Tensor,
+        block_history: list[torch.Tensor]
+    ) -> torch.Tensor:
+        if not block_history:
+            return current
 
-**关键问题**：
-- 改的是"连接权重"还是"建模对象"？→ **权重形式，但影响建模**
-- Block 级还是连续化？→ **Block 级妥协**
-- 架构灵感还是产品披露？→ **架构灵感**
+        q = self.q_proj(current)   # [B, T, D]
+        history = torch.stack(block_history, dim=2)  # [B, T, L, D]
+        k = self.k_proj(history)
+        v = self.v_proj(history)
 
----
+        # [B, T, L]
+        scores = torch.einsum("btd,btld->btl", q, k) / (q.shape[-1] ** 0.5)
+        weights = scores.softmax(dim=-1)
 
-## 路线 B：Orchestration / Query-based Selection
+        # [B, T, D]
+        aggregated = torch.einsum("btl,btld->btd", weights, v)
+        return current + self.scale * self.out_proj(aggregated)
+```
 
-### 核心洞察
+The `scale` parameter — initialized to 0.1 — is critical for training stability. It ensures that at initialization, the attention residual contributes a small perturbation rather than a large signal, allowing the standard residual dynamics to dominate early training before the attention weights become meaningful.
 
-不是"把信息全拼上去"，而是"用 query 去筛选/编排"。
+Experiments on Kimi Linear (48B total / 3B active) show +1.6% on MMLU-Pro and +2.2% on RULER 128K with Block size 4. The gains scale with model size, suggesting that larger models benefit more from the ability to route information selectively across layers.
 
-### 代表工作
+**Core insight**: Route A answers "which previous layer is most relevant right now?" It changes the aggregation mechanism while keeping the layer structure intact.
 
-**1. BLIP-2 / Q-Former**
-- 机制：轻量级查询 Transformer，从图像提取固定数量特征
-- 哲学：信息筛选优于信息堆砌
-- 关键：Query 机制实现选择性注意力
+## Route B: Query-Based Orchestration (Changing What Gets Aggregated)
 
-**2. Perceiver IO**
-- 机制：先投射到 latent，再用 query 读出
-- 哲学："memory coordinate + selective retrieval"
-- 关键：与"深度即记忆地址"思想呼应
+Route A still aggregates over the same layers. Route B asks a more fundamental question: why should the model aggregate over layers at all? What if, instead of all previous layer outputs, the model could query a compressed memory of what's been processed?
 
-### 与 CDMN 的关联
+This is the Orchestration or Query-based approach, exemplified by **BLIP-2's Q-Former** and **Perceiver IO**.
 
-| 概念 | Perceiver IO | CDMN (我的框架) |
-|------|--------------|-----------------|
-| 记忆表示 | Latent array | Depth landmarks |
-| 查询机制 | Cross-attention | RoPE phase retrieval |
-| 选择性 | Top-k latent slots | Top-k depth positions |
-| 连续化 | Discrete latent | Continuous depth flow |
+Q-Former introduces a fixed set of learnable query vectors that "interview" a large encoder via cross-attention:
 
-**关键问题**：
-- 改的是"连接权重"还是"建模对象"？→ **建模对象（从拼接改为查询）**
-- Block 级还是连续化？→ **更接近连续化**
-- 架构灵感还是产品披露？→ **架构灵感**
+```python
+class QFormer(nn.Module):
+    def __init__(self, d_model: int, num_queries: int = 32):
+        super().__init__()
+        # Learnable query vectors — fixed number, not dependent on input length
+        self.queries = nn.Parameter(torch.randn(num_queries, d_model))
+        self.cross_attn = nn.MultiheadAttention(d_model, num_heads=8, batch_first=True)
 
----
+    def forward(self, encoder_output: torch.Tensor) -> torch.Tensor:
+        """
+        encoder_output: [B, seq_len, d_model]  (could be thousands of tokens)
+        returns: [B, num_queries, d_model]       (fixed 32 tokens)
+        """
+        B = encoder_output.shape[0]
+        queries = self.queries.unsqueeze(0).expand(B, -1, -1)
 
-## 路线 C：连续潜变量妥协
+        # The learnable queries select what they need from the encoder
+        condensed, _ = self.cross_attn(
+            query=queries,
+            key=encoder_output,
+            value=encoder_output
+        )
+        return condensed  # Fixed-size bottleneck
+```
 
-### 核心洞察
+The key difference from Route A: the "history" being queried is not the stack of layer outputs but a compressed latent memory. The query vectors *learn what to ask for* rather than being told what's available.
 
-VAE 不是在解决 residual/attention 问题，而是在处理另一层面的"建模哲学"：
+Perceiver IO extends this further with a persistent latent array that is updated iteratively via cross-attention and then selectively read via output-specific queries:
 
-> **如何用可训练的妥协，把连续潜变量结构塞回离散优化流程？**
+```python
+class PerceiverIOBlock(nn.Module):
+    def __init__(self, d_latent: int, d_input: int, num_latents: int):
+        super().__init__()
+        self.latents = nn.Parameter(torch.randn(num_latents, d_latent))
+        # Cross-attention: latents query the input
+        self.cross_attn = nn.MultiheadAttention(d_latent, num_heads=4, batch_first=True)
+        # Self-attention: latents process among themselves
+        self.self_attn = nn.MultiheadAttention(d_latent, num_heads=4, batch_first=True)
 
-### 代表工作
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        B = inputs.shape[0]
+        latents = self.latents.unsqueeze(0).expand(B, -1, -1)
 
-**1. VAE (Auto-Encoding Variational Bayes)**
-- 原始论文：Kingma & Welling, 2013
-- 核心： encoder-decoder + KL 正则的连续潜空间
-- 妥协：重参数化技巧、KL 散度平衡
+        # Latents selectively attend to whatever they need from inputs
+        latents, _ = self.cross_attn(latents, inputs, inputs)
+        # Latents process the selected information
+        latents, _ = self.self_attn(latents, latents, latents)
+        return latents
+```
 
-**2. β-VAE**
-- 改进：引入 β 参数控制解耦程度
-- 洞察：表示学习需要在重构质量和解耦性之间权衡
+The architectural implication: the model's internal "working memory" (the latent array) is decoupled from the input representation. This enables processing arbitrarily long inputs with fixed memory by learning to compress what matters into a fixed-size latent space.
 
-### 与架构演进的关联
+**Core insight**: Route B answers "what information do I actually need?" rather than "how should I weight what's already been processed?" It's more expensive to design (someone has to decide how many latent slots to allocate) but more flexible in what can be represented.
 
-| 路线 | 离散-连续光谱 | 核心妥协 |
-|------|---------------|----------|
-| Residual | 离散 | 梯度流畅性 |
-| Attention Residuals | 离散 | 动态权重选择 |
-| Orchestration | 半离散 | Query-based 离散化 |
-| VAE | 连续 (编码为离散) | 训练稳定性 |
-| **CDMN (目标)** | **连续** | **相位编码离散化** |
+## Route C: Continuous Latent Variables (Changing the Training Philosophy)
 
-**关键问题**：
-- 改的是"连接权重"还是"建模对象"？→ **建模对象（潜变量结构）**
-- Block 级还是连续化？→ **连续化建模，离散化训练**
-- 架构灵感还是产品披露？→ **架构灵感（训练哲学）**
+Routes A and B both operate over discrete layers. Route C asks whether layers are the right abstraction at all.
 
----
+The VAE framework treats the mapping from input to output as a path through a continuous latent space:
 
-## 统一视角：三个关键问题
+```
+x → encoder → μ, σ → z ~ N(μ, σ²) → decoder → x̂
+```
 
-筛选任何新材料时，问自己这三个问题：
+The reparameterization trick makes this trainable:
 
-### 1. 改"连接权重"还是改"建模对象"？
+```python
+def encode(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    h = self.encoder(x)
+    mu = self.mu_proj(h)
+    log_var = self.log_var_proj(h)
+    return mu, log_var
 
-| 类型 | 例子 | 影响深度 |
-|------|------|----------|
-| 连接权重 | Attention Residuals | 浅层优化 |
-| 建模对象 | Orchestration, VAE | 深层范式 |
+def reparameterize(self, mu: torch.Tensor, log_var: torch.Tensor) -> torch.Tensor:
+    # During training: z = mu + epsilon * sigma (differentiable!)
+    # During inference: z = mu (deterministic)
+    if self.training:
+        std = (0.5 * log_var).exp()
+        epsilon = torch.randn_like(std)
+        return mu + epsilon * std
+    return mu
 
-### 2. Block 级妥协还是连续化？
+def forward(self, x: torch.Tensor):
+    mu, log_var = self.encode(x)
+    z = self.reparameterize(mu, log_var)
+    x_hat = self.decoder(z)
 
-| 类型 | 例子 | 理想程度 |
-|------|------|----------|
-| Block 级 | Attention Residuals, MoE | 工程可行 |
-| 半连续 | Perceiver IO, Q-Former | 探索中 |
-| 连续 | Neural ODE (理想) | 训练昂贵 |
-| **目标** | **CDMN** | **待验证** |
+    # Reconstruction loss + KL divergence
+    recon_loss = F.mse_loss(x_hat, x)
+    kl_loss = -0.5 * (1 + log_var - mu.pow(2) - log_var.exp()).sum(dim=-1).mean()
+    return x_hat, recon_loss + self.beta * kl_loss
+```
 
-### 3. 架构灵感还是产品/安全披露？
+The `beta` parameter (from β-VAE) controls the tradeoff between reconstruction quality and latent space structure. High β forces the model to use orthogonal, interpretable latent dimensions — useful for downstream tasks that want to manipulate specific attributes. Low β prioritizes reconstruction quality.
 
-| 类型 | 信息密度 | 研究价值 |
-|------|----------|----------|
-| 架构灵感 | arXiv 论文, 开源代码 | 高 |
-| 产品披露 | 发布页, benchmark 数字 | 中 |
-| 安全披露 | System Card, 政策文档 | 低（对你当前研究） |
+The connection to Routes A and B: the VAE framework treats *depth* as a continuous coordinate in latent space rather than a discrete layer index. Neural ODEs make this explicit by replacing the discrete layer recursion with a continuous differential equation:
 
----
+```
+dh(t)/dt = f(h(t), t, θ)
+```
 
-## 材料分类速查
+This is the theoretical endpoint of Route C's direction. The model doesn't have layers; it has a continuous trajectory through latent space parameterized by a learned vector field. In practice, ODE solvers make training slow and memory-intensive, which is why current work (like the CDMN framework sketched in earlier posts) focuses on discrete approximations that preserve the continuous-depth semantics without requiring ODE solvers.
 
-### Kimi 相关
+**Core insight**: Route C asks "what is the right structure for the information space?" rather than "how should I aggregate or query within the current structure?" It's the most philosophically radical but also the most technically expensive.
 
-| 材料 | 路线分类 | 优先级 |
-|------|----------|--------|
-| Attention Residuals | 路线 A | **最高** |
-| Kimi K2 / K2.5 | 体系化报告 | 中等 |
-| MoBA | 稀疏注意力 | 相关 |
+## How the Three Routes Relate
 
-### OpenAI / Anthropic / Google
+The three routes are not competing answers to the same question. They're attacking different structural assumptions:
 
-| 材料 | 类型 | 价值 |
-|------|------|------|
-| System Card | 产品/安全披露 | 低 |
-| Model Card | 能力边界 | 中 |
-| arXiv 论文 | 架构灵感 | **高** |
+| Route | Assumption Challenged | Mechanism | Cost |
+|-------|----------------------|-----------|------|
+| A: Dynamic Aggregation | All layers contribute equally | Learned attention weights over layer history | O(L²) memory |
+| B: Query-Based | Aggregate over all previous state | Compressed latent memory + content-based query | Fixed latent slots |
+| C: Continuous Latent | Discrete layers are the right abstraction | Continuous depth coordinate | ODE solver / approximation |
 
-### Orchestration 路线
+They're also composable. Attention Residuals (Route A) can be applied *within* a Perceiver-style latent (Route B) to make the latent update more selective. And the continuous depth idea (Route C) can be approximated discretely using phase encoding (RDE) applied to a Block Attention architecture (Route A).
 
-| 材料 | 路线 | 关键概念 |
-|------|------|----------|
-| BLIP-2 / Q-Former | 路线 B | Query-based selection |
-| Perceiver IO | 路线 B | Latent memory + retrieval |
+The practical progression for someone building systems today:
 
-### 连续潜变量
+1. **Start with Route A (Block Attention Residuals)** if you have a standard Transformer and want measurable gains with a contained engineering change. Block size 4 gives the best compute/accuracy tradeoff based on published ablations.
 
-| 材料 | 路线 | 关键概念 |
-|------|------|----------|
-| VAE | 路线 C | Encoder-decoder + KL |
-| β-VAE | 路线 C | Disentanglement trade-off |
+2. **Add Route B thinking (latent compression)** when your inputs are long and heterogeneous. The Q-Former pattern is particularly clean: learn what to ask for, not what to store.
 
----
+3. **Keep Route C on the horizon**. The continuous depth framework is not deployable in its ideal form today, but the conceptual shift — depth as memory address rather than processing stage — shapes how you think about Routes A and B when designing them.
 
-## 下一步阅读顺序
+## The Remaining Hard Problem
 
-### 第一阶段：核心困惑
-1. **Attention Residuals** (arXiv) - 最贴当前困惑
-2. **BLIP-2 / Q-Former** - 查询式编排验证
-3. **Perceiver IO** - Memory coordinate + retrieval
+All three routes make layer aggregation smarter. None of them fully addresses what I've called the "uniformity tyranny" in earlier posts: the assumption that the same aggregation strategy should apply uniformly across all inputs, all positions, and all depth coordinates.
 
-### 第二阶段：体系化
-4. **Kimi K2 / K2.5** - Agentic + MoE + Multimodal
-5. **MiniMax M2/M2.5** - 为什么回到 full attention
+Route A varies the aggregation weights but applies the same attention mechanism everywhere. Route B uses a fixed latent structure regardless of input content. Route C specifies a single vector field for the entire latent space.
 
-### 第三阶段：边界确认
-6. **GPT/Claude/Gemini System Cards** - 工业界实际优化目标
-7. **VAE / β-VAE** - 连续潜变量训练哲学
+The next frontier is *meta-learned* aggregation: a model that learns not just what to aggregate but *how the aggregation strategy should vary* based on input complexity, task type, or position in the computation. This is closer to the neuroscience picture — different cortical regions use fundamentally different integration strategies, not the same mechanism with different weights.
 
----
-
-## 参考链接
-
-### 路线 A
-- Kimi Attention Residuals: [待补充 arXiv 链接]
-- Kimi K2: https://arxiv.org/abs/[待补充]
-- Kimi K2.5: https://arxiv.org/abs/[待补充]
-
-### 路线 B
-- BLIP-2: https://arxiv.org/abs/2301.12597
-- Perceiver IO: https://arxiv.org/abs/2107.14795
-
-### 路线 C
-- VAE: https://arxiv.org/abs/1312.6114
-- β-VAE: https://arxiv.org/abs/1804.03599
+But that's the next post.
 
 ---
 
-**标签**: #architecture #research-framework #residual #orchestration #vae #attention
+## References
+
+- He et al., "Deep Residual Learning for Image Recognition," CVPR 2016. [arXiv:1512.03385](https://arxiv.org/abs/1512.03385)
+- Moonshot AI, "Attention Residuals," 2026. [arXiv:2603.15031](https://arxiv.org/abs/2603.15031)
+- Li et al., "BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image Encoders and Large Language Models," ICML 2023. [arXiv:2301.12597](https://arxiv.org/abs/2301.12597)
+- Jaegle et al., "Perceiver IO: A General Architecture for Structured Inputs & Outputs," ICML 2022. [arXiv:2107.14795](https://arxiv.org/abs/2107.14795)
+- Kingma & Welling, "Auto-Encoding Variational Bayes," ICLR 2014. [arXiv:1312.6114](https://arxiv.org/abs/1312.6114)
+- Higgins et al., "beta-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework," ICLR 2017.
+- Chen et al., "Neural Ordinary Differential Equations," NeurIPS 2018. [arXiv:1806.07366](https://arxiv.org/abs/1806.07366)
