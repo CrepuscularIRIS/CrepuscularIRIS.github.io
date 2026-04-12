@@ -1,0 +1,85 @@
+---
+title: "When Overtraining Is the Optimal Strategy"
+description: "T2 scaling laws prove Chinchilla-optimal training breaks down once you plan to spend compute at inference time."
+publishDate: "2026-04-12"
+tags: [scaling-laws, inference, training, llm, chinchilla, test-time-compute]
+category: technical
+language: en
+draft: false
+---
+
+The Chinchilla result from DeepMind (2022) established a clean principle: for a fixed compute budget, you should train a model roughly half the size you'd otherwise choose, on twice as much data. The optimal token-to-parameter ratio sits around 20:1. This shaped every serious LLM training run for the next two years — GPT-4, LLaMA, Mistral, the whole field.
+
+A paper from April 2026 argues this is wrong, and wrong in a specific, tractable way: Chinchilla-optimal is only optimal if you plan to use the model with standard autoregressive sampling. The moment you introduce test-time compute — repeated sampling, tree search, best-of-N selection — the optimal training strategy changes substantially. The new paper calls this framework **T2 scaling**, and its core claim is that once inference compute is part of your budget, you should overtrain significantly smaller models, pushing far beyond the Chinchilla data ratio.
+
+## What Chinchilla Actually Optimizes
+
+The Chinchilla scaling laws find the training strategy that minimizes *validation loss* for a fixed FLOPs budget. If you have $C$ FLOPs to spend on training, you want to find the model size $N$ and token count $D$ that minimizes:
+
+$$L(N, D) = \frac{A}{N^{\alpha}} + \frac{B}{D^{\beta}} + L_{\infty}$$
+
+The first term captures irreducible error from model capacity; the second from data coverage; the third is an irreducible floor. Minimizing this jointly yields $N^* \propto C^{0.5}$ and $D^* \propto C^{0.5}$, giving the 20:1 data-to-parameter ratio.
+
+This optimization is entirely about reducing the cross-entropy loss on a validation set. Benchmark performance, reasoning capability, and downstream utility are all downstream of this loss number, which is why the result generalizes so cleanly.
+
+But there's an assumption buried in this framing: the model is evaluated once, autoregressively, with greedy or temperature-sampled decoding. The scaling law has no concept of spending additional compute at inference time to improve the answer quality.
+
+## The T2 Framework
+
+T2 scaling extends the Chinchilla analysis by adding an inference compute budget. The question becomes: given a fixed *total* budget split between training compute $C_{\text{train}}$ and inference compute $C_{\text{inf}}$, what's the optimal $N^*, D^*$?
+
+The intuition is clean. Inference-time compute — whether it's best-of-N sampling, Monte Carlo Tree Search, or iterative refinement — provides a second mechanism for reducing effective error on the final task. If you're going to run each query through $k$ samples and pick the best one, then your effective "task accuracy" depends not just on the quality of a single generation but on the probability that *at least one of k* generations is correct.
+
+For tasks where individual generation accuracy is $p$, best-of-k accuracy is:
+
+$$P(\text{at least one correct out of } k) = 1 - (1-p)^k$$
+
+This function is concave: going from $p=0.1$ to $p=0.2$ with single sampling doubles your accuracy, but going from $p=0.1$ single to $p=0.1$ best-of-10 gets you to $1 - 0.9^{10} \approx 0.65$. For a fixed accuracy target, inference-time search is often the more efficient path than improving the base model.
+
+The T2 paper formalizes this into a joint optimization. The key result: **when $C_{\text{inf}}$ is non-negligible relative to $C_{\text{train}}$, the optimal strategy is to train a smaller model further past the Chinchilla data ratio**. Concretely, a model trained on 100× the Chinchilla-optimal token count achieves higher task accuracy on reasoning benchmarks than a Chinchilla-optimal model of equivalent training compute — because the smaller overfit model can be evaluated many times for the same inference cost as a single pass through the larger model.
+
+## Concrete Numbers
+
+To make this precise: take a 7B parameter model. Chinchilla says train it on ~140B tokens. T2 says: if your inference budget allows 16 samples per query, train the same 7B model on 1.4T tokens (10× data). The overtrained 7B model at best-of-16 outperforms the Chinchilla-optimal 7B at best-of-1 on MATH and HumanEval-level benchmarks, despite using identical training FLOPs.
+
+The comparison to a larger model is also interesting. A Chinchilla-optimal 70B model at single-sample inference uses roughly the same *training* compute as an overtrained 7B at 100× data. But at inference, the 70B model is 10× more expensive per token. If your query budget affords 16 samples on the 7B but only 1 on the 70B, T2 scaling predicts the overtrained small model wins on complex reasoning tasks.
+
+The effect is not universal. On tasks where single-sample accuracy is already high (>0.9) — factual recall, simple classification, short-form generation — inference-time search adds little value, and the Chinchilla-optimal large model maintains its advantage. T2 scaling's gains concentrate on **hard reasoning tasks with verifiable answers**, where per-sample accuracy is low and multiple samples provide genuine coverage.
+
+## Why Overtraining Helps Here
+
+The standard story about overtraining is that it causes memorization and reduces generalization. This is true in the classical sense — a model trained for 100 epochs on a fixed dataset will overfit, and its validation loss will diverge from its training loss.
+
+But T2-scale overtraining is different. With modern internet-scale data deduplication, 1.4T tokens from a high-quality corpus represents genuine coverage of a broad distribution. "Overtraining" in the T2 sense means exceeding the Chinchilla compute-optimal ratio, not training to convergence on a small fixed dataset. The model hasn't memorized its training set; it's seen an extremely diverse corpus with high token efficiency.
+
+The practical effect: the overtrained small model has stronger priors over the distribution. Individual samples are more likely to be plausible, even if any single sample is not certain to be correct. This is exactly the regime where best-of-N search excels — you need *diversity among* samples as well as *individual sample quality*.
+
+There's an elegant alignment between T2 overtraining and the inductive biases of chain-of-thought generation. A model trained to high data efficiency develops stronger semantic priors; its reasoning chains tend to be self-consistent even when incorrect. This makes step-level reward models (PRMs) more reliable for selecting among candidates, because the "wrong" reasoning is at least well-formed.
+
+## What This Changes for Practitioners
+
+**If you're training a reasoning model**: the T2 result suggests your training compute is better spent on data scale than on parameter count. A 7B model trained on 2T tokens with high data quality is a better foundation for inference-time search than a 14B model trained on 280B tokens, if you plan to use best-of-N or beam search at deployment.
+
+**If you're deploying an existing model**: the T2 framework implies you should bias toward smaller, extensively trained models rather than larger, Chinchilla-matched ones — if and only if your application allows multiple inference passes per query. Legal document review at 1 query/document is a different profile than autonomous coding at 100 iterations/task.
+
+**For API-based workloads**: the cost structure matters. If you're charged per output token, best-of-N on a small model might be cheaper than single-pass on a large model for the same accuracy target on hard tasks. The T2 paper provides a framework for computing these tradeoffs explicitly.
+
+## The Limits of the Analysis
+
+T2 scaling has real boundaries. The analysis assumes you have a reliable *evaluator* to pick among candidates — a verifiable answer (math, code), a reward model, or human feedback. For open-ended generation tasks where "best" is ambiguous (creative writing, multi-hop research synthesis), the best-of-N framework doesn't cleanly apply. You can't pick the best sample if you have no principled way to rank samples.
+
+The paper also assumes inference compute is fungible — that you can always trade one large-model inference for several small-model inferences. In practice, latency constraints limit this. If you need a response in under 2 seconds, you may not have time for 16 samples even on a 7B model, and the T2 advantage evaporates.
+
+Finally, the regime where T2 most strongly applies — many samples on hard tasks — overlaps heavily with RL-trained reasoning models. Models like o3 and DeepSeek-R1 implicitly leverage inference-time compute during their own training, blurring the line between "training strategy" and "inference strategy." It's not clear whether T2 scaling laws generalize cleanly to models whose capabilities were developed through online RL.
+
+## Why This Matters Beyond the Numbers
+
+The deeper implication is that the unit of capability for language models is shifting. Chinchilla framed capability as a function of two variables: parameters and training tokens. T2 adds a third: inference compute budget. The training optimal is a function of all three.
+
+This has organizational implications. A lab that's planning its training run in 2026 without modeling its expected inference compute budget is optimizing the wrong objective. The Chinchilla ratio made sense when inference was a single forward pass. As inference-time compute becomes a standard tool — with reasoning models, multi-agent workflows, and iterative refinement — training strategies need to account for how the model will actually be used.
+
+Chinchilla taught us to ask "how many parameters versus how many tokens?" T2 adds the question: "and how many samples at inference?" Getting all three right simultaneously is the new compute optimization problem.
+
+---
+
+*Reference: "Test-Time Scaling Makes Overtraining Compute-Optimal" (April 2026). T2 scaling laws extend the Hoffmann et al. (2022) Chinchilla analysis to joint training+inference compute optimization.*

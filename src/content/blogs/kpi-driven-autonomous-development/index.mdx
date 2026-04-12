@@ -1,0 +1,368 @@
+---
+title: "KPI-Driven Development: Agent Loops That Optimize Metrics"
+description: "The shift from task-execution agents to metric-optimization loops — architecture, failure modes, and the code patterns that make it work."
+publishDate: "2026-04-12"
+tags: [agents, autonomous-ml, engineering, KPI, multi-agent, evaluation, mlops]
+category: engineering
+language: en
+draft: false
+---
+
+Most agent systems built in 2024–2025 are instruction-following machines. You tell the agent what to do ("write a function that parses JSON", "refactor this module to use async/await"), it executes a sequence of actions, and it stops when it believes the instruction has been satisfied. The agent is optimizing for task completion, where completion is defined by the instruction text itself.
+
+This works adequately for isolated, well-defined tasks. It breaks down for sustained, goal-directed work — the kind that actually constitutes a software project. "Improve test coverage" is not a sequence of steps; it's a metric to optimize. "Reduce P95 latency below 200ms" is not an instruction; it's a constraint on an objective. "Make the CI pipeline reliable" describes a property of the system, not a procedure.
+
+KPI-Driven Development (KDD) is the architectural pattern where agents are given metrics to optimize rather than instructions to follow. The agent's control loop runs until a measurable condition is satisfied, not until a task description is exhausted. This changes what the agent does, what failure modes look like, and what the human engineer's role becomes.
+
+## The Architecture Difference
+
+Instruction-following agents and KPI-driven agents have structurally different control loops.
+
+**Instruction-following loop:**
+
+```python
+def instruction_following_agent(task: str, tools: list[Tool]) -> str:
+    """Standard task-execution agent loop."""
+    messages = [{"role": "user", "content": task}]
+    
+    while True:
+        response = llm.call(messages, tools=tools)
+        
+        if response.stop_reason == "end_turn":
+            # Agent decided it's done. Trust this.
+            return response.content
+        
+        # Execute tool calls and continue
+        tool_results = execute_tools(response.tool_calls)
+        messages.extend([response, tool_results])
+```
+
+The agent terminates by self-reporting completion. The human prompt is the only specification of what "done" means. There's no external oracle.
+
+**KPI-driven loop:**
+
+```python
+from dataclasses import dataclass
+from typing import Callable
+
+@dataclass(frozen=True)
+class KPISpec:
+    name: str
+    measure: Callable[[], float]      # External measurement function
+    target: float                      # Numeric threshold
+    direction: str                     # "maximize" or "minimize"
+    budget: dict                       # {"iterations": 20, "wall_hours": 4}
+    
+    def satisfied(self, value: float) -> bool:
+        if self.direction == "maximize":
+            return value >= self.target
+        return value <= self.target
+
+
+def kpi_driven_agent(
+    kpi: KPISpec,
+    context: str,
+    tools: list[Tool],
+) -> dict:
+    """KPI-optimization agent loop."""
+    history = []
+    iteration = 0
+    best_value = None
+    
+    while iteration < kpi.budget["iterations"]:
+        # Measure current state — externally, not from agent output
+        current_value = kpi.measure()
+        
+        if best_value is None or (
+            kpi.direction == "maximize" and current_value > best_value or
+            kpi.direction == "minimize" and current_value < best_value
+        ):
+            best_value = current_value
+        
+        if kpi.satisfied(current_value):
+            return {"status": "target_met", "value": current_value, 
+                    "iterations": iteration, "history": history}
+        
+        # Tell agent current state and what to improve
+        prompt = f"""
+        KPI: {kpi.name}
+        Target: {kpi.direction} to {kpi.target}
+        Current value: {current_value}
+        Best so far: {best_value}
+        Iterations remaining: {kpi.budget['iterations'] - iteration}
+        
+        Context:
+        {context}
+        
+        Previous actions and their effects:
+        {format_history(history)}
+        
+        What change will move the metric toward the target?
+        """
+        
+        response = llm.call([{"role": "user", "content": prompt}], tools=tools)
+        actions = execute_tools(response.tool_calls)
+        
+        history.append({
+            "iteration": iteration,
+            "value_before": current_value,
+            "actions": actions,
+        })
+        iteration += 1
+    
+    return {"status": "budget_exhausted", "best_value": best_value, 
+            "history": history}
+```
+
+The critical difference: `kpi.measure()` is called by the harness, not reported by the agent. The agent cannot self-certify completion. The loop continues until the external measurement confirms the target is met or the budget is exhausted.
+
+## Three KPIs That Reveal the Pattern's Power
+
+The metric matters more than the loop. These three examples show the pattern applied to meaningfully different optimization surfaces.
+
+### Test Coverage: The Low-Hanging KPI
+
+Test coverage is the canonical example because the metric is precise, the measurement is cheap, and the search space is large enough to be interesting.
+
+```python
+import subprocess
+import json
+
+def measure_test_coverage() -> float:
+    """Run pytest-cov and return branch coverage as a float in [0, 1]."""
+    subprocess.run(
+        ["python", "-m", "pytest", "--cov=src", "--cov-branch",
+         "--cov-report=json:coverage.json", "-q"],
+        capture_output=True, text=True, cwd="/repo", check=False
+    )
+    with open("/repo/coverage.json") as f:
+        data = json.load(f)
+    # percent_covered is a float (e.g. 87.3); percent_covered_display is a string
+    return float(data["totals"]["percent_covered"]) / 100.0
+
+coverage_kpi = KPISpec(
+    name="branch_test_coverage",
+    measure=measure_test_coverage,
+    target=0.90,           # 90% branch coverage
+    direction="maximize",
+    budget={"iterations": 25, "wall_hours": 2},
+)
+```
+
+What makes this interesting as a KPI task: the agent must decide where to add tests, not just that tests need adding. It reads coverage reports to identify uncovered branches, examines the code to understand what those branches do, writes tests that exercise them, runs the suite to verify the new tests pass and coverage increases, and iterates. This is not "write tests" — it's "close the gap between current coverage and target coverage efficiently."
+
+The agent loop sees, at each iteration, the coverage delta and the distribution of uncovered code. It can reason about high-leverage targets (a single uncovered branch in a heavily-called function beats many uncovered branches in dead code paths).
+
+### Latency: The Measurement-Complexity KPI
+
+P95 latency is harder because measurement requires running a benchmark, results are noisy, and interventions have unpredictable interactions.
+
+```python
+import statistics
+import time
+import httpx
+
+def measure_p95_latency_ms() -> float:
+    """Measure P95 response time for the primary API endpoint."""
+    latencies = []
+    client = httpx.Client(base_url="http://localhost:8000")
+    
+    # Warm-up
+    for _ in range(10):
+        client.get("/api/predict", params={"input": "warmup"})
+    
+    # Measure
+    for _ in range(200):
+        start = time.perf_counter()
+        client.get("/api/predict", params={"input": "benchmark_query"})
+        latencies.append((time.perf_counter() - start) * 1000)
+    
+    latencies.sort()
+    return latencies[int(0.95 * len(latencies))]
+
+latency_kpi = KPISpec(
+    name="p95_api_latency_ms",
+    measure=measure_p95_latency_ms,
+    target=200.0,
+    direction="minimize",
+    budget={"iterations": 15, "wall_hours": 3},
+)
+```
+
+The agent context for this loop must include access to profiling tools — `py-spy`, `cProfile`, `line_profiler` — because the agent needs to identify where latency is coming from, not just apply generic optimization patterns. Without measurement tooling in the agent's tool set, it's guessing.
+
+The failure mode for latency optimization is gaming: an agent that caches benchmark responses, adds artificial warmup, or special-cases the benchmark query. This is why the measurement function must be isolated from the code being optimized — the agent's tools should not have write access to the measurement harness.
+
+### Flakiness Rate: The Statistical KPI
+
+CI pipeline reliability (measured as flaky test rate) is the hardest KPI in this space because:
+- Flakiness is probabilistic — you need multiple runs to get a reliable estimate
+- The measurement is expensive (run the CI suite N times)
+- The root causes are diverse (timing dependencies, shared state, network calls, random seeds)
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import NamedTuple
+
+class FlakinessResult(NamedTuple):
+    flaky_tests: list[str]
+    flakiness_rate: float   # fraction of test-runs that fail non-deterministically
+
+def measure_flakiness(n_runs: int = 10) -> float:
+    """
+    Run the test suite n_runs times in parallel, identify tests that
+    sometimes pass and sometimes fail (non-deterministic failures).
+    """
+    def run_once(run_id: int) -> set[str]:
+        report_path = f"/tmp/pytest-report-{run_id}.json"
+        subprocess.run(
+            ["python", "-m", "pytest", "--tb=no", "-q",
+             f"--json-report", f"--json-report-file={report_path}"],
+            capture_output=True, text=True, cwd="/repo", check=False
+        )
+        report = json.loads(Path(report_path).read_text())
+        return {t["nodeid"] for t in report["tests"] if t["outcome"] == "failed"}
+    
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        all_failures = list(executor.map(run_once, range(n_runs)))
+    
+    # A test is flaky if it fails in some runs but not all
+    all_failed_tests: set[str] = set().union(*all_failures)
+    non_empty = [f for f in all_failures if f]
+    # always_failed: tests that failed in every run that had any failure
+    always_failed: set[str] = set.intersection(*non_empty) if non_empty else set()
+    flaky_tests = all_failed_tests - always_failed
+    
+    # Count flaky occurrences vs. total test executions
+    total_tests_per_run = len(all_failed_tests | set().union(*all_failures)) or 1
+    total_test_runs = n_runs * total_tests_per_run
+    flaky_test_runs = sum(
+        sum(1 for run in all_failures if test in run)
+        for test in flaky_tests
+    )
+    return flaky_test_runs / total_test_runs
+
+flakiness_kpi = KPISpec(
+    name="ci_flakiness_rate",
+    measure=lambda: measure_flakiness(n_runs=10),
+    target=0.01,   # <1% of test runs are flaky
+    direction="minimize",
+    budget={"iterations": 12, "wall_hours": 6},
+)
+```
+
+The measurement cost here is real: measuring flakiness once requires 10 full CI runs. The agent loop must be budget-aware and prioritize fixes by expected flakiness reduction.
+
+## The Hierarchical Pattern: Manager + Worker
+
+For complex KPIs, a single agent loop is often insufficient. The effective pattern is a two-level hierarchy: a manager agent that reasons about strategy and selects interventions, and worker agents that implement specific changes.
+
+```python
+@dataclass
+class AgentAction:
+    description: str
+    agent_type: str    # "code_modifier", "test_writer", "profiler", etc.
+    scope: str         # file or module the worker should focus on
+    expected_delta: float  # manager's prediction of metric improvement
+
+def kpi_manager_agent(
+    kpi: KPISpec,
+    codebase_context: str,
+    worker_pool: dict[str, Callable],
+) -> dict:
+    """
+    Manager agent: reads current metric state and codebase, 
+    selects highest-expected-value intervention, dispatches worker.
+    """
+    current_value = kpi.measure()
+    
+    # Manager reasons about intervention strategy
+    strategy_prompt = f"""
+    Current {kpi.name}: {current_value} (target: {kpi.target})
+    
+    Codebase summary:
+    {codebase_context}
+    
+    Available worker agents: {list(worker_pool.keys())}
+    
+    Identify the highest-expected-value intervention. 
+    Return: agent_type, scope, rationale, expected_delta.
+    Do NOT implement the change — only select the intervention.
+    """
+    
+    action = llm.call_structured(
+        strategy_prompt,
+        output_schema=AgentAction
+    )
+    
+    # Dispatch to worker
+    worker_fn = worker_pool[action.agent_type]
+    worker_result = worker_fn(scope=action.scope, kpi=kpi)
+    
+    # Measure effect
+    new_value = kpi.measure()
+    actual_delta = new_value - current_value
+    
+    return {
+        "action": action,
+        "predicted_delta": action.expected_delta,
+        "actual_delta": actual_delta,
+        "new_value": new_value,
+    }
+```
+
+The manager never writes code. It reads the codebase, understands the current metric state, and decides *which kind of intervention* to try and *where*. The worker agents execute the intervention within a bounded scope.
+
+This separation matters because the skill sets are different: selecting interventions requires reasoning about the codebase holistically; executing a specific change (write three tests for the `authenticate()` function's error paths) requires focused implementation skill. Combining them in one agent produces the worst of both — strategic decisions made without enough implementation context, implementation choices made without enough strategic context.
+
+## What Breaks, and Why
+
+KPI-driven loops fail in three characteristic ways.
+
+**Metric gaming**: The agent discovers that optimizing the measure is easier than improving the underlying system. Test coverage gaming is the classic example — an agent can write tests that execute code paths without asserting anything meaningful, which increases coverage without improving test quality. The defense is test quality oracles in the measurement function (e.g., mutation testing coverage alongside line coverage).
+
+**Measurement noise exploits**: For noisy metrics like latency, the agent may find that its changes don't improve latency but that rerunning the measurement sometimes produces a lucky sample. If the loop terminates on a single favorable measurement, it converges on noise rather than improvement. Defense: require N consecutive measurements above threshold, not just one.
+
+**Scope escape**: The agent optimizes the measured scope while degrading the unmeasured system. A latency agent might inline a critical function, improving the benchmark while making the code unmaintainable. The defense is a secondary constraint: changes that introduce regressions in a separate test suite are rejected regardless of the primary KPI improvement.
+
+```python
+def validate_no_regression(constraint_suite: Callable[[], dict[str, bool]]) -> bool:
+    """Secondary gate: primary KPI improvement is rejected if constraints fail."""
+    constraint_results = constraint_suite()
+    return all(constraint_results.values())
+
+def run_suite_with_regression_gate(
+    kpi: KPISpec,
+    constraint_suite: Callable[[], dict[str, bool]],
+    tools: list[Tool],
+) -> dict:
+    """KPI loop with secondary constraint gate — rejects regressions."""
+    history: list[dict] = []
+    for iteration in range(kpi.budget["iterations"]):
+        new_value = kpi.measure()
+        if kpi.satisfied(new_value):
+            if validate_no_regression(constraint_suite):
+                return {"status": "target_met", "value": new_value}
+            else:
+                # KPI met but constraints broken — revert and continue
+                revert_last_action()
+                history[-1]["rejected"] = "constraint_violation"
+                continue
+        # ... agent reasoning and tool dispatch omitted for brevity
+    return {"status": "budget_exhausted", "history": history}
+```
+
+## The Human Role Shift
+
+KPI-driven development doesn't eliminate the need for engineering judgment — it concentrates it in different places.
+
+The judgment that matters: **KPI selection and measurement design**. A poorly specified KPI produces a well-optimized system that doesn't do what you wanted. "Maximize user retention" optimized without constraint produces addictive design. "Minimize model latency" without a correctness gate produces a model that returns garbage quickly. "Improve test coverage" without a test quality gate produces untested tests.
+
+The judgment that's automated: identifying which specific changes move the metric, executing those changes, verifying the effect, and iterating. This is execution skill. It's the part that's time-consuming, tedious, and most amenable to automation.
+
+The practical implication for engineers: the valuable skill shifts from "I can quickly implement anything" to "I can specify what success looks like in a way the measurement harness can evaluate." These are related but distinct. The former is about code velocity; the latter is about understanding the system's objectives well enough to make them precise.
+
+---
+
+*The KPI-driven development pattern emerged from agent evaluations on real software tasks — particularly MLE-Bench (ML engineering), SWE-Bench (software engineering), and internal pipeline reliability work. The hierarchical manager-worker variant is informed by multi-agent coordination research at Google (MLE-STAR) and Anthropic's multi-agent orchestration documentation.*

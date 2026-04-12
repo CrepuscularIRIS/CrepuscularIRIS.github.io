@@ -1,0 +1,193 @@
+---
+title: "TRIBE v2: Foundation Models for Synthetic Neuroscience"
+description: "Meta FAIR's tri-modal brain encoding model predicts fMRI responses to novel stimuli — without scanning anyone."
+publishDate: "2026-04-12"
+tags: [bci, fmri, neuroscience, foundation-models, meta-fair, brain-encoding]
+category: research
+language: en
+draft: false
+---
+
+Every fMRI study bottlenecks on the same constraint: you need human subjects in a scanner, lying still for hours, viewing stimuli under controlled conditions. It's expensive, non-scalable, and the effective sample size for any given stimulus is tiny. Most published neuroscience findings are based on a handful of subjects, often fewer than 20.
+
+Meta FAIR's TRIBE v2 (Tri-modal Brain Encoding), presented at ICLR 2026, attacks this constraint from an unexpected direction: instead of reducing the cost of scanning, it asks whether a foundation model trained on sufficient fMRI data can predict what a novel brain scan would look like — without conducting the scan.
+
+The architecture achieves spatial resolution at 70,000 voxels across 720 subjects with 1,115 hours of fMRI data, and its predictions of held-out neural responses to unseen images, audio, and text are competitive with regression models trained specifically on individual subjects. This isn't a marginal improvement in brain encoding performance. It's a qualitative shift in what's possible: synthetic neuroscience at scale.
+
+## The Brain Encoding Problem
+
+Brain encoding and decoding are inverse problems. Decoding asks: given neural activations, what stimulus caused them? Encoding asks: given a stimulus, what activations will it produce? Both are scientifically valuable; encoding is arguably more fundamental because it provides a model of the input-to-brain mapping.
+
+Standard brain encoding pipelines fit a linear regression (or a slightly nonlinear variant) between stimulus features and voxel responses:
+
+```python
+from sklearn.linear_model import Ridge
+import numpy as np
+
+# fmri_responses: (n_trials, n_voxels)
+# stimulus_features: (n_trials, n_features) — e.g., CLIP embeddings
+def fit_encoding_model(stimulus_features, fmri_responses, alpha=1000.0):
+    """Fit a ridge regression encoding model for one subject."""
+    model = Ridge(alpha=alpha)
+    model.fit(stimulus_features, fmri_responses)
+    return model
+
+def predict_response(model, new_stimulus_features):
+    return model.predict(new_stimulus_features)
+```
+
+This works reasonably well for individual subjects on stimulus types within the training distribution. The problems emerge at scale:
+
+1. **No cross-subject generalization**: fit on subject A, fails on subject B
+2. **No cross-modal transfer**: an image encoding model doesn't transfer to audio
+3. **Data hunger**: fitting per-voxel regressions requires hundreds of stimulus-response pairs per subject
+4. **No synthesis**: you can't predict responses to stimuli without having collected data for similar stimuli
+
+TRIBE v2 addresses all four.
+
+## Architecture: Tri-Modal Encoding at 70K Voxels
+
+The TRIBE v2 architecture is a transformer that maps stimulus embeddings from three modalities — visual (CLIP ViT-G), auditory (EnCodec), and linguistic (LLaMA-3) — to a 70,000-dimensional voxel prediction vector.
+
+The core insight is that these modalities share a large portion of their cortical encoding space. Visual cortex obviously responds to images, but it also activates during auditory description of visual scenes and during mental imagery triggered by language. Auditory cortex responds to music but also to written lyrics. A model that treats these modalities as independent cannot capture the cross-modal coherence of actual brain responses.
+
+TRIBE v2's architecture handles this with a cross-modal attention layer that forces the model to align representations across modalities before projecting to voxel space:
+
+```python
+import torch
+import torch.nn as nn
+from torch.nn import MultiheadAttention
+
+class TriModalEncoder(nn.Module):
+    def __init__(self, d_model: int = 1024, n_heads: int = 16, n_voxels: int = 70000):
+        super().__init__()
+        # Per-modality projectors bring heterogeneous embeddings to d_model
+        self.visual_proj   = nn.Linear(1280, d_model)  # CLIP ViT-G dim
+        self.auditory_proj = nn.Linear(128, d_model)   # EnCodec dim
+        self.language_proj = nn.Linear(4096, d_model)  # LLaMA-3 dim
+
+        # Cross-modal fusion: modalities attend to each other
+        self.cross_modal_attn = MultiheadAttention(d_model, n_heads, batch_first=True)
+        self.norm = nn.LayerNorm(d_model)
+
+        # Voxel-space projection
+        self.voxel_head = nn.Sequential(
+            nn.Linear(d_model, d_model * 2),
+            nn.GELU(),
+            nn.Linear(d_model * 2, n_voxels)
+        )
+
+    def forward(self, visual=None, auditory=None, language=None):
+        # Build token sequence from available modalities
+        tokens = []
+        if visual is not None:
+            tokens.append(self.visual_proj(visual).unsqueeze(1))
+        if auditory is not None:
+            tokens.append(self.auditory_proj(auditory).unsqueeze(1))
+        if language is not None:
+            tokens.append(self.language_proj(language).unsqueeze(1))
+
+        x = torch.cat(tokens, dim=1)  # (batch, n_modalities, d_model)
+
+        # Cross-modal attention: each modality attends to others
+        x_attended, _ = self.cross_modal_attn(x, x, x)
+        x = self.norm(x + x_attended)
+
+        # Pool across modalities and project to voxel space
+        x_pooled = x.mean(dim=1)
+        return self.voxel_head(x_pooled)  # (batch, n_voxels)
+```
+
+This is a simplified version of the TRIBE v2 design. The full architecture includes deeper cross-modal stacks, subject-specific conditioning through learned embeddings, and a cortical masking strategy that handles missing voxels across subjects with different coverage.
+
+## The Training Data Challenge
+
+Training a reliable 70K-voxel prediction model requires more than scale — it requires *aligned* scale. The 720 subjects and 1,115 hours of fMRI data come from three primary sources: the Natural Scenes Dataset (Allen et al.), HCP-Aging, and a purpose-collected Meta FAIR corpus with audio and language stimuli.
+
+The alignment challenge: voxel coordinates don't map cleanly across subjects. Individual anatomical variation means that "voxel (38, 72, 51) in subject A" and "voxel (38, 72, 51) in subject B" may respond to completely different features. TRIBE v2 handles this with a surface-based alignment step that registers each subject's cortical surface to a common MNI template before training, trading volumetric coordinate alignment for surface-based geodesic proximity.
+
+The result is a training dataset where each voxel at a given surface position represents approximately the same functional anatomy across subjects — not perfectly, but close enough for a foundation model to learn cross-subject patterns.
+
+## What Synthetic Neural Responses Enable
+
+The practical output of TRIBE v2 is a function: given any image, audio clip, or text passage, predict the population-average fMRI response plus a subject-conditioned response for any of the 720 training subjects.
+
+This enables research workflows that were previously impossible or prohibitively expensive:
+
+**Large-scale stimulus pre-screening**: Before running an fMRI study on 20 subjects, synthesize responses across all 720 virtual subjects to identify which stimuli show the strongest effect in the regions of interest. Only scan subjects for the subset of high-signal stimuli.
+
+**Hypothesis generation at scale**: A model that predicts brain responses can generate stimuli that maximally activate a target region — a kind of inverse synthesis. Ask "what image would most activate the fusiform face area?" and use gradient-based optimization on the encoding model:
+
+```python
+def synthesize_optimal_stimulus(
+    model: TriModalEncoder,
+    target_voxels: list[int],
+    n_steps: int = 1000,
+    lr: float = 0.01
+) -> torch.Tensor:
+    """
+    Find the image embedding that maximally activates target_voxels.
+    Start from noise; optimize the CLIP embedding space.
+    """
+    # Initialize with random embedding in CLIP space
+    visual_embed = torch.randn(1, 1280, requires_grad=True)
+    optimizer = torch.optim.Adam([visual_embed], lr=lr)
+
+    for step in range(n_steps):
+        optimizer.zero_grad()
+        predicted_response = model(visual=visual_embed)  # (1, n_voxels)
+
+        # Maximize activation in target voxels
+        target_activation = predicted_response[0, target_voxels].mean()
+        loss = -target_activation  # Gradient ascent
+
+        loss.backward()
+        optimizer.step()
+
+        if step % 100 == 0:
+            print(f"Step {step}: activation = {target_activation.item():.4f}")
+
+    return visual_embed.detach()
+```
+
+The synthesized embedding can then be inverted to a pixel-space image using a CLIP-conditioned generative model. The result is a stimulus purpose-built to activate specific neural circuits — useful for probing the functional organization of cortex without recruiting subjects.
+
+**Cross-modal comparison**: Because TRIBE v2 handles visual, auditory, and linguistic stimuli jointly, you can ask questions like "does this image and its textual description activate the same regions?" or "which parts of the visual cortex respond similarly to music and to corresponding mental imagery?" These comparisons required separate studies and careful alignment before; TRIBE v2 makes them direct comparisons on a shared representation.
+
+## Performance and Validation
+
+On held-out subjects from the Natural Scenes Dataset, TRIBE v2 achieves a median $R^2$ of 0.32 across all voxels — meaning the model explains 32% of the variance in individual voxel responses to novel images. For comparison, subject-specific linear regression models (trained on data from each held-out subject individually) achieve ~0.38 $R^2$ on the same set.
+
+The 0.06 gap is meaningful but not surprising. TRIBE v2 is making zero-shot predictions about a novel subject using no data from that subject; the regression model has access to hundreds of trials. What's more interesting is the cortical distribution of accuracy: TRIBE v2 substantially outperforms regression in early visual cortex (V1-V4) and underperforms in higher association areas. Early visual responses are highly stereotyped across subjects; association areas are where individual variation is highest.
+
+For predictable circuits, a foundation model generalizes better than a per-subject fit. For idiosyncratic high-level representations, individual data still wins. This tracks what you'd expect from a model that's learned a principled representation of the cortical hierarchy.
+
+## The Interpretability Angle
+
+TRIBE v2 is also a representation analysis tool. Because the model encodes stimuli through a structured cross-modal embedding, you can probe which features drive responses in specific brain regions by analyzing the gradient of the output with respect to input features:
+
+```python
+def voxel_feature_attribution(model, stimulus_embed, target_voxel: int):
+    """Compute which input features most drive a target voxel's response."""
+    stimulus_embed = stimulus_embed.detach().requires_grad_(True)
+    response = model(visual=stimulus_embed)
+    voxel_activation = response[0, target_voxel]
+    voxel_activation.backward()
+    return stimulus_embed.grad  # Attribution map in embedding space
+```
+
+This connects TRIBE v2 to mechanistic interpretability methods in language models. If you can attribute a neuron's activation to specific input features, you're asking the same question that sparse autoencoder approaches ask for LLMs: what does this unit *compute*? The difference is that fMRI voxels have known anatomical locations with decades of prior functional annotation, giving ground-truth validation that internal LLM features lack.
+
+## Limitations and What Comes Next
+
+TRIBE v2's predictions are bounded by the cortical templates used for inter-subject alignment. Regions with high individual variability — anterior temporal lobe, prefrontal cortex, individual-specific sulcal patterns — are systematically under-predicted. The model is most useful for canonical cortical areas (visual, auditory, somatosensory cortex) where cross-subject functional anatomy is more consistent.
+
+The synthetic responses are also population statistics, not individual predictions. A 720-subject average response to a novel image is a real and useful quantity, but it's not a substitute for scanning a specific individual for a specific clinical or research purpose. TRIBE v2 is a tool for hypothesis generation and population-level analysis, not for individual subject modeling.
+
+The natural next step is integrating richer individual-difference covariates — age, sex, neurological history, cognitive test scores — as conditioning signals. A model that can predict not just population-average responses but individual variation conditioned on measurable subject features would close the gap between synthetic and real fMRI data for most research applications.
+
+For the BCI field, the implications are more distant but real. Foundation models for brain encoding could eventually guide electrode placement in BMI systems, reducing the surgical calibration burden by pre-predicting which cortical locations carry the highest-quality signal for a given decoding target. Whether that application is 5 years away or 15 is harder to say. But the direction — using learned models of cortical organization to reduce the data collection burden for individual subjects — is clearly where the field is heading.
+
+---
+
+*Reference: "TRIBE v2: A Tri-modal Brain Encoding Foundation Model at 70,000 Voxels" (Meta FAIR, ICLR 2026, March 26). Natural Scenes Dataset: Allen et al. 2022.*

@@ -1,266 +1,194 @@
 ---
-title: '三个关键问题：筛选架构材料的判断框架'
-description: '面对任何新的架构提案，用这三个问题快速判断其本质：改连接权重还是建模对象？Block级还是连续化？架构灵感还是产品披露？'
-publishDate: '2026-03-19'
-updatedDate: '2026-03-19'
+title: "Three Tests for Architecture Papers: A Skeptic's Checklist"
+description: "Before trusting a claimed architectural improvement, three questions reliably separate genuine contributions from benchmark artifacts and engineering tricks."
+publishDate: '2026-04-12'
+updatedDate: '2026-04-12'
 category: research
 tags:
-  - research-framework
-  - architecture-analysis
-  - evaluation-criteria
+  - research-methodology
+  - architecture
+  - deep-learning
+  - paper-evaluation
   - first-principles
-language: zh
+language: en
 ---
 
-## 引言
+Reading ML papers at conference pace produces a specific kind of cognitive debt: you accumulate claimed improvements faster than you can evaluate them. A new residual variant. An attention modification. A routing mechanism. Each comes with a table showing it's 1-2% better than baselines on four standard benchmarks.
 
-面对任何新的架构提案，问自己这三个问题，可以快速判断其本质和研究价值。
+Most of these claims do not replicate cleanly. The improvement is real in the paper's experimental setup — but the setup has hidden degrees of freedom that explain the gap. The architecture contributes less than the authors believe, and the contribution comes from somewhere other than the mechanism they describe.
+
+Three questions have proven consistently useful for separating signal from noise. They apply to any architectural proposal, but they're sharpest when the claim is a modification to an existing architecture (residual connections, attention mechanisms, normalization strategies) rather than an entirely new paradigm.
 
 ---
 
-## 问题 1：改"连接权重"还是改"建模对象"？
+## Question 1: Is This Changing Weight Allocation or Changing What's Being Modeled?
 
-### 核心区分
+The first axis separates **connection weight modifications** from **modeling object changes**. This distinction matters because they have fundamentally different failure modes and different upside ceilings.
 
-| 类型 | 定义 | 影响深度 | 例子 |
-|------|------|----------|------|
-| **连接权重** | 改变信息流动的权重分配方式 | 浅层优化 | Attention Residuals |
-| **建模对象** | 改变"什么被建模"的根本假设 | 深层范式 | VAE, Orchestration |
+**Connection weight modifications** change how information is aggregated, routed, or combined within an existing computational graph. The inputs and outputs remain the same; the transformation changes. Examples:
 
-### 具体分析
+- Attention Residuals (fixed weights → Softmax-weighted aggregation over layer history)
+- Mixture-of-Experts routing (dense FFN → sparse expert selection)
+- Learnable layer scaling (fixed unit residual weights → per-layer gain parameters)
 
-**改连接权重**的典型特征：
-- 保持相同的"层"或"模块"概念
-- 改变的是层与层之间的连接方式
-- 优化目标通常是训练稳定性或表达能力
+**Modeling object changes** change what the network is asked to represent. The computational structure may look similar, but the model is now capturing a fundamentally different distributional assumption. Examples:
 
-**例子 - Attention Residuals**：
+- Variational Autoencoders (direct density estimation → latent variable modeling with explicit priors)
+- Neural ODEs (discrete layer stacking → continuous dynamics in depth-space)
+- Diffusion models (direct generation → score function estimation and reverse SDE)
+
+The practical test: if the baseline model could approximate the proposed model's behavior at test time — just with the right learned weights — you're looking at a connection weight modification. If the baseline model *cannot in principle* represent what the proposal represents, you're looking at a modeling object change.
+
 ```python
-# 经典 Residual：固定权重
-h_{l+1} = h_l + f(h_l)  # 权重隐式为 1
+# Connection weight modification: baseline can express this at initialization
+# Attention Residuals uses Softmax weights α_i over layer history h_i
+# At initialization, α_i ≈ uniform → equivalent to standard residual / L
+# At convergence, α_i = f(content) → beyond baseline expressivity, but
+#     the transition is smooth and the baseline was "almost there"
 
-# Attention Residuals：学习权重
-h_{l+1} = Σ α_i · h_i   # α_i = softmax(scores)
+h_attn_residual = sum(alpha_i * h_i for i in range(current_layer))
+
+# Modeling object change: baseline cannot express this distribution
+# A VAE models p(x) = ∫ p(x|z)p(z)dz — requires explicit latent structure
+# A standard autoencoder models p(x|enc(x)) — cannot approximate the integral
+# These are not related by a weight change; they model different things
+
+z_mean, z_logvar = encoder(x)
+z = reparameterize(z_mean, z_logvar)  # requires stochastic computation graph
+x_recon = decoder(z)
+kl_loss = -0.5 * sum(1 + z_logvar - z_mean**2 - exp(z_logvar))
 ```
-- 层概念不变
-- 改变的是"如何聚合前层输出"
-- **判断**：改连接权重，但影响深远
+
+**Why this matters for evaluation**: Connection weight modifications are correctly evaluated by asking whether the learned weights actually differ from initialization — and whether the delta is positive. If you train Attention Residuals and find the learned α_i are approximately uniform, the model isn't using the proposed mechanism even if benchmarks improve. (Benchmark improvement from a parameter count increase is the most common confound for this class of modification.)
+
+Modeling object changes require different evaluation: you need to show the new modeling assumption is *correct for the domain*, not just that the model achieves better metrics. A VAE's value comes from learning a meaningful latent space, not from reconstruction accuracy alone.
+
+**The skeptic's conclusion from Q1**: A connection weight modification with benchmark improvements is a weak claim unless the paper shows (a) the learned weights actually differ from the uniform initialization, and (b) the improvement isn't explained away by the extra parameters.
 
 ---
 
-**改建模对象**的典型特征：
-- 改变"基本单元"的定义
-- 引入新的抽象层次
-- 优化目标是表示能力或信息压缩
+## Question 2: Is This Block-Level or Does It Commit to Continuity?
 
-**例子 - VAE**：
+The second question asks where a proposed mechanism sits on the **discretization spectrum**: from fully block-local (operates within fixed computational groups, no structure beyond the block) to fully continuous (operates over a smooth manifold with no discrete boundaries).
+
+This matters because most "novel" architectures are implicit compromises on this spectrum — and the paper rarely tells you what they gave up by landing where they did.
+
+**Block-local mechanisms** operate within a fixed-size chunk of layers, tokens, or time steps. The "block" is a design choice: 4 layers, 8 tokens, 512ms of audio. Within the block, the mechanism can be arbitrarily sophisticated. Across blocks, interaction is by fixed residual or concatenation.
+
+Examples: Transformer blocks (attention within context window, no cross-window interaction in base GPT), Block Attention Residuals (attention-weighted aggregation *within* each block of B layers, fixed residual *across* blocks), sliding window attention.
+
+**Continuous mechanisms** commit to smooth variation over the dimension in question. Neural ODEs parameterize depth as a continuous variable; memory-augmented architectures treat time as a continuous signal; CDMN-style proposals treat layer depth as a coordinate in a learned manifold.
+
 ```python
-# 传统：直接建模 p(x)
-# VAE：建模 p(x|z)p(z)，z 是连续潜变量
+# Block-level: interaction bounded by block_size
+class BlockAttnRes(nn.Module):
+    def __init__(self, block_size: int = 4):
+        self.block_size = block_size  # hard boundary
+    
+    def forward(self, h_current: torch.Tensor, 
+                history: list[torch.Tensor],
+                layer_idx: int) -> torch.Tensor:
+        # Can only attend within the current block — hard constraint
+        block_start = (layer_idx // self.block_size) * self.block_size
+        block_history = history[block_start:layer_idx]  # O(B) items max
+        
+        if not block_history:
+            return h_current
+        
+        # Attention within block is arbitrary; boundary is fixed
+        return self._attend(h_current, torch.stack(block_history, dim=0))
 
-encoder: x → z (连续潜空间)
-decoder: z → x (重构)
+# Continuous: depth treated as a coordinate
+class NeuralODELayer(nn.Module):
+    def __init__(self, dynamics_fn: nn.Module):
+        self.dynamics = dynamics_fn  # dh/dt = f(h, t)
+    
+    def forward(self, h0: torch.Tensor, 
+                t_span: tuple[float, float] = (0.0, 1.0)) -> torch.Tensor:
+        # Depth t ∈ [0,1] is a continuous variable
+        # No block boundaries; integration is smooth
+        from torchdiffeq import odeint
+        t = torch.linspace(*t_span, steps=50)
+        return odeint(self.dynamics, h0, t)[-1]
 ```
-- 引入"潜变量 z"作为新的建模对象
-- 改变的是"什么被优化"
-- **判断**：改建模对象，范式级创新
+
+**The practical tradeoff** between block-level and continuous: block-level is computationally tractable and often achieves most of the theoretical benefit at a fraction of the cost. Continuous mechanisms are theoretically principled but introduce optimization instability, ODE solver overhead, and adjoint method complexity.
+
+The question for evaluation is whether the block boundary is a principled choice or a concession. If a paper introduces a mechanism that requires continuity in principle — cross-layer attention over the full depth — but implements it at block level, the block size is a critical hyperparameter that needs ablation. Papers routinely omit this ablation.
+
+**Ablation you should require**: If the mechanism is block-level, what happens as block size varies? Does performance increase monotonically with block size (suggesting you want continuity but can't afford it) or does it peak at a specific size (suggesting the block is the right inductive bias)? These are different claims about what the mechanism is actually doing.
 
 ---
 
-## 问题 2：Block 级妥协还是连续化？
+## Question 3: Is This Architecture Insight or Product Disclosure?
 
-### 核心区分
+The third question is uncomfortable but necessary: **is the paper reporting a scientific finding, or is it documenting an engineering decision that was made for other reasons?**
 
-| 类型 | 离散程度 | 工程可行性 | 理想程度 |
-|------|----------|------------|----------|
-| **Block 级** | 离散 | 高 | 妥协 |
-| **半连续** | 混合 | 中 | 探索 |
-| **连续** | 连续 | 低 | 理想 |
+Major labs — OpenAI, Anthropic, Google, Moonshot AI — publish papers about the architectures they've already deployed. These papers often contain genuine scientific insight. But they also contain decisions that were made for reasons that are not scientific: available hardware, team expertise, inference cost, compatibility with existing serving infrastructure.
 
-### 具体分析
+A paper reporting a genuinely novel architecture finds the mechanism, demonstrates it, and concludes that it works. A product disclosure paper describes what was built, presents evaluations that show it's competitive, and implicitly argues that the engineering choices were reasonable.
 
-**Block 级妥协**：
-- 保持离散层或块的结构
-- 在块内部或块之间引入灵活性
-- 工程上可训练、可部署
+The signals that distinguish them:
 
-**例子 - Attention Residuals**：
-- 仍是离散层 l=1,2,3...
-- 但第 l 层可以 attention 到任意前层
-- **判断**：Block 级妥协，工程可行
+**Architecture insight signals:**
+- The mechanism is tested on a *new synthetic task* designed specifically to require it (not just better scores on standard benchmarks)
+- The paper includes experiments where the mechanism *fails* and discusses why
+- The ablations vary the mechanism's core parameters (block size, attention temperature, routing k) and show non-monotonic behavior that reveals something about the mechanism's nature
+- The reported result generalizes: other groups can reproduce it without tuning
 
----
+**Product disclosure signals:**
+- Benchmark improvement reported without a mechanism-specific test
+- "We trained on 5T tokens with 128 A100s" — compute details that are opaque to most readers but legitimate to the lab
+- Ablations that vary the full system (model size, data scale) rather than the specific mechanism
+- Authors cannot clearly state what experiment would *falsify* the main claim
 
-**半连续（混合）**：
-- 试图打破严格的层级结构
-- 但仍需要某种离散化以便训练
-- 处于探索阶段
-
-**例子 - Perceiver IO**：
-- Latent array 是离散的（固定数量 slots）
-- 但可以通过 cross-attention 灵活读写
-- 类似"离散化的连续记忆"
-- **判断**：半连续，有价值但不够彻底
-
----
-
-**连续化（理想）**：
-- 层概念完全消失
-- 深度成为连续坐标
-- 训练困难，多为理论探索
-
-**例子 - Neural ODE**：
 ```python
-# 连续深度
-dh(t)/dt = f(h(t), t, θ)
+# Test for "what would falsify this?":
+# A well-formed architectural claim should specify:
 
-# 而非离散层
-h_{l+1} = h_l + f(h_l)
-```
-- 深度 t 是连续变量
-- 需要 ODE solver
-- 训练昂贵，难以 scale
-- **判断**：理想但工程困难
+@dataclass
+class ArchitecturalClaim:
+    mechanism: str  # "dynamic layer aggregation"
+    hypothesis: str  # "attention-weighted residuals reduce PreNorm dilution"
+    falsifiable_prediction: str  # "attention weights should deviate from uniform
+                                 #  at convergence; if they don't, the mechanism
+                                 #  isn't active regardless of benchmark results"
+    confounds_ruled_out: list[str]  # ["parameter count matched", 
+                                    #  "lr sweep run for both variants",
+                                    #  "gradient norms compared"]
 
----
-
-**我的目标 - CDMN**：
-```python
-# 愿景：连续深度 + 相位编码检索
-h(t) = retrieve(
-    memory_bank = {h(0), h(0.1), ...},
-    query = current_state,
-    addressing = RoPE_angles(t, s)  # 相位编码寻址
-)
-```
-- 深度 t ∈ [0,1] 是连续的
-- 但通过相位编码实现离散化检索
-- **判断**：试图在连续理想和工程可行之间找平衡
-
----
-
-## 问题 3：架构灵感还是产品/安全披露？
-
-### 核心区分
-
-| 类型 | 信息密度 | 研究价值 | 例子 |
-|------|----------|----------|------|
-| **架构灵感** | 高 | **高** | arXiv 论文, 开源代码 |
-| **产品披露** | 中 | 中 | 发布页, benchmark 数字 |
-| **安全披露** | 低 | 低 | System Card, 政策文档 |
-
-### 具体分析
-
-**架构灵感（优先阅读）**：
-- 来源：arXiv, GitHub, 技术博客
-- 内容：方法细节、实现技巧、实验分析
-- 价值：可直接借鉴或复现
-
-**例子 - Attention Residuals (arXiv)**：
-- 完整的方法描述
-- 实验设置和结果
-- 开源代码可验证
-- **判断**：高价值，优先阅读
-
----
-
-**产品披露（快速浏览）**：
-- 来源：官方发布页、新闻稿
-- 内容：能力边界、benchmark 数字、使用场景
-- 价值：了解工业界方向，但细节少
-
-**例子 - GPT-5.4 发布页**：
-- "比 GPT-4 强 X%"
-- 支持 Y 种语言
-- 但不告诉你 architecture
-- **判断**：低价值（对你当前研究）
-
----
-
-**安全披露（谨慎对待）**：
-- 来源：System Card, Model Card, 政策文档
-- 内容：风险评估、安全措施、对齐策略
-- 价值：对安全研究有用，对架构创新帮助有限
-
-**例子 - Claude 4.6 System Card**：
-- 能力评估
-- 安全测试
-- 对齐措施
-- **判断**：低价值（对你当前架构研究）
-
----
-
-## 综合应用：材料筛选实例
-
-### 实例 1：Kimi Attention Residuals
-
-| 问题 | 判断 | 理由 |
-|------|------|------|
-| 改权重还是对象？ | **权重** | 层概念不变，改变聚合方式 |
-| Block 还是连续？ | **Block** | 仍是离散层，可训练部署 |
-| 灵感还是披露？ | **灵感** | arXiv 论文，有代码 |
-
-**结论**：高价值，优先阅读，但注意它是 Block 级妥协而非连续化
-
----
-
-### 实例 2：Perceiver IO
-
-| 问题 | 判断 | 理由 |
-|------|------|------|
-| 改权重还是对象？ | **对象** | 引入 latent memory 新抽象 |
-| Block 还是连续？ | **半连续** | Latent slots 离散，但读写灵活 |
-| 灵感还是披露？ | **灵感** | arXiv 论文，DeepMind 出品 |
-
-**结论**：高价值，与 CDMN 思路接近，值得深入
-
----
-
-### 实例 3：GPT-5.4 System Card
-
-| 问题 | 判断 | 理由 |
-|------|------|------|
-| 改权重还是对象？ | **未知** | 不披露架构 |
-| Block 还是连续？ | **未知** | 同上 |
-| 灵感还是披露？ | **披露** | 安全评估文档 |
-
-**结论**：低价值（对你当前研究），快速浏览即可
-
----
-
-## 快速决策树
-
-```
-新材料出现
-    ↓
-问题 1: 改权重还是对象?
-    ├── 权重 → 优化技术，有价值但非范式
-    └── 对象 → 范式创新，深入研究
-    ↓
-问题 2: Block 还是连续?
-    ├── Block → 工程可行，可快速验证
-    ├── 半连续 → 探索中，有研究空间
-    └── 连续 → 理想但困难，理论价值高
-    ↓
-问题 3: 灵感还是披露?
-    ├── 灵感 (arXiv/代码) → 优先阅读
-    ├── 披露 (产品页) → 快速浏览
-    └── 安全 (System Card) → 暂缓
+# Most papers can state mechanism and hypothesis.
+# Very few explicitly state falsifiable_prediction.
+# Fewer still document confounds_ruled_out.
 ```
 
----
-
-## 应用：当前材料筛选结果
-
-| 材料 | Q1 权重/对象 | Q2 Block/连续 | Q3 灵感/披露 | 优先级 |
-|------|--------------|---------------|--------------|--------|
-| Attention Residuals | 权重 | Block | 灵感 | **最高** |
-| BLIP-2 / Q-Former | 对象 | 半连续 | 灵感 | 高 |
-| Perceiver IO | 对象 | 半连续 | 灵感 | 高 |
-| Kimi K2/K2.5 | 混合 | Block | 混合 | 中 |
-| VAE | 对象 | 连续 | 灵感 | 中 |
-| GPT-5.4 System Card | 未知 | 未知 | 披露 | 低 |
+The way to apply Q3 to a specific paper: identify the three most important engineering decisions in the paper (block size, warmup schedule, initialization scheme, routing algorithm). For each, ask: *would the paper's main result survive if this decision were changed?* If the answer is "probably not, but we didn't test it," the paper is more product disclosure than architecture insight — which is fine, but changes how much you should trust the mechanism claim versus the benchmark claim.
 
 ---
 
-**标签**: #research-framework #evaluation-criteria #first-principles
+## Applying All Three in Practice
+
+These questions are most useful applied together on a paper you're deciding whether to base your own work on. A quick evaluation template:
+
+**Q1 (Weight allocation vs. modeling object):**
+- [ ] What exactly changes in the computational graph?
+- [ ] Could the baseline model express this behavior with different weights?
+- [ ] Does the paper measure whether the proposed mechanism is actually active (e.g., weight statistics)?
+
+**Q2 (Block-level vs. continuous):**
+- [ ] Where is the mechanism on the discretization spectrum?
+- [ ] Is the block boundary principled or pragmatic?
+- [ ] Did the authors ablate block size / discretization granularity?
+
+**Q3 (Architecture insight vs. product disclosure):**
+- [ ] What experiment would falsify the main claim?
+- [ ] Which engineering decisions are load-bearing, and were they varied?
+- [ ] Can the result be reproduced without the paper's specific compute setup?
+
+A paper that scores well on all three — demonstrates the mechanism is active, ablates the discretization granularity, and specifies what would falsify the claim — is trustworthy. A paper that scores poorly on all three — shows benchmark improvements without mechanism validation, doesn't ablate the block boundary, and reports results from a unique compute configuration — is worth reading for awareness but not building on.
+
+Most papers fall somewhere in between. The checklist makes it legible where they fall and what verification experiments you'd need to run yourself before trusting the contribution.
+
+---
+
+*The framework was developed while evaluating residual connection variants — particularly Attention Residuals (Moonshot AI, 2026), Block Attention mechanisms, and Neural ODE-based depth models. The questions generalize to attention modifications, normalization strategies, and routing mechanisms.*
