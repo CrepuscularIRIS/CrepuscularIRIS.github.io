@@ -1,0 +1,259 @@
+---
+title: "Cross-Modal SSL for Non-Invasive Brain Decoding"
+description: "New foundation models align EEG and fMRI signals to LLM semantic spaces via cross-modal self-supervised learning — no labels or invasive implants required."
+publishDate: "2026-04-12"
+tags: ["EEG", "BCI", "Neuroscience", "Foundation Models", "Self-Supervised Learning", "fMRI"]
+draft: false
+---
+
+Every non-invasive brain-computer interface system eventually confronts the same wall: the gap between raw neural signal and meaning is enormous, and we don't have enough labeled data to bridge it with supervised methods.
+
+EEG recordings of someone imagining a sentence look like high-dimensional noise to most ML pipelines. fMRI BOLD signals contain rich semantic information — studies going back to Huth et al. (2016) showed that word-level semantics are recoverable from fMRI — but at ~1Hz temporal resolution, spatial noise on the order of millimeters, and session-to-session variability that makes supervised within-subject models difficult to scale, and cross-subject generalization that requires retraining from scratch for each new participant, the supervised approach hits fundamental limits fast.
+
+A paper on bioRxiv in early April 2026 from a joint MIT/UCL group changes the picture in a way that I think is genuinely important: rather than trying to learn a direct mapping from neural signals to words, they align EEG and fMRI signals into the existing semantic space of pre-trained vision and language models using **cross-modal self-supervised learning**. The result is a foundation model for non-invasive neural signals that enables high-fidelity thought reconstruction without training data at the specific semantic level.
+
+## The Core Problem with Labeled Data
+
+The standard approach to neural decoding — particularly for language and imagery — works like this: collect many examples of a subject seeing or imagining stimuli with known labels, train a model to predict labels from neural signals, evaluate on held-out stimuli.
+
+This breaks down for three intersecting reasons:
+
+**Label scarcity**: A typical EEG or fMRI session yields maybe 200-500 labeled trials after preprocessing rejects noisy segments. Training a transformer on 400 examples is a recipe for overfitting, and the behavioral paradigms that generate clean labels (controlled stimulus presentation, button presses for verification) are themselves slow and expensive.
+
+**Subject variability**: Neural topography differs substantially between subjects — even for the same stimulus, the pattern of activation looks different. Models trained on subject A don't generalize to subject B, which means you need enough data per subject to train a separate model per subject. This multiplies the data collection burden.
+
+**Semantic granularity**: Labels are coarse. You can label "subject was shown the word 'apple'" but the neural signal contains far richer information about connotation, context, and concurrent mental states that the label doesn't capture. A model trained on discrete labels learns to map signals to label categories, not to the actual semantic geometry of the signal.
+
+## Cross-Modal Self-Supervised Learning
+
+The central insight in the April 2026 paper is that pre-trained language and vision models have already solved the semantic representation problem. CLIP, Llama, and similar models encode semantic relationships in high-dimensional embedding spaces that are geometrically meaningful — similar concepts cluster together, analogical relationships form regular vector structures, and the space generalizes well to new inputs.
+
+If you can align neural signals to this existing semantic geometry rather than to discrete labels, you inherit all of that structure for free. The alignment is done via contrastive self-supervised learning: no discrete labels required, just pairs of (neural signal, stimulus) that should be nearby in the joint embedding space.
+
+The training objective is a variant of CLIP's contrastive loss applied across modalities:
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from typing import Optional
+
+class CrossModalContrastiveLoss(nn.Module):
+    """
+    Cross-modal contrastive loss aligning neural signals to 
+    pre-trained language/vision model embeddings.
+    
+    Positive pairs: (neural_signal_i, stimulus_embedding_i) for same trial
+    Negative pairs: (neural_signal_i, stimulus_embedding_j) for j != i
+    """
+    
+    def __init__(self, temperature: float = 0.07):
+        super().__init__()
+        self.temperature = temperature
+    
+    def forward(
+        self,
+        neural_embeddings: torch.Tensor,  # (batch, embed_dim)
+        stimulus_embeddings: torch.Tensor,  # (batch, embed_dim)
+        mask: Optional[torch.Tensor] = None  # Mask for invalid pairs
+    ) -> torch.Tensor:
+        # L2 normalize both embedding spaces
+        neural_norm = F.normalize(neural_embeddings, dim=-1)
+        stimulus_norm = F.normalize(stimulus_embeddings, dim=-1)
+        
+        # Similarity matrix: (batch, batch)
+        similarity = torch.matmul(neural_norm, stimulus_norm.T) / self.temperature
+        
+        if mask is not None:
+            # Mask invalid pairs (e.g., trials from same class that should not be negatives)
+            similarity = similarity.masked_fill(mask, float('-inf'))
+        
+        # Symmetric contrastive loss
+        labels = torch.arange(similarity.size(0), device=similarity.device)
+        loss_n2s = F.cross_entropy(similarity, labels)  # neural → stimulus
+        loss_s2n = F.cross_entropy(similarity.T, labels)  # stimulus → neural
+        
+        return (loss_n2s + loss_s2n) / 2.0
+
+
+class NeuralSignalEncoder(nn.Module):
+    """
+    Transformer-based encoder for EEG/fMRI signals.
+    Maps raw neural signals to the shared semantic embedding space.
+    """
+    
+    def __init__(
+        self,
+        signal_dim: int,          # EEG: num_channels; fMRI: num_ROIs or voxels
+        seq_len: int,             # Temporal dimension
+        embed_dim: int = 768,     # Match target model (e.g., CLIP-ViT-B)
+        n_heads: int = 12,
+        n_layers: int = 8,
+        dropout: float = 0.1,
+        modality: str = "eeg"     # "eeg" or "fmri"
+    ):
+        super().__init__()
+        self.modality = modality
+        
+        # Modality-specific preprocessing
+        if modality == "eeg":
+            # Treat EEG channels as "patches" — temporal embedding per channel
+            self.patch_embed = nn.Conv1d(signal_dim, embed_dim, kernel_size=8, stride=4)
+        elif modality == "fmri":
+            # Project ROI activations to embedding space
+            self.patch_embed = nn.Linear(signal_dim, embed_dim)
+        
+        # Learnable positional embeddings
+        # EEG: Conv1d with stride=4 reduces seq_len to seq_len//4; fMRI: no downsampling
+        pos_seq_len = (seq_len // 4 + 1) if modality == "eeg" else (seq_len + 1)
+        self.pos_embed = nn.Parameter(torch.randn(1, pos_seq_len, embed_dim) * 0.02)
+        self.cls_token = nn.Parameter(torch.randn(1, 1, embed_dim) * 0.02)
+        
+        # Transformer backbone
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=embed_dim,
+            nhead=n_heads,
+            dim_feedforward=embed_dim * 4,
+            dropout=dropout,
+            batch_first=True,
+            norm_first=True  # Pre-norm for stability with small batches
+        )
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
+        self.norm = nn.LayerNorm(embed_dim)
+        
+        # Projection head for contrastive alignment
+        self.proj = nn.Sequential(
+            nn.Linear(embed_dim, embed_dim),
+            nn.GELU(),
+            nn.Linear(embed_dim, embed_dim)
+        )
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: Neural signal tensor
+               EEG: (batch, channels, time_points)
+               fMRI: (batch, time_points, ROIs)
+        Returns:
+            embeddings: (batch, embed_dim) — CLS token representation
+        """
+        batch_size = x.shape[0]
+        
+        if self.modality == "eeg":
+            # Convolve along time axis: (batch, embed_dim, seq_len//4)
+            x = self.patch_embed(x).permute(0, 2, 1)
+        elif self.modality == "fmri":
+            x = self.patch_embed(x)  # (batch, seq_len, embed_dim)
+        
+        # Prepend CLS token
+        cls_tokens = self.cls_token.expand(batch_size, -1, -1)
+        x = torch.cat([cls_tokens, x], dim=1)
+        
+        # Add positional embeddings
+        x = x + self.pos_embed[:, :x.shape[1], :]
+        
+        # Transformer forward
+        x = self.transformer(x)
+        x = self.norm(x)
+        
+        # CLS token as sequence representation
+        cls_output = x[:, 0, :]
+        
+        # Project to contrastive space
+        return self.proj(cls_output)
+```
+
+During training, the neural encoder is trained to produce embeddings that align with frozen embeddings from a pre-trained model (CLIP for visual stimuli, Llama for language stimuli). The pre-trained model is never updated — only the neural encoder learns. This is important because it means the neural encoder is being pulled into a semantic space with known geometric properties, rather than constructing a new arbitrary space.
+
+## The Self-Supervised Signal
+
+The key design choice that makes this tractable without massive labeled datasets is how positive pairs are constructed.
+
+**Cross-session alignment**: For a given subject, recordings from different sessions of the same stimulus provide positive pairs without *semantic class labels* — only stimulus-identity metadata (which image or sentence was shown) is needed to pair trials. The model learns that these different neural recordings — noisy and session-variable as they are — should map to nearby points in the semantic embedding space, because they correspond to the same stimulus.
+
+**Cross-subject anchoring**: The pre-trained model's embeddings are the same for all subjects (same stimulus → same CLIP embedding, regardless of who's viewing it). This creates an automatic cross-subject alignment signal: two different subjects' neural responses to the same image should map near the same point in CLIP space. The model therefore learns subject-invariant representations as a consequence of the training objective, without any explicit subject-normalization step.
+
+**Temporal structure**: For language stimuli, the BERT-style temporal ordering of word embeddings provides a natural curriculum. The model learns to predict not just which concept is being processed, but the temporal evolution of semantic content as a sentence unfolds.
+
+```python
+class CrossModalNeuralDecoder:
+    """
+    Decoding interface using a trained NeuralSignalEncoder.
+    Recovers semantic content from neural signals via nearest-neighbor
+    search in the pre-trained model's embedding space.
+    """
+    
+    def __init__(
+        self,
+        encoder: NeuralSignalEncoder,
+        stimulus_library: dict[str, torch.Tensor],  # {label: embedding}
+        top_k: int = 5
+    ):
+        self.encoder = encoder
+        # Pre-compute stimulus embedding matrix
+        labels = list(stimulus_library.keys())
+        embeddings = torch.stack(list(stimulus_library.values()))
+        self.labels = labels
+        self.stimulus_embeddings = F.normalize(embeddings, dim=-1)
+        self.top_k = top_k
+    
+    @torch.inference_mode()
+    def decode(self, neural_signal: torch.Tensor) -> list[tuple[str, float]]:
+        """
+        Decode a neural signal to nearest stimuli in semantic space.
+        
+        Returns: List of (label, similarity_score) sorted by score descending.
+        """
+        neural_embedding = self.encoder(neural_signal.unsqueeze(0))
+        neural_embedding = F.normalize(neural_embedding, dim=-1)
+        
+        similarities = torch.matmul(neural_embedding, self.stimulus_embeddings.T).squeeze()
+        top_k_scores, top_k_indices = torch.topk(similarities, k=self.top_k)
+        
+        return [
+            (self.labels[idx.item()], score.item())
+            for idx, score in zip(top_k_indices, top_k_scores)
+        ]
+```
+
+## What the April 2026 Results Show
+
+The paper reports results on three benchmark tasks: image reconstruction (predicting the image a subject viewed from fMRI), word identification (identifying a word from EEG during silent reading), and semantic category decoding (broader category from both modalities).
+
+The numbers that matter:
+
+- **Image reconstruction** (fMRI, 24 subjects, 1000-image evaluation): 67.3% top-1 accuracy in identifying the correct image from 1000 candidates, compared to 43.2% for the prior supervised SOTA. This is a 24-point gap — large enough to represent a genuine qualitative improvement rather than incremental gain.
+
+- **Cross-subject generalization**: Models trained on N-1 subjects and tested on the held-out subject achieve 89% of within-subject performance, compared to roughly 61% for previous approaches. The semantic alignment objective implicitly learns subject-invariant representations.
+
+- **Data efficiency**: The method requires approximately 40x less labeled data than the supervised baseline to reach equivalent performance. The bulk of learning comes from unlabeled cross-session pairs, not from labeled trials.
+
+- **Zero-shot transfer to new stimuli**: This is the result I find most significant. Because the model maps into CLIP/Llama space, it can decode neural responses to stimuli that were never in the training set — it just finds the nearest neighbor in the pre-existing embedding library. Previous approaches could not generalize beyond training stimuli at all.
+
+## The Practical Gap That Remains
+
+The results are impressive, but honest accounting of limitations matters:
+
+**EEG temporal vs. spatial resolution**: The method works better for fMRI (high spatial resolution, slow temporal) than EEG (low spatial resolution, high temporal) for visual decoding tasks. EEG's strength is temporal — it captures the millisecond dynamics of language processing in ways fMRI cannot. The cross-modal SSL objective as described doesn't fully exploit this.
+
+**Individual variability is reduced, not eliminated**: 89% cross-subject performance sounds good, but the remaining 11% gap is not randomly distributed. It's concentrated in subjects with atypical neural topography — exactly the patients with neurological conditions for whom BCI technology is most clinically relevant.
+
+**The CLIP alignment assumption**: Assuming that CLIP's or Llama's semantic space captures the right structure for neural signals is a strong prior. There's increasing evidence that language model semantic spaces and human neural semantic spaces share geometry — but they're not identical. Aligning to an LLM space may be imposing a representational structure that distorts some neural distinctions that don't have correspondences in the LLM's training distribution.
+
+**Decoding ≠ understanding**: Recovering which image category someone viewed does not mean we understand how the brain represents images. The approach is powerful as a decoding tool but agnostic about the neural mechanisms — which matters if your goal is neuroscience rather than BCI.
+
+## Why This Matters for the Field
+
+The significance isn't just the benchmark numbers. It's the change in what the data collection problem looks like.
+
+Previous non-invasive BCI paradigms required controlled experimental sessions where subjects viewed or imagined a specific set of labeled stimuli. You couldn't build a decoder for arbitrary mental content because you couldn't collect labeled examples of arbitrary mental content. The system was fundamentally limited by the combinatorial explosion of possible thoughts and the impossibility of labeling them.
+
+Cross-modal SSL breaks this bottleneck. If your neural encoder can map signals into a space that already captures arbitrary semantic content — because it's aligned to a model that understands arbitrary semantic content — then every neural recording becomes potentially decodable, not just recordings of pre-specified stimuli.
+
+For non-invasive BCI applications — communication aids, mental imagery workspaces, cognitive load monitoring — this is a meaningful step toward the goal of a system that doesn't require you to train on the specific words or images you'll eventually want to decode.
+
+The remaining distance to that goal is still substantial. But the architecture for getting there is now clearer than it was six months ago.
+
+---
+
+*Sources: "Cross-Modal Self-Supervised Foundation Models for Non-Invasive Neural Decoding" (bioRxiv, April 8, 2026, MIT/UCL); Huth et al., "Natural speech reveals the semantic maps that tile human cerebral cortex," Nature 2016; CLIP (Radford et al., OpenAI 2021); Scotti et al., "MindEye2: Shared-Subject Models Enable fMRI-To-Image With 1 Hour of Data," ICML 2024.*
