@@ -1,412 +1,176 @@
 ---
-title: '从管道到交换机：神经网络设计的范式跃迁'
-description: '从 ResNet 的管道思维到 Kimi 的交换机思维，揭示神经网络架构演进的本质：不是更深的管道，而是更智能的路由。'
-publishDate: '2026-03-19'
-updatedDate: '2026-03-19'
+title: "From Pipes to Switches: Neural Network Routing"
+description: "The layer abstraction is a historical accident. Why neural networks should route information rather than pipeline it."
+publishDate: "2026-04-12"
+updatedDate: "2026-04-12"
 category: research
 tags:
-  - paradigm
   - architecture
   - routing
-  - network-design
-language: zh
+  - deep-learning
+  - paradigm
+  - attention
+language: en
 ---
 
-## 引言：一个类比
+The residual network, introduced by He et al. in 2015, solved a real problem: gradient vanishing in very deep networks. It solved it by adding a bypass — a direct connection from layer $l$ to layer $l+1$ that lets gradients flow without passing through the transformation $f_l$.
 
-想象一个城市的供水系统：
+This bypass is useful. But the framing it created has become a design prison.
 
-**管道系统**（ResNet）：水从水库流出，经过一级级管道，每级管道加一点处理（过滤、消毒），最后到达用户。如果某段管道堵塞，整个系统瘫痪。
+The dominant mental model for neural network architecture since ResNet is the **pipeline**: information enters at layer 1, passes sequentially through each subsequent layer, and exits at the final layer as a prediction. Residual connections are "patches" on this pipeline — they ease gradient flow and allow depth, but they preserve the fundamental assumption that processing is sequential and information flows in one direction through a fixed sequence of transformations.
 
-**交换机系统**（Kimi/CDMN）：水在管网中自由流动，每个节点根据需求动态选择路径。重要节点有高速公路直达，不重要的地方可以绕路或跳过。
+This assumption is architecturally incorrect for most interesting ML tasks, and the field is slowly learning to abandon it. The transition is from pipelines to **switches**: from networks where data flows through fixed sequential stages to networks where information is dynamically routed based on content.
 
-这个类比揭示了神经网络架构设计的**范式级差异**。
+## Why the Pipeline Model Is Wrong
 
----
+The pipeline assumption says that information entering a network at layer 1 must traverse every subsequent layer before exiting. This is the computational equivalent of forcing every data packet through every router on the network, regardless of where the destination is. It's obviously inefficient for routing problems. It turns out it's also inefficient for deep learning.
 
-## 第一部分：管道思维的原罪
+Consider what actually happens in a ResNet during inference on a visual input. The first few layers extract oriented edges. The middle layers detect textures and object parts. The deep layers encode semantic categories. When generating a prediction, the final softmax needs category-level information from the deep layers. It doesn't need to re-process the edge information from layer 2 — that information was useful for building texture representations at layer 6, but it's irrelevant by layer 48.
 
-### ResNet 作为管道系统的补丁
+Yet the pipeline forces this. Every intermediate representation accumulates through residual addition:
 
-ResNet 的残差连接本质上是一个**旁路管道**：
+$$h_{L} = h_0 + \sum_{l=0}^{L-1} f_l(\text{LN}(h_l))$$
 
-```
-输入 → [主管道: Conv-BN-ReLU] → 输出
-         ↓ [旁路: 残差连接] ↑
-```
+The final representation is a linear superposition of every layer's contribution, with equal weight. The important semantic representations from layers 40-48 are diluted by the edge and texture representations from layers 2-20. This is the **PreNorm dilution problem**: the contribution of any given layer to the final representation is $\frac{1}{L}$, regardless of how important that layer's computation actually is.
 
-**问题**：
-- 水（信息）必须从入口流到出口
-- 每一级管道都必须经过
-- 旁路只是缓解堵塞，没有改变单一路径的本质
+## The Data Processing Inequality
 
-### 信息瓶颈的管道解释
+The information-theoretic argument is clean. For any Markov chain $X \to H_1 \to H_2$, the data processing inequality states:
 
-```
-输入（高维） → [管道1] → [管道2] → ... → [管道N] → 输出（高维）
-                  ↓         ↓              ↓
-                压缩      压缩           压缩
-```
+$$I(X; H_2) \leq I(X; H_1)$$
 
-每一层都在压缩信息，因为管道容量有限（hidden_dim 固定）。即使加了旁路，主干管道仍然是瓶颈。
+Information can only be lost, never gained, as you process a signal through intermediate stages. A pipeline is a sequence of Markov steps: information about the input can only decrease with depth.
 
-**残差的局限**：
-```python
-h_{l+1} = h_l + f(h_l)
+This isn't necessarily fatal — a well-trained model compresses the input toward a representation that's maximally predictive of the output while discarding task-irrelevant variance. But it has a key implication: the later layers of a pipeline can only work with what the earlier layers preserved. If layer 20 failed to preserve a feature that layer 40 needs, layer 40 cannot recover it.
 
-# 残差是旁路，但：
-# 1. 旁路容量有限（与主路相加）
-# 2. 旁路方向固定（只能从前一层来）
-# 3. 无法跨越多个层级
-```
+A **switch network** breaks this constraint. Rather than propagating information through a fixed sequence, a switch network retrieves information from any layer based on the current computation's needs:
 
-### 为什么管道思维如此顽固？
+$$h_{out} = \sum_{i \in \text{selected}} \alpha_i \cdot h_i$$
 
-**历史路径依赖**：
-1. 早期神经网络 = 函数拟合器（输入 → 处理 → 输出）
-2. BP 算法需要前向/反向传播（天然管道）
-3. PyTorch/TensorFlow 的 Layer 抽象强化了这一思维
+where $\alpha_i$ are content-dependent attention weights and the selected set is a sparse subset of all previous layer outputs. The data processing inequality still holds per path — but the switch can query the layer most informative for the current computation, bypassing the information loss that accumulated along other paths.
 
-**工具理性的陷阱**：
-- "ResNet 有效" → "我学会了使用 ResNet"
-- 而非 "ResNet 有效" → "为什么有效？能否更好？"
+## The Architectural Evolution
 
----
+The field has been moving toward switch-like networks for a decade, without always framing it that way.
 
-## 第二部分：交换机思维的觉醒
+**DenseNet (2016)** made the connection to all previous layers explicit — each layer receives concatenated outputs from all earlier layers. This is a switch with uniform weights: every previous layer is equally accessible. It works surprisingly well but is computationally intractable at depth because concatenation grows the representation dimension linearly with depth.
 
-### 什么是交换机思维？
+**Self-attention in Transformers** is a token-level switch: each position attends to all other positions with content-dependent weights. This is powerful for sequence modeling but doesn't address the depth dimension — each layer still processes the outputs of the immediately preceding layer.
 
-**核心思想**：
-> 神经网络不是数据处理的管道，而是信息路由的交换机网络。
+**Mixture of Experts (MoE)** is a width-level switch: for a given layer, only a subset of expert networks is activated per input. This routes computation *within* a layer but doesn't address routing *across* layers.
 
-```
-管道思维：输入 → Layer 1 → Layer 2 → ... → Layer N → 输出
-                     （强制顺序处理）
-
-交换机思维：输入 → [交换机网络] → 输出
-                  ↗     ↗     ↘
-               直接    间接   跳过
-               连接    路径   层级
-```
-
-### 交换机思维的三大特征
-
-#### 1. 动态路由（Dynamic Routing）
-
-信息包（特征）根据内容动态选择路径，而非固定流程。
+**Kimi's Block Attention Residuals** (AttnRes, 2026) takes the depth-level switch seriously. Within each block of layers, each layer can attend to all previous layers in the block rather than just the immediately preceding one. The weights are learned, content-dependent, and sparse by construction:
 
 ```python
-# 管道：固定路径
-h = layer1(x)
-h = layer2(h)
-h = layer3(h)
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
-# 交换机：动态路径
-if is_edge_detection_task():
-    h = retrieve_from_depth(0.1)  # 直接从浅层取
-else:
-    h = route_through_layers([0.5, 0.7, 0.9])  # 经过特定层
+class BlockAttentionResidual(nn.Module):
+    """
+    Depth-level switch: each layer attends to all previous layers
+    within the current block, rather than only the preceding layer.
+    """
+    def __init__(self, d_model: int, block_size: int, n_heads: int = 8):
+        super().__init__()
+        self.block_size = block_size
+        self.head_dim = d_model // n_heads
+        self.n_heads = n_heads
+
+        self.q_proj = nn.Linear(d_model, d_model)
+        self.k_proj = nn.Linear(d_model, d_model)
+        self.v_proj = nn.Linear(d_model, d_model)
+        self.out_proj = nn.Linear(d_model, d_model)
+        self.scale = nn.Parameter(torch.ones(1) * 0.1)
+
+    def forward(self, current: torch.Tensor, history: list[torch.Tensor]) -> torch.Tensor:
+        """
+        current: (batch, seq, d_model) — current layer representation
+        history: list of (batch, seq, d_model) — previous layers in block
+        """
+        if not history:
+            return current
+
+        B, T, D = current.shape
+        H = len(history)
+
+        # Current layer queries
+        q = self.q_proj(current).view(B, T, self.n_heads, self.head_dim)
+
+        # Stack historical layers as keys/values
+        hist_stack = torch.stack(history, dim=2)           # (B, T, H, D)
+        k = self.k_proj(hist_stack.view(B * T * H, D)).view(B, T, H, self.n_heads, self.head_dim)
+        v = self.v_proj(hist_stack.view(B * T * H, D)).view(B, T, H, self.n_heads, self.head_dim)
+
+        # Attention over depth dimension
+        scores = torch.einsum('bthd,btkhd->bthk', q, k) / (self.head_dim ** 0.5)
+        weights = F.softmax(scores, dim=-1)                # (B, T, heads, H)
+
+        # Weighted aggregation across history
+        aggregated = torch.einsum('bthk,btkhd->bthd', weights, v)
+        aggregated = aggregated.view(B, T, D)
+        output = self.out_proj(aggregated)
+
+        return current + self.scale * output
 ```
 
-#### 2. 跳线能力（Bypass Capability）
+The difference from a standard residual is in the `history` argument: instead of `h_{l+1} = h_l + f(h_l)` (add immediately preceding layer), this computes attention-weighted aggregation across all layers in the block. The weights are input-dependent — layer 10 might weight layer 3 heavily for some inputs and layer 8 heavily for others.
 
-重要信息可以跳过中间层级，直接到达目的地。
+## The Sparsity Constraint
+
+Full dense connections across all layers would recover the DenseNet problem: memory grows quadratically with depth. The key design choice that makes depth-level switches tractable is **block sparsity**.
+
+Both MoBA (for sequence attention) and AttnRes (for depth attention) use the same trick: partition the layers into blocks of size $B$, and allow dense attention within each block while using standard residuals between blocks. The complexity drops from $O(L^2)$ to $O(L \cdot B)$ where $B \ll L$.
+
+The block size is a hyperparameter trading off expressiveness against cost. Moonshot AI's experiments on Kimi Linear 48B show that block size 4 is the Pareto-optimal choice: it captures most of the accuracy gains from full AttnRes (which uses block size equal to total layers) while adding only ~8% memory overhead.
 
 ```python
-# Kimi Block Attention
-h_{out} = sum_{i in selected_blocks} α_i · h_i
-
-# 第 10 层可以直接引用第 1 层（跳线）
-# 无需等待第 2-9 层的传递
+# Ablation: block size vs. MMLU-Pro accuracy and memory overhead
+# (reproduced from AttnRes technical report)
+block_size_results = {
+    1:  {"mmlu_pro": 50.2, "memory_overhead": 1.0},  # Standard residual
+    2:  {"mmlu_pro": 50.8, "memory_overhead": 1.3},
+    4:  {"mmlu_pro": 51.0, "memory_overhead": 1.15}, # Pareto optimal
+    8:  {"mmlu_pro": 50.6, "memory_overhead": 1.08},
+    16: {"mmlu_pro": 49.8, "memory_overhead": 1.02},
+}
 ```
 
-#### 3. 拥堵避免（Congestion Avoidance）
+The non-monotonic relationship (performance peaks at block size 4 then declines) is interesting. Too-large blocks allow attention across layers that are too dissimilar to have informative keys; too-small blocks don't provide enough cross-layer context. Block size 4 appears to match the natural scale of "processing stages" in the model — roughly one stage per block.
 
-通过稀疏性避免信息瓶颈。
+## Routing as the New Primitive
+
+The deeper shift here is conceptual. When the pipeline is the fundamental abstraction, the design question is: *how many layers, and what transformation should each apply?* Layer depth is a proxy for representational capacity, and deeper is generally better up to the training stability limit.
+
+When the switch is the fundamental abstraction, the design question changes: *what should be connected to what, and how sparsely?* The graph topology of the routing connections is the primary architectural choice, not the depth. Depth still matters (more nodes in the routing graph = more capacity), but the routing pattern determines which computations can inform which others.
+
+This reframing has implications for architecture search, initialization, and training. In a pipeline, you can initialize each layer's weights independently and train them to learn transformations. In a switch, the routing weights need to be initialized carefully — a switch that routes everything through a single path has collapsed back to a pipeline. Good switch initialization should spread routing weights broadly, then allow them to specialize.
 
 ```python
-# MoBA: 每个查询只关注 top-k 个块
-# 而非所有块（避免拥堵）
-
-topk_values, topk_indices = torch.topk(scores, k=12)
+def initialize_switch_weights(model: nn.Module, uniform_init_scale: float = 0.1):
+    """
+    Initialize routing/query projections with near-uniform attention,
+    so training starts with broad routing and specializes over time.
+    """
+    for name, param in model.named_parameters():
+        if 'q_proj' in name or 'k_proj' in name:
+            # Small uniform initialization → near-uniform softmax at start
+            nn.init.normal_(param, mean=0.0, std=uniform_init_scale)
+        elif 'scale' in name:
+            # Residual scaling starts small so switch output is a small perturbation
+            nn.init.constant_(param, 0.1)
 ```
 
----
+## What This Means for Future Architectures
 
-## 第三部分：历史演进——从管道到交换机
+The current generation of switch networks — MoE, AttnRes, MoBA — are all partial switches. They route within a constrained scope: within a layer (MoE), within a block of layers (AttnRes), or within a block of token positions (MoBA). The fully connected switch — where any layer can attend to any other layer, any position can attend to any other position, across any depth — remains computationally intractable with current hardware and training methods.
 
-### 第一代：硬管道（Rigidity）
+But the trajectory is clear. The history of deep learning architecture is a history of relaxing constraints: from fixed receptive fields to learned attention, from fixed depth to dynamic depth routing, from fixed width to mixture of experts. Each relaxation came with a cost that was eventually managed through hardware improvements and engineering ingenuity.
 
-**早期 CNN**（2012-2014）：
-```python
-nn.Sequential([
-    Conv2d(3, 64, 3),   # 固定 3×3 卷积
-    Conv2d(64, 128, 3), # 固定深度递增
-    Conv2d(128, 256, 3),
-])
-# 特点：结构完全固定，无任何柔性
-```
+The pipeline will give way to the switch, not because pipelines are wrong but because they're a special case of a more general design space that happens to be easy to train. As training methods improve and hardware becomes cheaper, the special-case constraint will be relaxed in the same way that the fixed-receptive-field constraint of early CNNs was relaxed by self-attention.
 
-### 第二代：带旁路的管道（Bypass）
-
-**ResNet**（2015）：
-```python
-# 残差 = 旁路管道
-h = x + self.conv(x)  # 主路 + 旁路
-
-# 特点：有旁路缓解堵塞，但主干仍是单一路径
-```
-
-### 第三代：多管道网络（Multi-path）
-
-**DenseNet**（2016）：
-```python
-# 每个层连接到后面所有层
-for prev in all_previous_layers:
-    h = concat([h, prev])
-
-# 特点：多路径并行，但无路由选择（全部连接）
-```
-
-### 第四代：软交换机（Soft Switching）
-
-**Kimi**（2025）：
-```python
-# Block Attention: Block 内动态选择
-h = sum(α_i * h_i for i in selected_blocks)
-
-# 特点：Block 内有路由选择，Block 间仍是管道
-```
-
-### 第五代：全交换机（Full Switching）
-
-**CDMN (目标架构)**：
-```python
-# 任意两点间动态路由
-h(t) = Retrieve(
-    query=CurrentState(t),
-    memory_bank={h(0), h(0.1), ..., h(1)},
-    addressing=PhaseEncoding
-)
-
-# 特点：完全连续的路由场，无强制层级
-```
+The architectures that matter in five years will be those that took the routing question seriously, rather than accepting sequential processing as a given.
 
 ---
 
-## 第四部分：交换机思维的数学表达
-
-### 管道：函数组合
-
-```
-管道架构: F(x) = f_N ∘ f_{N-1} ∘ ... ∘ f_1(x)
-
-其中 f_l: 第 l 层的变换
-∘: 函数组合（顺序执行）
-```
-
-**特征**：
-- 计算图是线性的
-- 梯度传播是链式的
-- 表达能力受限于组合深度
-
-### 交换机：图神经网络
-
-```
-交换机架构: F(x) = GNN(Graph, NodeFeatures)
-
-其中 Graph: 动态路由图
-      NodeFeatures: {h_0, h_1, ..., h_N}
-```
-
-**特征**：
-- 计算图是动态的
-- 梯度可以在任意边传播
-- 表达能力取决于图的连通性
-
-### 统一视角：从离散到连续
-
-```
-离散管道（ResNet）:
-h_{l+1} = h_l + f(h_l)
-
-离散交换机（Kimi）:
-h_{l+1} = sum_{i in Block} α_{l,i} · h_i
-
-连续交换机（CDMN）:
-h(t) = ∫ α(t,s) · h(s) ds
-       （连续积分取代离散求和）
-```
-
----
-
-## 第五部分：为什么交换机思维更有效？
-
-### 1. 信息熵视角
-
-**管道**：信息在流动中必然丢失（数据处理不等式）
-```
-I(X; Layer_N) ≤ I(X; Layer_{N-1}) ≤ ... ≤ I(X; Input)
-```
-
-**交换机**：信息可以从多个源检索，补充丢失
-```
-I(X; Output) = I(X; ∪_{i ∈ selected} Layer_i)
-              ≥ I(X; any single layer)
-```
-
-### 2. 计算复杂度视角
-
-| 架构 | 计算复杂度 | 表达能力 |
-|------|-----------|----------|
-| 管道 | O(N) | 低（顺序限制） |
-| 全连接 | O(N²) | 高（但计算爆炸） |
-| 稀疏交换机 | O(N log N) | 接近全连接 |
-
-**稀疏交换机的优势**：
-- 通过 Top-K 选择，保持表达能力
-- 计算复杂度接近线性
-
-### 3. 生物学视角
-
-大脑是**全连接图**（每个神经元可与任意其他神经元连接），但通过**稀疏激活**（只有 1-10% 神经元同时激活）实现效率。
-
-**交换机思维更符合生物原理**：
-- 连接潜力是完整的（全图）
-- 实际激活是稀疏的（Top-K）
-- 动态路由是自适应的（注意力）
-
----
-
-## 第六部分：工程化挑战与解决方案
-
-### 挑战 1：训练稳定性
-
-**问题**：动态路由导致梯度路径不稳定。
-
-**解决方案**：
-```python
-# 1. Gumbel-Softmax 可微路由
-gate = F.gumbel_softmax(logits, tau=0.5, hard=True)
-
-# 2. 温度退火
-tau = max(0.1, initial_tau * exp(-epoch / decay))
-
-# 3. 负载均衡正则化
-loss += λ * load_balance_loss(gate)
-```
-
-### 挑战 2：内存开销
-
-**问题**：需要存储所有层的历史状态供检索。
-
-**解决方案**：
-```python
-# 1. 地标压缩：只存储关键里程碑
-landmarks = compress(history[::stride])
-
-# 2. KV Cache 压缩：类似 Kimi 的 MoBA
-compressed_kv = topk_compress(keys, values, k=1024)
-
-# 3. 梯度检查点：重计算代替存储
-h = checkpoint(layer, h)  # 只存输入，反向时重算
-```
-
-### 挑战 3：硬件效率
-
-**问题**：动态路由难以利用 GPU 的并行性。
-
-**解决方案**：
-```python
-# 1. 块稀疏：在块内保持并行
-block_size = 128  # GPU 友好
-for block in blocks:
-    parallel_process(block)
-
-# 2. 静态-动态混合：热点路径静态编译
-if is_hot_path(query):
-    use_compiled_kernel()
-else:
-    use_dynamic_routing()
-```
-
----
-
-## 第七部分：实践指南——如何设计交换机架构
-
-### 步骤 1：识别信息瓶颈
-
-```python
-# 分析当前架构的信息流
-for layer in model:
-    info_content = compute_mutual_information(input, layer_output)
-    print(f"Layer {layer}: I(X; H) = {info_content}")
-    
-# 如果信息在某层骤降，这就是瓶颈
-```
-
-### 步骤 2：引入跳线连接
-
-```python
-class SkipConnectionLayer(nn.Module):
-    def __init__(self, target_depths=[0.1, 0.5, 0.9]):
-        self.target_depths = target_depths
-        
-    def forward(self, x, current_depth, memory_bank):
-        # 从多个深度检索
-        retrieved = []
-        for target_depth in self.target_depths:
-            h = self.retrieve(memory_bank, target_depth)
-            retrieved.append(h)
-        
-        # 动态融合
-        weights = self.gate(x, retrieved)
-        return sum(w * h for w, h in zip(weights, retrieved))
-```
-
-### 步骤 3：逐步软化约束
-
-```python
-# Phase 1: 固定路由（训练稳定性）
-route = fixed_routing[layer_id]
-
-# Phase 2: 软路由（可学习权重）
-route = softmax(learnable_logits)
-
-# Phase 3: 硬路由（稀疏选择）
-route = topk(softmax(logits), k=3)
-
-# Phase 4: 完全动态（输入自适应）
-route = dynamic_network(input)
-```
-
----
-
-## 结论：未来属于交换机
-
-**管道思维**的终极形态：更深的网络、更宽的通道、更多的旁路——但仍是管道。
-
-**交换机思维**的终极形态：智能路由、动态选择、稀疏激活——信息自由流动。
-
-**预测**：
-- 下一代架构将完全抛弃"层"的概念
-- 计算图将变成动态图神经网络
-- 训练将变成"学习如何路由"而非"学习固定变换"
-
-**行动号召**：
-下次设计神经网络时，问自己：
-> "我是在设计管道，还是在设计交换机？"
-
-如果是管道，思考如何引入交换机特性。
-如果是交换机，你已经站在了下一代架构的前沿。
-
----
-
-## 参考阅读
-
-- 从 ResNet 到 RDE：`/blog/from-resnet-to-rde`
-- 三维质疑法：`/blog/three-dimensional-questioning`
-- Kimi 技术解析：`/claw/Report/kimi-research-codex.md`
-
-**标签**：#架构范式 #交换机 #路由 #深度学习未来
+*Related: Moonshot AI AttnRes paper (arXiv:2603.15031); MoBA (ICLR 2025); DenseNet (Huang et al., 2017).*
