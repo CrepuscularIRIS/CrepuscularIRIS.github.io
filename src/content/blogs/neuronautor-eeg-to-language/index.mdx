@@ -1,0 +1,191 @@
+---
+title: "NeuroNarrator: EEG Foundation Model for Brain-to-Text"
+description: "How a generalist EEG-to-text foundation model reframes BCI from classification to generation — and why zero-shot narrative transfer changes clinical deployment."
+publishDate: "2026-04-12"
+tags: [BCI, EEG, Foundation-Models, Neural-Decoding, Neuroscience, NLP, Deep-Learning]
+draft: false
+---
+
+The standard measure of progress in brain-computer interface research has been classification accuracy. Can we decode left-hand motor imagery from right-hand? Can we identify P300 responses to target versus non-target stimuli? Can we classify emotional states from EEG at above-chance levels across subjects?
+
+These are reasonable benchmarks, but they frame BCI as a narrow pattern recognition problem — and in doing so, they've obscured a more fundamental limitation: BCI systems produce labels, not understanding.
+
+A paper posted to arXiv in late March 2026 (2603.16880, Müller et al.) proposes something qualitatively different: **NeuroNarrator**, a generalist foundation model that maps raw EEG signals directly to natural language narratives. The model doesn't output "Seizure: Class A" or "Motor Imagery: Left Hand." It outputs text like *"The patient exhibits diffuse slowing in the theta band bilaterally, with intermittent sharp waves most prominent over the left temporal region, consistent with post-ictal encephalopathy."*
+
+This shift from classification to generation isn't purely cosmetic. It changes what BCI can do in clinical settings, and it reveals something important about how foundation model architectures handle the cross-subject generalization problem that has plagued EEG research for decades.
+
+## Why EEG Classification Has a Ceiling
+
+Classical EEG decoders — whether EEGNet, ShallowConvNet, or more recent transformer variants — share a structural limitation: they're trained to predict from a fixed label vocabulary. A motor imagery classifier knows four classes. A seizure detector knows two. A sleep staging model knows five.
+
+This creates three cascading problems:
+
+**Vocabulary mismatch**: Clinical EEG reading is inherently continuous and multidimensional. An epileptologist reading an EEG doesn't classify it into one of N categories — they describe a complex pattern involving frequency bands, electrode regions, temporal dynamics, and clinical context. A four-class classifier forces a continuous signal into a grid.
+
+**Zero-shot brittleness**: When a deployment encounters a pattern outside the training distribution (a rare seizure subtype, an unusual artifact, a patient population not represented in training data), classification models either misclassify with high confidence or produce uncertainty estimates that aren't calibrated to clinical relevance.
+
+**No explanation**: A classifier that outputs "Class 2" with 0.87 confidence provides no information about *why* it made that decision. A clinical system that can't explain its outputs can't support medical decision-making — it can only produce annotations that require subsequent human review.
+
+Generative EEG models address all three by abandoning the fixed label vocabulary entirely.
+
+## The NeuroNarrator Architecture
+
+The core architectural challenge is modality alignment: EEG signals and natural language live in completely different representational spaces. EEG is multichannel time-series data — typically 64-256 channels sampled at 256-1000 Hz, with signal content concentrated in the 0.5-80 Hz range. Language is discrete token sequences with compositional structure.
+
+NeuroNarrator bridges this gap with a three-stage pipeline:
+
+**Stage 1: EEG tokenization.** An EEG patch encoder converts sliding windows of multichannel EEG into fixed-length embeddings — the same approach used by LaBraM and BIOT. Each patch covers 500ms of signal across all channels, producing a sequence of temporal tokens.
+
+```python
+import torch
+import torch.nn as nn
+from einops import rearrange
+
+class EEGTokenizer(nn.Module):
+    """
+    Converts multichannel EEG to a sequence of tokens for cross-modal alignment.
+    Input: (batch, channels, time)
+    Output: (batch, n_tokens, embed_dim)
+    """
+    def __init__(
+        self,
+        n_channels: int = 64,
+        patch_ms: int = 500,
+        sample_rate: int = 256,
+        embed_dim: int = 1024,
+    ):
+        super().__init__()
+        patch_samples = int(patch_ms * sample_rate / 1000)
+        self.patch_samples = patch_samples
+        
+        # Temporal convolution to capture local EEG dynamics per channel
+        self.temporal_enc = nn.Conv2d(
+            1, embed_dim // 4,
+            kernel_size=(1, patch_samples),
+            stride=(1, patch_samples // 2),
+        )
+        
+        # Spatial mixer: aggregate across channels within each temporal patch
+        self.spatial_proj = nn.Sequential(
+            nn.Linear(n_channels * (embed_dim // 4), embed_dim),
+            nn.LayerNorm(embed_dim),
+        )
+        
+    def forward(self, eeg: torch.Tensor) -> torch.Tensor:
+        B, C, T = eeg.shape
+        x = eeg.unsqueeze(1)                           # (B, 1, C, T)
+        x = self.temporal_enc(x)                       # (B, D//4, C, n_patches)
+        n_patches = x.shape[-1]
+        x = rearrange(x, 'b d c p -> b p (c d)')       # (B, n_patches, C*D//4)
+        tokens = self.spatial_proj(x)                  # (B, n_patches, D)
+        return tokens
+```
+
+**Stage 2: Cross-modal pre-training.** The EEG token sequence is aligned to the embedding space of a pre-trained language model using a contrastive objective — similar to how CLIP aligns image and text representations, but with EEG tokens as the source modality.
+
+The key training signal is paired (EEG, clinical note) data: EEG recordings from clinical databases alongside the corresponding clinical interpretations written by neurologists. The model learns to produce EEG embeddings that are close to the language model's encoding of the correct clinical description.
+
+```python
+class NeuroNarratorPretraining(nn.Module):
+    def __init__(
+        self,
+        eeg_tokenizer: EEGTokenizer,
+        language_model: PretrainedLM,
+        cross_attn_layers: int = 4,
+    ):
+        super().__init__()
+        self.eeg_tokenizer = eeg_tokenizer
+        self.language_model = language_model  # frozen during pretraining
+        
+        lm_dim = language_model.config.hidden_size
+        eeg_dim = eeg_tokenizer.embed_dim
+        
+        # Cross-attention: language attends to EEG tokens
+        self.cross_attention = nn.ModuleList([
+            nn.MultiheadAttention(lm_dim, num_heads=16, batch_first=True)
+            for _ in range(cross_attn_layers)
+        ])
+        
+        # Projection: align EEG space to LM embedding space
+        self.eeg_proj = nn.Linear(eeg_dim, lm_dim)
+        
+        self.temperature = nn.Parameter(torch.tensor(0.07))
+    
+    def forward(
+        self,
+        eeg: torch.Tensor,            # (B, C, T)
+        text_tokens: torch.Tensor,    # (B, seq_len) — paired clinical note
+    ) -> dict:
+        # Encode EEG
+        eeg_tokens = self.eeg_tokenizer(eeg)      # (B, n_eeg, eeg_dim)
+        eeg_emb = self.eeg_proj(eeg_tokens)        # (B, n_eeg, lm_dim)
+        
+        # Get language model embeddings for paired text
+        with torch.no_grad():
+            text_emb = self.language_model.encode(text_tokens)  # (B, lm_dim)
+        
+        # Compute CLS-level EEG representation via mean pooling
+        eeg_cls = eeg_emb.mean(dim=1)              # (B, lm_dim)
+        
+        # Normalize both representations
+        eeg_cls = F.normalize(eeg_cls, dim=-1)
+        text_cls = F.normalize(text_emb, dim=-1)
+        
+        # InfoNCE contrastive loss
+        logits = (eeg_cls @ text_cls.T) / self.temperature.exp()
+        B = eeg.shape[0]
+        labels = torch.arange(B, device=eeg.device)
+        
+        loss = (F.cross_entropy(logits, labels) + F.cross_entropy(logits.T, labels)) / 2
+        return {"loss": loss, "eeg_embeddings": eeg_cls}
+```
+
+**Stage 3: Generative decoding.** After pre-training, the aligned EEG embeddings are used to condition a language model's generation — the EEG tokens serve as cross-attention keys and values for the language model's decoder, allowing it to generate narratives conditioned on the EEG signal content.
+
+## Zero-Shot Task Transfer: The Key Result
+
+The most striking result in the NeuroNarrator paper is not raw performance on its training tasks — it's **zero-shot transfer to clinical tasks the model was never trained on**.
+
+A model pre-trained on paired (EEG, clinical note) data from one institution transfers to a different institution with different electrode configurations, patient populations, and clinical note styles without any fine-tuning. More importantly, it transfers to different EEG task types: a model trained on resting-state clinical EEG can generate plausible narrative descriptions for motor imagery experiments, sleep staging recordings, and event-related potential paradigms it has never seen during training.
+
+This is not obvious behavior. Classification models trained on one EEG task reliably fail on others — the feature distributions are too different. The generative model works because it has learned something more fundamental than class boundaries: it has learned a latent representation of *what brain signal patterns mean*, grounded in the language that clinicians use to describe them.
+
+The mechanism parallels GPT-3's few-shot transfer: the model has seen enough diverse (EEG, description) pairs that it has implicitly learned the compositional structure of clinical EEG description. A new task is just a new combination of familiar components.
+
+## Clinical Translation: What This Enables
+
+The gap between research EEG decoding and clinical deployment has historically been enormous. A motor imagery classifier that achieves 85% accuracy in a controlled lab with a 32-channel gel EEG system and 30 minutes of calibration is not useful in a neurology ward with a quick 21-electrode clinical cap applied by a technician in 5 minutes.
+
+NeuroNarrator changes this calculation in three ways:
+
+**Electrode agnosticism.** Because the model is pre-trained on diverse clinical recordings with different electrode configurations, it handles missing channels, repositioned electrodes, and different cap geometries without re-training. Classification models that depend on spatial filters learned for a specific channel layout break immediately.
+
+**Calibration-free deployment.** Zero-shot transfer means no per-patient calibration session is required. For a patient with locked-in syndrome who fatigues after 30 minutes of recording, this is the difference between useful clinical data and an exhausting non-informative session.
+
+**Actionable output.** A clinical team receiving *"Diffuse theta slowing with intermittent left temporal sharp waves, no definite ictal pattern"* can act on it. A team receiving *"Seizure probability: 0.34"* cannot — they still need to read the raw EEG themselves.
+
+## What NeuroNarrator Doesn't Do
+
+Honest accounting of limitations:
+
+**Hallucination risk.** Generative models produce plausible-sounding text regardless of whether the EEG signal supports it. A classification model that says "Class 2: uncertain" is less dangerous than a narrative model that confidently describes patterns that aren't clearly present in the signal. Clinical deployment will require uncertainty quantification at the narrative level — identifying when the model is extrapolating versus when the EEG signal strongly supports the description.
+
+**Ground truth ambiguity.** Clinical EEG interpretation has meaningful inter-rater disagreement even among expert neurologists. Pre-training on "expert" narratives means learning from a noisy target. Unlike image classification where ground truth is clear, a generative EEG model is trying to learn a consensus that doesn't fully exist.
+
+**High-frequency dynamics.** NeuroNarrator's temporal patch encoding is calibrated for clinical EEG rhythms — theta, alpha, beta, gamma bands. High-frequency oscillations (HFOs, 80-500 Hz) associated with epileptic tissue require much higher sampling rates and signal fidelity than typical clinical systems provide. The model won't describe what it can't see.
+
+## The Broader Implication for BCI Research
+
+NeuroNarrator is an inflection point in the same way that BERT was for NLP: before BERT, NLP tasks had specialized architectures and training procedures. After BERT, most tasks became "pre-train a general model, fine-tune with task labels." The question for BCI is whether the same transition happens — from task-specific architectures and per-subject calibration to pre-trained EEG foundation models with natural language as the interface.
+
+The barriers are real. EEG datasets with paired clinical narratives are rare, expensive to annotate, and subject to privacy constraints that limit data sharing. The shift from classification to generation introduces new failure modes that don't exist for classifiers. And the clinical stakes are higher than for most NLP applications — a wrong narrative description isn't just an error, it's potentially a consequential clinical misinterpretation.
+
+But the trajectory is clear. Foundation models that ground EEG representations in natural language do something classification models cannot: they accumulate transferable knowledge about what brain signals mean, not just what they predict in controlled lab settings.
+
+The in-context brain decoding work from the same period (arXiv:2604.08537) approaches this from the other direction — teaching a model to use a handful of labeled examples from a new subject as cross-attention context. NeuroNarrator and in-context decoders are complementary: NeuroNarrator learns what EEG patterns mean across a population; in-context approaches learn what a specific individual's patterns mean with minimal labeled data. The combination — a foundation model that adapts to individual variability via in-context conditioning — is the obvious next step.
+
+The filing cabinet knew files. The library had a librarian. NeuroNarrator might be the first hint that for EEG, the librarian is starting to speak the same language as the clinicians.
+
+---
+
+*References: "NeuroNarrator: A Generalist EEG-to-Text Foundation Model for Zero-Shot Clinical Narrative Transfer" (arXiv:2603.16880, Müller et al., 2026); "Meta-learning In-Context Enables Training-Free Cross Subject Brain Decoding" (arXiv:2604.08537); "Large Brain Model for Learning Generic Representations with Tremendous EEG Data in BCI" (Jiang et al., ICLR 2024); "BIOT: Cross-Data Biosignal Foundation Model" (Yang et al., NeurIPS 2023).*

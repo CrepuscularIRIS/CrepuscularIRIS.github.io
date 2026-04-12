@@ -1,249 +1,215 @@
 ---
-title: '最小实验设计：验证三个核心假设'
-description: '针对 Residual/AttnRes/RDE 三种变体的对比实验设计，以及 RDE 相位寻址的验证方案。'
-publishDate: '2026-03-19'
-updatedDate: '2026-03-19'
-category: research
-tags:
-  - experiment-design
-  - residual
-  - rde
-  - validation
-  - roadmap
-language: zh
+title: "Minimal Experiment Design for Deep Learning Hypotheses"
+description: "How to structure focused experiments that actually answer architectural questions — without burning weeks on inconclusive ablations or brittle benchmarks."
+publishDate: "2026-03-19"
+updatedDate: "2026-04-12"
+tags: [deep-learning, experiment-design, research-methodology, architecture, validation]
+draft: false
 ---
 
-## 实验目标
+Most ML experiments fail not because the hypothesis was wrong, but because the experiment wasn't designed to distinguish between plausible explanations for the result.
 
-验证三个核心假设：
-1. **AttnRes 优于经典 Residual**：动态权重是否解决 hidden state 膨胀
-2. **RDE 可行**：相位编码的 depth retrieval 是否有稳定收益
-3. **连续化方向正确**：从 Block 到连续的演进是否值得追求
+You run a new architecture on CIFAR-10. It scores 2% better than your baseline. Is that because:
+- The architectural change actually works?
+- You tuned the hyperparameters better for the new variant?
+- The baseline was underfit?
+- The evaluation has random variance that accounts for 2%?
+- All of the above?
 
----
+Without a designed experiment, you can't separate these. And without separating them, the paper you'd write from this result wouldn't survive scrutiny — because any reviewer who thinks carefully about these alternatives will ask for controls you didn't run.
 
-## 实验 1：三种 Residual 变体对比
+This post is about how to design experiments that actually answer the question you're asking, before you commit to running them. The framework applies to any architectural hypothesis, but the examples are drawn from residual connection variants — a space where the question "does this improve on standard residuals?" is surprisingly easy to answer badly.
 
-### 实验设置
+## The Three Hypotheses Behind Every Architectural Comparison
 
-在同构 Transformer 上实现三个版本：
+When you propose an architectural change, you're implicitly asserting at least three things:
+
+1. **H1 (Core hypothesis)**: The structural change enables something the baseline cannot do in principle.
+2. **H2 (Training hypothesis)**: The new architecture is at least as trainable as the baseline — it converges, doesn't destabilize, and the hyperparameter sensitivity is manageable.
+3. **H3 (Cost hypothesis)**: The improvement, if real, is worth the compute, memory, and implementation complexity it adds.
+
+A minimal experiment design has one key condition per hypothesis. An experiment that addresses H1 without H2 and H3 isn't ready for a paper. An experiment that addresses H2 and H3 without H1 is benchmarking, not hypothesis testing.
+
+## Designing for H1: The Core Mechanism
+
+The cleanest way to test a core hypothesis is to construct a task where the proposed mechanism is necessary and the baseline cannot succeed.
+
+For residual connection variants, the core claim is typically something like: *"Dynamic layer aggregation enables the network to route information more efficiently than fixed-weight summation."* The mechanism is selective attention to prior layer outputs based on content.
+
+A task designed to require this mechanism:
 
 ```python
-# 版本 A: 经典 Residual (Baseline)
-class ClassicResidual(nn.Module):
-    def forward(self, x):
-        return x + self.f(x)
-
-# 版本 B: Attention Residuals (AttnRes)
-class AttentionResidual(nn.Module):
-    def __init__(self, lookback_window=4):
-        self.attention = MultiHeadAttention()
+class SelectiveDepthDependencyTask:
+    """
+    A synthetic task that requires selective access to features at specific depths.
+    Standard residuals (fixed aggregation) should struggle because they can't
+    selectively amplify the relevant depth's contribution.
+    """
+    def __init__(self, n_layers: int = 12, embed_dim: int = 256):
+        self.n_layers = n_layers
+        # Signal is injected at a random depth during training
+        # The model must learn to retrieve it regardless of when it was injected
+        self.signal_depth_sampler = torch.distributions.Categorical(
+            probs=torch.ones(n_layers) / n_layers
+        )
+    
+    def generate_batch(self, batch_size: int = 64):
+        """
+        Input: Gaussian noise + a "signal" injected at one random layer.
+        Target: Recover the signal content, regardless of injection depth.
+        """
+        x = torch.randn(batch_size, self.embed_dim)
+        signal_depth = self.signal_depth_sampler.sample((batch_size,))
+        signal_content = torch.randn(batch_size, self.embed_dim)  # what to retrieve
         
-    def forward(self, x, history):
-        # history = [h_{t-4}, ..., h_{t-1}]
-        query = x
-        keys = values = torch.stack(history)
-        attn_out, _ = self.attention(query, keys, values)
-        return x + attn_out
-
-# 版本 C: Query-over-depth (RDE 简化版)
-class QueryOverDepth(nn.Module):
-    def __init__(self, num_landmarks=8):
-        self.landmark_states = nn.Parameter(torch.randn(num_landmarks, d_model))
-        self.query_proj = nn.Linear(d_model, d_model)
-        
-    def forward(self, x, depth):
-        query = self.query_proj(x)
-        # 简化版：直接 attention 到 landmark states
-        attn_out, _ = self.attention(query, self.landmark_states, self.landmark_states)
-        return x + 0.1 * attn_out  # 小残差系数
+        return {
+            "input": x,
+            "signal_depth": signal_depth,
+            "signal_content": signal_content,
+        }
 ```
 
-### 观察指标
+The insight: if the mechanism works, the model should be able to retrieve signal content regardless of which layer it was injected into. A standard residual can only efficiently access the signal if it happens to be in the immediately preceding layers (because distant information gets diluted through the chain of additions). An attention-based residual can query for the signal directly.
 
-| 指标 | 测量方法 | 预期结果 |
-|------|----------|----------|
-| **Hidden state norm** | 每层输出 L2 norm | AttnRes/RDE 更稳定，不单调膨胀 |
-| **梯度分布** | 每层梯度范数 | AttnRes/RDE 更均匀 |
-| **长程依赖** | Path-X, Long Range Arena | AttnRes/RDE 优于 Baseline |
-| **计算/显存** | 训练时间, GPU memory | AttnRes 增加 20-30%, RDE 增加 10-15% |
+This is a **constructed task**, not a real benchmark. That's intentional. Real benchmarks measure many things simultaneously; a constructed task measures one. If your proposed mechanism doesn't work on a task specifically designed to require it, the paper is not ready.
 
-### 实验数据集
+## Designing for H2: Training Dynamics
 
-- **短序列**: CIFAR-10 (图像分类, ~1K tokens)
-- **中序列**: Wikitext-103 (语言建模, ~1K-4K tokens)
-- **长序列**: Path-X (全局依赖, 16K tokens)
+Architecture papers often underreport training instability. A method that achieves SOTA in the hands of the authors — who spent months tuning it — may be brittle in the hands of practitioners with different hardware, different learning rates, or slightly different data preprocessing.
 
-### 成功标准
-
-| 版本 | 成功标准 |
-|------|----------|
-| AttnRes | 长序列任务提升 &gt;5%, hidden norm 稳定 |
-| RDE | 不劣于 AttnRes, 计算增加 &lt;20% |
-
----
-
-## 实验 2：RDE 相位寻址验证
-
-### 实验目标
-
-验证"是否存在稳定的相位寻址收益"，**先不追全连续化**。
-
-### 简化版 RDE
+The minimum H2 experiment is a learning rate sweep:
 
 ```python
-class RotaryDepthEmbedding(nn.Module):
-    def __init__(self, dim, num_depths=16):
-        # 离散深度位置，但用 RoPE 编码
-        self.depth_positions = torch.linspace(0, 1, num_depths)
-        self.inv_freq = 1.0 / (10000 ** (torch.arange(0, dim, 2).float() / dim))
-        
-    def encode(self, depth_idx):
-        # depth_idx: 0-15 的离散索引
-        angles = self.depth_positions[depth_idx] * self.inv_freq
-        return torch.cos(angles), torch.sin(angles)
-
-class RDEResidual(nn.Module):
-    def __init__(self, d_model, num_landmarks=8):
-        self.rde = RotaryDepthEmbedding(d_model, num_landmarks)
-        self.landmark_states = nn.Parameter(torch.randn(num_landmarks, d_model))
-        
-    def forward(self, x, current_depth_idx):
-        # 查询当前深度
-        query = x
-        
-        # 计算与所有 landmark 的相似度（基于 RoPE 编码）
-        cos_d, sin_d = self.rde.encode(current_depth_idx)
-        query_rotated = apply_rotary(query, cos_d, sin_d)
-        
-        # Attention 到 landmark states
-        similarities = query_rotated @ self.landmark_states.T
-        attn_weights = F.softmax(similarities, dim=-1)
-        
-        # 加权聚合
-        retrieved = attn_weights @ self.landmark_states
-        return x + 0.1 * retrieved
+def h2_training_stability_sweep(
+    model_factory,
+    learning_rates: list[float],
+    seeds: list[int],
+    dataset: str = "cifar10",
+    epochs: int = 50,
+) -> dict:
+    """
+    For each learning rate and seed combination, train the model and record:
+    - Final validation loss
+    - Loss at training failure (NaN/Inf) if it occurs, or None
+    - Gradient norm statistics at each epoch
+    """
+    results = {}
+    
+    for lr in learning_rates:
+        for seed in seeds:
+            torch.manual_seed(seed)
+            model = model_factory()
+            optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
+            
+            train_losses, grad_norms = [], []
+            failed_at_epoch = None
+            
+            for epoch in range(epochs):
+                loss, grad_norm = train_epoch(model, optimizer, dataset)
+                
+                if torch.isnan(torch.tensor(loss)) or torch.isinf(torch.tensor(loss)):
+                    failed_at_epoch = epoch
+                    break
+                    
+                train_losses.append(loss)
+                grad_norms.append(grad_norm)
+            
+            results[(lr, seed)] = {
+                "final_loss": train_losses[-1] if train_losses else None,
+                "failed_at_epoch": failed_at_epoch,
+                "grad_norm_trajectory": grad_norms,
+            }
+    
+    return results
 ```
 
-### 关键验证点
+What you want to see from an H2 sweep: the proposed architecture is stable across at least the same range of learning rates as the baseline. An architecture that requires lr=1e-5 when the baseline works fine at lr=1e-3 is not a practical contribution — it's a research toy.
 
-| 验证点 | 方法 | 成功标准 |
-|--------|------|----------|
-| **相位编码有效** | 比较 RoPE 编码 vs 无编码 | RoPE 版本训练更稳定 |
-| **深度检索有效** | 比较固定 landmark vs 动态检索 | 动态检索长序列更好 |
-| **相位对齐有意义** | 可视化相似度矩阵 | 相位相近的深度确实检索相关 landmark |
+The gradient norm trajectory is more informative than the final loss. A model that trains at 1/10th the learning rate because its gradient norms are 10× larger has a hidden hyperparameter dependency that will bite production users.
 
-### 简化假设
+## Designing for H3: Compute/Accuracy Pareto
 
-**先不做全连续化**：
-- 深度仍是离散索引 (0-15)
-- 但用 RoPE 编码引入"相位"概念
-- 验证"相位编码离散化"是否有收益
+No architecture contributes to the field if it's 1% better but 3× slower. The H3 experiment must characterize the tradeoff.
 
-**如果简化版成功**：
-- 再扩展到连续深度 t ∈ [0,1]
-- 引入 ODE solver 或近似
+The right framing is a **Pareto frontier**: for a given compute budget (measured in FLOPs, wall time, or GPU-hours), what is the best accuracy achievable by each architecture variant?
+
+```python
+from dataclasses import dataclass
+from typing import Callable
+
+@dataclass(frozen=True)
+class ExperimentPoint:
+    model_variant: str
+    flops_per_forward: float  # measured, not estimated
+    params: int
+    val_accuracy: float
+    training_hours: float     # on your specific hardware, stated explicitly
+
+def compute_pareto_frontier(
+    experiment_points: list[ExperimentPoint],
+) -> list[ExperimentPoint]:
+    """
+    Returns the subset of points where no other point is better on
+    both accuracy and flops simultaneously.
+    """
+    pareto = []
+    for p in experiment_points:
+        dominated = any(
+            q.val_accuracy >= p.val_accuracy and 
+            q.flops_per_forward <= p.flops_per_forward and
+            q != p
+            for q in experiment_points
+        )
+        if not dominated:
+            pareto.append(p)
+    return sorted(pareto, key=lambda x: x.flops_per_forward)
+```
+
+A contribution is on the Pareto frontier if, at some compute budget, it achieves higher accuracy than all alternatives. If the proposed architecture is Pareto-dominated everywhere — slower *and* worse than some combination of baseline variants — it's not a contribution, regardless of what happens on any single benchmark.
+
+## The Four-Cell Design Matrix
+
+A minimal complete experiment has four cells:
+
+| | Synthetic Task (mechanism test) | Real Benchmark |
+|---|---|---|
+| **Baseline** | Accuracy on mechanism-specific task | CIFAR-10 / LM perplexity / downstream task |
+| **Proposed** | Same task with proposed architecture | Same benchmarks |
+
+The synthetic task tests H1 (mechanism). The real benchmark tests generalization. The baseline numbers establish that both are measured fairly.
+
+What this matrix catches that single-benchmark evaluations miss: a proposed architecture that shows large gains on real benchmarks but no improvement on the synthetic mechanism test is probably benefiting from an implicit inductive bias in the benchmark, not from the stated mechanism. The paper claim and the empirical support are misaligned.
+
+## Practical Rules for Controlling Variance
+
+Architectural comparison experiments are routinely run with insufficient controls for variance. The minimum:
+
+**Match the parameter count.** If the proposed architecture adds parameters (e.g., attention projection layers in attention residuals), the baseline should have the same parameter budget used differently (e.g., deeper or wider). Parameter differences explain performance differences more often than the mechanism does.
+
+**Use identical data pipelines.** Any difference in data augmentation, normalization, or loading between variants introduces a confound. The safest approach is to implement both variants in a single training script that shares all data pipeline code.
+
+**Report variance over seeds.** A single run with one random seed is not a result. Report mean ± std over at least 3 seeds. For a 1-2% difference to be meaningful at 95% confidence, you typically need 5+ seeds on most benchmarks.
+
+**Measure gradient norms during the comparison run.** Not in a separate experiment — during the actual comparison run. Gradient norms reveal whether the architectures are training in comparable regimes or whether one is getting a soft learning rate advantage.
+
+## What a Complete Write-Up Shows
+
+The reporting standard for an architectural paper should include:
+
+1. The synthetic task result (H1: mechanism confirmed or refuted)
+2. The learning rate sweep result (H2: stability characterized, range stated)
+3. The Pareto frontier plot (H3: efficiency tradeoff quantified)
+4. A confound section: explicitly state what the experiment does *not* control for, and why you believe those confounds don't explain the result
+
+Section 4 is the most valuable and the most commonly omitted. An honest confound section is stronger than no confound section — it shows the authors understand their experiment's limits, which is a prerequisite for reviewers trusting their conclusions.
+
+The goal is not to run more experiments. It's to run the minimum experiments that make the hypothesis and the evidence clearly legible to a skeptical reader. In most architectural papers, that means fewer but better-designed experiments than are typically submitted.
 
 ---
 
-## 实验 3：消融实验
+## References
 
-### 消融维度
-
-| 维度 | 变体 | 目的 |
-|------|------|------|
-| **Lookback 窗口** | 2, 4, 8, 16 | 找到最优历史长度 |
-| **Landmark 数量** | 4, 8, 16, 32 | 找到最优记忆容量 |
-| **残差系数** | 0.05, 0.1, 0.2, 1.0 | 平衡新旧信息 |
-| **RoPE 基频** | 10000, 50000, 100000 | 调整相位敏感度 |
-
-### 关键发现
-
-希望通过消融找到：
-- 是否存在"甜点"配置
-- 哪些超参数对性能影响最大
-- 哪些维度可以固定，哪些需要精细调优
-
----
-
-## 实验路线图
-
-### Phase 1：快速验证 (1-2 周)
-
-```
-Week 1:
-- 实现三个版本 (Classic, AttnRes, RDE-simplified)
-- 在 CIFAR-10 上快速验证可行性
-- 观察 hidden norm 和梯度分布
-
-Week 2:
-- 扩展到 Wikitext-103
-- 验证语言建模能力
-- 初步消融实验
-```
-
-### Phase 2：深度验证 (2-4 周)
-
-```
-Week 3-4:
-- Path-X 长序列任务
-- 完整消融实验
-- 与公开 SOTA 对比
-
-Week 5-6:
-- 如果简化版 RDE 成功，扩展到连续深度
-- 尝试 Neural ODE 或近似方法
-```
-
-### Phase 3：总结报告 (1 周)
-
-```
-Week 7:
-- 整理实验结果
-- 撰写技术报告
-- 决定下一步方向
-```
-
----
-
-## 预期成果
-
-### 成功场景
-
-| 结果 | 结论 | 下一步 |
-|------|------|--------|
-| AttnRes > Classic | 动态权重有效 | 深入研究 AttnRes 变体 |
-| RDE > AttnRes | 相位编码有效 | 扩展到连续深度 |
-| RDE ≈ AttnRes | 简化版收益有限 | 重新评估连续化必要性 |
-| 都失败 | 假设可能错误 | 回到第一性原理重新审视 |
-
-### 失败信号
-
-如果出现以下情况，需要重新评估方向：
-- AttnRes 训练不稳定，难以收敛
-- RDE 计算开销过大，速度下降 >50%
-- 长序列任务无明显提升
-- 消融实验无清晰甜点
-
----
-
-## 资源需求
-
-| 资源 | 数量 | 用途 |
-|------|------|------|
-| GPU | 1x A100 / 4x RTX 4090 | 训练实验 |
-| 存储 | 100GB | 数据集和 checkpoint |
-| 时间 | 4-6 周 | 完整实验周期 |
-
----
-
-## 相关阅读
-
-- Attention Residuals: [待补充 arXiv 链接]
-- Perceiver IO: https://arxiv.org/abs/2107.14795
-- Neural ODE: https://arxiv.org/abs/1806.07366
-- RDE 框架: `/blog/from-resnet-to-rde`
-
----
-
-**标签**: #experiment-design #validation #residual #rde #roadmap
+- He et al., "Deep Residual Learning for Image Recognition," CVPR 2016. [arXiv:1512.03385](https://arxiv.org/abs/1512.03385)
+- Moonshot AI, "Attention Residuals," 2026. [arXiv:2603.15031](https://arxiv.org/abs/2603.15031)
+- Lightman et al., "Let's Verify Step by Step," OpenAI 2023. [arXiv:2305.20050](https://arxiv.org/abs/2305.20050)
+- Jaegle et al., "Perceiver IO," ICML 2022. [arXiv:2107.14795](https://arxiv.org/abs/2107.14795)
