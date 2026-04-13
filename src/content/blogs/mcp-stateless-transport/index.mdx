@@ -1,0 +1,230 @@
+---
+title: "Why MCP Went Stateless"
+description: "MCP's shift from Server-Sent Events to stateless HTTP solves the load-balancing problem that blocked enterprise agent deployment."
+publishDate: "2026-04-13"
+tags: [mcp, distributed-systems, agent-infrastructure, protocol-design, enterprise-ai]
+category: engineering
+language: en
+draft: false
+---
+
+The Model Context Protocol shipped with a fundamental architectural decision that worked fine for local development and broke immediately at scale: stateful Server-Sent Events (SSE) connections between agent clients and tool servers.
+
+MCP's original HTTP+SSE transport required a persistent SSE channel for server-to-client messages alongside separate HTTP POST requests for client-to-server messages. This pairing means the client and server maintain a stateful session tied to a specific connection. If that connection drops, the state is lost. If you need to route requests across multiple server instances behind a load balancer, you need sticky sessions — the load balancer must remember which backend a given client is talking to and always route to the same one.
+
+This is a solved problem for chat applications and notification systems. It is not a solved problem when every agent in your organization needs persistent connections to dozens of MCP tool servers simultaneously, those servers need to scale horizontally, and the agent runtime itself might be ephemeral (a CI job, a serverless function, a Claude Code session that lasts 20 minutes).
+
+The Streamable HTTP transport (tracking as SEP-1442) replaces the SSE+POST pairing with a unified HTTP request-response model. The implications are more interesting than the mechanism.
+
+## What Stateful SSE Actually Costs
+
+Consider a medium-complexity agent workflow: a coding agent that can search code, read files, run tests, query a database, and file GitHub issues. That's five MCP tool servers. Each requires its own SSE connection from the agent client.
+
+In a single-user local setup, five persistent connections are trivial. In an enterprise deployment with 200 developers running coding agents:
+
+```
+200 agents x 5 tool servers = 1,000 persistent SSE connections
+```
+
+Each connection consumes a file descriptor on the server, occupies a slot in the reverse proxy's connection pool, and requires the load balancer to maintain session affinity. If a tool server instance restarts (deployment, scaling event, OOM), every agent connected to that instance loses state simultaneously. The recovery path requires the agent to re-establish the SSE connection and somehow reconstruct the conversation context that was in-flight — a problem the SSE protocol doesn't solve natively.
+
+At 1,000 connections this is manageable with careful infrastructure. At 10,000 (a large organization with diverse tool servers) it becomes the primary scaling bottleneck. The MCP protocol, designed to make tools universally accessible, becomes the constraint that limits how many tools you can practically expose.
+
+```python
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class TransportMode(Enum):
+    SSE = "sse"            # Legacy: persistent connection per tool server
+    STATELESS_HTTP = "http" # SEP-1442: request-response per invocation
+
+@dataclass(frozen=True)
+class ConnectionProfile:
+    """Resource cost of maintaining agent-to-tool connections."""
+    transport: TransportMode
+    num_agents: int
+    tools_per_agent: int
+    avg_session_minutes: float
+
+    @property
+    def concurrent_connections(self) -> int:
+        if self.transport == TransportMode.SSE:
+            # Every agent holds a persistent connection to every tool server
+            return self.num_agents * self.tools_per_agent
+        # Stateless: connections are transient, held only during request
+        # Assume 2% of agents invoke a tool at any given moment
+        return int(self.num_agents * self.tools_per_agent * 0.02)
+
+    @property
+    def file_descriptors_per_server(self) -> int:
+        return self.concurrent_connections // self.tools_per_agent
+
+# Enterprise scenario: 500 agents, 8 tool servers each
+sse_profile = ConnectionProfile(
+    transport=TransportMode.SSE,
+    num_agents=500,
+    tools_per_agent=8,
+    avg_session_minutes=30.0,
+)
+http_profile = ConnectionProfile(
+    transport=TransportMode.STATELESS_HTTP,
+    num_agents=500,
+    tools_per_agent=8,
+    avg_session_minutes=30.0,
+)
+
+print(f"SSE: {sse_profile.concurrent_connections} persistent connections")
+# SSE: 4000 persistent connections
+print(f"HTTP: {http_profile.concurrent_connections} concurrent connections")
+# HTTP: 80 concurrent connections (50x reduction)
+```
+
+The 50x reduction in concurrent connections isn't the main win. The main win is that standard HTTP infrastructure — load balancers, API gateways, CDNs, rate limiters — works without modification. No sticky sessions. No connection draining during deploys. No custom health checks that account for SSE channel state.
+
+## How Stateless Transport Actually Works
+
+The Streamable HTTP transport unifies communication into standard HTTP POST requests. The server can optionally respond with SSE streams for long-running results, but the key change is that sessions are no longer tied to persistent connections.
+
+Requests can include an optional `Mcp-Session-Id` header to associate with a server-side session. But the transport is designed so that servers *can* operate statelessly — processing each request with only the information it carries and whatever session state the server chooses to maintain externally.
+
+```
+┌──────────┐         ┌──────────────┐         ┌──────────────┐
+│  Agent    │  POST   │  Standard    │  Route  │  MCP Tool    │
+│  Client   │────────>│  HTTP LB     │────────>│  Server      │
+│           │         │  (no sticky) │         │  (stateless) │
+│           │<────────│              │<────────│              │
+│           │  200 OK │              │  Result │              │
+└──────────┘         └──────────────┘         └──────────────┘
+
+Request headers:
+  Mcp-Session-Id: <session-id>
+  Content-Type: application/json
+
+Request body:
+  { "tool": "search_code", "args": {"query": "auth middleware"} }
+```
+
+The session token is the key design decision. Two approaches are viable:
+
+**Server-side sessions (Redis/DynamoDB):** The token is an opaque session ID. The server looks up state in an external store. This is the traditional web session model, and it works, but introduces a dependency on a session store with its own availability and latency characteristics.
+
+**Client-side sessions (signed tokens):** The token is a signed, compressed payload containing the full conversation state. The server validates the signature, decompresses the state, and proceeds. No external store needed. The tradeoff is token size — a complex multi-turn tool conversation can accumulate significant state.
+
+The Streamable HTTP spec leaves the session management strategy to implementors. A server can maintain sessions in-memory, in an external store, or operate entirely statelessly if the protocol messages carry sufficient context. The key architectural gain: the transport no longer *requires* session affinity at the load balancer level.
+
+## The Tasks Primitive: Handling Long-Running Operations
+
+Stateless HTTP has an obvious limitation: what happens when a tool invocation takes minutes (running a test suite, training a model, generating a report)?
+
+SEP-1686 introduces the Tasks primitive alongside stateless transport. A tool server can respond to an invocation with a 202 Accepted containing a task ID instead of an immediate result. The agent client then polls for completion or registers a webhook callback.
+
+```python
+import httpx
+import time
+from dataclasses import dataclass
+from typing import Optional, Any
+
+@dataclass(frozen=True)
+class TaskHandle:
+    task_id: str
+    poll_url: str
+    estimated_seconds: Optional[int] = None
+
+@dataclass(frozen=True)
+class TaskResult:
+    task_id: str
+    status: str  # "pending" | "running" | "completed" | "failed"
+    result: Optional[Any] = None
+    error: Optional[str] = None
+
+def invoke_tool(
+    server_url: str,
+    tool_name: str,
+    args: dict,
+    session_token: str,
+    timeout: float = 5.0,
+) -> TaskResult | TaskHandle:
+    """Invoke an MCP tool, handling both sync and async responses."""
+    response = httpx.post(
+        f"{server_url}/invoke",
+        json={"tool": tool_name, "args": args},
+        headers={
+            "X-MCP-Session": session_token,
+            "Accept": "application/json",
+        },
+        timeout=timeout,
+    )
+
+    if response.status_code == 200:
+        # Synchronous result — tool completed within timeout
+        data = response.json()
+        return TaskResult(
+            task_id="inline",
+            status="completed",
+            result=data["result"],
+        )
+
+    if response.status_code == 202:
+        # Asynchronous — server returned a task handle
+        data = response.json()
+        return TaskHandle(
+            task_id=data["task_id"],
+            poll_url=data["poll_url"],
+            estimated_seconds=data.get("estimated_seconds"),
+        )
+
+    response.raise_for_status()
+    raise RuntimeError("Unreachable")
+
+def poll_task(poll_url: str, max_wait: float = 300.0) -> TaskResult:
+    """Poll a task handle until completion or timeout."""
+    start = time.monotonic()
+    interval = 1.0
+
+    while time.monotonic() - start < max_wait:
+        response = httpx.get(poll_url, timeout=10.0)
+        result = TaskResult(**response.json())
+
+        if result.status in ("completed", "failed"):
+            return result
+
+        time.sleep(min(interval, max_wait - (time.monotonic() - start)))
+        interval = min(interval * 1.5, 10.0)  # Exponential backoff, cap at 10s
+
+    return TaskResult(
+        task_id="timeout",
+        status="failed",
+        error=f"Task did not complete within {max_wait}s",
+    )
+```
+
+This is a pattern distributed systems engineers will recognize immediately: it's the async job pattern from webhook-based APIs, applied to agent tool invocations. The agent doesn't block a connection waiting for a slow tool. It fires the request, gets a handle, and continues reasoning about other parts of the problem. When it needs the result, it polls.
+
+## What This Enables That SSE Couldn't
+
+**Serverless MCP tools.** A tool server can now be a Lambda function or Cloud Run service that scales to zero when idle and spins up on demand. SSE connections can't survive a cold start — the connection itself is the state. Stateless HTTP makes MCP tool servers as deployable as REST APIs.
+
+**Cross-region tool routing.** An agent in Tokyo can invoke a tool server in Virginia without the latency penalty of maintaining a persistent transatlantic SSE connection. Each request is independently routed to the nearest healthy instance.
+
+**Agent migration.** If an agent process needs to move (preemption, scaling, failure recovery), the session token carries the full context. The new agent instance picks up exactly where the old one left off, connecting to whatever tool server instances happen to be available. No re-establishment of SSE channels, no state reconciliation.
+
+**Standard observability.** HTTP requests generate standard access logs, can be traced with OpenTelemetry spans, and integrate with existing API monitoring dashboards. SSE connections are opaque to most observability tooling — you see the connection established and torn down, but the individual tool invocations within the stream are invisible without custom instrumentation.
+
+## The Tradeoff: Latency and Streaming
+
+The Streamable HTTP transport doesn't eliminate SSE — it makes SSE optional. A server can respond to a POST with a standard JSON result *or* upgrade the response to an SSE stream for incremental results. The client can also open a standalone GET-based SSE connection for server-initiated notifications. This is the key design insight: streaming is available when needed, but the baseline transport is stateless HTTP that works with standard infrastructure.
+
+Most tool invocations are short (under 5 seconds) and don't benefit from streaming. The minority that do — a code search returning matches incrementally, a long-running analysis streaming progress — can use the SSE response path without requiring the entire transport to be connection-oriented. The protocol optimizes for the common case while providing escape hatches for the rest.
+
+## Implications for Agent Architecture
+
+If you're building agent systems today, stateless MCP changes the deployment model:
+
+**Before SEP-1442:** Your agent runtime needs to manage a connection pool to every tool server. Tool server deploys require connection draining. Scaling the agent tier and the tool tier are coupled — more agents means more persistent connections, which means more tool server capacity even if the actual invocation volume hasn't changed.
+
+**After SEP-1442:** Your agent runtime makes HTTP requests. Tool servers are stateless services behind a load balancer. Scaling is decoupled — you scale tool servers based on invocation volume, not connection count. The agent tier and tool tier can scale independently, like any microservice architecture.
+
+The mental model shift: MCP tool servers stop being "services your agent is connected to" and become "APIs your agent calls." That's a category change, not a degree change. It means every pattern, tool, and practice from 20 years of API infrastructure engineering applies directly to agent tool deployment.
+
+The agents are getting smarter. The protocol is getting simpler. That's usually a sign the architecture is heading in the right direction.

@@ -1,0 +1,263 @@
+---
+title: "Two Models for Sandboxing AI Agents"
+description: "Gemini CLI uses container isolation. Claude Code uses permission gates. The tradeoffs reveal what we actually fear about autonomous agents."
+publishDate: "2026-04-13"
+tags: [agent-security, sandboxing, gvisor, claude-code, gemini-cli, autonomous-agents]
+category: engineering
+language: en
+draft: false
+---
+
+Every autonomous coding agent eventually needs to run `rm -rf`, `pip install`, or `curl` something from the internet. The question isn't whether to allow this — a coding agent that can't modify files or install dependencies is a chatbot with syntax highlighting. The question is how to bound the blast radius when the agent does something wrong.
+
+Two production-grade approaches have emerged in April 2026, and they encode fundamentally different threat models.
+
+Gemini CLI introduced sandboxing using gVisor (runsc) and experimental LXC containers. The agent's shell commands execute inside an isolated runtime with a restricted syscall surface. The workspace is bind-mounted with controlled write access, and network operations go through restricted profiles. If the agent runs `rm -rf /`, the sandbox absorbs the damage.
+
+Claude Code takes a different approach: permission gates. Every tool invocation (file write, bash command, web fetch) passes through an allowlist. The user configures which operations are auto-approved and which require explicit confirmation. The agent runs in the host environment with access scoped to the working directory — but can't perform actions without permission.
+
+These aren't two implementations of the same idea. They're two answers to different questions about what makes autonomous agents dangerous.
+
+## The Container Model: Isolation by Default
+
+Gemini CLI's sandbox architecture starts from a pessimistic assumption: the agent will attempt actions that are harmful, either through bugs in the model's reasoning, adversarial prompts, or specification gaming. The correct response is to make harmful actions physically impossible regardless of what the agent intends.
+
+The implementation uses Google's gVisor, a user-space kernel that intercepts syscalls before they reach the host kernel. The agent process thinks it's running on a normal Linux system, but every operation goes through a restricted compatibility layer:
+
+```
+┌─────────────────────────────────────────────────┐
+│  Agent Process (Gemini CLI)                      │
+│  ┌───────────────────────────────────────────┐  │
+│  │  User code / shell commands                │  │
+│  └───────────┬───────────────────────────────┘  │
+│              │ syscall                           │
+│  ┌───────────▼───────────────────────────────┐  │
+│  │  gVisor Sentry (user-space kernel)         │  │
+│  │  - Intercepts all syscalls                 │  │
+│  │  - Enforces filesystem boundaries          │  │
+│  │  - Restricts network to allowlisted hosts  │  │
+│  │  - Blocks mount, ptrace, raw sockets       │  │
+│  └───────────┬───────────────────────────────┘  │
+│              │ filtered syscall                  │
+│  ┌───────────▼───────────────────────────────┐  │
+│  │  Host Kernel                               │  │
+│  └───────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────┘
+```
+
+The critical property: the sandbox profile can be generated dynamically from the agent's plan. When Gemini CLI's Plan Mode produces a DAG of intended operations, a sandbox generator could infer the minimum set of permissions required. A simplified model of how this works:
+
+```python
+from dataclasses import dataclass, field
+from enum import Enum, auto
+from typing import FrozenSet
+
+class Permission(Enum):
+    FS_READ = auto()      # Read files within project directory
+    FS_WRITE = auto()     # Write files within project directory
+    NET_HTTPS = auto()    # Outbound HTTPS to allowlisted hosts
+    NET_DNS = auto()      # DNS resolution
+    EXEC_PYTHON = auto()  # Execute Python interpreter
+    EXEC_NODE = auto()    # Execute Node.js runtime
+    EXEC_SHELL = auto()   # Execute shell commands
+    PKG_INSTALL = auto()  # Package manager install operations
+
+@dataclass(frozen=True)
+class SandboxProfile:
+    """Dynamically generated from agent's execution plan."""
+    permissions: FrozenSet[Permission]
+    writable_paths: tuple[str, ...]  # Filesystem paths the agent can modify
+    network_allowlist: tuple[str, ...] = ()  # Hostnames for outbound access
+    max_disk_mb: int = 512
+    max_memory_mb: int = 2048
+    max_runtime_seconds: int = 300
+
+    def allows(self, perm: Permission) -> bool:
+        return perm in self.permissions
+
+def profile_from_plan(plan_dag: dict) -> SandboxProfile:
+    """Infer minimum sandbox permissions from an agent's execution plan.
+
+    Analyzes the plan DAG to determine which syscall categories,
+    filesystem paths, and network hosts the agent actually needs.
+    """
+    perms: set[Permission] = {Permission.FS_READ}  # Always allow reads
+    paths: list[str] = []
+    hosts: list[str] = []
+
+    for step in plan_dag.get("steps", []):
+        action = step.get("action", "")
+
+        if "write" in action or "create" in action or "edit" in action:
+            perms.add(Permission.FS_WRITE)
+            paths.extend(step.get("target_paths", []))
+
+        if "pip install" in action or "npm install" in action:
+            perms.add(Permission.PKG_INSTALL)
+            perms.add(Permission.NET_HTTPS)
+            hosts.extend(["pypi.org", "registry.npmjs.org"])
+
+        if "python" in action:
+            perms.add(Permission.EXEC_PYTHON)
+
+        if "test" in action or "build" in action:
+            perms.add(Permission.EXEC_SHELL)
+
+    return SandboxProfile(
+        permissions=frozenset(perms),
+        writable_paths=tuple(paths) if paths else ("./",),
+        network_allowlist=tuple(set(hosts)),
+    )
+```
+
+The security guarantee is structural: even if the agent's reasoning is compromised (prompt injection, hallucinated commands, adversarial tool use), the sandbox prevents actions outside its profile. The agent can't exfiltrate data to an unauthorized host because the network layer blocks it. It can't modify files outside the project directory because the filesystem mount is scoped. It can't escalate privileges because the syscall filter blocks `ptrace`, `mount`, and capability manipulation.
+
+## The Permission Model: Trust but Verify
+
+Claude Code's approach starts from a different assumption: the agent is generally trustworthy, but users need visibility and control over what it does. The threat model isn't "the agent is adversarial" — it's "the agent might make mistakes, and mistakes in the host environment are expensive."
+
+The permission system works as a middleware layer between the agent's intent and the tool execution:
+
+```
+Agent decides: "I need to write to config.yaml"
+    │
+    ▼
+Permission check: Is Write to config.yaml auto-approved?
+    │
+    ├── YES → Execute immediately, show in transcript
+    │
+    └── NO → Prompt user: "Claude wants to write config.yaml [Allow/Deny]"
+              │
+              ├── Allow → Execute
+              └── Deny → Agent adjusts approach
+```
+
+The configuration is explicit:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(pnpm build)",
+      "Bash(pnpm test*)",
+      "Write(src/**)",
+      "Edit(src/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force*)",
+      "Bash(curl*|wget*)"
+    ]
+  }
+}
+```
+
+The critical property here is different from the container model: the agent operates in the real environment. When it reads a file, it reads the actual file. When it runs tests, it runs them against the actual codebase with the actual dependencies. There's no divergence between what the agent sees and what exists. The sandbox overhead — filesystem copying, syscall interception, network proxying — doesn't exist.
+
+## The Fundamental Tradeoff
+
+These two models optimize for different failure modes:
+
+| Property | Container (Gemini) | Permission (Claude Code) |
+|----------|-------------------|--------------------------|
+| **Blast radius of agent error** | Contained to sandbox | Full host environment |
+| **Fidelity to real environment** | Copy (may diverge) | Exact (no divergence) |
+| **Overhead** | Significant (copy-on-write FS, syscall interception) | Minimal (permission check is a string match) |
+| **Protection against prompt injection** | Strong (syscall-level enforcement) | Weak (attacker can approve if in auto mode) |
+| **Support for long-running workflows** | Limited by sandbox lifetime | Native (host environment persists) |
+| **User trust required** | Low (sandbox protects by default) | High (user must configure correctly) |
+
+The container model's weakness is fidelity. When an agent installs a package inside a sandbox, it doesn't persist to the host. When it modifies a file, it modifies a copy. At the end of the sandbox session, the agent's changes need to be reconciled with the real filesystem — a merge operation that can fail in the same ways git merges fail, but without the same tooling to resolve conflicts.
+
+For a task like "fix this failing test," the container model works well: the agent operates in isolation, produces a patch, and the patch is applied atomically. For a task like "set up this project's development environment," the container model fights you — the agent needs to make persistent changes to the host system (install tools, configure environment variables, modify shell configs) that don't survive sandbox teardown.
+
+The permission model's weakness is adversarial robustness. If an agent's reasoning is compromised by a prompt injection hidden in a file it reads, the agent will attempt to execute the injected instructions. The permission system will block unauthorized actions, but only if the permissions are configured correctly. A permission config that auto-approves all Bash commands (common in "I trust this agent" workflows) provides no protection.
+
+## Which Threat Model Is Right?
+
+Neither model is complete, and the future probably involves both.
+
+The container model handles the **competence failure** case: the agent makes a mistake, runs a destructive command, or follows a hallucinated plan. The sandbox absorbs the damage. This matters most for agents operating with minimal human oversight — CI/CD pipelines, background automation, batch processing.
+
+The permission model handles the **judgment failure** case: the agent does exactly what it intended, but what it intended wasn't what you wanted. Seeing each action and approving it lets you catch misalignment early. This matters most for interactive development — pair programming, exploratory debugging, feature implementation.
+
+The emerging pattern in production deployments is layered:
+
+```python
+from dataclasses import dataclass
+from enum import Enum
+
+class IsolationLevel(Enum):
+    NONE = "none"          # Direct host access (trusted scripts)
+    PERMISSION = "perm"    # Permission gates on tool use
+    CONTAINER = "container" # Full sandbox isolation
+    NESTED = "nested"       # Container + permission gates inside
+
+@dataclass(frozen=True)
+class AgentSecurityPolicy:
+    """Security policy determined by task context."""
+    isolation: IsolationLevel
+    auto_approve_reads: bool = True
+    auto_approve_known_commands: bool = False
+    max_autonomous_steps: int = 50
+    require_plan_approval: bool = False
+
+def policy_for_context(
+    is_interactive: bool,
+    is_ci: bool,
+    touches_production: bool,
+    estimated_steps: int,
+) -> AgentSecurityPolicy:
+    """Select security policy based on execution context."""
+    if touches_production:
+        return AgentSecurityPolicy(
+            isolation=IsolationLevel.NESTED,
+            auto_approve_reads=True,
+            auto_approve_known_commands=False,
+            max_autonomous_steps=10,
+            require_plan_approval=True,
+        )
+
+    if is_ci:
+        return AgentSecurityPolicy(
+            isolation=IsolationLevel.CONTAINER,
+            auto_approve_reads=True,
+            auto_approve_known_commands=True,
+            max_autonomous_steps=200,
+            require_plan_approval=False,
+        )
+
+    if is_interactive:
+        return AgentSecurityPolicy(
+            isolation=IsolationLevel.PERMISSION,
+            auto_approve_reads=True,
+            auto_approve_known_commands=True,
+            max_autonomous_steps=estimated_steps,
+            require_plan_approval=estimated_steps > 20,
+        )
+
+    # Default: conservative
+    return AgentSecurityPolicy(
+        isolation=IsolationLevel.CONTAINER,
+        require_plan_approval=True,
+    )
+```
+
+Interactive development sessions use permissions — you want the agent in your real environment, and you're watching. CI pipelines use containers — the agent runs unattended, and a sandbox costs nothing compared to a production incident. Production-adjacent tasks use both — containers for isolation, permissions for audit trails.
+
+## The Deeper Question
+
+The choice between container isolation and permission gates reveals what we actually worry about with autonomous agents.
+
+If you reach for containers first, you're worried about **capability** — the agent can do things you can't undo. Your instinct is to limit what's physically possible. This is the security engineer's reflex, and it's correct when the agent operates outside human attention.
+
+If you reach for permissions first, you're worried about **alignment** — the agent will do something you didn't want, but you'll recognize the mistake if you see it happening. Your instinct is to maintain visibility. This is the developer's reflex, and it's correct when you're collaborating with the agent in real time.
+
+The agents are getting more capable in both directions: more dangerous when unsupervised, more useful when collaborative. The sandbox architectures need to get more nuanced in response — not just "isolated or not" but "isolated how much, for which operations, with what oversight, and with what recovery path when the isolation itself causes problems."
+
+Both Gemini CLI and Claude Code will likely converge toward a hybrid model. The question is which team gets the layering right first.
