@@ -1,0 +1,299 @@
+---
+title: "Brain-OF: One Model for fMRI, MEG, and EEG"
+description: "Brain-OF unifies three neuroimaging modalities in a single foundation model using sparse MoE. Here's what it means for BCI."
+publishDate: "2026-04-13"
+tags: ["bci", "foundation-models", "eeg", "fmri", "meg", "neuroscience", "moe"]
+language: en
+draft: false
+---
+
+The brain-computer interface field has a fragmentation problem. fMRI models can't process EEG. EEG models can't handle MEG. Every new recording setup requires a new model, new preprocessing pipeline, new training data. Cross-modality transfer — the ability to leverage knowledge from data-rich modalities (fMRI) to improve performance on data-scarce modalities (EEG) — has been a stated goal for years, with limited practical success.
+
+Brain-OF (Brain Omnifunctional Foundation Model) takes a significant step forward. It projects fMRI, MEG, and EEG signals into a shared semantic space using a Sparse Mixture of Experts architecture, enabling modality-invariant representations that transfer across imaging types. A model trained primarily on fMRI data can decode EEG signals it has never seen. A model calibrated on MEG can generalize to fMRI without retraining.
+
+To my knowledge, this is the first architecture that treats neuroimaging modality as a token type rather than a model type.
+
+## The Cross-Modality Alignment Problem
+
+The fundamental challenge: fMRI, MEG, and EEG measure different physical quantities at different temporal and spatial resolutions.
+
+| Modality | Signal | Temporal Resolution | Spatial Resolution | Typical Recording |
+|----------|--------|--------------------|--------------------|-------------------|
+| fMRI | BOLD hemodynamic response | ~0.5 Hz (TR = 2s) | ~2mm voxels | 3D volumetric |
+| MEG | Magnetic fields from neural currents | ~1000 Hz | ~5-10mm (source-localized) | 306 sensors |
+| EEG | Electrical potentials at scalp | ~256-5000 Hz | ~10-20mm | 32-256 electrodes |
+
+These aren't minor differences. fMRI captures *where* activity happens with millimeter precision but integrates over seconds. EEG captures *when* activity happens with millisecond precision but spatially blurs across centimeters. MEG sits between them. Aligning these signals is like aligning a high-resolution photograph taken with a long exposure to a low-resolution video shot at 1000fps — they capture the same event but in fundamentally different coordinate systems.
+
+Previous approaches handled this by training separate encoders per modality and then aligning their outputs in a shared embedding space (contrastive learning). This works when you have paired data — simultaneous fMRI-EEG recordings from the same subjects performing the same tasks. But paired data is expensive and rare. Most neuroimaging datasets contain a single modality.
+
+## Brain-OF's Architecture
+
+Brain-OF's key design decision: use a shared transformer backbone with modality-specific routing via Sparse MoE, plus an "Any-Resolution Neural Signal Sampler" that normalizes the temporal dimension before the signal enters the transformer.
+
+```python
+import torch
+import torch.nn as nn
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class ModalityConfig:
+    """Configuration for each neuroimaging modality."""
+    name: str
+    sampling_rate_hz: float
+    n_channels: int
+    spatial_dims: tuple[int, ...]  # voxel grid or sensor layout
+
+MODALITY_CONFIGS = {
+    "fmri": ModalityConfig("fmri", 0.5, 1, (91, 109, 91)),  # MNI voxels
+    "meg":  ModalityConfig("meg", 1000.0, 306, (306,)),       # sensor array
+    "eeg":  ModalityConfig("eeg", 256.0, 64, (64,)),          # electrode array
+}
+
+
+class AnyResolutionSampler(nn.Module):
+    """Normalizes heterogeneous temporal resolutions to a fixed token rate.
+    
+    The core problem: fMRI has 1 sample per 2 seconds, EEG has 256 per second.
+    A 10-second recording produces 5 fMRI volumes but 2,560 EEG samples.
+    
+    Solution: resample to a fixed number of temporal tokens regardless of
+    input rate, using learned interpolation rather than naive downsampling.
+    """
+    
+    def __init__(self, n_temporal_tokens: int = 64, d_model: int = 768):
+        super().__init__()
+        self.n_temporal_tokens = n_temporal_tokens
+        self.query_tokens = nn.Parameter(
+            torch.randn(1, n_temporal_tokens, d_model)
+        )
+        self.cross_attn = nn.MultiheadAttention(
+            embed_dim=d_model, num_heads=8, batch_first=True
+        )
+        self.norm = nn.LayerNorm(d_model)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, variable_time_steps, d_model) — already channel-encoded
+        Returns:
+            (batch, n_temporal_tokens, d_model) — fixed-length representation
+        """
+        B = x.shape[0]
+        queries = self.query_tokens.expand(B, -1, -1)
+        
+        # Cross-attention: learned queries attend to variable-length input
+        # This replaces naive resampling with content-aware temporal compression
+        out, _ = self.cross_attn(queries, x, x)
+        return self.norm(out + queries)
+```
+
+The sampler uses learnable query tokens that attend to the variable-length input signal via cross-attention. For fMRI (5 time points in 10 seconds), each query token attends to all 5 volumes. For EEG (2,560 samples in 10 seconds), each query token selectively attends to relevant temporal windows. The model learns *what* to attend to per modality, rather than relying on fixed resampling rules.
+
+## Sparse MoE for Modality Routing
+
+After temporal normalization, all modalities produce the same shape: `(batch, n_temporal_tokens, d_model)`. The Sparse MoE layer routes tokens to different experts based on modality and content.
+
+```python
+class ModalityAwareMoE(nn.Module):
+    """Sparse Mixture of Experts with modality-aware routing.
+    
+    Key design: some experts specialize in specific modalities,
+    others are shared across modalities. The router learns which
+    experts to activate based on both content and modality type.
+    """
+    
+    def __init__(
+        self,
+        d_model: int = 768,
+        n_experts: int = 16,
+        n_active: int = 4,
+        n_modalities: int = 3,
+    ):
+        super().__init__()
+        self.n_active = n_active
+        
+        # Expert FFN layers
+        self.experts = nn.ModuleList([
+            nn.Sequential(
+                nn.Linear(d_model, d_model * 4),
+                nn.GELU(),
+                nn.Linear(d_model * 4, d_model),
+            )
+            for _ in range(n_experts)
+        ])
+        
+        # Router: content + modality embedding → expert selection
+        self.modality_embed = nn.Embedding(n_modalities, d_model)
+        self.router = nn.Linear(d_model * 2, n_experts)  # concat(content, modality)
+    
+    def forward(
+        self,
+        x: torch.Tensor,
+        modality_id: int,
+    ) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, seq_len, d_model)
+            modality_id: 0=fMRI, 1=MEG, 2=EEG
+        Returns:
+            (batch, seq_len, d_model)
+        """
+        B, T, D = x.shape
+        
+        # Modality conditioning
+        mod_emb = self.modality_embed(
+            torch.tensor(modality_id, device=x.device)
+        ).unsqueeze(0).unsqueeze(0).expand(B, T, -1)
+        
+        # Route based on content + modality
+        router_input = torch.cat([x, mod_emb], dim=-1)
+        logits = self.router(router_input)  # (B, T, n_experts)
+        
+        # Top-k expert selection (sparse activation)
+        topk_vals, topk_idx = logits.topk(self.n_active, dim=-1)
+        weights = torch.softmax(topk_vals, dim=-1)  # (B, T, n_active)
+        
+        # Weighted sum of active expert outputs
+        out = torch.zeros_like(x)
+        for k in range(self.n_active):
+            expert_idx = topk_idx[:, :, k]  # (B, T)
+            weight = weights[:, :, k].unsqueeze(-1)  # (B, T, 1)
+            
+            for e_idx in range(len(self.experts)):
+                mask = (expert_idx == e_idx)  # (B, T)
+                if mask.any():
+                    expert_out = self.experts[e_idx](x[mask])
+                    out[mask] += weight[mask] * expert_out
+        
+        return out
+```
+
+The routing mechanism produces an emergent specialization pattern: during training, certain experts consistently activate for fMRI tokens (learning hemodynamic response functions), others for EEG tokens (learning spectral decomposition patterns), and a subset activates for all modalities (learning modality-invariant semantic features). This last group — the shared experts — is where cross-modality transfer happens.
+
+## Why Shared Representations Work
+
+The argument for cross-modality neural representations rests on a neuroscience principle: all three modalities measure consequences of the same underlying neural activity. fMRI measures the metabolic aftermath (blood flow changes). MEG measures the magnetic fields. EEG measures the electrical potentials. Different measurement physics, same source.
+
+If Brain-OF learns representations that capture the *source* activity rather than the *measurement* characteristics, those representations should transfer across modalities. The Sparse MoE architecture encourages this: modality-specific experts handle measurement characteristics (hemodynamic delays for fMRI, volume conduction for EEG), while shared experts capture the underlying neural state.
+
+Empirical evidence from the Brain-OF work supports this. When evaluating on a visual decoding task:
+- fMRI-only model (trained and tested on fMRI): baseline performance
+- EEG-only model (trained and tested on EEG): ~60% of fMRI performance (expected — EEG has lower spatial resolution)
+- Brain-OF trained on fMRI, tested on EEG (zero-shot transfer): ~75% of fMRI performance
+
+The zero-shot transfer result is the headline: a model that has never seen EEG data during training outperforms a model trained directly on EEG. The shared representations learned from high-resolution fMRI data provide a better inductive bias than direct EEG training with limited data.
+
+## The "Any-Resolution" Problem in Detail
+
+The temporal resolution gap between fMRI and EEG spans three orders of magnitude: 0.5 Hz vs. 256+ Hz. Naive approaches to this gap — downsampling EEG to fMRI rate, or upsampling fMRI to EEG rate — both destroy information.
+
+Downsampling EEG to 0.5 Hz discards the spectral content that makes EEG useful. Alpha rhythms (8-12 Hz), beta oscillations (13-30 Hz), gamma band activity (30-100+ Hz) — all gone. You're left with slow cortical potentials, which carry some information but lose the temporal dynamics that distinguish EEG from fMRI.
+
+Upsampling fMRI to 256 Hz creates phantom temporal resolution. The hemodynamic response function has a ~6 second time constant. No interpolation scheme can recover sub-second neural dynamics from a signal that was low-pass filtered by blood flow physics.
+
+Brain-OF's cross-attention sampler avoids both failure modes. For EEG, the learned queries can attend to different frequency bands across different temporal windows — one query might capture a burst of gamma activity at t=2.3s, another might capture the sustained alpha desynchronization across the full 10-second window. For fMRI, the queries attend to the available volumes and learn to interpolate between them in a semantically meaningful way (not temporally meaningful — the interpolation is in representation space, not time).
+
+```python
+class SpectralChannelEncoder(nn.Module):
+    """Encode raw neural signals into a format suitable for the sampler.
+    
+    For EEG: Short-Time Fourier Transform → spectral features per channel
+    For fMRI: Spatial embedding of voxel activations
+    For MEG: Sensor-space encoding with spatial priors
+    """
+    
+    def __init__(self, modality: str, d_model: int = 768):
+        super().__init__()
+        self.modality = modality
+        config = MODALITY_CONFIGS[modality]
+        
+        if modality == "eeg":
+            # STFT-based: preserve spectral content
+            self.n_freqs = 40  # frequency bins
+            self.proj = nn.Linear(config.n_channels * self.n_freqs, d_model)
+        elif modality == "fmri":
+            # Spatial: flatten voxels into patches
+            self.patch_size = 8  # 8x8x8 voxel patches
+            n_patches = 1  # simplified; real impl uses 3D patching
+            self.proj = nn.Linear(self.patch_size ** 3, d_model)
+        elif modality == "meg":
+            # Sensor-space with spatial topology
+            self.proj = nn.Linear(config.n_channels, d_model)
+        
+        self.norm = nn.LayerNorm(d_model)
+    
+    def forward(self, raw_signal: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            raw_signal: modality-specific raw recording
+                EEG:  (batch, n_channels, time_samples)
+                fMRI: (batch, x, y, z, time_volumes)
+                MEG:  (batch, n_sensors, time_samples)
+        Returns:
+            (batch, variable_time_steps, d_model)
+        """
+        if self.modality == "eeg":
+            # STFT: (batch, channels, freqs, time_windows)
+            spec = torch.stft(
+                raw_signal.reshape(-1, raw_signal.shape[-1]),
+                n_fft=80, hop_length=32, return_complex=True,
+            ).abs()
+            B, C = raw_signal.shape[:2]
+            T_win = spec.shape[-1]
+            spec = spec.reshape(B, C, -1, T_win)
+            # (batch, time_windows, channels * freqs)
+            spec = spec.permute(0, 3, 1, 2).reshape(B, T_win, -1)
+            return self.norm(self.proj(spec))
+        
+        elif self.modality == "fmri":
+            # Simplified: treat each volume as one time step
+            B = raw_signal.shape[0]
+            T = raw_signal.shape[-1]
+            # Flatten spatial dims per volume
+            vols = raw_signal.reshape(B, -1, T).permute(0, 2, 1)
+            return self.norm(self.proj(vols[:, :, :self.patch_size**3]))
+        
+        elif self.modality == "meg":
+            # (batch, time, sensors) → project
+            x = raw_signal.permute(0, 2, 1)  # (B, T, sensors)
+            return self.norm(self.proj(x))
+        
+        raise ValueError(f"Unknown modality: {self.modality}")
+```
+
+## Implications for the BCI Field
+
+Brain-OF's practical impact comes from three directions.
+
+**Data efficiency.** The BCI field's chronic problem is data scarcity. Recording neural data is expensive — fMRI costs ~$500/hour, EEG requires careful setup and calibration, and clinical populations (stroke patients, ALS patients) can only tolerate short recording sessions. A foundation model that transfers knowledge across modalities multiplies the effective dataset size. Every fMRI dataset in the Human Connectome Project becomes relevant training data for EEG decoding.
+
+**Clinical deployment.** fMRI is the gold standard for brain mapping but requires a multi-million dollar scanner and a motionless patient. EEG is portable and costs $10K-50K for a clinical system. If Brain-OF enables fMRI-quality spatial information to be extracted from EEG signals (via transfer learning), it lowers the barrier for clinical BCI deployment from hospital-only to bedside.
+
+**Subject independence.** The zero-shot transfer principle applies not just across modalities but across subjects. Brain-OF's shared representations capture neural states at a level that abstracts over individual anatomical differences. This is the same principle that makes language models work across speakers — the semantic content is shared even though the acoustic realization differs. If Brain-OF learns a "semantic layer" for neural activity, new subjects can use the system with minimal or no calibration.
+
+## Connection to PRISM and BrainWhisperer
+
+Two contemporaneous results reinforce Brain-OF's direction.
+
+PRISM (ICLR 2026) demonstrated that the human brain processes visual stimuli more like textual meaning than pixel-level features. Their "Brain-to-Language-to-Image" pipeline — decode fMRI → text description → reconstruct image — outperforms direct "Brain-to-Image" pipelines in noisy conditions. This supports Brain-OF's use of language-aligned semantic spaces as the target for neural decoding. If the brain itself represents visual experience in a language-like format, then aligning neural representations with LLM embedding spaces is not just convenient engineering but a structurally appropriate modeling choice.
+
+BrainWhisperer achieved zero-shot cross-participant neural speech decoding by integrating microelectrode array signals with a pretrained Whisper ASR model. The approach is complementary to Brain-OF: where Brain-OF unifies across *modalities* (fMRI/MEG/EEG), BrainWhisperer unifies across *subjects* within a single modality (intracranial recordings). Both leverage pretrained foundation models (LLMs for Brain-OF, ASR for BrainWhisperer) as the alignment target.
+
+The convergence is clear: the BCI field is moving from bespoke, subject-specific, modality-specific decoders toward foundation models that treat neural signals as another token modality for existing large models. The tokenization question I explored in a previous post applies directly here — how you discretize continuous neural signals into tokens determines what information the downstream model can access.
+
+## What's Missing
+
+Brain-OF has limitations worth naming explicitly.
+
+**Temporal dynamics in fMRI transfer.** When Brain-OF transfers from fMRI to EEG, it can improve spatial decoding (what brain region is active) but struggles with temporal decoding (when the activity occurs). The fMRI training data simply doesn't contain sub-second temporal information. The zero-shot EEG performance of 75% of fMRI-trained baseline is strong for spatial tasks but would likely degrade for tasks requiring temporal precision (e.g., P300 detection, motor imagery timing).
+
+**Real-time inference.** The cross-attention sampler and MoE routing add latency that may be prohibitive for real-time BCI applications requiring sub-50ms response times. The architecture prioritizes accuracy over latency — appropriate for offline analysis but not yet for closed-loop neuroprosthetics.
+
+**Invasive recordings.** Brain-OF covers the three major non-invasive modalities but doesn't address intracranial recordings (ECoG, single-unit arrays). Neuralink's recent demonstration of "original voice" restoration for ALS patients uses high-density intracranial arrays that produce signals fundamentally different from scalp EEG. Extending Brain-OF to invasive recordings is an open problem.
+
+Despite these gaps, Brain-OF represents the clearest demonstration yet that the "foundation model paradigm" — train once, transfer everywhere — applies to neural signals just as it applies to text and images. The BCI field has spent two decades building bespoke decoders for specific subjects, modalities, and tasks. That era is ending.
+
+---
+
+*Related: [EEG Foundation Models and Generative Decoding](/blog/eeg-foundation-models-generative-decoding) covers earlier work on EEG-specific foundation models. [Cross-Modal SSL for EEG-Language](/blog/crossmodal-ssl-eeg-language) explores contrastive alignment between EEG and language representations. [Tokenization Is a Bottleneck](/blog/tokenization-bottleneck-byte-level-models) discusses how signal discretization affects downstream model capability.*
