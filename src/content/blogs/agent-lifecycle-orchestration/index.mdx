@@ -1,0 +1,220 @@
+---
+title: "Agent Lifecycle Orchestration: Role Separation"
+description: "How a 5-agent system with 30-minute heartbeats, JSONL mailboxes, and explicit stop-loss rules avoids the failure modes of monolithic agent architectures."
+publishDate: "2026-04-13"
+tags: [multi-agent, agent-systems, architecture, orchestration, mailbox-protocol, engineering]
+draft: false
+---
+
+A single AI agent given a complex, multi-day project will eventually fail in one of three ways: it loses context and starts contradicting earlier decisions, it enters an infinite retry loop on a stuck subtask, or it produces work that nobody reviews because the producer and the reviewer are the same entity. These failure modes aren't bugs in the agent — they're structural consequences of putting execution, review, and planning into the same context window.
+
+The fix isn't better prompts. It's separation of concerns enforced by architecture.
+
+This post describes a production 5-agent system (OpenClaw) that addresses each failure mode through role isolation, asynchronous communication, and explicit stop-loss mechanisms. The design has been running autonomously for several months, handling code generation, quality review, research, and content delivery on a 30-minute heartbeat cycle.
+
+## Why Five Agents
+
+The number isn't arbitrary. It comes from analyzing which responsibilities must be isolated from each other to prevent structural conflicts of interest.
+
+| Agent | Role | Core Responsibility | What It Never Does |
+|-------|------|---------------------|--------------------|
+| **Orchestrator** | Planning/dispatch | Task decomposition, priority ranking, resource allocation | Implementation, research |
+| **Builder** | Execution | Code implementation, testing, build verification | Architectural decisions |
+| **Reviewer** | Quality gate | Code review, quality assessment, PASS/FAIL verdicts | Fix the issues it finds |
+| **Researcher** | Evidence | Literature survey, data collection, alternative comparison | Final decisions |
+| **Packager** | Delivery/stop-loss | Packaging deliverables, stop-loss decisions, audit trail | Research, implementation |
+
+The critical constraint: the Reviewer never fixes what it finds. This is deliberate. When the same entity that identifies a problem also fixes it, it introduces a self-rationalization loop — the fix is evaluated by the same context that produced it, making it structurally impossible to catch cases where the fix introduces new issues or doesn't actually address the root cause.
+
+In human engineering teams, this is why code reviewers don't push commits to the author's branch. The same principle applies to agent systems, but it's easier to violate because there's no social norm preventing it — only architecture.
+
+## The Heartbeat Model
+
+The system operates on a **30-minute heartbeat cycle**. Each heartbeat, every agent:
+
+1. Reads its mailbox (`~/inbox/<agent>.jsonl`)
+2. Processes pending messages in order
+3. Executes any scheduled cron tasks
+4. If no work exists, sends an idle report to the Orchestrator
+5. The Orchestrator aggregates idle signals and decides whether to escalate to the human
+
+```typescript
+interface HeartbeatCycle {
+  agent: string;
+  timestamp: string;
+  mailbox_messages: number;
+  cron_tasks_executed: string[];
+  status: "active" | "idle";
+  escalation: boolean;
+}
+
+// Each agent's heartbeat is independent — no shared clock
+// The 30-minute interval is enforced by system cron, not by the agents
+```
+
+The heartbeat model solves two problems that event-driven architectures struggle with:
+
+**Bounded latency.** In a pure event-driven system, an agent that receives no messages sits dormant indefinitely. The heartbeat guarantees that every agent checks for work at least every 30 minutes, providing a worst-case latency bound for task pickup.
+
+**Observability.** The idle reports create an automatic heartbeat monitor. If an agent fails to send an idle report for two consecutive cycles, the Orchestrator knows something is wrong — the agent crashed, hung, or is stuck in an unexpectedly long task. This is the same principle as TCP keepalive, applied to agent coordination.
+
+**No busy-waiting.** Agents don't poll each other's state. They receive messages passively and act on them. Between heartbeats, the agent process is inactive. This keeps resource consumption proportional to actual work, not to the number of agents in the system.
+
+## The Mailbox Protocol
+
+Inter-agent communication uses atomic JSONL files. Each agent has a dedicated mailbox file. Writers append; readers consume.
+
+```jsonl
+{"from":"orchestrator","to":"builder","type":"task_assignment","subject":"implement control-plane logging module","priority":"high","timestamp":"2026-04-10T10:00:00Z","body":"..."}
+{"from":"reviewer","to":"orchestrator","type":"review_verdict","subject":"control-plane logging","verdict":"PASS","confidence":0.92,"timestamp":"2026-04-10T10:45:00Z","body":"..."}
+{"from":"packager","to":"orchestrator","type":"idle_report","subject":"idle tick","timestamp":"2026-04-10T11:00:00Z","body":"no mailbox work this cycle"}
+```
+
+The message type contract defines the communication topology:
+
+| Message Type | Sender | Receiver | Purpose |
+|-------------|--------|----------|---------|
+| `task_assignment` | Orchestrator | Builder/Researcher | Assign work |
+| `review_request` | Orchestrator/Builder | Reviewer | Request quality gate |
+| `review_verdict` | Reviewer | Orchestrator | PASS/FAIL with confidence |
+| `delivery_note` | Packager | Orchestrator | Delivery confirmation |
+| `idle_report` | Any | Orchestrator | Heartbeat signal |
+| `research_dispatch` | Packager/Orchestrator | Researcher | Research request |
+| `stop_loss` | Packager | Orchestrator | Kill stuck task |
+
+Why JSONL instead of a message queue (Redis, RabbitMQ, Kafka)?
+
+**Simplicity.** The system runs on a single machine. A message queue adds operational complexity (process management, persistence configuration, monitoring) without providing benefits at this scale. JSONL files are debuggable with `cat` and `grep`, version-controllable with Git, and recoverable from crashes by reading from the last complete line.
+
+**Atomicity.** With `O_APPEND`, the seek-and-write is atomic on POSIX, preventing offset interleaving between concurrent writers. For small writes (a single JSONL line, well under filesystem block size), this is sufficient in practice on Linux ext4/btrfs. No file locking needed at this scale.
+
+**Auditability.** The mailbox files are a complete, ordered record of all inter-agent communication. When debugging why the system made a particular decision, you can reconstruct the exact sequence of messages that led to it — something that's much harder with a transient message queue.
+
+The tradeoff: JSONL doesn't scale to hundreds of agents or thousands of messages per second. It doesn't need to. The system processes dozens of messages per cycle across five agents. The simplicity-to-capability ratio is right for the scale.
+
+## Stop-Loss: When to Quit
+
+The most underappreciated component of autonomous agent systems is knowing when to stop. Without explicit stop-loss rules, an agent will continue working on a stuck task indefinitely — burning tokens, producing increasingly low-quality output, and blocking other work.
+
+The Packager agent serves as the system's stop-loss enforcer. It monitors task state and triggers termination when any of these conditions are met:
+
+```python
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+
+
+class StopLossReason(Enum):
+    STALE = "no_progress_24h"
+    LOOP = "two_consecutive_no_change"
+    ROI = "cost_exceeds_value"
+    REVIEW_FAIL = "three_consecutive_review_failures"
+
+
+@dataclass(frozen=True)
+class TaskState:
+    task_id: str
+    created_at: datetime
+    last_progress_at: datetime
+    consecutive_no_change: int
+    review_failures: int
+    estimated_tokens_spent: int
+    estimated_value: str  # "high" | "medium" | "low"
+
+
+def should_stop_loss(state: TaskState, now: datetime) -> StopLossReason | None:
+    """Determine if a task should be terminated."""
+    # Rule 1: No progress for 24 hours
+    if now - state.last_progress_at > timedelta(hours=24):
+        return StopLossReason.STALE
+
+    # Rule 2: Two consecutive cycles with no state change
+    if state.consecutive_no_change >= 2:
+        return StopLossReason.LOOP
+
+    # Rule 3: Cost-value mismatch
+    token_threshold = {
+        "high": 500_000,
+        "medium": 100_000,
+        "low": 25_000,
+    }
+    if state.estimated_tokens_spent > token_threshold.get(
+        state.estimated_value, 50_000
+    ):
+        return StopLossReason.ROI
+
+    # Rule 4: Repeated review failures suggest fundamental approach issue
+    if state.review_failures >= 3:
+        return StopLossReason.REVIEW_FAIL
+
+    return None
+```
+
+When stop-loss triggers, the Packager:
+1. Marks the task as `deferred` (not `failed` — the task might be viable later with a different approach)
+2. Records the reason and current state to the audit trail
+3. Notifies the Orchestrator to re-prioritize remaining work
+4. The human sees the stop-loss in the next session summary and can decide whether to revisit
+
+This mechanism addresses the "infinite loop of well-intentioned effort" — the single most common failure mode in autonomous agent systems. An agent without stop-loss is like a while loop without a break condition: it will run forever if the termination predicate is never satisfied.
+
+## Event-Driven + Time-Driven Hybrid
+
+The system operates in two modes simultaneously:
+
+**Event-driven:** Agents respond to mailbox messages. A task assignment triggers implementation. A review request triggers evaluation. This handles the standard workflow where one agent's output triggers another agent's action.
+
+**Time-driven:** Cron schedules trigger periodic tasks independent of the mailbox. Blog maintenance runs on Tuesday and Friday mornings. Security scans run daily. Dependency updates run weekly.
+
+The hybrid matters because some work doesn't have a natural trigger event. "Check if the blog needs new content" isn't triggered by any agent action — it's triggered by the passage of time. Cron handles this cleanly without forcing the system to manufacture synthetic events.
+
+A cron task can generate mailbox messages. The blog maintenance cron reads recent deliverables, identifies content gaps, and dispatches research requests to the Researcher via mailbox. This bridges the two modes: time triggers the initial action, events handle the coordination.
+
+## Comparison With Single-Agent Systems
+
+| Property | Single Agent | 5-Agent (OpenClaw) |
+|----------|-------------|---------------------|
+| Context cleanliness | Low (mixed responsibilities) | High (role isolation) |
+| Error isolation | None | Reviewer gate |
+| Stop-loss | Depends on prompt | Structural guarantee |
+| Observability | Low (black box) | High (mailbox audit log) |
+| Scalability | Linear context growth | Add agent types as needed |
+| Failure recovery | Restart from scratch | Resume from last mailbox state |
+
+The last row is important. When a single-agent system crashes, recovery means either restarting the entire task or manually reconstructing the context. In the mailbox system, recovery means reading the mailbox from the last processed message and resuming. The state is in the files, not in the agent's context window.
+
+## What This Architecture Costs
+
+Role separation isn't free:
+
+**Latency.** A single agent can think and act in one turn. The 5-agent system requires at least three mailbox exchanges for a complete task (assignment → implementation → review). At 30-minute heartbeats, the minimum latency for a reviewed task is 90 minutes. For latency-critical work, this is too slow.
+
+**Token overhead.** Each agent reads its own context setup (system prompt, role description, current state) on every heartbeat. Five agents means five context loads per cycle, even when some agents have no work. The idle overhead is the cost of readiness.
+
+**Coordination complexity.** Five agents with six message types create a coordination surface that needs to be understood, monitored, and debugged. A single agent has no coordination — it's self-contained. The mailbox protocol is simple, but "simple" at five agents is still more complex than "nothing" at one agent.
+
+These costs are justified when the task is long-running (days to weeks), involves multiple types of work (implementation + review + research), and benefits from quality gates (the review step catches errors that the builder would miss). For short, well-defined tasks, a single agent is better.
+
+## Implementation Notes
+
+**Mailbox concurrency.** With five agents potentially writing to each other's mailboxes simultaneously, write conflicts are theoretically possible. In practice, they're vanishingly rare because agents operate on non-overlapping 30-minute cycles and each write is a single-line atomic append. No file locking has been needed.
+
+**Agent identity.** Each agent runs as a separate Claude Code session with its own system prompt defining its role and constraints. The system prompt is the "constitution" — it defines what the agent can and cannot do. The mailbox is the "communication channel" — it defines what the agent should do next.
+
+**State persistence.** The only persistent state is the mailbox files and a `TASKS.yaml` file that tracks task status. No database, no cache, no external state store. Everything is in plain text files that can be inspected, edited, and version-controlled.
+
+**Cost control.** Each agent has a per-cycle token budget. The Orchestrator's budget is smallest (it makes routing decisions, not generating code). The Builder's budget is largest (it writes implementations). The Reviewer's budget is medium (it reads code and writes assessments). Budget enforcement prevents runaway costs from stuck agents — a second line of defense behind the stop-loss mechanism.
+
+## Patterns Worth Stealing
+
+Even if you don't build a 5-agent system, three patterns from this architecture apply to any multi-agent design:
+
+**Separate production from evaluation.** The entity that produces output should never evaluate its own output. This applies to code generation (separate builder and reviewer), content creation (separate writer and editor), and research (separate hypothesis generation and evidence evaluation). Self-evaluation is structurally biased.
+
+**Make communication auditable.** Whatever protocol your agents use to communicate, it should produce a durable, human-readable record. When something goes wrong — and it will — you need to reconstruct the decision chain. Structured logs are acceptable. JSONL mailboxes are better. In-memory message passing with no persistence is a debugging nightmare.
+
+**Define explicit stopping conditions.** Every autonomous agent loop needs a stop condition that doesn't depend on the agent's own judgment. External timers, token budgets, cycle counters, or human checkpoints all work. What doesn't work: trusting the agent to know when it's stuck. By definition, a stuck agent doesn't know it's stuck.
+
+---
+
+*This post describes the OpenClaw agent system architecture as deployed in the author's personal AI OS. The code examples are simplified representations of the production implementation. The system has been running autonomously since early 2026 with the 5-agent configuration described here.*

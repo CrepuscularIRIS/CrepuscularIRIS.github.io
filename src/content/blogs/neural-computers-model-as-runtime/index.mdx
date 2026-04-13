@@ -1,0 +1,202 @@
+---
+title: "Neural Computers: When the Model Becomes the Runtime"
+description: "A new architecture folds computation, memory, and I/O into a single learned model — eliminating the boundary between software and weights."
+publishDate: "2026-04-13"
+tags: [architecture, neural-computers, meta-ai, deep-learning, systems, compute]
+draft: false
+---
+
+The Von Neumann architecture separates storage, processing, and I/O into distinct subsystems connected by buses. Every computer you've used — from mainframes to GPUs — follows this pattern. The program sits in memory. The processor fetches instructions, executes them, writes results back. Data moves between these components along well-defined channels.
+
+Neural networks, despite running on Von Neumann hardware, don't work this way internally. A transformer's forward pass doesn't fetch instructions from a stored program. It applies learned transformations to input data in a single differentiable sweep. The "program" is the weights. The "memory" is the activations. The "I/O" is the tokenizer and output head. These aren't separate subsystems — they're unified into a single computational graph.
+
+The Neural Computer (NC) proposal from Meta AI and KAUST takes this observation to its logical extreme: what if we designed an architecture where the model doesn't just resemble a runtime — it *is* the runtime? Where computation, memory, and I/O are explicitly internalized into the learned parameters, and the traditional distinction between "the model" and "the system running the model" dissolves?
+
+This isn't a metaphor. It's a concrete architectural proposal with specific mechanisms for each component.
+
+## The Problem With External State
+
+Current large language models interact with the world through a narrow interface: text in, text out, with optional tool calls that reach outside the model boundary. When a model needs to remember something across turns, it relies on external memory — conversation history appended to the context window, retrieval-augmented generation pulling from a vector database, or explicit key-value caches maintained by the inference server.
+
+This architecture has three structural weaknesses:
+
+**Serialization overhead.** Every interaction between the model and external state requires translating internal representations into text (or tokens), passing them through an interface boundary, and translating them back. The model's internal representation of "the user's authentication state" is a rich, high-dimensional activation pattern. The external representation is a JSON blob. Information is lost at every boundary crossing.
+
+**Coherence fragility.** External memory systems don't share the model's learned representations. A vector database stores embeddings, but those embeddings were computed independently from the model's current inference state. When the model retrieves a "relevant" document, relevance is determined by cosine similarity in embedding space — not by the model's internal assessment of what information would actually help with the current computation. The retrieval step is fundamentally disconnected from the reasoning step.
+
+**Scaling discontinuity.** Adding more context to an external memory system costs linear (or worse) compute at retrieval time, but the marginal utility of each retrieved item decreases rapidly. The model's ability to use retrieved information depends on its position in the context window, the density of relevant information relative to noise, and the model's attention capacity. These are fixed by architecture, not by how much memory you provision.
+
+A Neural Computer addresses these by making memory a learned internal component — part of the model's parameter space rather than an external system.
+
+## Architecture: Three Internal Subsystems
+
+The NC architecture replaces the traditional model/infrastructure split with three learned subsystems:
+
+### Computation Core
+
+The computation core is a modified transformer stack where each layer can perform both standard token-level transformations and meta-computation — operations on the model's own internal state. Standard layers process the input sequence. Meta-computation layers inspect and modify activation patterns from previous layers, effectively implementing a learned control flow.
+
+```python
+@dataclass(frozen=True)
+class NCLayerConfig:
+    """Configuration for a Neural Computer layer."""
+    hidden_dim: int
+    num_heads: int
+    layer_type: str  # "standard" | "meta" | "memory_read" | "memory_write"
+    memory_slots: int = 0
+
+class MetaComputationLayer(nn.Module):
+    """Layer that operates on the model's own activation state."""
+
+    def __init__(self, cfg: NCLayerConfig):
+        super().__init__()
+        self.state_inspector = nn.MultiheadAttention(
+            embed_dim=cfg.hidden_dim,
+            num_heads=cfg.num_heads,
+        )
+        self.state_modifier = nn.Sequential(
+            nn.Linear(cfg.hidden_dim, cfg.hidden_dim * 4),
+            nn.GELU(),
+            nn.Linear(cfg.hidden_dim * 4, cfg.hidden_dim),
+        )
+        self.gate = nn.Linear(cfg.hidden_dim, cfg.hidden_dim)
+
+    def forward(
+        self,
+        x: torch.Tensor,
+        layer_states: list[torch.Tensor],
+    ) -> torch.Tensor:
+        # Attend over previous layer activations
+        # Each state: (batch, seq_len, hidden_dim)
+        # Concatenate along seq_len to form a flat key/value sequence
+        stacked = torch.cat(layer_states, dim=1)  # (batch, num_layers*seq, dim)
+        inspected, _ = self.state_inspector(
+            query=x, key=stacked, value=stacked,
+        )
+        # Compute modification signal
+        modification = self.state_modifier(inspected)
+        # Gated update — model learns when to apply meta-computation
+        gate_signal = torch.sigmoid(self.gate(x))
+        return x + gate_signal * modification
+```
+
+The gate mechanism is critical. Without it, meta-computation layers would modify every forward pass, introducing instability. The learned gate means the model can choose to skip meta-computation when standard processing suffices — effectively implementing conditional computation without explicit branching.
+
+### Persistent Memory
+
+The memory subsystem uses learned memory slots — fixed-size parameter tensors that persist across forward passes and are updated through gated writes. Unlike a KV cache (which stores projected key-value representations and grows linearly with sequence length), persistent memory stores *compressed, learned representations* in a fixed-capacity buffer.
+
+The read mechanism uses differentiable attention; the write mechanism uses truncated backpropagation (detached gradients) for training stability — a tradeoff explained below:
+
+```python
+class PersistentMemory(nn.Module):
+    """Fixed-capacity learned memory that persists across forward passes."""
+
+    def __init__(self, num_slots: int, slot_dim: int):
+        super().__init__()
+        self.slots = nn.Parameter(torch.randn(num_slots, slot_dim) * 0.02)
+        self.write_head = nn.MultiheadAttention(slot_dim, num_heads=8)
+        self.read_head = nn.MultiheadAttention(slot_dim, num_heads=8)
+        self.write_gate = nn.Linear(slot_dim, 1)
+
+    def read(self, query: torch.Tensor) -> torch.Tensor:
+        """Content-addressable read from memory slots."""
+        result, attention_weights = self.read_head(
+            query=query,
+            key=self.slots.unsqueeze(0).expand(query.size(0), -1, -1),
+            value=self.slots.unsqueeze(0).expand(query.size(0), -1, -1),
+        )
+        return result
+
+    def write(self, content: torch.Tensor) -> None:
+        """Detached write — updates slots via attention with truncated BPTT."""
+        with torch.no_grad():
+            gate = torch.sigmoid(self.write_gate(content)).mean()
+            if gate > 0.5:  # Only write when gate activates
+                update, _ = self.write_head(
+                    query=self.slots.unsqueeze(0),
+                    key=content,
+                    value=content,
+                )
+                self.slots.data = (
+                    0.9 * self.slots.data + 0.1 * update.squeeze(0)
+                )
+```
+
+This is a modern, differentiable take on Neural Turing Machine memory — but with two differences that matter at scale. First, the write gate prevents catastrophic overwriting. Second, the exponential moving average update means old memories decay gracefully rather than being abruptly replaced.
+
+### I/O Interface
+
+The I/O subsystem handles interaction with the external world, but instead of treating I/O as a boundary crossing (serialize → transmit → deserialize), it treats external signals as continuous inputs to the learned system.
+
+Tool calls, sensor readings, and user inputs are projected into the model's internal representation space through learned encoders. The model doesn't receive "the result of a web search as text" — it receives a continuous embedding of the search result that shares the same representational space as its internal activations.
+
+This eliminates the lossy text serialization step. The model can attend over tool results with the same mechanisms it uses for internal reasoning, because the representations are in the same space.
+
+## Why This Architecture Matters
+
+The NC proposal is not just an academic curiosity. It addresses three real problems in current AI systems:
+
+**The integration tax.** Every time you add a tool, memory system, or external component to an AI system, you pay a tax: the overhead of converting between the model's internal representations and the external system's data format. NC internalizes these components, eliminating the integration tax entirely. The model's "tools" are learned subsystems, not external services.
+
+**The composability problem.** Current agent architectures compose by chaining — the output of one model/tool feeds into the input of the next. Each link in the chain introduces latency and information loss. NC composes by integration — different capabilities are different layers in the same forward pass, sharing activations and gradients.
+
+**The training-inference gap.** Standard models are trained on static datasets but deployed in dynamic environments with tools and memory. The model has to figure out how to use tools at inference time through in-context learning or RLHF, because the tools weren't part of the training architecture. NC trains with its memory and I/O subsystems active, so tool use is a learned capability from the start.
+
+## The Hard Problem: Training Stability
+
+Making this work requires solving a training stability problem that current transformer training doesn't face. When memory slots are updated during the forward pass, the gradient computation for the backward pass must account for the memory state at each time step. This is the same challenge that plagued early recurrent neural networks — but at transformer scale.
+
+The proposed solution uses a detached memory gradient: the forward pass updates memory slots, but the backward pass treats the memory state as fixed at each time step. This is biased — it doesn't compute the true gradient with respect to the memory dynamics — but it's stable. The bias is acceptable because the memory write gate learns to make small, incremental updates, so the true gradient and the detached gradient stay close.
+
+```python
+class NCTrainingStep:
+    """Simplified training step for a Neural Computer."""
+
+    def __init__(self, model: NeuralComputer, optimizer: torch.optim.Optimizer):
+        self.model = model
+        self.optimizer = optimizer
+
+    def step(self, batch: dict[str, torch.Tensor]) -> float:
+        self.optimizer.zero_grad()
+
+        # Forward pass updates memory in-place
+        output = self.model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
+        )
+
+        loss = F.cross_entropy(
+            output.logits.view(-1, output.logits.size(-1)),
+            batch["labels"].view(-1),
+        )
+
+        # Backward pass uses detached memory states
+        loss.backward()
+
+        # Clip gradients — critical for stability with memory updates
+        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+
+        self.optimizer.step()
+        return loss.item()
+```
+
+The gradient clipping isn't optional. Without it, the meta-computation layers amplify gradients through the state-inspection mechanism, causing training divergence within a few hundred steps.
+
+## What This Changes (and What It Doesn't)
+
+If the NC architecture works at scale, it changes how we think about the boundary between models and systems. Today, deploying an AI system means building infrastructure *around* a model — retrieval pipelines, tool servers, memory stores, orchestration layers. An NC would internalize much of this infrastructure into the model itself.
+
+What it doesn't change: the fundamental limits of learned systems. A model that internalizes its own memory still can't store information it hasn't been trained on or hasn't encountered at inference time. The persistent memory is finite and lossy. The I/O subsystem can only interface with the external world through its learned encoders — it can't spontaneously develop new input modalities.
+
+The real question isn't whether this architecture can replace today's transformer-plus-infrastructure stack. It's whether the integration tax and composability overhead of current systems are large enough to justify the training complexity of an end-to-end learned alternative. For applications where latency and coherence matter more than modularity — real-time agent systems, embodied robotics, continuous monitoring — the answer might be yes.
+
+## Practical Implications
+
+For practitioners, the NC architecture suggests a design principle worth adopting even in conventional systems: minimize boundary crossings. Every time your AI system serializes internal state to text, passes it through an API, and deserializes it on the other side, you're paying the integration tax. Reducing those boundaries — through shared embedding spaces, unified inference pipelines, or tighter coupling between model and infrastructure — moves in the same direction the NC architecture points.
+
+The NC paper also clarifies what "end-to-end learning" means for AI systems. Current systems are end-to-end within the model boundary (input tokens to output tokens) but modular across the system boundary (model + retrieval + tools + memory). True end-to-end learning would span the entire system — including the infrastructure components that currently sit outside the model. Whether that's achievable at production scale remains open, but the architectural direction is clear.
+
+---
+
+*The Neural Computer proposal is from Meta AI and KAUST, April 2026. The architecture described here is based on the published paper and the author's analysis of its implications. Specific implementation details may differ from the final published version.*
