@@ -1,0 +1,176 @@
+---
+title: "BCI Co-Control: Uncertainty as a Signal"
+description: "A new decoder architecture treats neural uncertainty as an active control signal, letting the brain and AI negotiate intent in real time."
+publishDate: "2026-04-13"
+tags: [bci, neural-decoding, uncertainty, brain-to-text, neuroscience, language-models]
+category: research
+language: en
+draft: false
+---
+
+Every brain-to-text system faces the same fundamental problem: neural signals are noisy, and the decoder has to produce discrete outputs (words, phonemes, characters) from continuous, stochastic inputs. The standard approach treats noise as something to suppress — run the signal through enough denoising layers, and what comes out should be the user's intended message.
+
+This framing has a blind spot. Noise in neural signals isn't just measurement artifact. Some of it reflects genuine uncertainty in the user's intent. A person thinking about what to say next produces neural patterns that are legitimately ambiguous — not because the signal is corrupted, but because the cognitive state is uncertain. Treating this uncertainty as noise to be removed throws away information that a smarter system could use.
+
+A bioRxiv preprint from April 2026 (Huang et al.) proposes a decoder architecture that inverts the standard approach: instead of suppressing uncertainty, it **quantifies it and feeds it forward** as an explicit signal to a downstream language model. The brain and the AI negotiate the final output based on how confident each side is. When neural signals are clear, the decoder drives. When signals are ambiguous, the language model's prior over likely utterances takes over. The transition is continuous and calibrated.
+
+## The Hallucination Problem in Brain-to-Text
+
+Current high-performance brain-to-text systems achieve impressive word error rates — the best intracortical systems report WER in the single digits (Willett et al., 2023 reported ~5% on a 125k-word open vocabulary). But these headline numbers hide a specific failure mode: when the neural signal is genuinely ambiguous, the decoder doesn't output "I'm not sure." It outputs a confident wrong answer.
+
+This is the same hallucination problem that plagues large language models, but with higher stakes. A language model that confidently produces a wrong fact wastes the reader's time. A BCI decoder that confidently produces the wrong word puts words in the mouth of someone who may have no other way to communicate.
+
+The failure mode is systematic. Neural decoders trained with cross-entropy loss learn to minimize average error across all inputs, which incentivizes confident predictions even when the input is ambiguous. The loss function doesn't distinguish between "the signal clearly says 'yes'" and "the signal is ambiguous but 'yes' is slightly more likely than 'no'." Both get decoded as "yes" with similar confidence.
+
+Language model integration can exacerbate this specific failure mode even while improving overall WER. Current systems use beam search or rescoring with a language model to select among decoder candidates. The language model assigns high probability to fluent continuations regardless of whether the neural evidence supports them. A sentence that starts "I want to go..." gets completed as "...home" by the language model even if the neural signal for the last word was indistinguishable from noise. The language model's fluency prior overwhelms weak neural evidence.
+
+## Calibrated Uncertainty as a Control Signal
+
+The Huang et al. architecture adds an uncertainty quantification stage between the neural decoder and the language model. The pipeline has three components:
+
+**Stage 1: Neural Feature Extraction.** Raw neural signals (intracortical spike rates or EEG power features) are processed by a temporal convolutional encoder that produces per-timestep feature vectors. This stage is standard.
+
+**Stage 2: Uncertainty-Aware Decoding.** Instead of outputting a single phoneme or character prediction, the decoder produces a probability distribution over candidates **plus a calibrated confidence score**. The confidence score is trained to be well-calibrated — when it says 80% confident, the prediction should be correct 80% of the time.
+
+Calibration is achieved through a two-headed architecture (illustrative implementation — the actual paper's architecture may differ in specifics):
+
+```python
+# import torch, torch.nn as nn, torch.nn.functional as F
+class UncertaintyDecoder(nn.Module):
+    def __init__(self, input_dim: int, vocab_size: int, hidden_dim: int = 512):
+        super().__init__()
+        self.projection = nn.Linear(input_dim, hidden_dim)
+        self.backbone = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=8, batch_first=True),
+            num_layers=4
+        )
+        # Head 1: token prediction
+        self.prediction_head = nn.Linear(hidden_dim, vocab_size)
+        # Head 2: calibrated confidence
+        self.confidence_head = nn.Sequential(
+            nn.Linear(hidden_dim, 128),
+            nn.ReLU(),
+            nn.Linear(128, 1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, neural_features: torch.Tensor):
+        h = self.projection(neural_features)
+        h = self.backbone(h)
+        logits = self.prediction_head(h)          # [B, T, vocab_size]
+        confidence = self.confidence_head(h)       # [B, T, 1]
+        return logits, confidence
+```
+
+The confidence head is trained with an auxiliary calibration loss that penalizes overconfidence on incorrect predictions and underconfidence on correct ones. In practice, a soft-binning approximation (Kumar et al., 2018) is used to make this trainable, but the standard ECE formulation illustrates the objective:
+
+```python
+def calibration_loss(
+    confidence: torch.Tensor,
+    predictions: torch.Tensor,
+    targets: torch.Tensor,
+    n_bins: int = 15
+) -> torch.Tensor:
+    """Expected Calibration Error (hard-binned for clarity; use soft-binning for training)."""
+    correct = (predictions.argmax(dim=-1) == targets).float()
+    conf = confidence.squeeze(-1)
+
+    bin_boundaries = torch.linspace(0, 1, n_bins + 1, device=conf.device)
+    ece = torch.zeros(1, device=conf.device)
+
+    for i in range(n_bins):
+        mask = (conf > bin_boundaries[i]) & (conf <= bin_boundaries[i + 1])
+        if mask.sum() > 0:
+            bin_accuracy = correct[mask].mean()
+            bin_confidence = conf[mask].mean()
+            ece += mask.float().mean() * (bin_accuracy - bin_confidence).abs()
+
+    return ece
+```
+
+**Stage 3: Uncertainty-Gated Language Model Integration.** The language model receives both the decoder's predictions and its confidence scores. When confidence is high, the language model defers to the neural decoder. When confidence is low, the language model's prior over likely continuations takes priority. The gating is continuous:
+
+```python
+def cocontrol_decode(
+    neural_logits: torch.Tensor,     # [vocab_size]
+    neural_confidence: float,         # 0.0 to 1.0
+    lm_logits: torch.Tensor,         # [vocab_size]
+    alpha_min: float = 0.1,
+    alpha_max: float = 0.9
+) -> torch.Tensor:
+    """Blend neural decoder and LM predictions based on calibrated confidence."""
+    # Map confidence to mixing weight
+    alpha = alpha_min + (alpha_max - alpha_min) * neural_confidence
+
+    # Weighted combination in log-probability space
+    neural_probs = F.log_softmax(neural_logits, dim=-1)
+    lm_probs = F.log_softmax(lm_logits, dim=-1)
+
+    blended = alpha * neural_probs + (1 - alpha) * lm_probs
+    return blended
+```
+
+The key design choice: the blending happens in log-probability space (log-linear interpolation), not raw logit space. This tends to preserve the ranking of high-confidence neural predictions while allowing the language model to down-weight improbable candidates — though extreme weighting can still shift rankings in edge cases.
+
+## What This Architecture Changes
+
+The practical effects are three-fold.
+
+**Hallucination suppression.** When the neural signal is ambiguous, the system outputs a plausible word (driven by the language model) rather than a confidently wrong word (driven by the neural decoder). This sounds like a minor distinction, but in conversational BCI use, it's the difference between "I want to go... [pause]" and "I want to go fish" when the user intended "I want to go home." The former preserves the user's ability to clarify; the latter puts wrong words in their mouth.
+
+In the paper's evaluation on a held-out test set of 50 sessions across 3 intracortical BCI participants, the co-control architecture reduced the rate of high-confidence errors (decoder confidence > 0.8, prediction incorrect) by 62% compared to a standard beam-search-with-LM baseline. Total WER improved modestly (8% relative improvement), but the distribution of errors shifted dramatically — remaining errors were concentrated at low confidence levels where the system could flag uncertainty to the user.
+
+**Adaptive pacing.** Because the system knows when it's uncertain, it can adjust the output rate. When confidence is high, words appear at full speed. When confidence drops, the system can slow down, request confirmation, or present alternatives. This turns the BCI from a one-way translation device into a collaborative communication system.
+
+```python
+@dataclass(frozen=True)
+class DecoderOutput:
+    token: str
+    confidence: float
+    alternatives: list[tuple[str, float]]
+
+    @property
+    def action(self) -> str:
+        if self.confidence > 0.85:
+            return "emit"           # high confidence: output directly
+        elif self.confidence > 0.5:
+            return "suggest"        # medium: show top alternatives
+        else:
+            return "wait"           # low: pause for more neural evidence
+```
+
+**Principled language model weighting.** Current systems use the language model as a post-hoc rescorer with a fixed weight. This is wrong because the optimal weight depends on the neural signal quality, which varies moment to moment. During clear articulation (or clear motor imagery for non-invasive systems), the neural decoder should dominate. During cognitive load, hesitation, or signal dropout, the language model should take over. Fixed weighting can't capture this — confidence-gated blending can.
+
+## The Deeper Implication: Shared Control Theory
+
+The co-control framing connects to a rich literature in robotics on shared autonomy — systems where a human and a robot jointly control an outcome, with the allocation of control shifting dynamically based on who has better information at each moment.
+
+In shared autonomy for robotic manipulation, the standard approach (Dragan & Srinivasa, 2013) blends the human's joystick input with the robot's predicted intention, weighted by the robot's confidence in its prediction. When the robot is confident it knows what the human is reaching for, it assists aggressively. When uncertain, it defers to raw human input.
+
+The Huang et al. architecture applies the same principle to language output. The "human" is the neural signal (noisy, uncertain, but ground truth about intent). The "robot" is the language model (fluent, confident, but inferring intent from context rather than observing it directly). The confidence score mediates the allocation.
+
+This framing suggests a roadmap beyond binary decode/don't-decode decisions. Future BCI systems could maintain a continuous estimate of neural signal informativeness across multiple channels — motor cortex for articulation confidence, prefrontal cortex for lexical selection confidence, temporal cortex for semantic coherence — and route control authority to the subsystem with the strongest signal at each moment.
+
+## Limitations and Open Problems
+
+The calibration loss requires held-out data where you know the ground truth — the user's actual intended words. For intracortical BCI participants in laboratory settings, this is available (the participant reads a known script during calibration). For spontaneous communication — the actual use case — ground truth is fundamentally unavailable. How do you calibrate confidence on free-form thoughts?
+
+The paper addresses this partially through online recalibration: during conversational use, the system treats user corrections ("no, I meant...") as ground truth labels and updates the confidence head. But corrections are noisy (the user might correct correctly decoded words due to changed intent, not decoder error) and sparse (most errors go uncorrected in natural conversation).
+
+The language model component also introduces its own failure modes. A well-calibrated neural decoder that correctly reports low confidence on a garbled signal still produces "plausible" output because the language model fills in the gap. If the user has no way to distinguish "the system decoded my brain signal" from "the system guessed a likely word," the transparency benefit of calibrated uncertainty is lost. The user interface needs to make the confidence level visible — perhaps through color coding, font weight, or explicit confidence indicators — which is a design problem as much as an engineering one.
+
+The architecture is demonstrated on intracortical recordings with high signal-to-noise ratio. Whether the uncertainty quantification transfers to non-invasive modalities (EEG, fNIRS) where the baseline signal quality is much lower is an open question. The concern is that with noisy modalities, the confidence head might learn to be uniformly low-confidence, collapsing the co-control system into a pure language model with no neural grounding.
+
+## Why This Matters Beyond BCI
+
+The principle — quantify uncertainty in your primary signal source and use it to gate a generative model's contribution — applies far beyond brain-computer interfaces. Any system that combines a noisy sensor with a language model faces the same tradeoff:
+
+- **Speech recognition in noisy environments:** When the acoustic model is uncertain, lean more on the language model. When it's confident, trust the audio.
+- **Medical transcription from unclear dictation:** When the acoustic decoder flags low confidence, present alternatives rather than committing to a plausible-but-wrong transcript.
+- **Multimodal AI with unreliable image inputs:** When the vision model is uncertain about what it sees, weight the text context more heavily rather than hallucinating visual details.
+
+The BCI setting is where the stakes are highest and the signal-to-noise ratio is lowest, making it the natural forcing function for developing these architectures. But the uncertainty-gated co-control pattern is a general-purpose design principle for any system where a generative model fills in gaps that a primary signal source can't resolve.
+
+---
+
+*Based on: Huang et al., "Probabilistic Co-Control for Brain-Computer Interfaces," bioRxiv 2026.04.06.588214 (April 2026). The code examples in this post are illustrative implementations of the described architecture, not extracted from the authors' codebase.*
