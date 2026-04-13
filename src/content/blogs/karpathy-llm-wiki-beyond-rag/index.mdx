@@ -1,6 +1,6 @@
 ---
 title: "Beyond RAG: Karpathy's LLM Wiki Paradigm"
-description: "Why incremental Markdown compilation might beat vector search for long-horizon AI reasoning — and how to build it."
+description: "Why incremental Markdown compilation might beat vector search for long-horizon AI reasoning — and how to build a hybrid system that uses both."
 publishDate: "2026-04-12"
 tags: ["RAG", "LLM", "Knowledge Base", "Andrej Karpathy", "Architecture"]
 draft: false
@@ -160,18 +160,142 @@ This isn't a wholesale replacement. RAG has genuine advantages in specific regim
 - **Verbatim retrieval requirements**: Legal, regulatory, and compliance contexts often require exact original text. A wiki that paraphrases and synthesizes loses provenance.
 - **Cold-start freshness**: If you need to answer questions about a document ingested 5 minutes ago, RAG is ready. The wiki takes time to compile.
 
-The sweet spot for the LLM Wiki pattern is bounded, high-value knowledge that accumulates over months — a research project, a customer history, a codebase's architectural decisions, a personal knowledge base.
+## The Hybrid Architecture: Wiki + RAG
 
-## The Implementation Gap
+The real answer isn't choosing between the two. It's building a tiered system that uses each where it excels.
 
-The harder problem isn't the architecture — it's the latent tension between wiki maintenance cost and wiki quality. Running an LLM librarian agent on every document ingestion is expensive. Running it lazily (batch mode) means the wiki can be stale between maintenance passes.
+```python
+from dataclasses import dataclass
+from enum import Enum
 
-The right solution is probably tiered: maintain a small "hot wiki" of frequently accessed, high-value knowledge compiled carefully, and keep a larger raw index for less critical material. The hot wiki gets the editorial treatment; the cold index gets standard RAG.
+class RetrievalTier(Enum):
+    HOT_WIKI = "hot_wiki"      # Compiled, high-value, frequently accessed
+    WARM_INDEX = "warm_index"  # Summarized, searchable, less critical
+    COLD_RAG = "cold_rag"      # Raw documents, vector retrieval
+
+@dataclass
+class WikiResult:
+    content: str
+    confidence: float
+
+@dataclass
+class KnowledgeRouter:
+    """Route queries to the appropriate retrieval tier."""
+    
+    wiki_path: Path
+    vector_store: VectorStore
+    summary_index: SummaryIndex
+    
+    def query(self, question: str) -> str:
+        # Check hot wiki first — compiled knowledge, fast lookup
+        wiki_results = self._search_wiki(question)
+        if wiki_results and wiki_results.confidence > 0.85:
+            return wiki_results.content
+        
+        # Fall back to warm index — summarized documents
+        summary_results = self.summary_index.search(question, top_k=5)
+        if summary_results and summary_results[0].score > 0.80:
+            return self._synthesize(summary_results, question)
+        
+        # Cold RAG — raw document retrieval as last resort
+        raw_chunks = self.vector_store.search(question, top_k=10)
+        return self._reason_over_chunks(raw_chunks, question)
+    
+    def _search_wiki(self, question: str):
+        """Search compiled wiki pages with keyword + semantic matching."""
+        pages = list(self.wiki_path.glob("*.md"))
+        # Combine keyword matching with embedding similarity
+        candidates = []
+        for page in pages:
+            content = page.read_text()
+            score = self._relevance_score(question, content)
+            if score > 0.5:
+                candidates.append((page, content, score))
+        
+        candidates.sort(key=lambda x: x[2], reverse=True)
+        if candidates:
+            return WikiResult(
+                content=candidates[0][1], 
+                confidence=candidates[0][2]
+            )
+        return None
+```
+
+The three tiers serve different access patterns:
+
+| Tier | Content | Update Frequency | Query Latency | Use Case |
+|------|---------|-----------------|---------------|----------|
+| Hot Wiki | Compiled, cross-linked Markdown | On ingestion + nightly lint | &lt;100ms | Core domain knowledge, frequently asked questions |
+| Warm Index | Document summaries with metadata | Daily batch | ~500ms | Broader context, supporting evidence |
+| Cold RAG | Raw document chunks | On ingestion | ~2s | Long-tail queries, verbatim retrieval |
+
+The wiki handles maybe 20% of your documents — the high-value, frequently accessed, slowly changing core knowledge. The warm index covers another 30% — useful context that doesn't need full editorial treatment. Cold RAG handles the remaining 50% — the long tail of documents you might need someday.
+
+## The Cost Question
+
+The obvious objection: running an LLM to compile every ingested document is expensive. True. But the cost analysis isn't straightforward.
+
+A RAG system that handles 1,000 queries/day, each retrieving 10 chunks and reasoning over them, runs 1,000 LLM calls per day. A wiki system that ingests 50 new documents/day runs 50 compilation calls plus maybe 10 lint calls — but then serves queries from compiled Markdown with zero LLM calls for cached knowledge.
+
+```
+RAG daily cost:     1,000 queries × 10K tokens/query = 10M tokens
+Wiki daily cost:    50 ingestions × 5K tokens + 10 lint × 20K tokens = 450K tokens
+Wiki query cost:    Free (reading Markdown files)
+
+Break-even point:   ~45 queries/day over the same knowledge base
+```
+
+Above 45 queries/day, the wiki is cheaper. For high-traffic knowledge bases — customer support, internal documentation, research literature — the economics favor compilation heavily.
+
+The real cost isn't API tokens — it's the engineering investment in building the compilation pipeline, the linting system, the tiered routing, and the provenance tracking. This is where most teams give up and default to RAG. RAG is a pip install. A wiki system is a project.
+
+## Provenance and Trust
+
+One underappreciated advantage of the wiki approach: provenance is explicit and auditable. Every wiki page can track its sources:
+
+```markdown
+# MoE Training Approaches
+
+## Summary
+Mixture of Experts models achieve parameter efficiency by activating only a 
+subset of experts per input token. The dominant approach uses top-k routing 
+with auxiliary load balancing losses.
+
+## Key Findings
+- Top-2 routing with capacity factor 1.25 is the current standard [[Switch Transformer]]
+- Expert parallelism scales to 2048 experts with acceptable communication overhead [[GShard]]
+- Extreme sparsity (1 active out of 256) shows surprising effectiveness [[Gemma 4 Analysis]]
+
+## Sources
+- [Switch Transformers](https://arxiv.org/abs/2101.03961) — Fedus et al., 2021
+- [GShard](https://arxiv.org/abs/2006.16668) — Lepikhin et al., 2020
+- [Gemma 4 blog analysis](/blog/gemma-4-extreme-moe-sparsity) — internal, 2026-04-12
+
+Last updated: 2026-04-12 | Confidence: HIGH | Next review: 2026-05-12
+```
+
+With RAG, provenance is implicit in the chunk metadata — if you remembered to store it. With a wiki, provenance is a first-class citizen of the knowledge itself. When a claim is questioned, you trace it to its source page, which traces it to its source document.
+
+## Implementation Lessons
+
+Having built a system along these lines for this blog's research pipeline, three non-obvious lessons:
+
+**1. The librarian prompt matters more than the ingestion prompt.** The quality of wiki compilation depends heavily on how you instruct the LLM to handle conflicts, decide granularity, and maintain cross-links. A generic "summarize this document" prompt produces bad wiki pages. A specific "you are a research librarian maintaining a knowledge base for an AI researcher" prompt produces dramatically better ones.
+
+**2. Incremental updates beat full rewrites.** When a new document arrives, don't regenerate every potentially affected page. Identify the 2-3 pages most affected and update only those. Full-wiki regeneration is expensive and introduces unnecessary drift.
+
+**3. The linting pass is the secret weapon.** Ingestion quality varies — sometimes the librarian misses a connection or introduces a subtle inconsistency. The periodic linting pass catches these. Think of it as continuous integration for knowledge: run the quality checks nightly, fix what's broken, log what needs human review.
+
+## The Filing Cabinet Is Not a Library
 
 Karpathy's framing is more philosophical than prescriptive — an argument about what knowledge bases *should* be, not a complete system design. But the core insight holds: retrieval systems that never synthesize their inputs are leaving intelligence on the table.
+
+The filing cabinet — RAG — is good at storage and lookup. The library — a compiled, maintained, cross-linked knowledge base — is good at *understanding*. The librarian — the LLM that maintains the wiki — is the missing piece that makes the transition possible.
+
+Most production systems in 2026 still use filing cabinets. The ones that are building libraries are seeing compounding returns that filing cabinets can't match.
 
 The filing cabinet is not a library. A library has a librarian.
 
 ---
 
-*Karpathy's original post: [karpathy.ai](https://karpathy.ai). Anthropic SDK documentation for agentic patterns: [docs.anthropic.com](https://docs.anthropic.com).*
+*Karpathy's original post: [karpathy.ai](https://karpathy.ai). Related: [Context Engineering > Prompt Engineering](/blog/context-engineering-beyond-prompts) covers the broader shift toward engineering what models see. [LLM Literature Compiler](/blog/llm-literature-compiler-autoresearch) explores a specific implementation of the compilation paradigm for academic research.*

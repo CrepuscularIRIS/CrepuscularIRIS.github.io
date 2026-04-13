@@ -1,0 +1,263 @@
+---
+title: "Context Engineering > Prompt Engineering"
+description: "Prompt engineering optimizes one input. Context engineering designs the full pipeline — tools, memory, retrieval — that shapes what models see."
+publishDate: "2026-04-13"
+tags: ["LLM", "Agent", "Context Engineering", "Prompt Engineering", "Architecture"]
+draft: false
+---
+
+The term "prompt engineering" has always been slightly misleading. It implies the critical variable is the human-written instruction — the system prompt, the few-shot examples, the carefully worded request. In practice, the instruction is maybe 5% of what determines model output quality. The other 95% is everything else in the context window: tool results, retrieved documents, conversation history, injected memory, schema definitions, prior agent outputs.
+
+The models got the memo before we did. Claude Opus 4.6 ships with a 1M token context window. GPT-5.4 supports 256K. Gemini 3 handles 2M. These aren't incremental improvements — they're architectural statements about where intelligence happens. The models are saying: give us more context, not better prompts.
+
+This shift has a name now: **context engineering**. And understanding it changes how you build AI systems.
+
+## What Context Engineering Actually Means
+
+Prompt engineering asks: "How do I phrase this question so the model gives a good answer?"
+
+Context engineering asks: "What information does the model need to see, in what order, at what granularity, to produce the right output — and how do I build the pipeline that assembles that context automatically?"
+
+The difference is structural. A prompt engineer tweaks words. A context engineer builds systems.
+
+Consider a coding agent tasked with fixing a bug. The prompt might be: "Fix the failing test in auth_handler.py." That's necessary but insufficient. The context determines success:
+
+```
+┌─────────────────────────────────────────────┐
+│ System Prompt (role, constraints, style)     │ ~500 tokens
+├─────────────────────────────────────────────┤
+│ Project Rules (.claude/rules/*.md)           │ ~2,000 tokens
+├─────────────────────────────────────────────┤
+│ Relevant source files (auto-retrieved)       │ ~8,000 tokens
+├─────────────────────────────────────────────┤
+│ Test output (stderr + stack trace)           │ ~1,500 tokens
+├─────────────────────────────────────────────┤
+│ Git diff (recent changes for context)        │ ~3,000 tokens
+├─────────────────────────────────────────────┤
+│ Memory (prior attempts, known patterns)      │ ~1,000 tokens
+├─────────────────────────────────────────────┤
+│ User instruction: "Fix the failing test"     │ ~20 tokens
+└─────────────────────────────────────────────┘
+```
+
+The user instruction is 20 tokens out of ~16,000. The engineering challenge isn't writing those 20 tokens — it's building the pipeline that assembles the other 15,980 correctly.
+
+## The Five Layers of Context
+
+Context engineering decomposes into five distinct design problems, each with different tooling and failure modes.
+
+### Layer 1: Instruction Context (Static)
+
+The system prompt, role definition, and behavioral constraints. This is what most people think of as "prompt engineering." It's important — tone, safety boundaries, output format — but it's the least dynamic layer.
+
+```python
+SYSTEM_PROMPT = """You are a senior software engineer reviewing code.
+Rules:
+- Flag security issues as CRITICAL
+- Suggest fixes, don't just identify problems
+- Reference specific line numbers
+- If uncertain, say so explicitly
+"""
+```
+
+The trap here is overloading this layer. In my experience, system prompts longer than ~2,000 tokens start showing diminishing returns — instructions compete with each other for attention. Keep this layer thin and move dynamic content to other layers.
+
+### Layer 2: Knowledge Context (Retrieved)
+
+Documents, code files, API docs, and reference material pulled in at runtime. This is the RAG layer — but context engineering treats it differently than traditional RAG.
+
+Traditional RAG retrieves the top-k most similar chunks. Context engineering asks: what does the model actually need to know to succeed at *this specific task*?
+
+```python
+def build_knowledge_context(task: str, codebase_index) -> str:
+    """Assemble knowledge context based on task analysis."""
+    
+    # Step 1: Identify what the task requires
+    required_files = analyze_task_dependencies(task)
+    
+    # Step 2: Retrieve with task-aware ranking
+    chunks = []
+    for file_path in required_files:
+        content = read_file(file_path)
+        # Include the full file if small, summarize if large
+        if count_tokens(content) < 2000:
+            chunks.append(f"# {file_path}\n{content}")
+        else:
+            chunks.append(f"# {file_path} (summary)\n{summarize(content, task)}")
+    
+    # Step 3: Add cross-references the model will need
+    related = find_related_symbols(required_files, codebase_index)
+    for symbol, location in related[:10]:
+        chunks.append(f"# Reference: {symbol} at {location}")
+    
+    return "\n\n".join(chunks)
+```
+
+The key insight: retrieval quality matters more than retrieval quantity. Ten perfectly relevant files beat a hundred vaguely similar chunks.
+
+### Layer 3: State Context (Dynamic)
+
+The current state of the world: conversation history, tool execution results, environment variables, running process outputs. This is the most volatile layer and the hardest to manage.
+
+```python
+import time
+
+class StateContext:
+    def __init__(self, max_tokens: int = 8000):
+        self.max_tokens = max_tokens
+        self.entries: list[dict] = []
+    
+    def add_tool_result(self, tool: str, result: str, relevance: float):
+        """Add a tool result with relevance scoring for later pruning."""
+        self.entries.append({
+            "type": "tool_result",
+            "tool": tool,
+            "content": result,
+            "relevance": relevance,
+            "timestamp": time.time(),
+        })
+        self._prune()
+    
+    def _prune(self):
+        """Remove lowest-relevance entries when over budget."""
+        while self._total_tokens() > self.max_tokens:
+            # Keep recent entries regardless of relevance
+            prunable = [e for e in self.entries if time.time() - e["timestamp"] > 60]
+            if not prunable:
+                break
+            prunable.sort(key=lambda e: e["relevance"])
+            self.entries.remove(prunable[0])
+```
+
+Most agent frameworks manage state context poorly — they append tool results indefinitely until the context window overflows, then truncate from the front. This destroys early context that may still be relevant. A context-engineered system scores relevance and prunes strategically.
+
+### Layer 4: Memory Context (Persistent)
+
+Information from previous sessions, learned preferences, project-specific knowledge that persists across conversations. This is where context engineering intersects with the broader question of AI memory.
+
+```python
+def load_memory_context(project_path: str, task: str) -> str:
+    """Load relevant memories for the current task."""
+    memory_dir = Path(project_path) / ".claude" / "memory"
+    
+    memories = []
+    for mem_file in memory_dir.glob("*.md"):
+        content = mem_file.read_text()
+        # Parse frontmatter for type and description
+        meta = parse_frontmatter(content)
+        
+        # Score relevance to current task
+        if is_relevant(meta["description"], task):
+            memories.append(content)
+    
+    return "\n---\n".join(memories)
+```
+
+The failure mode here is stale memory. A memory that says "the auth module uses JWT" is useful until the team migrates to session tokens. Memory systems need verification mechanisms — checking that remembered facts still match the codebase before injecting them.
+
+### Layer 5: Meta Context (Structural)
+
+How the other four layers are assembled, ordered, and formatted. This is the layer most practitioners miss entirely. The *structure* of the context — what comes first, how sections are delimited, whether code is inline or in fenced blocks — materially affects model output.
+
+Empirically observed patterns (from my own testing, not formal benchmarks):
+- **Recency bias**: Models attend more strongly to the end of the context. Put the most critical information last.
+- **Delimiter sensitivity**: Clear section headers (`## Task`, `## Context`, `## Constraints`) noticeably improve instruction following over unstructured context.
+- **Code block framing**: Wrapping code in fenced blocks with language tags improves code generation quality measurably.
+- **Negative space**: Including "what NOT to do" in constraints tends to be significantly more effective than relying on positive instructions alone.
+
+## Context Engineering in Practice: The Agent Loop
+
+Here's how these five layers compose in a production agent:
+
+```python
+def build_agent_context(
+    task: str,
+    conversation: list[dict],
+    tool_results: list[dict],
+    project_path: str,
+) -> list[dict]:
+    """Assemble the full context for an agent turn."""
+    
+    # Layer 1: Instruction (static, cached)
+    system = load_system_prompt()
+    
+    # Layer 4: Memory (persistent, loaded once per session)
+    memory = load_memory_context(project_path, task)
+    if memory:
+        system += f"\n\n## Relevant Memory\n{memory}"
+    
+    # Layer 2: Knowledge (retrieved per-task)
+    knowledge = build_knowledge_context(task, load_index(project_path))
+    
+    # Layer 3: State (dynamic, pruned)
+    state = format_tool_results(tool_results)
+    
+    # Layer 5: Meta (structural assembly)
+    messages = [{"role": "system", "content": system}]
+    
+    # Knowledge context goes early — it's reference material
+    if knowledge:
+        messages.append({
+            "role": "user",
+            "content": f"## Project Context\n{knowledge}"
+        })
+        messages.append({
+            "role": "assistant", 
+            "content": "I've reviewed the project context. What would you like me to do?"
+        })
+    
+    # Conversation history in the middle
+    messages.extend(conversation)
+    
+    # State context near the end — recent and actionable
+    if state:
+        messages.append({
+            "role": "user",
+            "content": f"## Recent Tool Results\n{state}\n\nBased on these results, continue with: {task}"
+        })
+    
+    return messages
+```
+
+The ordering is deliberate: reference material early (Layer 2), conversation in the middle (Layer 3 history), actionable state last (Layer 3 current). This exploits both the primacy effect (early context sets the frame) and recency bias (late context gets strongest attention).
+
+## Why This Matters Now
+
+Three converging trends make context engineering the critical skill for 2026:
+
+**1. Context windows are effectively unlimited.** With 1M+ token windows, the bottleneck is no longer "will it fit?" but "should it be included?" This is a curation problem, not a compression problem.
+
+**2. Tool use makes context dynamic.** Every tool call injects new information into the context. An agent that runs 20 tools in a session has a context that's mostly *generated*, not *authored*. Managing this generated context is the primary engineering challenge.
+
+**3. Multi-agent systems multiply context complexity.** When Agent A's output becomes Agent B's input, context engineering becomes a distributed systems problem. What does Agent B need from Agent A's work? How do you prevent context pollution across agent boundaries?
+
+## The Prompt Engineering Trap
+
+The most common failure mode I see in production AI systems isn't bad prompts — it's good prompts with bad context. A perfectly worded instruction fails because:
+
+- The retrieved documents are irrelevant (Layer 2 failure)
+- Tool results from a previous step contain errors that propagate (Layer 3 failure)
+- A stale memory injects outdated information (Layer 4 failure)
+- Critical context is buried in the middle of a 50K token window (Layer 5 failure)
+
+No amount of prompt wordsmithing fixes these problems. They require engineering — building retrieval pipelines, state managers, memory systems, and context assemblers that reliably produce the right context for each task.
+
+The models are good enough. The context determines whether they succeed.
+
+## Practical Takeaways
+
+1. **Audit your context, not your prompt.** When a model produces bad output, print the full context it received. The problem is almost always in the context, not the instruction.
+
+2. **Budget your context window.** Allocate token budgets per layer. A common split: 500 for instructions, 8K for knowledge, 4K for state, 1K for memory, remainder for conversation.
+
+3. **Score and prune.** Every piece of context should earn its tokens. If a retrieved document isn't relevant to the current task, it's actively harmful — it dilutes attention from what matters.
+
+4. **Test context assembly, not just model output.** Write unit tests for your context pipeline. Assert that specific files are retrieved for specific tasks, that stale entries are pruned, that the ordering is correct.
+
+5. **Measure context quality.** Track the ratio of relevant-to-irrelevant tokens in your context. A context that's 80% relevant will dramatically outperform one that's 30% relevant, regardless of prompt quality.
+
+The era of "just write a better prompt" is over. The era of context engineering has begun.
+
+---
+
+*Related: [Beyond RAG: Karpathy's LLM Wiki Paradigm](/blog/karpathy-llm-wiki-beyond-rag) explores one approach to compiling knowledge for better context. [MCP Goes Multi-Agent](/blog/mcp-agent-to-agent) covers the protocol layer that enables context sharing between agents.*
