@@ -1,0 +1,228 @@
+---
+title: "The Agent Benchmark Reality Gap: Why Leaderboards Lie"
+description: "SWE-bench and MLE-bench measure a narrow capability slice that correlates weakly with production performance. What evaluation should look like instead."
+publishDate: "2026-04-13"
+tags: [agents, evaluation, benchmarks, SWE-bench, MLE-bench, autonomous-systems, agent-engineering]
+category: research
+language: en
+draft: false
+---
+
+The headline numbers are striking. SWE-bench Verified reports agents resolving 50-60% of real GitHub issues. MLE-bench shows agents placing competitively in Kaggle competitions. The inference from these numbers to "agents can now do software engineering" is the step that breaks down.
+
+This isn't a critique of the benchmarks as poorly designed. They're methodologically careful, reasonably representative of their stated scope, and well-maintained. The problem is the inference, and the inference is being made constantly — by investors, by hiring managers, by teams deciding how much to trust autonomous agents with production systems.
+
+The gap between benchmark performance and production performance is structural, not accidental. It follows from properties of how benchmarks work, not from implementation flaws that can be patched. Understanding the structure of the gap tells you which benchmarks to trust and for which claims.
+
+## What SWE-Bench Actually Measures
+
+SWE-bench takes GitHub issues from open-source repositories and asks agents to generate patches. The evaluation is binary: does the generated patch pass the repository's existing test suite? Issues are curated for solvability and test coverage.
+
+This is a principled measurement of a real capability: generating code changes that pass pre-existing tests for specified issues from popular open-source repositories. That's the claim. Everything else is inference.
+
+The inferences that don't follow:
+
+**1. The issues are sampled from the tail of the solvability distribution, not the bulk.**
+
+Benchmark issues are curated for the property that a patch *exists* that passes tests, and that the issue description is clear enough to operationalize. In production, 30-40% of issues are underspecified, require clarifying questions, or involve constraints that aren't in the issue text (business logic, organizational conventions, backward-compat requirements). These issues don't appear in SWE-bench because they can't be automatically verified.
+
+**2. Test suite as oracle is strong supervision that doesn't exist in production.**
+
+A SWE-bench agent knows with certainty whether its patch is correct: run the tests. In production software development, tests cover 40-80% of behaviors (for well-tested codebases — often much less). An agent generating a patch in a production codebase has no oracle to check its work against. The SWE-bench evaluation regime provides signal that's unavailable in the deployment regime.
+
+```python
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass(frozen=True)
+class BenchmarkCondition:
+    """Properties of a benchmark evaluation environment."""
+    has_test_oracle: bool           # Can correctness be verified automatically?
+    issue_underspecification_rate: float  # Fraction of tasks with ambiguous specs
+    context_completeness: float     # Fraction of relevant context in the task description
+    evaluation_scope: str           # What's being measured
+    
+@dataclass(frozen=True)
+class ProductionCondition:
+    """Properties of a production deployment environment."""
+    has_test_oracle: bool
+    issue_underspecification_rate: float
+    context_completeness: float
+
+swe_bench = BenchmarkCondition(
+    has_test_oracle=True,          # Tests tell you if the patch is correct
+    issue_underspecification_rate=0.05,  # Curated for clarity
+    context_completeness=0.9,      # Issue text + repo are typically sufficient
+    evaluation_scope="Patch generation for verifiable, well-specified issues",
+)
+
+production_reality = ProductionCondition(
+    has_test_oracle=False,         # Tests cover subset; no oracle for the rest
+    issue_underspecification_rate=0.35,  # Real issues frequently underspecified
+    context_completeness=0.55,     # Slack context, oral context, org conventions missing
+)
+
+# The gap between benchmark and production conditions is the gap in the inference.
+# Agents trained/evaluated on swe_bench conditions have no signal for:
+# - What to do when the issue is ambiguous
+# - How to verify correctness when tests don't cover the changed behavior
+# - How to incorporate organizational context not in the repo
+```
+
+**3. Benchmark repositories are agent-familiar territory.**
+
+Popular open-source repositories are in agent training data. The agent has seen code from these repos, issues from these repos, and potentially similar patches from these repos. An agent working on Django or NumPy is in distribution. An agent working on your internal monorepo is not.
+
+The distribution shift from SWE-bench repositories to internal codebases is substantial. Style conventions differ. Business domain context is absent. Historical decisions that constrain the patch space are undocumented. Performance on benchmark repositories tells you about benchmark-distribution capability, not general software engineering capability.
+
+## What MLE-Bench Actually Measures
+
+MLE-bench places agents in Kaggle competition environments and evaluates performance relative to human participants. This is a more challenging benchmark than SWE-bench in several respects: the tasks require ML knowledge, the search space is larger, and the evaluation is quantitative.
+
+The measurement is real: competitive ML task performance under competition conditions. The inference problems:
+
+**1. Kaggle competitions select for techniques that generalize to benchmark metrics.**
+
+Kaggle competitions are won by ensembling, heavy hyperparameter tuning, and target leakage exploitation — not by good generalization. The techniques that maximize AUC on a competition test set are systematically different from the techniques that produce models that work reliably in deployment. A high-scoring Kaggle solution is evidence of benchmark-optimization capability, not production ML engineering capability.
+
+An agent that achieves bronze on Kaggle competitions is demonstrating that it can run hyperparameter sweeps, ensemble predictions, and tune preprocessing pipelines to a fixed leaderboard. It's demonstrating nothing about its ability to design data collection strategies, identify evaluation metric misalignment, or explain model behavior to non-technical stakeholders.
+
+**2. Competition tasks have known-good solution templates.**
+
+For most Kaggle competition types (tabular classification, time series forecasting, image classification), there are well-established solution templates that appear in training data. An agent solving a tabular binary classification task has likely seen hundreds of similar notebooks. The benchmark measures template application capability more than problem-solving capability.
+
+```python
+def decompose_ml_task_capability(
+    benchmark_score: float,
+    task_type: str,
+) -> dict:
+    """
+    What fraction of a benchmark score is attributable to template application
+    vs. genuine problem-solving capability?
+    
+    This decomposition is uncertain but important for interpreting scores.
+    """
+    TEMPLATE_SATURATION = {
+        "tabular_classification": 0.75,  # ~75% of competition ceiling is template-achievable
+        "nlp_classification": 0.70,
+        "image_classification": 0.65,
+        "time_series_forecasting": 0.80,
+        "graph_learning": 0.45,       # Fewer templates; more genuine search required
+        "reinforcement_learning": 0.30, # Low template saturation; genuine search required
+    }
+    
+    template_fraction = TEMPLATE_SATURATION.get(task_type, 0.60)
+    template_ceiling = template_fraction  # Normalized to [0, 1] leaderboard percentile
+    
+    return {
+        "raw_score": benchmark_score,
+        "estimated_template_fraction": min(benchmark_score / template_ceiling, 1.0),
+        "estimated_genuine_search_fraction": max(
+            (benchmark_score - template_ceiling) / (1.0 - template_ceiling), 0.0
+        ),
+        "note": "Estimates only; decomposition is uncertain for any given task",
+    }
+```
+
+## The Capability Dimensions Benchmarks Don't Cover
+
+Both SWE-bench and MLE-bench measure task completion under ideal conditions: full context, clear objectives, automated evaluation. The capability dimensions relevant to production that aren't captured:
+
+**Proactive context elicitation**: Knowing when the specification is incomplete and what questions to ask. In production, the agent needs to detect "I don't have enough information to proceed confidently" and ask the right clarifying questions. Benchmarks provide sufficient context; this capability is never exercised.
+
+**Confidence calibration**: Knowing when to output a solution vs. flag uncertainty. Overconfident agents that proceed with low-quality solutions on ambiguous tasks cause more damage than agents that abstain. Benchmarks measure success rate; they don't measure calibration or appropriate abstention.
+
+**Multi-turn task refinement**: Production software engineering involves iteration with reviewers, users, and other engineers. SWE-bench is single-turn (generate a patch, evaluate it). The ability to refine work based on feedback is a distinct capability that single-turn benchmarks can't assess.
+
+**Long-horizon coherence**: Tasks that span multiple sessions, require maintaining context across disconnected steps, or depend on decisions made weeks earlier. Neither SWE-bench nor MLE-bench measure anything beyond a single session.
+
+**Tool failure handling**: What happens when a subprocess returns an unexpected error, an API is temporarily unavailable, or a file doesn't exist as expected? Benchmarks run in controlled environments where tools behave predictably. Production environments do not.
+
+## What Good Evaluation Would Look Like
+
+The benchmark-to-production gap isn't unavoidable — it's a function of specific choices that can be made differently.
+
+**Measure underspecification handling, not just task completion.** Inject tasks with deliberately underspecified components. An agent that produces a high-quality patch for an ambiguous issue by asking the right clarifying questions before proceeding is demonstrating a capability that matters in production. An agent that produces the same patch by guessing is not.
+
+**Separate oracle-dependent from oracle-free evaluation.** Test agents in two conditions: one where tests can be run to verify correctness (oracle-present), and one where the changed code paths are not covered by existing tests (oracle-absent). The oracle-absent performance is the number that predicts production behavior.
+
+**Measure calibration alongside accuracy.** An agent should produce confidence scores for its own solutions. Good calibration means high-confidence solutions are more reliable than low-confidence ones. An uncalibrated agent that expresses uniform confidence is dangerous in production regardless of its mean success rate.
+
+```python
+from scipy.stats import spearmanr
+import numpy as np
+
+def measure_calibration(
+    agent_confidences: list[float],  # Agent's self-reported confidence per task
+    task_outcomes: list[bool],        # Whether each task succeeded
+    n_bins: int = 10,
+) -> dict:
+    """
+    Measure how well an agent's confidence predicts its actual success rate.
+    A well-calibrated agent that says 80% confident should succeed 80% of the time.
+    """
+    bins = np.linspace(0, 1, n_bins + 1)
+    calibration_curve = []
+    
+    for i in range(n_bins):
+        bin_mask = [
+            bins[i] <= conf < bins[i+1] 
+            for conf in agent_confidences
+        ]
+        bin_confidences = [c for c, m in zip(agent_confidences, bin_mask) if m]
+        bin_outcomes = [o for o, m in zip(task_outcomes, bin_mask) if m]
+        
+        if len(bin_outcomes) >= 3:  # Minimum sample for bin
+            calibration_curve.append({
+                "mean_confidence": np.mean(bin_confidences),
+                "actual_success_rate": np.mean(bin_outcomes),
+                "n_samples": len(bin_outcomes),
+            })
+    
+    # Correlation between confidence and success rate (good calibration → high correlation)
+    if len(calibration_curve) >= 3:
+        corr, p_value = spearmanr(
+            [b["mean_confidence"] for b in calibration_curve],
+            [b["actual_success_rate"] for b in calibration_curve],
+        )
+    else:
+        corr, p_value = 0.0, 1.0  # Insufficient data
+    
+    # Expected Calibration Error (ECE): lower is better
+    ece = (
+        np.mean([
+            abs(b["mean_confidence"] - b["actual_success_rate"])
+            for b in calibration_curve
+        ])
+        if calibration_curve else float("nan")
+    )
+    
+    return {
+        "calibration_correlation": corr,
+        "expected_calibration_error": ece,
+        "calibration_curve": calibration_curve,
+        "interpretation": (
+            "Well-calibrated" if ece < 0.10 else
+            "Moderately calibrated" if ece < 0.20 else
+            "Poorly calibrated"
+        ),
+    }
+```
+
+**Use internal (held-out) repositories.** At least a portion of agent evaluation should happen on codebases that weren't in training data. This is operationally harder but gives a cleaner signal on generalization vs. memorization.
+
+**Measure tool failure recovery.** Intentionally inject tool failures (commands that return errors, files that don't exist, APIs that time out) and measure whether agents recover gracefully, flag the problem appropriately, or fail silently.
+
+## The Right Reading of Benchmark Numbers
+
+Benchmark results answer a specific question well: "Under controlled conditions with full context and automated evaluation, what fraction of well-specified tasks can this agent complete?" That's a useful question. The answer tells you the upper bound on production performance (production performance is typically lower, often substantially).
+
+Benchmark results answer poorly: "Can this agent do software engineering?" or "Can I trust this agent in production?" These are different questions that require different evaluations — ones that include underspecification handling, confidence calibration, oracle-free performance, and tool failure recovery.
+
+The teams that will extract the most value from autonomous agents are those that develop their own evaluation infrastructure before deploying at scale. A 10% improvement on SWE-bench is a feature of the benchmark's distribution. A 10% improvement on your own held-out task set, measured with calibration and underspecification handling, is a claim about your deployment.
+
+The leaderboard measures what it measures. Make sure you're measuring what you care about.
+
+---
+
+*SWE-bench: Jimenez et al. (2024), "SWE-bench: Can Language Models Resolve Real-World GitHub Issues?" MLE-bench: Chan et al. (2024), "MLE-bench: Evaluating Machine Learning Agents on Machine Learning Engineering." Calibration methodology follows Guo et al. (2017) "On Calibration of Modern Neural Networks." The oracle-absent evaluation design adapts concepts from held-out test set methodology in software testing.*
