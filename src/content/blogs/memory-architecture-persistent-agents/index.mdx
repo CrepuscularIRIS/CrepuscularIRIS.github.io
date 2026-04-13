@@ -1,0 +1,218 @@
+---
+title: "Memory Architecture for Persistent Agents"
+description: "Context windows expire. How to build durable memory that survives sessions, scales with use, and resists corruption."
+publishDate: "2026-04-13"
+tags: [agents, memory, architecture, context-engineering, persistent-state]
+category: engineering
+language: en
+draft: false
+---
+
+Every agent system that runs longer than a single session hits the same wall: the context window is finite, the conversation is ephemeral, and the agent wakes up next time with amnesia. The user repeats their preferences. The agent re-discovers the codebase structure. Prior decisions are invisible. The continuity that makes a human collaborator valuable — accumulated understanding — is missing.
+
+The problem is architectural, not parametric. Larger context windows delay the wall but don't remove it. Current frontier models offer 1-2M token windows — Claude Opus 4.6 at 1M, Gemini 3 at 1M, GPT-5.4 at over 1M. These are large enough for single-session work but still finite, and they don't persist across sessions. The agent that helped you yesterday has no memory of what it learned.
+
+Persistent memory is what turns a stateless text generator into something that accumulates competence over time. The design space is broader than most implementations suggest.
+
+## The Memory Taxonomy
+
+Agent memory systems differ along three axes: **what** they store, **when** they retrieve, and **who** decides what to keep.
+
+### What: Content Types
+
+**Episodic memory** stores what happened — conversation transcripts, tool call histories, decisions made and their outcomes. This is the raw material. It's cheap to write (just log everything) and expensive to read (searching through thousands of past interactions for the relevant one).
+
+**Semantic memory** stores what the agent knows — facts about the user, the codebase, the project, learned preferences. This is distilled from episodes. Writing it requires judgment (what's worth remembering?) and reading it is fast (structured lookup by topic).
+
+**Procedural memory** stores how to do things — learned workflows, successful patterns, tool usage strategies. This is the rarest and most valuable type. An agent that remembers "last time I debugged a React hydration error, the fix was in the server component, not the client component" has procedural memory.
+
+```python
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+from datetime import datetime
+
+class MemoryType(Enum):
+    EPISODIC = "episodic"      # What happened
+    SEMANTIC = "semantic"      # What I know
+    PROCEDURAL = "procedural"  # How to do things
+
+@dataclass(frozen=True)
+class MemoryRecord:
+    """A single unit of agent memory."""
+    content: str
+    memory_type: MemoryType
+    created_at: str
+    source: str                # Which session/interaction produced this
+    confidence: float          # How reliable is this memory (0-1)
+    tags: tuple[str, ...] = ()
+    expires_at: Optional[str] = None  # None = permanent
+    superseded_by: Optional[str] = None  # ID of newer memory that replaces this
+```
+
+### When: Retrieval Strategies
+
+**Always-loaded**: A fixed set of memories injected into every conversation. Claude Code's `CLAUDE.md` files are this pattern — project rules, user preferences, and conventions loaded at session start regardless of the task.
+
+**Query-triggered**: Memories retrieved in response to a specific need. Vector similarity search is the standard mechanism: embed the current context, find the most similar stored memories, inject them. This is what RAG-based memory systems do.
+
+**Event-triggered**: Memories loaded when specific conditions are met. "When the user mentions deployment, load the deployment checklist and the last three deployment incident records." This requires a routing layer that maps events to memory lookups.
+
+The trade-off: always-loaded memory is reliable but consumes context budget on every turn. Query-triggered memory is efficient but misses memories that are relevant in non-obvious ways. Event-triggered memory is precise but requires explicit rules that someone has to write and maintain.
+
+### Who: Curation Strategies
+
+**Agent-curated**: The agent decides what to remember. After each session, it reviews the conversation and extracts memories worth keeping. This is how Claude Code's auto-memory system works — the agent writes memory files to `~/.claude/projects/*/memory/` based on what it observes.
+
+**User-curated**: The user explicitly tells the agent to remember something. "Remember that I prefer pytest over unittest." This is reliable but doesn't scale — users forget to curate, and important implicit preferences go unrecorded.
+
+**Hybrid**: The agent proposes memories; the user approves or edits them. This has the best quality but introduces friction that most users won't tolerate in a fast workflow.
+
+## File-Based Memory: The Practical Default
+
+The simplest memory architecture that works in production is file-based: memories are Markdown files stored in a directory, indexed by a manifest, and loaded into context at session start.
+
+This is what Claude Code implements with its `MEMORY.md` + individual memory files pattern:
+
+```
+~/.claude/projects/<project>/memory/
+├── MEMORY.md              # Index: one-line pointers to memory files
+├── user_preferences.md    # Semantic: user's coding style, tools, role
+├── feedback_testing.md    # Procedural: "always run tests before committing"
+├── project_auth_rewrite.md  # Episodic: context about ongoing work
+└── reference_linear.md    # Semantic: where to find external resources
+```
+
+Each memory file has structured frontmatter:
+
+```markdown
+---
+name: user-testing-preferences
+description: User prefers pytest with fixtures, no mocks for DB tests
+type: feedback
+---
+
+Integration tests must hit a real database, not mocks.
+
+**Why:** Prior incident where mock/prod divergence masked a broken migration.
+
+**How to apply:** When writing tests for database-touching code,
+use testcontainers or a real test database. Never mock the ORM layer.
+```
+
+The design has several properties that matter at scale:
+
+**Grep-friendly**: Memory files are plaintext. You can search them with standard tools. No database to manage, no embedding model to run, no vector index to rebuild.
+
+**Git-trackable**: Memory files can be committed alongside code. Team members can share project-level memories. Memory changes show up in diffs.
+
+**Context-budget-aware**: The `MEMORY.md` index is always loaded (small), and individual memory files are loaded on demand. The agent can choose which memories to read based on relevance to the current task.
+
+**Decay-resistant**: Memories with a `Why` line survive longer because they're interpretable months later. "Don't use mocks for DB tests" without context will be ignored. "Don't use mocks for DB tests because we had a prod outage when mocks diverged from the real schema" will be followed.
+
+## Vector Memory: When File-Based Breaks Down
+
+File-based memory works for tens to low hundreds of memories. Beyond that, linear search through the index becomes a context-budget problem — you can't load a 500-entry `MEMORY.md` into every conversation.
+
+Vector memory uses embedding similarity to retrieve relevant memories:
+
+```python
+import numpy as np
+from pathlib import Path
+import json
+
+@dataclass
+class VectorMemoryStore:
+    """Embedding-based memory retrieval for large memory collections."""
+    memories: list[MemoryRecord]
+    embeddings: np.ndarray          # (n_memories, embedding_dim)
+    embed_fn: Callable               # text -> np.ndarray
+
+    def retrieve(self, query: str, top_k: int = 5,
+                 type_filter: Optional[MemoryType] = None) -> list[MemoryRecord]:
+        """Find memories most relevant to the current context."""
+        query_embedding = self.embed_fn(query)
+
+        # Cosine similarity
+        similarities = self.embeddings @ query_embedding
+        similarities /= (
+            np.linalg.norm(self.embeddings, axis=1)
+            * np.linalg.norm(query_embedding)
+            + 1e-8
+        )
+
+        # Apply type filter
+        if type_filter:
+            mask = np.array([m.memory_type == type_filter for m in self.memories])
+            similarities = np.where(mask, similarities, -1.0)
+
+        # Return top-k
+        top_indices = np.argsort(similarities)[-top_k:][::-1]
+        return [self.memories[i] for i in top_indices if similarities[i] > 0.3]
+```
+
+The threshold (0.3) matters. Too low and you retrieve irrelevant memories that pollute the context. Too high and you miss memories that are relevant but phrased differently from the query. In practice, 0.3-0.5 works for most embedding models, but this needs tuning per domain.
+
+Vector memory's failure mode is **semantic drift**: the embedding model's notion of similarity doesn't match the agent's notion of relevance. A memory about "database migration failures" might not be retrieved when the agent is working on "schema changes" because the embedding model doesn't connect these concepts strongly enough. This is the same retrieval gap that plagues RAG systems.
+
+## The Corruption Problem
+
+Memory systems that write automatically face a unique risk: **memory corruption**. If the agent misunderstands a user preference and writes it to memory, every future session starts with a wrong assumption. The error compounds because the agent acts on the corrupted memory, the user corrects the behavior without knowing the memory exists, and the next session the error resurfaces.
+
+Three mechanisms prevent corruption:
+
+**Write-through verification**: Before writing a memory, the agent confirms its interpretation with the user. "I'm going to remember that you prefer SQLAlchemy over raw SQL. Is that correct?" This catches misunderstandings at write time.
+
+**Staleness detection**: Memories include creation timestamps. When using a memory that's older than a threshold (30 days for project memories, 90 days for user preferences), the agent verifies it's still accurate before acting on it. Code changes. Preferences evolve. Old memories become lies.
+
+**Contradiction resolution**: When a new observation contradicts an existing memory, the agent must decide which to trust. The rule is simple: trust what you observe now over what you remember. If the codebase currently uses raw SQL and the memory says "user prefers SQLAlchemy," the observation wins. Update or remove the stale memory.
+
+```python
+from datetime import datetime, timedelta
+
+def check_memory_staleness(
+    memory: MemoryRecord,
+    staleness_thresholds: dict[MemoryType, int],
+) -> bool:
+    """Returns True if the memory should be reverified before use."""
+    threshold_days = staleness_thresholds.get(memory.memory_type, 90)
+    created = datetime.fromisoformat(memory.created_at)
+    age = datetime.now() - created
+    return age > timedelta(days=threshold_days)
+
+STALENESS_THRESHOLDS = {
+    MemoryType.EPISODIC: 14,     # Events become irrelevant quickly
+    MemoryType.SEMANTIC: 90,     # Facts change slowly
+    MemoryType.PROCEDURAL: 180,  # Workflows are relatively stable
+}
+```
+
+## Memory and Context Engineering
+
+Memory systems are a component of the broader context engineering discipline. The context window isn't just the user's message and the system prompt — it's the assembled collection of memories, retrieved documents, tool results, and conversation history that the model sees at inference time.
+
+The memory system's job is to ensure that the right memories appear in the context at the right time. This means:
+
+**Budget allocation**: If the context window is 200K tokens, how much should be allocated to memories? Too little and the agent forgets. Too much and memories crowd out the actual task context. A reasonable default: 5-10% of context budget for memories, with dynamic adjustment based on task complexity.
+
+**Ordering**: Memories placed earlier in the context have more influence on the model's behavior (primacy effect). Critical memories (safety rules, core preferences) should appear before nice-to-have memories (stylistic preferences, historical context).
+
+**Deduplication**: Multiple memory records about the same topic should be merged, not stacked. Five memories about the user's testing preferences don't provide five times the signal — they waste context budget with redundancy.
+
+## What Works Today
+
+The production-proven memory architecture in April 2026 is a hybrid:
+
+1. **Always-loaded layer**: `CLAUDE.md` / `MEMORY.md` index with critical project and user context. Under 2K tokens. Every session.
+
+2. **On-demand file layer**: Individual memory files loaded when the agent detects relevance. The agent reads the index, identifies which memories might matter, and loads them. This scales to hundreds of memories without context bloat.
+
+3. **Automatic curation**: The agent writes memories after sessions where it learns something new about the user, the project, or effective workflows. Write-through verification prevents corruption. Staleness checks prevent drift.
+
+4. **No vector database**: For most agent use cases (personal assistants, coding agents, research tools), file-based memory with structured frontmatter outperforms vector-based retrieval. The memories are few enough that semantic search adds complexity without proportional benefit. Vector memory becomes necessary only above ~500 active memories, which most single-user agent systems never reach.
+
+The gap in current systems is procedural memory. Agents remember facts and preferences well. They remember *how to do things* — successful debugging strategies, effective code patterns for this specific codebase, workarounds for known issues — poorly. Building systems that extract and store procedural knowledge from successful agent sessions is the open problem worth solving.
+
+---
+
+*This analysis draws on patterns from Claude Code's memory system, LangGraph's checkpoint architecture, and the cognitive science literature on human memory systems (Tulving's episodic/semantic distinction, 1972).*

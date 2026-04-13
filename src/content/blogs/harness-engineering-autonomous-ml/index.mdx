@@ -1,8 +1,8 @@
 ---
-title: "Harness Engineering: ML in the Age of Autonomous Agents"
-description: "Writing training pipelines is no longer enough. The ML engineer's job is shifting to designing evaluation harnesses that let autonomous agents do the work."
+title: "Harness Engineering for Autonomous ML Agents"
+description: "The ML engineer's job is shifting from writing pipelines to designing harnesses that let agents iterate autonomously."
 publishDate: '2026-04-11'
-updatedDate: '2026-04-11'
+updatedDate: '2026-04-13'
 category: engineering
 tags:
   - ml-engineering
@@ -10,6 +10,7 @@ tags:
   - autonomous-ml
   - evaluation
   - mlops
+  - harness
 language: en
 ---
 
@@ -17,156 +18,287 @@ OpenAI reportedly ran an internal experiment where autonomous agents generated o
 
 Google's MLE-STAR agent achieves medal-tier performance on 63% of Kaggle-level data science tasks by autonomously iterating on code, running experiments, and reading its own outputs. It doesn't need a human to write the training loop. It needs a human to define what "winning" looks like.
 
-This is the transition happening right now in ML engineering, and it changes the skill set that matters.
+This is the transition happening right now in ML engineering. The skill that matters is no longer pipeline authorship — it's harness design.
 
 ## What "Harness Engineering" Actually Means
 
-The term comes from testing: a *test harness* is the infrastructure surrounding code under test — the fixtures, stubs, assertions, and environment configuration that let you evaluate behavior reliably. Harness engineering, as an ML discipline, extends this idea: it's the design of the constraints, evaluation criteria, and guardrails that let autonomous agents operate on ML tasks without human supervision of each step.
+The term comes from testing: a *test harness* is the infrastructure surrounding code under test — the fixtures, stubs, assertions, and environment configuration that let you evaluate behavior reliably. Harness engineering, as an ML discipline, extends this: it's the design of constraints, evaluation criteria, and guardrails that let autonomous agents operate on ML tasks without human supervision of each step.
 
-The shift looks like this:
+**Before (MLOps mindset):** You write the training loop, the data loading pipeline, the evaluation script. You are the decision-maker at every step.
 
-**Before (MLOps mindset):** You write the training loop, the data loading pipeline, the evaluation script. The model is a parameter you configure. You are the decision-maker at every step.
-
-**After (Harness Engineering mindset):** You write the specification of what a correct solution looks like, the sandbox that prevents dangerous actions, and the evaluation metrics that distinguish good iterations from bad ones. The agent writes the code and runs the experiments. You review the outputs and update the harness.
+**After (Harness Engineering mindset):** You write the specification of what a correct solution looks like, the sandbox that prevents dangerous actions, and the evaluation metrics that distinguish good iterations from bad ones. The agent writes the code. You review the outputs and update the harness.
 
 The ratio of "code I wrote that runs" to "code I wrote that evaluates" inverts.
 
 ## The Three Components of an ML Harness
 
-A minimal production-grade harness for autonomous ML agents has three layers.
+### 1. Task Specification
 
-### 1. The Task Specification
-
-This is the hardest part to get right. An autonomous agent operating on a Kaggle-style task needs to know:
+The hardest part to get right. An autonomous agent needs:
 
 - What data it has access to (schema, location, sample)
 - What the evaluation metric is (and how to compute it locally)
 - What constitutes a valid submission (format, size, type constraints)
 - What the compute budget is (wall time, GPU-hours, API calls)
 
-The specification is a contract. If it's underspecified, the agent will optimize the proxy metric in ways that don't match your intent. If it's overspecified, the agent can't explore the solution space. Getting this calibration right is a research skill, not a software skill.
+The specification is a contract. Underspecified, the agent optimizes proxies in ways that don't match your intent. Overspecified, it can't explore the solution space.
 
 ```python
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Optional
 
 @dataclass(frozen=True)
 class TaskSpec:
+    """Immutable task specification for autonomous ML agents."""
     name: str
     train_path: str
     test_path: str
     target_column: str
-    metric: Callable       # function(y_true, y_pred) -> float
-    metric_direction: str  # "maximize" or "minimize"
+    metric: Callable                # function(y_true, y_pred) -> float
+    metric_direction: str           # "maximize" or "minimize"
     time_budget_sec: int
-    compute_budget: dict   # {"gpu_hours": 2.0, "api_calls": 500}
-    submission_schema: dict  # jsonschema for valid submission format
+    compute_budget: dict            # {"gpu_hours": 2.0, "api_calls": 500}
+    submission_schema: dict         # jsonschema for valid submission format
+    forbidden_operations: tuple[str, ...] = (
+        "network_access",
+        "read_test_labels",
+        "modify_eval_script",
+    )
 ```
 
-A frozen dataclass matters here: the spec shouldn't be mutable by the agent's code at runtime.
+The `forbidden_operations` field is critical. Without explicit prohibitions, a capable agent will find shortcuts: downloading pretrained models during eval, reading test labels directly, or modifying the evaluation script to always return a high score. These aren't malicious behaviors — they're rational optimization within an underspecified constraint space.
 
-### 2. The Execution Sandbox
+### 2. Execution Sandbox
 
 Autonomous agents writing and running code need boundaries. The failure mode isn't malicious behavior — it's unbounded resource consumption, accidental data leakage across train/test splits, or silent numerical errors that propagate undetected.
 
-A lightweight sandbox for ML experiments looks like:
-
 ```python
 import subprocess
-import resource
 import tempfile
 import os
+import json
+from pathlib import Path
 
 def run_in_sandbox(script_path: str, spec: TaskSpec) -> dict:
     """Execute agent-generated script with resource limits."""
     with tempfile.TemporaryDirectory() as workdir:
+        env = {
+            **os.environ,
+            "TRAIN_PATH": spec.train_path,
+            "TEST_PATH": spec.test_path,
+            "OUTPUT_DIR": workdir,
+            "NO_PROXY": "*",  # Hint to disable proxies (not a real sandbox — use containers/netns for production)
+            "CUDA_VISIBLE_DEVICES": "0",  # Limit GPU access
+        }
+
         result = subprocess.run(
             ["python", script_path],
-            env={
-                **os.environ,
-                "TRAIN_PATH": spec.train_path,
-                "TEST_PATH": spec.test_path,
-                "OUTPUT_DIR": workdir,
-                # Block network access to prevent external data leakage
-                "NO_PROXY": "*",
-            },
+            env=env,
             timeout=spec.time_budget_sec,
             capture_output=True,
             cwd=workdir,
         )
-        return parse_outputs(workdir, result)
+
+        return {
+            "exit_code": result.returncode,
+            "stdout": result.stdout.decode()[-2000:],  # Last 2K chars
+            "stderr": result.stderr.decode()[-2000:],
+            "outputs": _parse_outputs(workdir),
+            "resource_usage": _get_resource_usage(result),
+        }
+
+
+def _parse_outputs(workdir: str) -> dict:
+    """Extract structured outputs from the agent's working directory."""
+    outputs = {}
+    output_dir = Path(workdir)
+
+    for f in output_dir.iterdir():
+        if f.suffix == ".csv":
+            outputs["submission"] = str(f)
+        elif f.suffix == ".json":
+            outputs["metadata"] = json.loads(f.read_text())
+        elif f.suffix == ".log":
+            outputs["logs"] = f.read_text()[-5000:]
+
+    return outputs
+
+
+def _get_resource_usage(result: subprocess.CompletedProcess) -> dict:
+    """Extract resource consumption metrics."""
+    return {
+        "wall_time_sec": getattr(result, "elapsed", None),
+        "stdout_size": len(result.stdout),
+        "stderr_size": len(result.stderr),
+    }
 ```
 
-The key constraints to enforce: filesystem isolation (agent writes only to its workdir), network restrictions (no downloading external datasets during eval), and time limits. GPU memory limits can be enforced at the SLURM or container level.
+The key constraints: filesystem isolation (agent writes only to its workdir), network restrictions (no downloading external data during eval), GPU limitation (prevent hoarding), and time limits. GPU memory limits can be enforced at the container or SLURM level.
 
-### 3. The Evaluation Oracle
+### 3. Evaluation Oracle
 
-The agent produces a submission. The harness needs to evaluate it reliably and return a signal that drives iteration. This sounds trivial — just call your metric — but there are subtleties.
+The agent produces a submission. The harness evaluates it and returns a signal that drives iteration. This sounds trivial — just call your metric — but the oracle needs to catch failure modes that a scalar metric hides.
 
-**Leakage detection:** Does the submission file contain training labels? (Agents sometimes accidentally fit to the test set.)
+**Leakage detection:** Does the submission contain training labels?
 
 ```python
-def detect_leakage(submission_df, train_df, target_col: str) -> bool:
-    """Check if submission predictions are suspiciously close to train targets."""
-    if len(submission_df) == len(train_df):
-        corr = submission_df["prediction"].corr(train_df[target_col])
-        if corr > 0.99:
-            return True  # Likely copied train labels
-    return False
+import pandas as pd
+
+def detect_leakage(
+    submission: pd.DataFrame,
+    train_df: pd.DataFrame,
+    target_col: str,
+) -> dict:
+    """Check for train/test leakage in agent submissions."""
+    checks = {}
+
+    # Check 1: Suspiciously high correlation with train targets
+    if len(submission) == len(train_df) and "prediction" in submission.columns:
+        corr = submission["prediction"].corr(train_df[target_col])
+        checks["label_correlation"] = {
+            "value": float(corr),
+            "flagged": abs(corr) > 0.95,
+        }
+
+    # Check 2: Prediction distribution matches train distribution too closely
+    if "prediction" in submission.columns:
+        from scipy.stats import ks_2samp
+        stat, p_value = ks_2samp(
+            submission["prediction"].dropna(),
+            train_df[target_col].dropna(),
+        )
+        checks["distribution_match"] = {
+            "ks_statistic": float(stat),
+            "p_value": float(p_value),
+            "flagged": p_value > 0.99,  # Distributions suspiciously identical
+        }
+
+    return checks
 ```
 
-**Distributional validity:** Are the predicted values in the expected range? A regression model that outputs -1e8 for every test sample technically has a valid format but is meaningless.
+**Distributional validity:** Are the predicted values in the expected range? A regression model outputting -1e8 for every sample technically has a valid format but is meaningless.
 
-**Iteration signal quality:** Return not just the scalar metric, but structured feedback — per-class error rates, calibration statistics, common failure modes. The agent needs this to guide its next iteration, not just a number.
+**Iteration signal quality:** Return structured feedback, not just a scalar. Per-class error rates, calibration statistics, common failure patterns. The agent needs this to guide its next iteration.
 
-## How This Changes the Research Skill Set
+```python
+@dataclass(frozen=True)
+class OracleResult:
+    """Rich evaluation result that drives agent iteration."""
+    score: float
+    metric_name: str
+    leakage_checks: dict
+    distributional_checks: dict
+    per_class_scores: Optional[dict] = None
+    failure_analysis: Optional[str] = None
+    iteration_hints: tuple[str, ...] = ()
 
-The automation layer doesn't eliminate the need for ML expertise — it concentrates it upstream.
+    @property
+    def is_valid(self) -> bool:
+        """A submission must pass all integrity checks to be scored."""
+        leakage_flags = any(
+            v.get("flagged", False) for v in self.leakage_checks.values()
+        )
+        return not leakage_flags
+```
 
-**What gets automated:** Hyperparameter search, architecture ablations, data preprocessing variants, boilerplate training code, standard evaluation pipelines.
+## How CLI Agent Harnesses Work in Practice
 
-**What requires humans:** Identifying the right evaluation metric (which is a research judgment, not a software task), diagnosing systematic failure modes that aggregate metrics hide, deciding when to change the problem formulation rather than iterate on the current one.
+The three major coding agent CLIs — Claude Code, Codex CLI, and Gemini CLI — each implement harness patterns differently, and their architectural choices reveal trade-offs that matter for ML harness design.
 
-This maps onto what differentiates strong PhD researchers from strong ML engineers: the ability to identify *what question to ask*, not just execute the experimental protocol efficiently.
+**Claude Code: hooks as harness primitives.** Claude Code's hook system (`PreToolUse`, `PostToolUse`, `Stop`) is a lightweight harness. Hooks intercept agent actions at tool boundaries: a `PreToolUse` hook on `Bash` can block dangerous commands, a `PostToolUse` hook on `Write` can run a linter on every file edit, and a `Stop` hook can enforce a verification checklist before the session ends.
 
-The risk is that as agents take over execution, researchers with only execution skills face displacement, while researchers who excel at problem formulation and evaluation design become more valuable.
+The ML harness analog: wrap your experiment runner with pre-execution validation (check the script doesn't access forbidden paths) and post-execution evaluation (run the oracle on outputs). The hook architecture makes the harness composable — each constraint is an independent interceptor, not a monolithic validation function.
 
-## MLE-STAR: A Concrete Example
+**Codex CLI: sandbox-first design.** Codex runs agent-generated code in an isolated sandbox by default. Network access is disabled. File system access is restricted. The agent operates in a constrained environment where the only way to affect the outside world is through the structured output channel.
 
-Google's MLE-STAR (published April 2026) is the clearest public demonstration of autonomous ML engineering at scale. It uses iterative code refinement with explicit self-evaluation: after each experiment run, the agent reads its own output logs, identifies failure modes, and generates a revised implementation.
+For ML harnesses, this is the reference pattern: the agent's code runs in a container with access to the training data and a write-only output directory. Everything else is blocked. The sandbox is the constraint; the evaluation oracle is the feedback channel.
 
-The architecture is essentially a harness loop:
+**Gemini CLI: context-window-as-harness.** Gemini's 1M+ token context window enables a different pattern: load the entire experimental history into context and let the agent reason about what to try next based on complete information. The harness is the structured context, not the sandbox.
+
+This works for ML exploration where the bottleneck is hypothesis generation, not execution safety. The agent sees every prior experiment's results, learns from failures without external memory, and proposes increasingly targeted experiments. The cost is context budget — even 1M tokens fills up when each experiment run produces thousands of lines of logs.
+
+## MLE-STAR: The Reference Implementation
+
+Google's MLE-STAR (April 2026) is the clearest public demonstration of autonomous ML engineering at scale. It uses iterative code refinement with explicit self-evaluation: after each experiment run, the agent reads its own output logs, identifies failure modes, and generates a revised implementation.
+
+The architecture is a harness loop:
 
 ```
-Task Spec → Agent generates code → Sandbox executes → 
-Oracle evaluates → Structured feedback → Agent revises → 
+Task Spec → Agent generates code → Sandbox executes →
+Oracle evaluates → Structured feedback → Agent revises →
 ... repeat until budget exhausted → Return best solution
 ```
 
-The researchers' contribution is not the agent architecture (it's a prompted LLM with tool use) — it's the harness that makes this loop reliable. The evaluation oracle is sophisticated: it checks for common ML failure patterns (train/val split contamination, metric hacking, gradient explosion) before returning a score.
+63% medal-rate on MLE-Bench-Lite means the agent is competitive with experienced Kaggle participants on standard ML tasks. But every benchmark task has a clean, unambiguous metric. Where humans still dominate: tasks where defining the right metric is the hard part.
 
-63% medal-rate on MLE-Bench-Lite means the agent is competitive with experienced Kaggle participants on standard ML tasks. But every task in that benchmark has a clean, unambiguous metric. The tasks where humans still dominate are the ones where defining the right metric is most of the work.
+The key design insight from MLE-STAR is the oracle sophistication. It doesn't just compute a scalar metric — it checks for common ML failure patterns (train/val contamination, metric hacking, gradient explosion) before returning a score. A high score on a contaminated submission is worse than no score at all, because it would reinforce the wrong approach.
 
-## Practical Transition: What to Build Now
+## How This Changes the Research Skill Set
 
-If you're an ML PhD thinking about where to invest your skills:
+**What gets automated:** Hyperparameter search, architecture ablations, data preprocessing variants, boilerplate training code, standard evaluation pipelines.
 
-**Build harness infrastructure:** Create reusable task specification templates for your research domain. Write robust evaluation oracles that detect common failure modes, not just compute scalar metrics. These become the scaffolding that lets you run autonomous experiments at scale.
+**What requires humans:** Identifying the right evaluation metric (a research judgment, not a software task), diagnosing systematic failure modes that aggregate metrics hide, deciding when to change the problem formulation rather than iterate on the current one.
 
-**Invest in benchmark design:** The ability to create a benchmark that accurately reflects a real capability gap is increasingly rare and increasingly valuable. ARC-AGI wasn't important because of its accuracy number — it was important because it identified a genuine failure mode that aggregate benchmarks masked.
+This maps onto what differentiates strong PhD researchers from strong ML engineers: the ability to identify *what question to ask*, not just execute the experimental protocol.
 
-**Learn to read agent outputs, not write agent inputs:** The skill shifts from "how do I prompt this to do what I want" to "given that this agent ran 200 experiments, what do the failure patterns tell me about my problem formulation." This is data analysis and scientific reasoning, not prompt engineering.
+## Building Your First ML Harness
 
-**Treat harness code as research output:** The harness that lets your autonomous agent produce good results is a scientific contribution. It embodies assumptions about what the task requires, what counts as success, and what failure modes matter. It should be documented, versioned, and published alongside results.
+If you're starting from zero, the minimum viable harness has four files:
+
+```
+harness/
+├── spec.py          # TaskSpec definition — what the agent is trying to do
+├── sandbox.py       # Execution environment — how agent code runs
+├── oracle.py        # Evaluation — what "good" means, with leakage checks
+└── loop.py          # The iteration driver — spec → agent → sandbox → oracle → repeat
+```
+
+The loop driver ties everything together:
+
+```python
+def run_harness(spec: TaskSpec, agent_fn: Callable, max_iterations: int = 20):
+    """Run the harness loop until budget exhaustion or convergence."""
+    best_result = None
+    history: list[OracleResult] = []
+
+    for i in range(max_iterations):
+        # Agent generates code, informed by prior results
+        script = agent_fn(spec, history)
+
+        # Sandbox executes with constraints
+        execution = run_in_sandbox(script, spec)
+
+        if execution["exit_code"] != 0:
+            history.append(OracleResult(
+                score=0.0, metric_name=spec.metric.__name__,
+                leakage_checks={}, distributional_checks={},
+                failure_analysis=execution["stderr"],
+                iteration_hints=("Fix the runtime error before optimizing",),
+            ))
+            continue
+
+        # Oracle evaluates with integrity checks
+        result = evaluate(execution["outputs"], spec)
+        history.append(result)
+
+        if result.is_valid and (
+            best_result is None or result.score > best_result.score
+        ):
+            best_result = result
+
+    return best_result, history
+```
+
+Start with this structure. Add complexity only when you observe specific failure modes that the simple harness doesn't catch. The harness grows from experience, not from anticipation.
 
 ## The Uncomfortable Implication
 
-Autonomous ML agents are already better than most humans at the mechanical execution of ML experiments. They iterate faster, don't get bored, and don't make careless coding mistakes. If your primary research contribution is "I ran these experiments and found hyperparameter X works better," that contribution is under pressure.
+Autonomous ML agents are already competitive with humans at the mechanical execution of experiments. They iterate faster, don't fatigue, and make different mistakes than humans — fewer typos and off-by-one errors, more hallucinated API calls and subtle misuses of libraries. If your primary research contribution is "I ran these experiments and found hyperparameter X works better," that contribution is under pressure.
 
-The parts of ML research that remain distinctly human are the parts that require scientific judgment: identifying problems worth solving, designing evaluations that resist gaming, interpreting failures as hypotheses about the underlying problem, and knowing when the right move is to change the question rather than optimize the answer.
+The parts of ML research that remain distinctly human: identifying problems worth solving, designing evaluations that resist gaming, interpreting failures as hypotheses about the underlying problem, and knowing when the right move is to change the question rather than optimize the answer.
 
-Harness engineering is the discipline that formalizes those judgments into systems that agents can use. It's not a tool for delegating ML research — it's a forcing function for making the research judgment layer explicit and reproducible.
+Harness engineering formalizes those judgments into systems that agents can use. It's not a tool for delegating ML research — it's a forcing function for making the research judgment layer explicit and reproducible.
 
 ---
 
-*References: MLE-STAR (Google Research, April 2026); MLPerf Inference 6.0 (April 2026); Harness Engineering patterns observed from OpenAI Codex team internal reports.*
+*References: MLE-STAR (Google Research, April 2026); MLPerf Inference 6.0 (April 2026); Claude Code hooks documentation; Codex CLI sandbox architecture; Gemini CLI context patterns.*
