@@ -1,337 +1,303 @@
 ---
-title: '三维质疑法：如何系统性质疑任何神经网络架构'
-description: '从关系阶数、均匀性假设、可分离性假设三个维度，建立评估神经网络架构的系统框架。'
-publishDate: '2026-03-19'
-updatedDate: '2026-03-19'
-category: research
-tags:
-  - architecture
-  - framework
-  - first-principles
-  - meta-cognition
-language: zh
+title: "Three Axes for Questioning Any Neural Architecture"
+description: "A framework for questioning architectures from first principles: interaction order, uniformity assumptions, and separability constraints with code."
+publishDate: "2026-03-19"
+updatedDate: "2026-04-13"
+tags: [architecture, deep-learning, first-principles, transformers, ResNet, meta-cognition]
+draft: false
 ---
 
-## 引言：为什么需要质疑框架？
+Most deep learning practitioners learn architectures as black boxes. ResNet works, so use ResNet. Transformer works, so use Transformer. This is fine for engineering, but it's the wrong stance for research. Understanding *why* an architecture works — and what it implicitly assumes — is necessary for knowing when to abandon it.
 
-在深度学习领域，我们常常被"公认正确"的架构所束缚。ResNet、Transformer、BatchNorm...这些成功的设计让我们陷入**范式锁定**（Paradigm Lock-in）——我们学会了如何使用它们，却忘记了质疑它们。
+The three axes below form a systematic framework for evaluating any architectural proposal from first principles. They apply equally to evaluating existing architectures (why does ResNet fail on task X?) and to designing new ones (what constraint is my task imposing?). The framework emerged from analyzing residual connection variants, but the axes generalize.
 
-本文提出**三维质疑法**，一个系统性的评估框架，帮助你识别架构设计中的**第一性原理错误**（违反物理/数学本质的假设）和**工程妥协**（历史路径依赖的偶然选择）。
+## Axis 1: Interaction Order
 
----
+**The question**: What is the highest order of interaction this architecture can represent?
 
-## 维度一：关系阶数（Order of Interaction）
+Neural networks process information through interactions between elements — tokens, channels, layers, modalities. The order of interaction determines expressiveness: first-order processes each element independently, second-order processes pairs, and higher-order processes arbitrary subsets.
 
-### 核心问题
+This matters because tasks have an intrinsic interaction order. Scene understanding requires understanding that "tablecloth + plates + silverware + food" jointly define a dining scene — a high-order relationship that cannot be decomposed into pairwise interactions without information loss. Sequence modeling requires that "not ... but ..." is a dependency between non-adjacent tokens — a relationship that fixed-window architectures can fail to capture.
 
-> 当前架构强制了几阶关系？
+The interaction order of common architectures:
 
-### 三种关系层级
+| Architecture | Interaction Order | Mechanism |
+|---|---|---|
+| MLP | First-order | Each token processed independently |
+| CNN | Second-order | Local pairwise within fixed kernel |
+| Standard ResNet | Second-order | Adjacent layer interactions only |
+| Transformer (self-attention) | Second-order | All-pairs dot products per head |
+| Hypergraph NN | Higher-order | Hyperedges connect arbitrary subsets |
 
-| 层级 | 关系类型 | 代表架构 | 局限性 |
-|------|----------|----------|--------|
-| **一阶** | 孤立处理 | MLP | 无视上下文 |
-| **二阶/成对** | 两两交互 | CNN, Transformer, ResNet | 无法表达集体效应 |
-| **高阶** | 多对多/集体 | Hypergraph, CDMN | 计算复杂度高 |
-
-### 案例分析
-
-**ResNet 的阶数局限**：
-```
-残差连接：h_{l+1} = h_l + f(h_l)
-
-这是二阶关系：第 l+1 层只与第 l 层交互
-无法表达："第 10 层需要同时看第 1 层（边缘）和第 50 层（语义）"
-```
-
-**Transformer 的阶数局限**：
-```
-Self-Attention：每个 token 与其他所有 token 两两点积
-
-这是成对关系：Attention(Q,K,V) = softmax(QK^T)V
-无法表达："三个 token 共同构成一个语义单元"
-```
-
-**YOLOv13 的突破**：
-```
-HyperACE：超边（Hyperedge）连接任意数量的节点
-
-高阶关系：超边 e = {v_1, v_2, v_3, ..., v_k}
-表达："桌布、餐盘、刀叉、食物共同定义餐桌场景"
-```
-
-### 质疑清单
-
-- [ ] 你的任务是否需要集体决策？（如场景理解、多智能体协作）
-- [ ] 架构是否局限于成对交互？
-- [ ] 如果是，这就是**架构 debt**——需要更大模型来补偿结构缺陷
-
----
-
-## 维度二：均匀性假设（Uniformity Assumption）
-
-### 核心问题
-
-> 哪些维度被强制均匀处理了？
-
-### 六大均匀性暴政
-
-#### 1. 深度维度的均匀暴政
-
-**现状**：ResNet 的均匀残差
-```python
-# 每层权重隐式为 1
-h_{l+1} = h_l + f(h_l)  # 强制只接上一层，权重=1
-```
-
-**本质需求**：不同层的重要性差异巨大
-- 某些层是"边缘检测"（基础特征）
-- 某些层是"语义理解"（高级抽象）
-- 重要层的贡献应该被放大
-
-**突破方向**：
-- **Kimi Block Attention**：Block 内动态选择
-- **Attention Residuals**：可学习的层间权重
-- **CDMN RDE**：从任意深度按需检索
-
-#### 2. 宽度维度的均匀暴政
-
-**现状**：通道民主投票
-```python
-# 卷积核在所有通道上做相同的滑动窗口平均
-out_c = sum_{i} W_{c,i} * in_i  # 每个通道投一票
-```
-
-**本质需求**：不同通道编码的信息价值差异巨大
-- 有些检测边缘
-- 有些检测纹理
-- 有些是噪声
-
-**突破方向**：
-- **Channel Attention Residual**：每个输出通道选择引用哪些输入通道
-- **CondConv**：根据输入动态选择卷积核
-
-#### 3. 空间维度的均匀暴政
-
-**现状**：固定卷积网格
-```python
-# 无论图像内容如何，都在固定的 3×3 网格上采样
-Conv2d(kernel_size=3, stride=1)
-```
-
-**本质需求**：不同区域的信息密度不同
-- 有些区域是背景（应该看 0 个点）
-- 有些区域是物体（应该看 10 个点）
-
-**突破方向**：
-- **Deformable Conv**：采样点可偏移
-- **Adaptive Sparse Sampling**：每个位置动态选择引用哪些其他位置
-
-#### 4. 时间维度的均匀暴政
-
-**现状**：Transformer 均匀记忆
-```python
-# 历史序列的每个 token 被同等对待
-Attention(Q, K, V)  # 对所有历史位置 softmax
-```
-
-**本质需求**：久远的历史应该被压缩/遗忘，近期的应该被放大
-
-**突破方向**：
-- **Compressive Transformer**：分层记忆（瞬时/短期/长期）
-- **Hierarchical Memory**：不同时间尺度的信息通过不同路径引用
-
-#### 5. 批次维度的均匀暴政
-
-**现状**：BatchNorm 对所有样本平等统计
-```python
-# 容易样本和困难样本被同等加权
-mean = x.mean(dim=0)  # 所有样本平均
-```
-
-**本质需求**：样本间存在层级结构（子类、困难程度）
-
-**突破方向**：
-- **Sample Attention**：每个样本的动态更新只参考"相关样本"的梯度
-- **Focal Loss**：加权处理困难样本
-
-#### 6. 模态维度的均匀暴政
-
-**现状**：多模态简单拼接
-```python
-# CLIP 风格：文本特征 + 视觉特征 → 拼接
-fused = concat([text_feat, image_feat])
-```
-
-**本质需求**：根据当前任务动态选择主要依赖哪个模态
-
-**突破方向**：
-- **Cross-Modal Hypergraph**：超边连接"视觉区域+文本词+音频片段"
-- **Modality Routing**：某些任务完全依赖视觉，某些完全依赖文本
-
----
-
-## 维度三：可分离性假设（Separability Assumption）
-
-### 核心问题
-
-> 哪些维度被强制分离了？
-
-### 强制分离的代价
-
-#### 1. 深度-宽度分离
-
-**现状**：先定深度，再定宽度
-```python
-model = Sequential([
-    Layer1(width=256),  # 先定深度位置
-    Layer2(width=256),  # 再定宽度
-    Layer3(width=256),
-])
-```
-
-**问题**：深层大尺度特征与浅层细节特征纠缠
-
-**突破方向**：
-- **宽度随深度自适应**：浅层宽（捕捉细节），深层窄（抽象语义）
-- **神经架构搜索（NAS）**：联合优化深度和宽度
-
-#### 2. 空间-通道分离
-
-**现状**：卷积先空域聚合，再通道混合
-```python
-# Conv-BN-ReLU 模式
-x = Conv2d(in_c, out_c, kernel_size=3)(x)  # 空间聚合
-x = BatchNorm(out_c)(x)                    # 通道归一化
-x = ReLU(x)                                # 通道激活
-```
-
-**问题**：空间上分离的区域可能在语义上紧密相关
-
-**突破方向**：
-- **YOLOv13 HyperACE**：空间-语义纠缠
-- **Spatial-Semantic Entanglement**：空间分离的区域通过超边在语义层面连接
-
-#### 3. 时间-模态分离
-
-**现状**：多模态融合与序列建模分离
-```python
-# 先分别处理各模态，再融合
-video_feat = VideoEncoder(video)
-audio_feat = AudioEncoder(audio)
-fused = Fusion(video_feat, audio_feat)
-```
-
-**问题**：时间动态与模态交互应该同时建模
-
-**突破方向**：
-- **统一时空-模态图**：节点是 (t, modality) 的联合表示
-- **动态跨模态注意力**：时间 t 的视觉可以与时间 t-1 的音频交互
-
----
-
-## 综合评估：三维质疑法实践
-
-### 评估矩阵
-
-| 架构 | 关系阶数 | 深度均匀 | 宽度均匀 | 空间均匀 | 时间均匀 | 可分离性 | 总体评价 |
-|------|----------|----------|----------|----------|----------|----------|----------|
-| **MLP** | 一阶 ❌ | - | - | - | - | - | 过时 |
-| **CNN** | 二阶 ⚠️ | ✅ | ⚠️ | ❌ | - | ⚠️ | 空间局限 |
-| **ResNet** | 二阶 ⚠️ | ❌ | ⚠️ | ❌ | - | ⚠️ | 深度局限 |
-| **Transformer** | 二阶 ⚠️ | ❌ | ⚠️ | - | ❌ | ⚠️ | 时间局限 |
-| **Kimi** | 二阶 ⚠️ | ⚠️ | ✅ | - | ⚠️ | ✅ | 深度突破 |
-| **YOLOv13** | 高阶 ✅ | - | - | ⚠️ | - | ✅ | 空间突破 |
-| **CDMN (理想)** | 高阶 ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 目标架构 |
-
-### 如何使用三维质疑法
-
-**步骤 1：识别阶数需求**
-- 分析任务是否需要集体决策
-- 如果是，成对架构（ResNet/Transformer）就是次优的
-
-**步骤 2：扫描均匀性假设**
-- 逐维度检查：深度/宽度/空间/时间/批次/模态
-- 标记哪些维度被强制均匀处理
-- 评估是否可以引入动态选择
-
-**步骤 3：检查可分离性**
-- 哪些维度被强制分离？
-- 分离是否导致信息损失？
-- 能否引入维度纠缠？
-
-**步骤 4：提出改进方向**
-- 基于质疑结果，提出具体的架构改进
-- 使用稀疏性、注意力、超图等工具打破均匀性
-
----
-
-## 案例研究：质疑 ResNet
-
-### 原始 ResNet
+The practical implication: architectures operating at order $k$ require $O(\text{depth})$ to synthesize order $> k$ information. A transformer synthesizing a 4-way interaction must chain three second-order attention operations, which introduces a gradient path length constraint and makes the synthesis implicit rather than direct.
 
 ```python
-class ResNetBlock(nn.Module):
-    def forward(self, x):
-        return x + self.conv(self.bn(self.relu(x)))
-```
+import torch
+import torch.nn as nn
+from typing import Optional
 
-**三维评估**：
-- 关系阶数：二阶（只接上一层）❌
-- 深度均匀：权重固定为 1 ❌
-- 可分离性：深度-宽度分离 ⚠️
+class SecondOrderAttention(nn.Module):
+    """Standard self-attention: all-pairs second-order interactions."""
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: (B, T, D)
+        # Attention(Q, K, V): token i attends to token j — pairwise
+        # A 4-way interaction requires at least 3 stacked attention layers
+        q, k, v = x, x, x
+        scores = torch.bmm(q, k.transpose(1, 2)) / (x.shape[-1] ** 0.5)
+        return torch.bmm(torch.softmax(scores, dim=-1), v)
 
-### 改进版：CDMN Block
 
-```python
-class CDMNBlock(nn.Module):
-    def __init__(self, dim, num_landmarks=8):
-        self.rde = RotaryDepthEmbedding(dim)
-        self.landmark_states = nn.Parameter(torch.randn(num_landmarks, dim))
+class HigherOrderHyperedgeAttention(nn.Module):
+    """
+    Hyperedge-based attention: explicit high-order interactions.
+    
+    A hyperedge groups k tokens and produces one output that 
+    represents their joint interaction — not decomposed into pairs.
+    This is the difference between "scene" and "object relationship".
+    """
+    def __init__(self, d_model: int, n_hyperedges: int = 16, edge_size: int = 4):
+        super().__init__()
+        self.edge_size = edge_size
+        # Learnable hyperedge membership weights
+        self.edge_membership = nn.Parameter(torch.randn(n_hyperedges, d_model))
+        # For each hyperedge, aggregate the member tokens into one representation
+        self.edge_proj = nn.Linear(d_model, d_model)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        x: (B, T, D)
+        For each hyperedge e, compute:
+          membership_score[e, t] = softmax over tokens of token t's affinity for e
+          edge_repr[e] = sum of member token representations weighted by membership
+        Then each token aggregates information from all hyperedges it belongs to.
+        """
+        B, T, D = x.shape
         
-    def forward(self, x, depth, history):
-        # 高阶关系：从任意历史层检索
-        query = self.rde.encode(x, depth)
-        retrieved = self.attention_retrieve(query, history)
+        # (B, T, n_edges): how strongly does each token belong to each hyperedge?
+        membership = torch.softmax(
+            torch.einsum("btd,ed->bte", x, self.edge_membership) / (D ** 0.5),
+            dim=1  # softmax over tokens → sparse edge membership
+        )
         
-        # 打破深度均匀：动态加权
-        alpha = self.gate_network(x)  # 可学习的权重
-        return x + alpha * retrieved
+        # (B, n_edges, D): edge representation = weighted sum of member tokens
+        edge_repr = torch.einsum("bte,btd->bed", membership, x)
+        edge_repr = self.edge_proj(edge_repr)  # learned transformation
+        
+        # (B, T, D): each token aggregates from all edges it belongs to
+        out = torch.einsum("bte,bed->btd", membership, edge_repr)
+        return out + x  # residual
 ```
 
-**三维评估**：
-- 关系阶数：高阶（可接任意层）✅
-- 深度均匀：动态加权 ✅
-- 可分离性：深度-宽度纠缠 ✅
+**The diagnostic question**: If your task requires your model to decide based on a 4-way or 5-way joint interaction between elements, is your architecture capable of representing that without impractical depth?
+
+## Axis 2: Uniformity Assumptions
+
+**The question**: Which dimensions does this architecture treat uniformly, and is that treatment correct for your task?
+
+Uniformity is the assumption that all elements along a dimension are equivalent and should receive equal computational treatment. It's a strong inductive bias that's often wrong. Six dimensions where uniformity is commonly and incorrectly assumed:
+
+**Depth uniformity**: Standard residual connections assume each layer contributes equally to the final representation:
+
+$$h_{l+1} = h_l + f(h_l) \quad \Rightarrow \quad h_L = h_0 + \sum_{l=0}^{L-1} f(h_l)$$
+
+The implicit weight on each layer's contribution is 1. In practice, different depths encode qualitatively different information (low-level features at shallow layers, high-level semantics at deep layers), and some layers contribute much more than others. This is empirically demonstrated by layer-dropping experiments: large models often remain functional after removing 30-40% of layers, which wouldn't be true if all layers contributed equally.
+
+**Width uniformity**: Standard convolutions treat all channels identically — each output channel is a learned linear combination of all input channels with equal computational priority. But channels specialize during training; some encode task-relevant features and some become near-redundant. Channel attention (SE-Networks, ECA-Net) addresses this, but the underlying architecture starts uniform.
+
+**Spatial uniformity**: A 3×3 convolution samples a fixed grid regardless of image content. Regions with high information density (object boundaries, fine-grained texture) receive the same number of sampling points as background. Deformable convolutions address this; standard convolutions don't.
+
+**Temporal uniformity**: Standard transformer attention has no built-in recency bias — absent content-dependent cues, all positions receive equivalent weighting. There is no architectural prior that recent context is more relevant than distant context; that must be learned entirely from data.
+
+```python
+class NonUniformDepthAggregation(nn.Module):
+    """
+    Learnable depth aggregation: each layer gets a learned weight 
+    rather than the fixed weight=1 of standard residuals.
+    
+    This is the core idea behind Attention Residuals (Moonshot AI, 2026):
+    instead of h_{L} = h_0 + sum(f(h_l)), compute
+    h_{L} = sum(alpha_l * h_l) where alpha_l are learned or content-dependent.
+    """
+    def __init__(self, n_layers: int, d_model: int):
+        super().__init__()
+        # Content-dependent aggregation weights (attention over layer history)
+        self.query_proj = nn.Linear(d_model, n_layers)
+    
+    def forward(
+        self,
+        current: torch.Tensor,
+        history: list[torch.Tensor],
+    ) -> torch.Tensor:
+        """
+        current: (B, D) — current layer representation
+        history: list of (B, D) — all previous layer representations
+        
+        Compute attention-weighted sum over history.
+        """
+        if not history:
+            return current
+        
+        # Compute content-dependent weights
+        raw_weights = self.query_proj(current)[:, :len(history)]  # (B, n_prev)
+        alpha = torch.softmax(raw_weights, dim=-1)                  # (B, n_prev)
+        
+        # Aggregate with learned weights
+        history_stack = torch.stack(history, dim=1)   # (B, n_prev, D)
+        aggregated = (alpha.unsqueeze(-1) * history_stack).sum(dim=1)  # (B, D)
+        
+        return aggregated + current  # residual connection preserved
+
+    def forward_static_weights(
+        self,
+        current: torch.Tensor,
+        history: list[torch.Tensor],
+    ) -> torch.Tensor:
+        """
+        Alternative: uniform weights (not content-dependent).
+        Simpler than learned attention; still breaks depth uniformity vs. standard residuals
+        by pooling over all prior layers rather than only the immediately preceding one.
+        """
+        if not history:
+            return current
+        n_prev = len(history)
+        # Uniform average over history — no learning needed for this variant
+        alpha = torch.full((n_prev,), 1.0 / n_prev, device=current.device)
+        history_stack = torch.stack(history, dim=1)   # (B, n_prev, D)
+        return (alpha.unsqueeze(0).unsqueeze(-1) * history_stack).sum(dim=1) + current
+```
+
+**The diagnostic question**: For each dimension of your architecture (depth, width, spatial, temporal, batch, modality), ask: is treating all elements equally along this dimension a correct assumption for your task? If not, you've identified an architectural constraint worth removing.
+
+## Axis 3: Separability Constraints
+
+**The question**: Which dimensions does this architecture process independently (separately), and does your task require them to be coupled?
+
+Separability is the architectural choice to process dimensions in sequence (first spatial, then channel; first temporal, then modality) rather than jointly. It's a computational shortcut that works when the dimensions are genuinely independent — and fails when they're not.
+
+The most common separability assumption in CNNs is **spatial-channel separability**: convolutions aggregate spatial information first (within the kernel), then mix channels (across the output dimension). This works for natural image recognition because texture and shape information can often be extracted independently. It fails for tasks requiring spatial-semantic entanglement: knowing that the same spatial pattern means "wing" in one context and "fin" in another requires joint spatial-semantic processing.
+
+```python
+class DepthwiseSeparableConv(nn.Module):
+    """
+    Standard separable convolution: spatial and channel dimensions processed independently.
+    Efficient but assumes spatial and channel information are separable.
+    """
+    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3):
+        super().__init__()
+        # Spatial aggregation: each channel independently
+        self.depthwise = nn.Conv2d(in_channels, in_channels, kernel_size, 
+                                    padding=kernel_size//2, groups=in_channels)
+        # Channel mixing: each spatial position independently
+        self.pointwise = nn.Conv2d(in_channels, out_channels, 1)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Processes spatial THEN channel — never jointly
+        x = self.depthwise(x)  # spatial: each channel sees only itself
+        x = self.pointwise(x)  # channel: each position sees only itself
+        return x
+
+
+class JointSpatialChannelAttention(nn.Module):
+    """
+    Joint spatial-channel processing: what a token at position (h, w, c)
+    can attend to is determined by both spatial proximity AND channel identity.
+    
+    More expensive but breaks the separability assumption — the model can
+    learn that "pattern at (h, w)" means different things in different channels.
+    """
+    def __init__(self, d_model: int, n_heads: int = 8):
+        super().__init__()
+        self.spatial_channel_attn = nn.MultiheadAttention(
+            embed_dim=d_model, num_heads=n_heads, batch_first=True
+        )
+        self.norm = nn.LayerNorm(d_model)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        x: (B, H*W*C, D) — flattened spatial+channel tokens
+        Each token is a (h, w, c) triple rather than a spatial location alone.
+        Attention is over the joint space — position and channel simultaneously.
+        """
+        attn_out, _ = self.spatial_channel_attn(x, x, x)
+        return self.norm(attn_out + x)
+```
+
+**The separability diagnostic**: For dimensions A and B, ask: can you compute the optimal function of A given B's value, without knowing B at the time you compute A? If yes, A and B are separable for this task. If no — if the right spatial aggregation depends on which channel you're in — the separability assumption is introducing an error.
+
+**Depth-time separability** is the constraint most relevant to sequence modeling with long-range dependencies. Standard transformers process the depth dimension (layer number) completely separately from the temporal dimension (sequence position). There's no mechanism for "what the model did at layer 3 for token 47" to directly influence "what it does at layer 7 for token 12." Whether this matters depends on whether your task requires this kind of cross-depth temporal interaction.
+
+## Using the Framework: A Diagnostic Procedure
+
+Given an architecture or a task, apply the three axes in sequence:
+
+**Step 1: Identify the required interaction order.** What is the minimum interaction order that the optimal solution requires? If you can compute the output from pairwise interactions, second-order suffices. If not, you need either higher-order mechanisms or deep stacking (with the attendant gradient path cost).
+
+**Step 2: Scan for uniformity violations.** For each dimension (depth, width, spatial, temporal, batch, modality), ask: does this task require non-uniform treatment? Mark where uniformity is wrong. These are the locations of compulsory architectural debt — if you don't fix them, you're using model scale to compensate for structural errors.
+
+**Step 3: Identify necessary couplings.** For each pair of dimensions, ask: does the optimal processing of dimension A require knowing dimension B? If yes and the architecture separates them, that's a separability error — information that the architecture cannot represent.
+
+```python
+from dataclasses import dataclass, field
+
+@dataclass
+class ArchitecturalAudit:
+    """Output of the three-axis diagnostic applied to an architecture."""
+    
+    # Axis 1: Interaction Order
+    max_representable_order: int
+    task_required_order: int
+    order_gap: int = 0
+    
+    # Axis 2: Uniformity
+    uniformity_violations: list[str] = field(default_factory=list)
+    # e.g., ["depth: task requires dynamic layer selection",
+    #         "spatial: task requires non-uniform sampling density"]
+    
+    # Axis 3: Separability
+    required_couplings: list[tuple[str, str]] = field(default_factory=list)
+    # e.g., [("spatial", "channel"), ("depth", "time")]
+    
+    def __post_init__(self):
+        self.order_gap = max(0, self.task_required_order - self.max_representable_order)
+    
+    def severity(self) -> str:
+        """Rough severity classification."""
+        issues = len(self.uniformity_violations) + len(self.required_couplings)
+        if self.order_gap > 0:
+            return "CRITICAL (interaction order mismatch)"
+        if issues > 3:
+            return "HIGH (multiple uniformity/separability constraints)"
+        if issues > 1:
+            return "MEDIUM"
+        return "LOW"
+
+# Example: auditing a standard Transformer for scene-understanding
+transformer_audit = ArchitecturalAudit(
+    max_representable_order=2,       # attention is pairwise
+    task_required_order=4,           # scene = 4+ jointly defined objects
+    uniformity_violations=[
+        "depth: all layers weighted equally in residual sum",
+        "temporal: equidistant context weighting regardless of recency",
+    ],
+    required_couplings=[
+        ("spatial", "semantic"),     # scene regions have context-dependent meaning
+        ("modality", "temporal"),    # in video, visual and audio vary jointly
+    ],
+)
+
+print(f"Severity: {transformer_audit.severity()}")
+print(f"Order gap: {transformer_audit.order_gap}")
+print(f"Uniformity violations: {len(transformer_audit.uniformity_violations)}")
+```
+
+## The Purpose of the Framework
+
+The three-axis framework doesn't tell you how to build architectures. It tells you what constraints your architecture is imposing, so you can check whether those constraints are correct for your task.
+
+Most architectural papers don't state their implicit assumptions. They show benchmark results that are consistent with the proposed mechanism, but the benchmark may not distinguish between "the mechanism works" and "the mechanism adds parameters" or "the benchmark is aligned with the architecture's uniformity assumptions."
+
+Using these three axes forces the question: is this architecture correct for this task, or is it simply the best available approximation of the correct architecture? If the latter, the performance ceiling is set by the approximation error, and more compute will hit that ceiling eventually. If the former, you're working with the right inductive biases and scaling becomes productive rather than compensatory.
 
 ---
 
-## 结论：从工具使用者到架构设计者
-
-**工具使用者**：
-> "ResNet 很好，我学会了如何调参。"
-
-**架构设计者**：
-> "ResNet 在深度维度上强制均匀性和二阶关系，这是次优的。我应该设计一个打破这些限制的架构。"
-
-三维质疑法的目标是培养**架构设计者的思维方式**：
-1. 识别隐藏的第一性原理错误
-2. 区分本质约束与工程妥协
-3. 在 scaling law 约束下寻找帕累托最优
-
-**记住**：
-- 关系阶数决定了表达能力上限
-- 均匀性假设限制了信息利用效率
-- 可分离性假设限制了维度间的协同
-
-打破这些限制，就是在为下一代架构铺路。
-
----
-
-## 参考
-
-- Kimi 技术架构研究：`/claw/Report/kimi-research-codex.md`
-- 脑启发离散近似：`/claw/Report/brain-inspired-discrete-approximation.md`
-- 从 ResNet 到 RDE：`/blog/from-resnet-to-rde`
-
-**标签**：#架构设计 #第一性原理 #元认知 #深度学习
+*This framework was developed while analyzing residual connection variants — particularly the transition from standard fixed-weight residuals to content-dependent depth aggregation in Attention Residuals (Moonshot AI, arXiv:2603.15031). The hyperedge attention example is informed by YOLOv13's HyperACE module. The uniformity taxonomy draws on the architecture review in "From ResNet to RDE" (this blog).*

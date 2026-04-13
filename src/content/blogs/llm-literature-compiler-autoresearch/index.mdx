@@ -1,0 +1,385 @@
+---
+title: "LLM Literature Compiler: Why RAG Is the Wrong Model"
+description: "Karpathy's autoresearch treats an LLM as a compiler — restructuring raw papers into an interlinked knowledge graph, not a static retrieval index."
+publishDate: "2026-04-13"
+tags: [LLM, agents, research-tools, knowledge-graph, RAG, Karpathy, agent-engineering]
+draft: false
+---
+
+The dominant mental model for LLM-assisted literature review is retrieval: you embed papers, store them in a vector database, and query when you need something. The model retrieves relevant chunks and synthesizes an answer. This is RAG, and it has a fundamental design flaw that becomes obvious once you try to use it for sustained research.
+
+RAG is a *lookup system*. You ask it a question; it finds the most semantically similar stored text. It doesn't understand the structure of a research field. It can't tell you that two papers with different vocabulary are actually attacking the same problem from different angles. It can't track how a finding in 2024 was superseded by contradictory evidence in 2025. It treats every document as an independent artifact and every query as a one-shot retrieval, which is exactly the wrong model for how scientific knowledge is structured.
+
+Karpathy's `autoresearch` repository, which surfaced in early April 2026, proposes something different: treat the LLM not as a retriever but as a **compiler**. The compiler metaphor is precise. A compiler doesn't just find code — it parses, analyzes, and transforms it into a structured representation that captures dependencies, types, and call graphs. Applied to literature, the compiler reads papers and continuously rewrites a structured knowledge base that captures how ideas connect, contradict, and build on each other.
+
+## What the Compiler Does That Retrieval Can't
+
+The core insight is about information structure. Papers are written as self-contained arguments. When you read ten papers on residual connections, you build a mental map: paper A proposes dynamic weighting, paper B shows it's unstable on certain tasks, paper C offers a fix, paper D is essentially paper A in a different domain. This map lives in your head. RAG has no mechanism to represent it.
+
+A compiler-style system builds this map explicitly. After processing each paper, it doesn't just add a chunk to an index — it updates a structured representation of the field:
+
+```python
+import anthropic
+from pathlib import Path
+from dataclasses import dataclass, field
+from typing import Optional
+import json
+
+@dataclass
+class KnowledgeNode:
+    """A node in the compiled knowledge graph."""
+    paper_id: str
+    title: str
+    core_claim: str          # One sentence: what does this paper actually claim?
+    mechanism: str           # How does it work?
+    evidence_type: str       # "synthetic benchmark" | "real task" | "theoretical" | "empirical"
+    extends: list[str]       # paper_ids this builds on
+    contradicts: list[str]   # paper_ids this conflicts with
+    superseded_by: Optional[str]  # paper_id that obsoletes this, if any
+    open_questions: list[str]     # What questions remain after this?
+    
+@dataclass
+class KnowledgeGraph:
+    """The compiled research field."""
+    nodes: dict[str, KnowledgeNode] = field(default_factory=dict)
+    
+    def to_context(self, max_nodes: int = 20) -> str:
+        """Serialize the graph as structured context for the compiler."""
+        recent_nodes = list(self.nodes.values())[-max_nodes:]
+        lines = []
+        for node in recent_nodes:
+            lines.append(f"[{node.paper_id}] {node.title}")
+            lines.append(f"  Claim: {node.core_claim}")
+            lines.append(f"  Extends: {', '.join(node.extends) or 'none'}")
+            lines.append(f"  Contradicts: {', '.join(node.contradicts) or 'none'}")
+            if node.superseded_by:
+                lines.append(f"  Superseded by: {node.superseded_by}")
+        return "\n".join(lines)
+    
+    def save(self, path: Path) -> None:
+        path.write_text(json.dumps(
+            {k: vars(v) for k, v in self.nodes.items()}, 
+            indent=2
+        ))
+    
+    @classmethod
+    def load(cls, path: Path) -> "KnowledgeGraph":
+        if not path.exists():
+            return cls()
+        data = json.loads(path.read_text())
+        kg = cls()
+        for paper_id, node_dict in data.items():
+            kg.nodes[paper_id] = KnowledgeNode(**node_dict)
+        return kg
+```
+
+The compile step uses an LLM to parse each paper and update the graph — not as a one-off extraction but as an incremental restructuring that knows what's already in the graph:
+
+```python
+client = anthropic.Anthropic()
+
+def compile_paper(
+    paper_text: str,
+    paper_id: str,
+    kg: KnowledgeGraph,
+) -> KnowledgeNode:
+    """
+    Compile a new paper into the knowledge graph.
+    
+    Key difference from RAG: the LLM has the *existing graph* as context.
+    It's not extracting from the paper in isolation — it's situating the
+    paper within the field as currently understood.
+    """
+    existing_context = kg.to_context()
+    
+    response = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=2048,
+        messages=[{
+            "role": "user",
+            "content": f"""You are compiling a research paper into a structured knowledge graph.
+
+EXISTING KNOWLEDGE GRAPH:
+{existing_context}
+
+NEW PAPER (ID: {paper_id}):
+{paper_text[:15000]}
+
+Extract the following fields. Be specific — one precise sentence per field, not summaries.
+
+1. TITLE: Paper title
+2. CORE_CLAIM: What does this paper claim? (one sentence, with the key result)
+3. MECHANISM: How does it work? (the actual technical mechanism)
+4. EVIDENCE_TYPE: One of: synthetic_benchmark | real_task | theoretical | empirical
+5. EXTENDS: List paper IDs from the graph that this builds on (comma-separated, or "none")
+6. CONTRADICTS: List paper IDs whose claims this paper challenges (or "none")
+7. SUPERSEDED_BY: Paper ID that makes this obsolete, if any you know of (or "none")
+8. OPEN_QUESTIONS: 2-3 questions this paper raises but doesn't answer
+
+Format: FIELD: value, one per line."""
+        }]
+    )
+    
+    # Parse structured output
+    text = response.content[0].text
+    fields = {}
+    for line in text.strip().split("\n"):
+        if ": " in line:
+            key, _, value = line.partition(": ")
+            fields[key.strip().upper()] = value.strip()
+    
+    def parse_list(s: str) -> list[str]:
+        if s.lower() in ("none", "n/a", ""):
+            return []
+        return [x.strip() for x in s.split(",") if x.strip()]
+    
+    return KnowledgeNode(
+        paper_id=paper_id,
+        title=fields.get("TITLE", paper_id),
+        core_claim=fields.get("CORE_CLAIM", ""),
+        mechanism=fields.get("MECHANISM", ""),
+        evidence_type=fields.get("EVIDENCE_TYPE", "empirical"),
+        extends=parse_list(fields.get("EXTENDS", "")),
+        contradicts=parse_list(fields.get("CONTRADICTS", "")),
+        superseded_by=fields.get("SUPERSEDED_BY", None) if fields.get("SUPERSEDED_BY", "none").lower() != "none" else None,
+        open_questions=parse_list(fields.get("OPEN_QUESTIONS", "")),
+    )
+```
+
+## The CRON Loop: Why the Compiler Runs Continuously
+
+A one-time compilation is still just a static index. The compiler metaphor implies recompilation: as new papers arrive, the graph updates, and previously compiled nodes may be marked superseded or contradicted.
+
+The autoresearch pattern implements this as a background loop. Here's a minimal version:
+
+```python
+import time
+from pathlib import Path
+from datetime import datetime, timedelta
+import subprocess
+
+PAPERS_DIR = Path("~/papers").expanduser()
+GRAPH_PATH = Path("~/research-graph.json").expanduser()
+COMPILED_LOG = Path("~/compiled-papers.txt").expanduser()
+
+def get_uncompiled_papers() -> list[Path]:
+    """Find papers not yet in the compiled log."""
+    compiled = set()
+    if COMPILED_LOG.exists():
+        compiled = set(COMPILED_LOG.read_text().strip().split("\n"))
+    
+    all_papers = list(PAPERS_DIR.glob("*.pdf")) + list(PAPERS_DIR.glob("*.txt"))
+    return [p for p in all_papers if p.stem not in compiled]
+
+def mark_compiled(paper_id: str) -> None:
+    with COMPILED_LOG.open("a") as f:
+        f.write(f"{paper_id}\n")
+
+def extract_text_from_pdf(pdf_path: Path) -> str:
+    """Extract text from PDF using pdftotext (or any available tool)."""
+    result = subprocess.run(
+        ["pdftotext", str(pdf_path), "-"],
+        capture_output=True, text=True
+    )
+    return result.stdout[:20000]  # Truncate to context-safe length
+
+def run_compiler_loop(interval_minutes: int = 60) -> None:
+    """
+    Continuously compile new papers as they appear.
+    Designed to run as a background CRON job:
+    
+    crontab entry:
+        */60 * * * * /path/to/python /path/to/compiler.py >> /var/log/research-compiler.log 2>&1
+    """
+    while True:
+        kg = KnowledgeGraph.load(GRAPH_PATH)
+        new_papers = get_uncompiled_papers()
+        
+        if not new_papers:
+            print(f"[{datetime.now().isoformat()}] No new papers. Sleeping {interval_minutes}m.")
+        else:
+            print(f"[{datetime.now().isoformat()}] Compiling {len(new_papers)} new papers...")
+            
+            for paper_path in new_papers:
+                paper_id = paper_path.stem
+                print(f"  Compiling: {paper_id}")
+                
+                try:
+                    if paper_path.suffix == ".pdf":
+                        text = extract_text_from_pdf(paper_path)
+                    else:
+                        text = paper_path.read_text()[:20000]
+                    
+                    node = compile_paper(text, paper_id, kg)
+                    kg.nodes[paper_id] = node
+                    mark_compiled(paper_id)
+                    print(f"    Done: {node.core_claim[:80]}...")
+                    
+                except Exception as e:
+                    print(f"    Error compiling {paper_id}: {e}")
+            
+            kg.save(GRAPH_PATH)
+            print(f"  Graph updated: {len(kg.nodes)} total nodes.")
+        
+        time.sleep(interval_minutes * 60)
+```
+
+## What You Can Query That RAG Cannot Answer
+
+Once you have a compiled graph rather than a vector index, the queries you can run are fundamentally different:
+
+```python
+def query_field_state(question: str, kg: KnowledgeGraph) -> str:
+    """
+    Ask structured questions about the field's current state.
+    These queries are impossible or unreliable with vector RAG.
+    """
+    # Build a structured summary of the graph's current state
+    contradictions = []
+    for node in kg.nodes.values():
+        for other_id in node.contradicts:
+            if other_id in kg.nodes:
+                contradictions.append(
+                    f"{node.paper_id} contradicts {other_id}: "
+                    f"{node.core_claim} vs {kg.nodes[other_id].core_claim}"
+                )
+    
+    superseded = [
+        f"{node.paper_id} → superseded by {node.superseded_by}"
+        for node in kg.nodes.values()
+        if node.superseded_by
+    ]
+    
+    open_questions = []
+    for node in kg.nodes.values():
+        for q in node.open_questions:
+            open_questions.append(f"({node.paper_id}) {q}")
+    
+    graph_summary = f"""
+FIELD STATE SUMMARY:
+- {len(kg.nodes)} papers compiled
+
+ACTIVE CONTRADICTIONS:
+{chr(10).join(contradictions[:10]) or 'None identified'}
+
+SUPERSEDED WORK:
+{chr(10).join(superseded[:10]) or 'None'}
+
+OPEN QUESTIONS:
+{chr(10).join(open_questions[:15]) or 'None'}
+"""
+    
+    response = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=1024,
+        messages=[{
+            "role": "user",
+            "content": f"""Given this compiled state of the research field:
+
+{graph_summary}
+
+Answer this question:
+{question}
+
+Base your answer on the graph structure, not the content of individual papers."""
+        }]
+    )
+    
+    return response.content[0].text
+
+# Example queries the graph enables:
+# "Which papers make claims that are currently unresolved contradictions?"
+# "What are the most cited open questions across the compiled papers?"
+# "Which early papers have been superseded by later work in the same area?"
+# "What mechanism claims have been tested on synthetic tasks vs. only benchmarks?"
+```
+
+These questions have no good answers from a vector index. "Which papers contradict each other" is not a semantic similarity query — it requires understanding the logical relationship between claims, which the compiler encodes explicitly.
+
+## The Recompilation Problem
+
+The compiler metaphor breaks down in one important way: source code doesn't change after you compile it, but research claims do. A 2024 paper that claimed X may be reinterpreted in light of a 2025 paper that showed X only holds under condition Y.
+
+This means the graph needs periodic recompilation of existing nodes, not just incremental addition of new ones. The autoresearch approach handles this by treating the graph update as a mutation, not an append:
+
+```python
+def recompile_node(
+    node: KnowledgeNode,
+    kg: KnowledgeGraph,
+    new_context_ids: list[str],
+) -> KnowledgeNode:
+    """
+    Recompile an existing node given new papers that may affect its status.
+    Run periodically on all nodes older than 30 days.
+    """
+    new_papers_context = "\n\n".join(
+        f"[{pid}] {kg.nodes[pid].core_claim}"
+        for pid in new_context_ids
+        if pid in kg.nodes
+    )
+    
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=512,
+        messages=[{
+            "role": "user",
+            "content": f"""Review this compiled paper entry given new developments.
+
+EXISTING ENTRY [{node.paper_id}]:
+Claim: {node.core_claim}
+Extends: {', '.join(node.extends)}
+Contradicts: {', '.join(node.contradicts)}
+Superseded by: {node.superseded_by or 'none'}
+
+RECENT PAPERS (last 30 days):
+{new_papers_context}
+
+Update the entry if any new paper:
+1. Supersedes this claim (state the paper ID)
+2. Contradicts this claim (add to contradicts list)
+3. Supports or extends this claim (add to extends list)
+
+If no update is needed, output: NO_CHANGE
+Otherwise output: SUPERSEDED_BY: <id> | CONTRADICTS_ADD: <id> | EXTENDS_ADD: <id>"""
+        }]
+    )
+    
+    update_text = response.content[0].text.strip()
+    if update_text == "NO_CHANGE":
+        return node
+    
+    # Apply updates (simplified parser)
+    updated = KnowledgeNode(**vars(node))  # copy
+    for directive in update_text.split("|"):
+        directive = directive.strip()
+        if directive.startswith("SUPERSEDED_BY:"):
+            updated.superseded_by = directive.split(":")[1].strip()
+        elif directive.startswith("CONTRADICTS_ADD:"):
+            pid = directive.split(":")[1].strip()
+            if pid not in updated.contradicts:
+                updated.contradicts.append(pid)
+        elif directive.startswith("EXTENDS_ADD:"):
+            pid = directive.split(":")[1].strip()
+            if pid not in updated.extends:
+                updated.extends.append(pid)
+    
+    return updated
+```
+
+## Why This Changes Research Practice
+
+The practical payoff is asymmetric. The upfront cost is higher: compiling 200 papers into a structured graph takes more LLM calls than indexing them. But the downstream queries become structurally richer.
+
+For a PhD researcher, the relevant use cases are:
+
+**Avoiding superseded foundations.** The compiler surfaces when a paper you've cited has been superseded. If you're building on a result from 2023, the graph tells you if a 2025 paper showed the result doesn't generalize. Vector RAG doesn't track this — it just retrieves the 2023 paper when it's semantically relevant.
+
+**Finding genuine open questions.** The compiler aggregates the `open_questions` field across all nodes and identifies which questions appear repeatedly across papers. These are the problems the field acknowledges but hasn't solved. This is a direct input into research agenda selection.
+
+**Understanding contradiction structure.** Which results are contested and which are settled? The contradiction graph makes this explicit. A result that appears in `extends` for many papers and `contradicts` for none is settled. A result that appears in `contradicts` for multiple subsequent papers is contested. Vector similarity doesn't distinguish these cases.
+
+The compiler pattern is more work to set up than a vector index. It pays off for research that spans years, not weeks — the use case where the structure of a field matters more than the ability to retrieve any individual document.
+
+---
+
+*Karpathy's `autoresearch` repository was noted publicly in early April 2026. The knowledge graph structure and recompilation design above are extensions of the core pattern adapted for academic research workflows. The Anthropic Python SDK (`claude-opus-4-6`, `claude-sonnet-4-6`) is used for all LLM calls shown. The `compile_paper` function is the load-bearing piece — the query patterns shown above depend on what it encodes into the graph.*

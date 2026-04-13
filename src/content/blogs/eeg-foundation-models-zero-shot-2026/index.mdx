@@ -1,0 +1,354 @@
+---
+title: "EEG Foundation Models: Zero-Shot Neural Decoding"
+description: "How ICLR 2026 EEG models generalize across subjects without retraining — topology encoding and relative position attention explained."
+publishDate: "2026-04-13"
+tags: [BCI, EEG, foundation-models, neural-decoding, transformers, neuroscience, deep-learning]
+draft: false
+---
+
+EEG signals are a notoriously hostile input for deep learning. Every subject's brain is slightly different — electrode placement variability, individual anatomy, different impedances, different neural response patterns to the same stimulus. Models trained on one subject's data typically degrade sharply when applied to another. This has been the fundamental bottleneck for scalable BCI systems: you can't deploy a clinical system that needs 30 minutes of per-subject calibration every time it's used.
+
+The ICLR 2026 generation of EEG foundation models — particularly DeeperBrain and ST-EEGFormer — addresses this directly. Both achieve non-trivial cross-subject zero-shot performance on classification and decoding tasks, which means something architecturally different is happening compared to prior EEG models. This post examines what that is, because the design choices are both non-obvious and generally applicable to any time-series signal with strong individual variation.
+
+## Why Standard Transformers Fail on EEG
+
+The naive approach to EEG decoding with transformers treats each time step as a token, applies standard positional encoding, and runs a classification head. This fails for cross-subject generalization for two reasons that are worth being precise about.
+
+**Reason 1: Channel position is not a semantic token.** In NLP, token position encodes sequential order in a discrete vocabulary. In EEG, the channel position encodes the physical location of an electrode on the scalp. Channel 14 (Oz, occipital midline) captures visual cortex activity; channel 1 (Fp1, left frontal) captures prefrontal activity. These are not arbitrary positions — they are locations in a physical coordinate system with known neuroanatomical meaning. Standard positional encoding treats them as sequence positions with no spatial structure.
+
+When you apply a model trained on subject A's channel-at-position-14 to subject B (where electrode impedance, placement, or cap size differs), the model's positional encoding no longer corresponds to the same spatial location. This alone can account for a large portion of cross-subject performance degradation.
+
+**Reason 2: Temporal dynamics are non-stationary across subjects and sessions.** Event-related potentials (ERPs) peak at different latencies across subjects. The P300 component might peak at 320ms in one subject and 380ms in another. Standard temporal encoding doesn't account for this; it treats all time steps equivalently.
+
+## The Spatial Topology Encoding That Works
+
+ST-EEGFormer's key contribution is replacing standard positional encoding with a **topology-aware spatial encoding** that respects the 10-20 electrode layout. Instead of assigning an arbitrary position index to each channel, it assigns coordinates derived from the spherical projection of the standard electrode positions onto a 2D spatial map.
+
+The intuition: channels that are physically adjacent on the scalp should have similar representations, and this adjacency structure should be encoded before any attention is computed. This makes the model's channel representations meaningful across subjects — because the coordinate system is anatomical, not arbitrary.
+
+```python
+import torch
+import torch.nn as nn
+import numpy as np
+from dataclasses import dataclass
+
+# Standard 10-20 electrode positions in spherical coordinates (theta, phi in radians)
+# Subset of 32-channel montage — full table would include all 64 channels
+EEG_10_20_POSITIONS = {
+    "Fp1": (-0.31, 1.26), "Fp2": (0.31, 1.26),
+    "F7":  (-0.61, 0.93), "F3":  (-0.38, 0.65), "Fz": (0.0, 0.52), "F4": (0.38, 0.65), "F8": (0.61, 0.93),
+    "T3":  (-0.79, 0.0),  "C3":  (-0.52, 0.0),  "Cz": (0.0, 0.0),  "C4": (0.52, 0.0),  "T4": (0.79, 0.0),
+    "T5":  (-0.61, -0.93),"P3":  (-0.38, -0.65),"Pz": (0.0, -0.52),"P4": (0.38, -0.65),"T6": (0.61, -0.93),
+    "O1":  (-0.31, -1.26),"Oz":  (0.0, -1.26), "O2": (0.31, -1.26),
+}
+
+@dataclass(frozen=True)
+class EEGChannelConfig:
+    """Channel configuration for a recording montage."""
+    channel_names: tuple[str, ...]
+    
+    def get_spatial_coords(self) -> torch.Tensor:
+        """
+        Returns (n_channels, 2) tensor of spherical coords (theta, phi)
+        for each channel in the montage. Unknown channels get centroid coords.
+        """
+        coords = []
+        centroid = (0.0, 0.0)
+        for ch in self.channel_names:
+            if ch in EEG_10_20_POSITIONS:
+                coords.append(EEG_10_20_POSITIONS[ch])
+            else:
+                coords.append(centroid)  # fallback for non-standard channels
+        return torch.tensor(coords, dtype=torch.float32)  # (n_channels, 2)
+
+
+class TopologyAwareChannelEncoding(nn.Module):
+    """
+    Spatial positional encoding that respects EEG electrode topology.
+    
+    Instead of a learned position embedding (which has no cross-subject meaning),
+    this uses the known physical coordinates of each electrode to produce
+    embeddings where spatially adjacent channels have similar representations.
+    
+    Critical for cross-subject generalization: the coordinate system is
+    anatomical, not arbitrary, so it remains meaningful across subjects.
+    """
+    def __init__(self, d_model: int, channel_config: EEGChannelConfig):
+        super().__init__()
+        self.d_model = d_model
+        
+        # Fixed spatial coords — not learned, these are anatomical ground truth
+        spatial_coords = channel_config.get_spatial_coords()  # (n_ch, 2)
+        self.register_buffer("spatial_coords", spatial_coords)
+        
+        # Fourier features for the spatial coordinates
+        # Multiple frequencies capture both local and global spatial patterns
+        n_freqs = 8
+        self.n_fourier_features = 4 * n_freqs  # 2 coords × (sin + cos) × n_freqs
+        freqs = 2 ** torch.arange(n_freqs, dtype=torch.float32)
+        self.register_buffer("freqs", freqs)
+        
+        # Projection from Fourier features → d_model (not from raw 2D coords)
+        self.coord_projection = nn.Sequential(
+            nn.Linear(self.n_fourier_features, d_model // 2),
+            nn.GELU(),
+            nn.Linear(d_model // 2, d_model),
+        )
+    
+    def forward(self) -> torch.Tensor:
+        """
+        Returns (n_channels, d_model) spatial encoding.
+        Same for every sample — this is channel-level, not sample-level.
+        """
+        # Fourier encoding of spatial coords
+        # For each coord (theta, phi), compute [sin(f*coord), cos(f*coord)] for multiple f
+        theta = self.spatial_coords[:, 0:1]  # (n_ch, 1)
+        phi = self.spatial_coords[:, 1:2]    # (n_ch, 1)
+        
+        # (n_ch, 2*n_freqs) for each dimension
+        theta_features = torch.cat([
+            torch.sin(theta * self.freqs),
+            torch.cos(theta * self.freqs),
+        ], dim=-1)
+        
+        phi_features = torch.cat([
+            torch.sin(phi * self.freqs),
+            torch.cos(phi * self.freqs),
+        ], dim=-1)
+        
+        # (n_ch, 4*n_freqs) — all Fourier features
+        spatial_features = torch.cat([theta_features, phi_features], dim=-1)
+        
+        # Project Fourier features → d_model
+        # The model learns which spatial frequencies matter;
+        # the coordinate system itself is fixed and anatomically grounded.
+        return self.coord_projection(spatial_features)  # (n_ch, d_model)
+```
+
+## The Temporal Encoder: Handling Latency Variability
+
+The second key problem is temporal: ERPs have variable latencies across subjects. The P300 response to an oddball stimulus occurs around 300ms but can vary by ±80ms across subjects. A model that learns a rigid temporal representation won't generalize.
+
+ST-EEGFormer's approach uses **temporal self-attention with relative position encodings** rather than absolute ones. The representation learns what happens *relative to stimulus onset*, not at a fixed absolute time step. This is the temporal analog of the spatial topology encoding: instead of fixing "position 30 means t=300ms," the relative encoding captures "30 time steps after the event."
+
+```python
+class EEGTemporalEncoder(nn.Module):
+    """
+    Temporal encoding for EEG with variable ERP latencies.
+    
+    Uses relative position encoding rather than absolute: the model
+    learns temporal patterns relative to stimulus markers, not absolute
+    time positions. This generalizes across subjects with different latencies.
+    """
+    def __init__(
+        self,
+        d_model: int,
+        n_heads: int = 8,
+        max_seq_len: int = 512,   # 512 time steps at 256 Hz ≈ 2 seconds
+        dropout: float = 0.1,
+    ):
+        super().__init__()
+        self.d_model = d_model
+        self.n_heads = n_heads
+        self.head_dim = d_model // n_heads
+        
+        assert d_model % n_heads == 0, "d_model must be divisible by n_heads"
+        
+        # Relative position biases — learned per attention head
+        # These capture that "30 time steps apart" should behave similarly
+        # regardless of what absolute time those steps fall at
+        self.relative_pos_bias = nn.Embedding(
+            2 * max_seq_len - 1,  # bidirectional relative positions
+            n_heads
+        )
+        
+        self.qkv_proj = nn.Linear(d_model, 3 * d_model)
+        self.out_proj = nn.Linear(d_model, d_model)
+        self.dropout = nn.Dropout(dropout)
+        self.norm = nn.LayerNorm(d_model)
+    
+    def get_relative_position_bias(self, seq_len: int) -> torch.Tensor:
+        """
+        Compute relative position bias matrix for attention.
+        bias[i, j] = learned_bias[i - j + max_seq_len - 1]
+        """
+        positions = torch.arange(seq_len, device=self.relative_pos_bias.weight.device)
+        relative_positions = positions[:, None] - positions[None, :]  # (T, T)
+        # Shift to non-negative indices
+        relative_positions = relative_positions + (seq_len - 1)
+        # Clamp to valid embedding range
+        relative_positions = relative_positions.clamp(0, self.relative_pos_bias.num_embeddings - 1)
+        
+        bias = self.relative_pos_bias(relative_positions)  # (T, T, n_heads)
+        return bias.permute(2, 0, 1)  # (n_heads, T, T)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, seq_len, d_model) — temporal EEG features
+        Returns:
+            (batch, seq_len, d_model) — encoded with relative temporal attention
+        """
+        B, T, D = x.shape
+        residual = x
+        
+        qkv = self.qkv_proj(x).reshape(B, T, 3, self.n_heads, self.head_dim)
+        q, k, v = qkv.unbind(dim=2)  # each: (B, T, n_heads, head_dim)
+        
+        q = q.transpose(1, 2)  # (B, n_heads, T, head_dim)
+        k = k.transpose(1, 2)
+        v = v.transpose(1, 2)
+        
+        # Standard attention scores
+        scale = self.head_dim ** -0.5
+        scores = torch.matmul(q, k.transpose(-2, -1)) * scale  # (B, n_heads, T, T)
+        
+        # Add relative position bias — this is the key cross-subject generalization mechanism
+        rel_bias = self.get_relative_position_bias(T)  # (n_heads, T, T)
+        scores = scores + rel_bias.unsqueeze(0)        # broadcast over batch
+        
+        attn = torch.softmax(scores, dim=-1)
+        attn = self.dropout(attn)
+        
+        out = torch.matmul(attn, v)            # (B, n_heads, T, head_dim)
+        out = out.transpose(1, 2).reshape(B, T, D)
+        out = self.out_proj(out)
+        
+        return self.norm(out + residual)
+```
+
+## Assembling the ST-EEGFormer Architecture
+
+The full model combines the spatial topology encoding, per-channel temporal encoding, and a cross-channel attention layer that aggregates information across channels. The key design principle throughout: representations that are subject-independent (spatial coordinates, relative temporal positions) are used as the structural backbone, and subject-specific variation is treated as input noise rather than a conditioning variable.
+
+```python
+class STEEGFormer(nn.Module):
+    """
+    Spatial-Temporal EEG Transformer for zero-shot cross-subject decoding.
+    
+    Architecture overview:
+    1. Channel embedding: linear projection of raw time-series per channel
+    2. Topology encoding: add anatomical spatial embeddings
+    3. Temporal encoding: per-channel temporal self-attention with relative positions
+    4. Cross-channel attention: aggregate information across the spatial topology
+    5. Classification head
+    
+    The key design choice: spatial and temporal encodings are subject-independent.
+    The model never sees a subject ID — it must learn representations that work
+    across subjects from training data diversity alone.
+    """
+    def __init__(
+        self,
+        n_channels: int,
+        seq_len: int,        # Number of time steps
+        d_model: int = 256,
+        n_temporal_heads: int = 8,
+        n_spatial_heads: int = 8,
+        n_classes: int = 4,  # e.g., 4-class motor imagery
+        channel_config: EEGChannelConfig = None,
+        dropout: float = 0.1,
+    ):
+        super().__init__()
+        
+        # 1. Per-channel temporal projection
+        # Each channel is independently projected from raw amplitude to d_model
+        self.channel_proj = nn.Conv1d(
+            in_channels=1,
+            out_channels=d_model,
+            kernel_size=25,      # 25 samples ≈ 100ms at 250Hz
+            padding=12,
+        )
+        
+        # 2. Spatial topology encoding
+        self.topology_enc = TopologyAwareChannelEncoding(d_model, channel_config)
+        
+        # 3. Temporal encoder (runs per-channel)
+        self.temporal_encoder = EEGTemporalEncoder(
+            d_model=d_model,
+            n_heads=n_temporal_heads,
+            max_seq_len=seq_len,
+            dropout=dropout,
+        )
+        
+        # 4. Cross-channel attention
+        # After temporal encoding, aggregate across the spatial dimension
+        self.spatial_attention = nn.MultiheadAttention(
+            embed_dim=d_model,
+            num_heads=n_spatial_heads,
+            dropout=dropout,
+            batch_first=True,
+        )
+        self.spatial_norm = nn.LayerNorm(d_model)
+        
+        # 5. Classification head
+        # Input: (B, n_channels * d_model) — flattened channel summaries
+        self.classifier = nn.Sequential(
+            nn.Linear(d_model * n_channels, d_model),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model, n_classes),
+        )
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, n_channels, seq_len) — raw EEG
+        Returns:
+            (batch, n_classes) — class logits
+        """
+        B, C, T = x.shape
+        
+        # 1. Project each channel independently: (B, C, T) → (B, C, d_model, T)
+        channel_features = []
+        for ch_idx in range(C):
+            ch_signal = x[:, ch_idx:ch_idx+1, :]    # (B, 1, T)
+            ch_feat = self.channel_proj(ch_signal)    # (B, d_model, T)
+            channel_features.append(ch_feat)
+        channel_features = torch.stack(channel_features, dim=1)  # (B, C, d_model, T)
+        
+        # 2. Add spatial topology encoding
+        spatial_enc = self.topology_enc()  # (C, d_model)
+        spatial_enc = spatial_enc.unsqueeze(0).unsqueeze(-1)  # (1, C, d_model, 1)
+        channel_features = channel_features + spatial_enc      # broadcast over B, T
+        
+        # 3. Temporal encoding per channel: treat each (B*C) as batch
+        BC = B * C
+        features_flat = channel_features.reshape(BC, self.channel_proj.out_channels, T)
+        features_flat = features_flat.transpose(1, 2)        # (BC, T, d_model)
+        features_flat = self.temporal_encoder(features_flat)  # (BC, T, d_model)
+        features_flat = features_flat.transpose(1, 2)        # (BC, d_model, T)
+        channel_features = features_flat.reshape(B, C, self.channel_proj.out_channels, T)
+        
+        # 4. Cross-channel attention at each time step
+        # Pool temporal dimension first, then do cross-channel attention
+        channel_summary = channel_features.mean(dim=-1)   # (B, C, d_model)
+        attn_out, _ = self.spatial_attention(
+            channel_summary, channel_summary, channel_summary
+        )
+        channel_summary = self.spatial_norm(attn_out + channel_summary)  # (B, C, d_model)
+        
+        # 5. Classify: flatten (B, C, d_model) → (B, C*d_model)
+        return self.classifier(channel_summary.reshape(B, -1))
+```
+
+## What Zero-Shot Actually Means Here
+
+The term "zero-shot" in these papers means cross-subject without retraining — not zero-shot in the NLP sense (no examples of that class). The model is trained on subjects $S_{\text{train}}$ and evaluated on $S_{\text{test}}$ with no gradient updates.
+
+The architecture choices above are what make this possible: the spatial encoding uses anatomical coordinates rather than learned subject-specific embeddings, the temporal encoding uses relative positions rather than absolute, and the model sees enough subject diversity during training that individual variation is treated as input noise.
+
+The performance gap compared to within-subject models remains real. For 4-class motor imagery, within-subject models typically achieve 70-80% accuracy; the ICLR 2026 foundation models achieve 55-65% in zero-shot settings on held-out subjects. The gap closes as you allow a few minutes of subject-specific adaptation (few-shot fine-tuning), which brings performance close to within-subject levels.
+
+For clinical deployment, this is the key number: how many trials of subject-specific calibration are needed to reach clinical-grade performance? The foundation model approach reduces this from thousands (full within-subject training) to dozens (few-shot adaptation on top of a pretrained foundation).
+
+## The Open Problem: Electrode Variability in the Real World
+
+The topology-aware encoding assumes that electrode positions follow the 10-20 standard. In practice, clinical and research systems vary substantially — cap sizes differ, impedance varies by session, electrodes drift during recording, and high-density caps have positions not in the standard montage.
+
+The next generation of EEG foundation models will need to handle this. One approach: treat electrode position as a continuous coordinate (as in the code above) rather than a discrete index, and train on data from multiple cap configurations with slight perturbations of the coordinate. This forces the model to learn representations that are robust to small spatial shifts rather than assuming exact electrode placement — which is much closer to what clinical deployment actually requires.
+
+The BCI field has been waiting for its "ImageNet moment" — a foundation that dramatically reduces the per-subject engineering overhead. The ICLR 2026 models represent a meaningful step in that direction, not the final answer.
+
+---
+
+*The architecture described here is informed by the DeeperBrain and ST-EEGFormer results from ICLR 2026. The PyTorch implementation above is a pedagogical reconstruction of the key mechanisms — the actual published implementations differ in engineering detail. The 10-20 electrode coordinates use spherical projections of the standard montage positions.*
