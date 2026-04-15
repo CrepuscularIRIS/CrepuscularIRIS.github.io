@@ -1,0 +1,199 @@
+---
+title: "上下文补水：为什么更少的上下文反而更好"
+description: "从最小上下文开始、按需获取的 Agent 系统持续跑赢塞满上下文窗口的系统。临时记忆、按需检索与注意力经济学的工程模式。"
+publishDate: "2026-04-16"
+tags: [context-engineering, agent-systems, retrieval, memory, attention, LLM-engineering]
+category: engineering
+language: zh
+draft: false
+---
+
+构建 Agent 系统时，默认的直觉是尽可能多地加载上下文。如果模型有 1M Token 的上下文窗口，就填满它。信息越多意味着决策越好。代码库有 500 个文件？全部加载。对话历史有 200 轮？每一轮都保留。文档有 50 页？全部拼接起来。
+
+这种直觉是错误的，2026 年初生产环境中的 Agent 部署数据从量化角度有力地证明了这一点。采用"上下文补水"（Context Hydration）方案——即从最小化的上下文开始，并根据需求精准获取必要信息——的系统，其表现始终优于那些试图最大化上下文加载量的系统。这种差距大到不容忽视：在代码生成基准测试中，任务完成率提升了 30-40%，而 Token 成本降低了 60-80%。
+
+## 注意力稀释问题
+
+语言模型会关注其上下文窗口中的所有 Token，但注意力并不是均匀分布的。注意力机制将固定的概率质量分配给所有输入 Token。随着上下文的增加，每个相关的 Token 都要与更多无关的 Token 竞争模型的注意力预算。
+
+这并非理论上的担忧。针对"大海捞针"检索的实证研究表明，模型查找特定事实的准确性会随着上下文长度的增加而下降——即使上下文长度在模型的技术支持范围内也是如此。一个在 4K 上下文中能以 98% 准确率检索到的事实，在 128K 上下文中会下降到 85%，在 512K 上下文中甚至会降至 70%，具体取决于该事实所处的位置。
+
+对于 Agent 任务，这直接转化为性能损耗。当 Agent 决定修改哪个函数时，必须从加载到上下文的所有函数中识别出正确的那一个。如果你"以防万一"加载了 500 个文件，但其中只有 3 个是相关的，模型的注意力就会被另外 497 个无关文件稀释。正确识别并修改目标函数的概率随之下降。
+
+```python
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class ContextMetrics:
+    """Quantify context quality, not just quantity."""
+    total_tokens: int
+    relevant_tokens: int
+    relevance_ratio: float  # relevant / total
+    estimated_attention_on_target: float  # decreases as total grows
+
+    @staticmethod
+    def from_context(context_files: list[str], target_files: list[str]) -> "ContextMetrics":
+        total = sum(count_tokens(f) for f in context_files)
+        relevant = sum(count_tokens(f) for f in target_files)
+        ratio = relevant / total if total > 0 else 0.0
+        attention_estimate = ratio * 0.9  # degradation factor
+        return ContextMetrics(total, relevant, ratio, attention_estimate)
+```
+
+## 补水模式
+
+上下文补水反转了默认的处理方式。Agent 不再预先加载所有内容，而是从最小的"种子上下文"开始，并使用工具根据需要获取额外的上下文。每一次获取动作都必须基于 Agent 对下一步需求的推理。
+
+该模式分为三个阶段：
+
+**阶段 1：种子。** Agent 仅接收任务描述和可用资源的清单（文件树、API 列表、Schema 摘要）。没有文件内容，也没有当前任务之外的对话历史。
+
+**阶段 2：导航。** Agent 检查清单并使用检索工具获取特定的制品。它读取一个文件，发现了一个 import，接着获取该依赖项，阅读测试文件以理解预期行为。每一次获取都是刻意且可追溯的。
+
+**阶段 3：执行。** 凭借由 5-20 个相关制品构成的精选上下文（而非 500 个无关制品），Agent 开始执行任务。此时的上下文体积小、密度大，且直接相关。
+
+```python
+class HydratingAgent:
+    """Agent that fetches context on demand instead of loading everything."""
+
+    def __init__(self, model, tools: dict):
+        self.model = model
+        self.tools = tools
+        self.context_log: list[dict] = []
+
+    def solve(self, task: str, manifest: dict) -> str:
+        seed_context = self._build_seed(task, manifest)
+        hydrated_context = self._hydrate(seed_context)
+        return self._execute(task, hydrated_context)
+
+    def _hydrate(self, seed: str) -> str:
+        """Let the agent iteratively fetch what it needs."""
+        context = seed
+        for _ in range(10):
+            response = self.model.generate(
+                system="You are analyzing a codebase. Decide what to read next, "
+                       "or say READY if you have enough context to solve the task.",
+                user=context,
+                tools=self.tools,
+            )
+            if "READY" in response.text:
+                break
+            if response.tool_calls:
+                for call in response.tool_calls:
+                    result = self.tools[call.name](**call.params)
+                    context += f"\n\n# Fetched: {call.name}({call.params})\n{result}"
+                    self.context_log.append({
+                        "tool": call.name,
+                        "params": call.params,
+                        "tokens": count_tokens(result),
+                    })
+        return context
+
+    def get_fetch_audit(self) -> list[dict]:
+        """Return the audit trail of all context fetches."""
+        return self.context_log
+```
+
+审计线索是该方案在工程实践上的重大优势。当 Agent 出错时，你可以精确地检查它访问了哪些上下文，并确定问题是由于漏掉获取（上下文缺口）还是错误的解读（模型错误）造成的。在"加载所有内容"的方法中，这种归因是不可能的——因为模型可以访问所有内容，失败只能被归结为模型能力的局限。
+
+## 经济效益
+
+上下文补水显著降低了 Token 成本。在针对平均包含 10 万个源代码 Token 的代码库进行的代码生成基准测试中：
+
+| 方案 | 平均输入 Token 数 | 任务成功率 | 单次任务成本 |
+|----------|-----------------|--------------|-----------|
+| 全上下文 | 95,000 | 54% | $0.14 |
+| RAG Top-20 文件 | 35,000 | 58% | $0.05 |
+| 补水模式（按需获取） | 12,000 | 71% | $0.02 |
+
+补水型 Agent 节省了 87% 的 Token，并实现了 31% 的成功率提升。成本的降低显而易见：更少的输入 Token 意味着更低的 API 账单。而性能的提升则需要进一步解释。
+
+补水型 Agent 优于全上下文加载，是因为其上下文是通过"推理"而非"启发式检索"来精选的。RAG 方案根据与任务描述的 Embedding 相似度来选择文件——这是一种合理的启发式方法，但会遗漏结构化依赖关系（例如：导入了损坏模块的文件，或运行失败路径的测试脚本）。补水型 Agent 会刻意遵循依赖链，阅读 import，检查调用点，并获取运行特定行为的测试文件。
+
+## 补水模式的工具设计
+
+上下文补水的有效性取决于 Agent 可用的检索工具质量。这些工具必须同时支持"结构化导航"（追踪 import，读取特定函数）和"语义搜索"（查找与概念相关的文件）。
+
+两个关键的设计原则：
+
+**粒度。** 当 Agent 只需要一个 400 行文件中的某个函数时，`read_function` 比 `read_file` 更有用。加载整个文件会引入 350 行噪声。工具应支持最小可行的检索单元。
+
+**结构化导航。** `find_references` 和 `get_imports` 允许 Agent 在不加载整个依赖图的情况下遵循依赖关系。Agent 读取函数 A，通过 `find_references` 发现它调用了函数 B，进而获取函数 B，从而构建出一条完全相关的代码链。这等同于开发者在 IDE 中点击"转到定义"。
+
+## 持久化 Agent 的记忆架构
+
+对于跨多个会话运行的 Agent（如长期运行的重构任务、持续数日的代码评审），上下文补水延伸到了记忆架构中。Agent 不会在每个会话开始时将所有历史记录加载到上下文中，而是维护一个结构化的记忆库，并根据需要进行补水。
+
+```python
+@dataclass(frozen=True)
+class MemoryEntry:
+    """A single unit of agent memory."""
+    key: str
+    content: str
+    memory_type: str  # "decision", "observation", "plan", "error"
+    relevance_tags: tuple[str, ...]
+    created_at: str
+    token_count: int
+
+
+class MemoryStore:
+    """Structured memory with selective hydration."""
+
+    def __init__(self):
+        self._entries: dict[str, MemoryEntry] = {}
+
+    def store(self, entry: MemoryEntry) -> None:
+        self._entries[entry.key] = entry
+
+    def hydrate(self, query: str, max_tokens: int = 4000) -> list[MemoryEntry]:
+        """Retrieve memories relevant to the current task, within token budget."""
+        scored = [
+            (self._relevance_score(entry, query), entry)
+            for entry in self._entries.values()
+        ]
+        scored.sort(key=lambda x: x[0], reverse=True)
+
+        result = []
+        budget = max_tokens
+        for score, entry in scored:
+            if budget < entry.token_count:
+                break
+            result.append(entry)
+            budget -= entry.token_count
+        return result
+
+    def _relevance_score(self, entry: MemoryEntry, query: str) -> float:
+        """Score memory relevance. Production systems use embeddings."""
+        tag_overlap = len(
+            set(entry.relevance_tags) & set(extract_tags(query))
+        )
+        recency = time_decay(entry.created_at)
+        return tag_overlap * 0.7 + recency * 0.3
+```
+
+Token 预算限制至关重要。如果没有它，长期运行的 Agent 会积累数千条记忆条目，并最终加载过多的历史记录，导致当前任务被淹没。预算限制强制执行优先级：只有最相关的记忆能进入上下文，如果 Agent 需要其他记忆，则必须重新获取。
+
+## 何时适合使用全上下文
+
+上下文补水并非万能。在以下三种场景中，直接加载全上下文效果更好：
+
+**短文档。** 如果整个相关上下文可以容纳在 10K Token 内，迭代获取的开销（多次 API 调用、工具使用的 Token、关于获取内容的推理）就会超过直接加载全部内容的成本。当潜在上下文超过 50K Token 时，补水模式的优势才会显现。
+
+**需要整体理解的任务。** 总结文档、评审完整的 Pull Request 或评估整个代码库的架构一致性，可能需要全局视角。补水模式适用于专注的任务（修复此 Bug、实现此功能），但不适用于广度优先的任务。
+
+**延迟敏感型应用。** 每一次补水的往返都会增加延迟。如果应用需要在 2 秒内响应，预加载上下文（即使包含部分无关信息）可能比迭代检索更快。
+
+## 运行原则
+
+上下文补水的运行原则借鉴自数据库工程：如果可以通过 `SELECT` 指定需要的列，就不要使用 `SELECT *`。全上下文方法就像是在运行查询前将整个数据库加载到内存中。它在小规模下可行，但随着数据的增长，性能会迅速退化。
+
+2026 年的生产级 Agent 系统正越来越多地采用分层检索策略：
+
+1. **清单层**：文件树、Schema 摘要、API 签名——始终加载（约 2K Token）
+2. **导航层**：通过工具按需检索——根据需要获取（约 5-15K Token）
+3. **深度上下文层**：完整文件内容、历史对话——极少获取（约 0-10K Token）
+
+无论代码库规模如何，一个经过良好补水的 Agent 总上下文通常在 10-25K Token 之间。一个只有 10 个文件的项目和一个有 10,000 个文件的项目使用的上下文预算大致相同——Agent 只是通过不同的导航路径来寻找那 10-20 个相关的制品。
+
+这就是架构上的洞察：上下文窗口大小是能力的上限，而不是奋斗的目标。最优秀的 Agent 仅使用其可用窗口的一小部分，并用精确的信息填充它。更少的上下文、更精细的选择，始终优于无差别加载的海量上下文。

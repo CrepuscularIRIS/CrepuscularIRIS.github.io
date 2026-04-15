@@ -1,0 +1,238 @@
+---
+title: "图，而非链：为随机智能体构建确定性编排"
+description: "将智能体工作流建模为 DAG，配合显式状态模式，彻底替代提示词级联。时空旅行检查点、A2A 委派与 HITL 闸门的工程模式。"
+publishDate: "2026-04-16"
+tags: [agent-systems, orchestration, DAG, A2A, LangGraph, state-machines, multi-agent]
+category: engineering
+language: zh
+draft: false
+---
+
+目前生产环境中的大多数多智能体系统本质上都是提示词级联（prompt cascades）：智能体 A 生成文本，智能体 B 将该文本作为输入，智能体 C 对 B 的输出进行操作。整个流程是隐式的，编码在提示词模板和字符串拼接中。成功时看似魔法，失败时却让你无从下手：不知道故障出现在哪个环节，无法从检查点恢复，也没有在关键时刻注入人工监督的机制。
+
+2026年4月，Google 的 Agent-to-Agent (A2A) 协议与 LangGraph v2.0 的状态机原语正式交汇，这标志着行业构建多智能体工作流的方式发生了范式转移。其核心思想是：将智能体编排视为具有"显式状态"的图论问题，而非依赖"隐式上下文"的链式问题。
+
+## 为什么"链"会断裂
+
+"链"（Chain）本质上是一系列函数调用，其中每个函数的输出都作为下一个函数的输入。在智能体领域，这表现为：给智能体 A 提示词，获取其回复，将其嵌入智能体 B 的提示词，获取 B 的回复，再嵌入 C 的提示词。
+
+基于链的编排模式主要存在三种失败模式：
+
+**错误传播且无法追责。** 当智能体 C 产生错误结果时，根因可能是智能体 A 的幻觉被智能体 B 原封不动地传递了下去。在链式结构中，没有结构化的方法来追踪是哪个智能体引入了错误。你只能通过阅读交织在一起的提示词日志来盲目调试。
+
+**缺乏可恢复性。** 如果一个包含 7 个步骤的链在第 4 步失败，你必须从第 1 步重新开始。在一个耗时 15 分钟、API 调用成本高达 2 美元的工作流中，仅仅因为第 6 步失败就重启整个流程，在业务上是昂贵的，在架构上则是懒惰的。
+
+**二进制化的人类监督。** 在链式结构中，HITL（human-in-the-loop）意味着停止整个流水线，向人类展示当前状态，然后重启。如果不从零开始构建，就无法实现"批准这个特定决策并继续执行"的概念。
+
+## DAG 替代方案
+
+有向无环图（DAG）将智能体工作流表示为节点（智能体或工具）和有向边（状态转移）。每个节点都对显式的状态模式（state schema）进行读取和写入。图运行时负责管理执行顺序、并行性以及 Checkpointing。
+
+```python
+from dataclasses import dataclass, field
+from typing import Literal
+
+
+@dataclass
+class WorkflowState:
+    """Explicit state schema — every field is typed and versioned."""
+    task_description: str
+    localized_files: list[str] = field(default_factory=list)
+    proposed_fix: str | None = None
+    fix_compiles: bool = False
+    tests_pass: bool = False
+    human_approved: bool = False
+    retry_count: int = 0
+    status: Literal["localizing", "fixing", "verifying", "reviewing", "done", "failed"] = "localizing"
+
+
+def localize_node(state: WorkflowState) -> WorkflowState:
+    """Static analysis to find relevant files. Pure function on state."""
+    files = run_static_analysis(state.task_description)
+    return WorkflowState(
+        **{**state.__dict__, "localized_files": files, "status": "fixing"}
+    )
+
+
+def fix_node(state: WorkflowState) -> WorkflowState:
+    """Generate a fix using the localized context."""
+    fix = agent_generate_fix(state.task_description, state.localized_files)
+    return WorkflowState(
+        **{**state.__dict__, "proposed_fix": fix, "status": "verifying"}
+    )
+
+
+def verify_node(state: WorkflowState) -> WorkflowState:
+    """Run compiler and tests against the proposed fix."""
+    compiles = check_compilation(state.proposed_fix)
+    passes = run_tests(state.proposed_fix) if compiles else False
+    new_status = "reviewing" if passes else (
+        "fixing" if state.retry_count < 3 else "failed"
+    )
+    return WorkflowState(
+        **{
+            **state.__dict__,
+            "fix_compiles": compiles,
+            "tests_pass": passes,
+            "status": new_status,
+            "retry_count": state.retry_count + (0 if passes else 1),
+        }
+    )
+```
+
+状态模式就是契约。每个节点都是从状态到状态的纯函数。图运行时根据当前状态决定下一步执行哪个节点。这为你带来了链式结构所缺失的三大特性。
+
+## 时空旅行检查点
+
+由于每次状态转移都是显式的，且状态模式是可序列化的，运行时可以在每个节点执行后将状态持久化到数据库中。当工作流在第 4 步失败时，你可以检查第 3 步的序列化状态，修复问题（或手动修改状态），然后从第 3 步恢复执行，而无需重新运行第 1 步和第 2 步。
+
+这就是应用于智能体工作流的"时空旅行调试"。当你的状态是一个类型化的 dataclass 时，实现起来非常直接：
+
+```python
+import json
+from datetime import datetime
+
+
+class CheckpointStore:
+    """Persist workflow state after each node for resumability."""
+
+    def __init__(self, db_connection):
+        self.db = db_connection
+
+    def save(self, workflow_id: str, node_name: str, state: WorkflowState) -> None:
+        self.db.execute(
+            "INSERT INTO checkpoints (workflow_id, node_name, state, created_at) "
+            "VALUES (%s, %s, %s, %s)",
+            (workflow_id, node_name, json.dumps(state.__dict__), datetime.utcnow()),
+        )
+
+    def load_latest(self, workflow_id: str) -> tuple[str, WorkflowState]:
+        row = self.db.execute(
+            "SELECT node_name, state FROM checkpoints "
+            "WHERE workflow_id = %s ORDER BY created_at DESC LIMIT 1",
+            (workflow_id,),
+        ).fetchone()
+        return row["node_name"], WorkflowState(**json.loads(row["state"]))
+
+    def resume(self, workflow_id: str) -> WorkflowState:
+        """Resume workflow from last checkpoint."""
+        node_name, state = self.load_latest(workflow_id)
+        return graph_runtime.execute_from(node_name, state)
+```
+
+在生产环境中，这消除了最昂贵的运维失败模式：那些运行时间长、在接近结束时失败且必须从头开始的智能体工作流。一个 30 分钟的代码迁移工作流，如果在每个文件处理后都进行 Checkpoint，就能从最后一个成功处理的文件处恢复。
+
+## A2A 协议层
+
+与 LangGraph v2.0 同步发布的 Google Agent-to-Agent (A2A) 协议，标准化了智能体之间如何相互发现和委派任务。如果说 MCP 标准化了智能体与工具之间的通信，那么 A2A 则标准化了智能体与智能体之间的通信。
+
+其核心抽象是 **Agent Card** —— 一个描述智能体能力、输入/输出模式和身份验证要求的 JSON 文档：
+
+```json
+{
+  "name": "code-reviewer",
+  "description": "Reviews code changes for bugs, security issues, and style violations",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "diff": { "type": "string", "description": "Unified diff of changes" },
+      "context_files": { "type": "array", "items": { "type": "string" } },
+      "review_focus": {
+        "type": "string",
+        "enum": ["security", "correctness", "style", "all"]
+      }
+    },
+    "required": ["diff"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "issues": { "type": "array" },
+      "approval": { "type": "boolean" },
+      "summary": { "type": "string" }
+    }
+  },
+  "auth": { "type": "oauth2", "scopes": ["read:code"] }
+}
+```
+
+编排智能体通过查询 Agent Card 注册中心来发现可用智能体，根据能力匹配为每个子任务选择合适的智能体，并通过类型化的输入进行委派。被委派的智能体返回类型化的输出，直接填充到工作流状态中。
+
+这取代了那种"把智能体 A 的输出粘贴到智能体 B 的系统提示词中并祈祷格式兼容"的原始模式。智能体边界处的类型安全性可以在委派时捕捉集成错误，而不是等到三个智能体之后的下游环节。
+
+## 作为图节点的 HITL 闸门
+
+在 DAG 中，人类介入的监督节点与其他节点无异。该节点会暂停执行，向人类审核员展示当前状态，并在人类提供决策后恢复运行。
+
+```python
+def human_review_node(state: WorkflowState) -> WorkflowState:
+    """Pause for human approval. State is persisted; execution halts."""
+    checkpoint_store.save(workflow_id, "human_review", state)
+
+    decision = wait_for_human_decision(workflow_id)
+
+    if decision.action == "approve":
+        return WorkflowState(**{**state.__dict__, "human_approved": True, "status": "done"})
+    elif decision.action == "modify":
+        return WorkflowState(
+            **{**state.__dict__, "proposed_fix": decision.modified_fix, "status": "verifying"}
+        )
+    else:
+        return WorkflowState(**{**state.__dict__, "status": "failed"})
+```
+
+架构上的优势在于：HITL 闸门是根据风险而非流水线位置布置在图中的。高风险决策（部署到生产环境、修改数据库模式、发送外部通讯）会设置 HITL 闸门。低风险决策（重构代码格式、运行测试）则自动进行。图结构使这种布置变得显式且可审计。
+
+## 条件路由与并行执行
+
+DAG 原生支持分支和并行。路由函数检查当前状态并返回下一个执行的节点：
+
+```python
+def route(state: WorkflowState) -> list[str]:
+    """Determine next node(s) based on current state."""
+    match state.status:
+        case "localizing":
+            return ["localize_node"]
+        case "fixing":
+            return ["fix_node"]
+        case "verifying":
+            return ["verify_node"]
+        case "reviewing":
+            return ["human_review_node"]
+        case "failed" if state.retry_count < 3:
+            return ["localize_node"]
+        case "failed":
+            return ["escalation_node"]
+        case "done":
+            return []
+```
+
+并行分支在审核工作流中尤其有用：同时运行安全审核、代码风格审核和正确性审核，然后将它们的发现合并到一个单一的审核状态中。DAG 运行时负责处理扇出和扇入，无需编排智能体手动管理并发 Promise。
+
+## 何时 DAG 会显得大材小用
+
+并非每个智能体工作流都需要基于图的编排。简单的请求-响应模式——即单个智能体通过工具访问来解决有限的问题——使用链式结构甚至直接调用 API 就足够了。只有在以下情况，状态模式、Checkpointing 和图运行时的开销才是合理的：
+
+- 工作流超过 3 个步骤
+- 失败后从头重试的成本很高
+- 需要在特定决策点进行人类监督
+- 多个智能体需要通过类型化契约进行协作
+- 工作流运行时间以分钟或小时计，而非秒计
+
+对于单次回答问题的编程助手，DAG 是不必要的复杂化。但对于一个执行跨仓库多文件重构、涉及编译检查、测试运行以及对迁移计划进行人类审核的智能体来说，DAG 在第一次遇到失败且无需完全重启时就体现了其价值。
+
+## 技术的融合
+
+2026 年 4 月的技术版图显示出三种互补的标准正趋于定型：
+
+| 层级 | 协议 | 用途 |
+|-------|----------|---------|
+| 智能体 ↔ 工具 | MCP | 标准化的工具发现与调用 |
+| 智能体 ↔ 智能体 | A2A | 具有能力匹配的类型化委派 |
+| 工作流 ↔ 状态 | LangGraph/DAG | 具有 Checkpointing 的确定性执行 |
+
+MCP 告诉智能体存在哪些工具。A2A 告诉智能体其他智能体能做什么。DAG 运行时决定每个智能体何时运行，并管理它们之间的状态。它们共同取代了隐式、脆弱的提示词级联，构建出显式、可调试且可恢复的工作流。
+
+从"链"到"图"的转变，与十年前 CI/CD 领域的演进如出一辙：从在命令间通过管道传递输出的 Shell 脚本，转向具有 Checkpoint、重试和并行能力的基于 DAG 的系统（如 Airflow、GitHub Actions）。智能体编排正在追赶数据工程多年前就已经实现的运维成熟度。
+
+下一代智能体系统的核心竞争力将不再是它们使用了哪种模型，而是它们的编排模式是否是一个你可以检查、设置 Checkpoint 并恢复的"图"，还是一个只能从头开始的"链"。
