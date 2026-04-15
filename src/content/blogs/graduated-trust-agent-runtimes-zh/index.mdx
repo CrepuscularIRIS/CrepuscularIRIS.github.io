@@ -1,0 +1,78 @@
+---
+title: 'Agent 分级信任：从只读到全自主'
+description: '三层自主权模型正在取代二元权限门控。Suggest/Auto-Edit/Full-Auto 如何重新定义 Agent 安全。'
+publishDate: '2026-04-16'
+tags: [agent-security, sandboxing, autonomous-agents, graduated-trust, zero-trust, agent-infrastructure]
+category: engineering
+language: zh
+draft: false
+---
+
+AI Agent 的权限管理正在经历范式转换。第一代方案是二元选择：要么允许执行，要么不允许。Claude Code 用 allowlist，Gemini CLI 提供多种沙箱模式（Docker、Podman、gVisor/runsc、Seatbelt 等）。两者都把 Agent 权限视为会话级的静态属性。
+
+2026 年 4 月，综合 OpenAI 的 TAC（Trusted Access for Cyber）计划、Gemini CLI 的沙箱架构和 Claude Code 的权限门控，一个三层分级信任框架正在各平台间收敛。
+
+## 三层模型
+
+**Tier 1 — Suggest（只读）：** Agent 可以读取文件系统、分析代码、提出建议，但不能写入文件、执行命令或发起网络请求。所有输出都是渲染在 UI 中供人审核的建议。爆炸半径为零。
+
+**Tier 2 — Auto-Edit（本地写入）：** Agent 可以在限定目录内读写文件，执行构建和测试命令。不能发起网络请求、从远程注册表安装包、或修改项目根目录以外的文件。关键约束：无网络出口。这一层处理 80% 的真实编码工作。
+
+**Tier 3 — Full-Auto（联网）：** Agent 拥有文件系统访问权、命令执行权和受限的网络出口。网络访问通常限定在允许列表内的域名（GitHub、npm registry、PyPI）。这是最危险的层级，需要最强的隔离保障。
+
+## 为什么二元模型失败
+
+一个典型的开发工作流：
+
+1. Agent 读取代码库识别 bug（Tier 1 即可）
+2. Agent 编辑源文件修复 bug（需要 Tier 2）
+3. Agent 运行测试验证修复（需要 Tier 2）
+4. Agent 安装缺失的测试依赖（需要 Tier 3）
+5. Agent 推送修复到分支（需要 Tier 3）
+
+二元权限下，要么给整个会话 Tier 3 访问权（接受步骤 1-3 有不必要的网络访问风险），要么在步骤 4 中断工作流手动审批升级。两者在规模化场景下都不可接受。
+
+## 实现架构
+
+分级信任模型需要三个核心组件：
+
+### 权限边界
+
+每个层级映射到具体的隔离机制。最稳健的实现使用嵌套沙箱：
+
+```python
+from enum import IntEnum
+
+class TrustTier(IntEnum):
+    SUGGEST = 1     # 只读文件系统
+    AUTO_EDIT = 2   # 本地写入，无网络
+    FULL_AUTO = 3   # 受限网络出口
+```
+
+### 升级协议
+
+Agent 需要超出当前层级的能力时，必须带理由请求升级。运行时可以自动批准某些升级（Tier 1 到 Tier 2 的项目目录文件编辑），同时要求人工审批其他升级（任何到 Tier 3 的升级）。
+
+### 审计追踪
+
+每次层级转换、每个在各层级执行的命令、每个升级决策（批准或拒绝）都记录到只追加的审计日志。这对合规和事后分析不可或缺。
+
+## 硬件隔离：MicroVM 用于 Tier 3
+
+标准 Docker 容器共享宿主内核。对于 Agent 有网络访问权的 Tier 3 操作，这远远不够——容器逃逸加网络访问等于完全的横向移动能力。
+
+新兴标准是 Firecracker MicroVM：轻量级虚拟机，专用内核实例，启动时间不到 100ms。每个 Tier 3 Agent 会话获得独立的 MicroVM，包括专用内核、内存限制、过滤的 syscall 接口、以及仅允许出站到域名白名单的网络命名空间。
+
+## 对 Agent 开发者的影响
+
+**设计层级感知的工作流。** 先做只读分析（Tier 1），然后编辑和测试（Tier 2），最后才是网络操作（Tier 3）。这最小化了在高层级的停留时间。
+
+**请求最小可用权限。** 从 Tier 1 开始，只在需要时升级。升级理由成为 Agent 推理链的一部分，同时提升安全性和可调试性。
+
+**规划升级失败的回退路径。** 人类可能拒绝 Tier 3 升级。Agent 需要回退路径：能否仅用 Tier 2 访问完成任务？能否产出部分结果并将网络相关步骤交给人类？
+
+分级信任模型不是通过降低 Agent 的能力来提升安全性，而是通过将能力精确限定到每个工作阶段的实际需求来实现安全性。
+
+---
+
+*本文综合了 OpenAI Trusted Access for Cyber（TAC）计划、Google Gemini CLI 沙箱架构和 Anthropic 权限门控架构的设计模式。三层框架是编辑性综合——没有单一厂商发布过完全相同的框架，但三大平台正在向分层自主权模型收敛。*

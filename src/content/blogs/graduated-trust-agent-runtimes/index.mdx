@@ -1,0 +1,209 @@
+---
+title: 'Graduated Trust in Agent Runtimes'
+description: 'Three-tier autonomy models are replacing binary permission gates. How Suggest/Auto-Edit/Full-Auto changes agent security.'
+publishDate: '2026-04-16'
+tags: [agent-security, sandboxing, autonomous-agents, graduated-trust, zero-trust, agent-infrastructure]
+category: engineering
+language: en
+draft: false
+---
+
+Binary permission models for AI agents are already obsolete. The first generation of autonomous coding agents shipped with a simple toggle: either the agent can execute commands, or it cannot. Claude Code uses allowlists. Gemini CLI offers multiple sandbox modes (Docker, Podman, gVisor/runsc on Linux, Seatbelt on macOS). Both treat agent permissions as a static property of the session.
+
+The problem surfaces immediately in production. A coding agent that can only read files is useless for development. An agent with unrestricted shell access is a lateral movement vector. The real question was never "should the agent have permissions" but "which permissions, under what conditions, verified by whom."
+
+April 2026 brought the first formalized answer: graduated trust models that treat agent autonomy as a spectrum with discrete, enforceable tiers.
+
+## The Three-Tier Model
+
+A three-tier framework has emerged across multiple agent platforms in April 2026, synthesized from patterns in OpenAI's Trusted Access for Cyber (TAC) program, Gemini CLI's sandbox modes, and Claude Code's permission architecture:
+
+**Tier 1 — Suggest (Read-Only)**
+The agent can read the filesystem, analyze code, and propose changes. It cannot write files, execute commands, or make network requests. All outputs are suggestions rendered in the UI for human review.
+
+This is the safe default. The blast radius is zero because the agent has no write access to anything. Most code review, architecture analysis, and documentation tasks can operate entirely at this tier.
+
+**Tier 2 — Auto-Edit (Local Writes)**
+The agent can read and write files within a scoped directory. It can execute build and test commands. It cannot make network requests, install packages from remote registries, or modify files outside the project root.
+
+This tier handles 80% of real coding work. The agent can edit source files, run `pytest`, and iterate on failing tests — but it cannot `curl` an external URL, `pip install` an unvetted package, or modify system configuration. The key constraint: no network egress.
+
+**Tier 3 — Full-Auto (Networked)**
+The agent has filesystem access, command execution, and restricted network egress. Network access is typically scoped to an allowlist of domains (GitHub, npm registry, PyPI) rather than open internet access.
+
+This tier enables end-to-end workflows: cloning repositories, installing dependencies, pushing branches, creating pull requests. It is the most dangerous and requires the strongest isolation guarantees.
+
+```
+Risk Profile by Tier:
+                                                              
+Tier 1 (Suggest)    ░░░░░░░░░░░░░░░░░░░░  Blast radius: zero
+Tier 2 (Auto-Edit)  ████████░░░░░░░░░░░░  Blast radius: local
+Tier 3 (Full-Auto)  ████████████████░░░░  Blast radius: network
+```
+
+## Why Binary Models Fail
+
+The existing binary models (container-or-not, allowlist-or-not) create a painful choice. Consider a typical development workflow:
+
+1. Agent reads codebase and identifies a bug (Tier 1 sufficient)
+2. Agent edits source file to fix the bug (requires Tier 2)
+3. Agent runs tests to verify the fix (requires Tier 2)
+4. Agent installs a missing test dependency (requires Tier 3)
+5. Agent pushes the fix to a branch (requires Tier 3)
+
+With binary permissions, you either grant Tier 3 access for the entire session — accepting the risk of steps 1-3 having unnecessary network access — or you interrupt the workflow at step 4 to manually approve the escalation. Neither is acceptable at scale.
+
+Graduated trust solves this by allowing the agent to start at Tier 1 and escalate as needed, with each escalation requiring explicit justification and approval.
+
+## Implementation Architecture
+
+The graduated trust model requires three components that don't exist in most agent runtimes today:
+
+### 1. The Permission Boundary
+
+Each tier maps to a concrete isolation mechanism. The most robust implementations use nested sandboxes:
+
+```python
+from dataclasses import dataclass
+from enum import IntEnum
+from typing import FrozenSet
+
+
+class TrustTier(IntEnum):
+    SUGGEST = 1     # Read-only filesystem
+    AUTO_EDIT = 2   # Local writes, no network
+    FULL_AUTO = 3   # Scoped network egress
+
+
+@dataclass(frozen=True)
+class TierPolicy:
+    """Immutable policy for a trust tier."""
+    tier: TrustTier
+    writable_paths: FrozenSet[str]
+    allowed_commands: FrozenSet[str]
+    network_allowlist: FrozenSet[str]
+    max_file_size_bytes: int
+    
+    
+TIER_POLICIES = {
+    TrustTier.SUGGEST: TierPolicy(
+        tier=TrustTier.SUGGEST,
+        writable_paths=frozenset(),
+        allowed_commands=frozenset({"cat", "ls", "find", "grep", "wc"}),
+        network_allowlist=frozenset(),
+        max_file_size_bytes=0,
+    ),
+    TrustTier.AUTO_EDIT: TierPolicy(
+        tier=TrustTier.AUTO_EDIT,
+        writable_paths=frozenset({"./src", "./tests", "./docs"}),
+        allowed_commands=frozenset({
+            "cat", "ls", "find", "grep", "wc",
+            "python", "pytest", "ruff", "mypy",
+            "node", "npm test", "tsc",
+        }),
+        network_allowlist=frozenset(),
+        max_file_size_bytes=1_000_000,
+    ),
+    TrustTier.FULL_AUTO: TierPolicy(
+        tier=TrustTier.FULL_AUTO,
+        writable_paths=frozenset({"./"}),
+        allowed_commands=frozenset({"*"}),
+        network_allowlist=frozenset({
+            "github.com", "pypi.org", "registry.npmjs.org",
+        }),
+        max_file_size_bytes=10_000_000,
+    ),
+}
+```
+
+### 2. The Escalation Protocol
+
+When an agent needs capabilities beyond its current tier, it must request escalation with a justification. The runtime can auto-approve certain escalations (Tier 1 to Tier 2 for file edits in the project directory) while requiring human approval for others (any escalation to Tier 3).
+
+```python
+@dataclass(frozen=True)
+class EscalationRequest:
+    """Agent's request to escalate trust tier."""
+    current_tier: TrustTier
+    requested_tier: TrustTier
+    justification: str
+    required_capabilities: FrozenSet[str]
+    estimated_duration_seconds: int = 300
+
+
+def evaluate_escalation(request: EscalationRequest) -> bool:
+    """Decide whether to auto-approve an escalation.
+    
+    Tier 1 -> 2: auto-approve for standard dev operations.
+    Tier 2 -> 3: always require human confirmation.
+    Any -> 3: require human confirmation.
+    """
+    if request.requested_tier == TrustTier.FULL_AUTO:
+        return False  # Always require human approval for network
+    
+    if (request.current_tier == TrustTier.SUGGEST 
+            and request.requested_tier == TrustTier.AUTO_EDIT):
+        # Auto-approve if the agent only needs standard dev tools
+        safe_capabilities = {"file_write", "run_tests", "run_linter"}
+        return request.required_capabilities.issubset(safe_capabilities)
+    
+    return False
+```
+
+### 3. The Audit Trail
+
+Every tier transition, every command executed at each tier, and every escalation decision (approved or denied) gets logged to an append-only audit log. This is non-negotiable for compliance and post-incident analysis.
+
+The audit trail answers: "Why did the agent have network access at timestamp T?" with a complete chain from the initial Tier 1 session through each escalation, including the justification the agent provided and whether a human or auto-policy approved it.
+
+## Hardware Isolation: MicroVMs for Tier 3
+
+Standard Docker containers share the host kernel. For Tier 3 operations where the agent has network access, this is insufficient — a container escape plus network access equals full lateral movement capability.
+
+The emerging standard for Tier 3 isolation is Firecracker MicroVMs: lightweight virtual machines with dedicated kernel instances that boot in under 100ms. Each agent session at Tier 3 gets its own MicroVM with:
+
+- Dedicated kernel (no shared attack surface with host)
+- Memory-limited allocation (prevent resource exhaustion)
+- Filtered syscall surface (block `ptrace`, `bpf`, and other introspection syscalls)
+- Network namespace with egress-only rules to the domain allowlist
+
+The cold-start overhead of ~80ms is acceptable for the transition from Tier 2 to Tier 3, which typically happens once or twice per session.
+
+```
+Tier 1 (Suggest)     ┌──────────────────────┐
+                     │  Host process         │
+                     │  Read-only FS view    │
+Tier 2 (Auto-Edit)  ├──────────────────────┤
+                     │  seccomp + namespace  │
+                     │  Scoped FS writes     │
+                     │  No network           │
+Tier 3 (Full-Auto)  ├──────────────────────┤
+                     │  Firecracker MicroVM  │
+                     │  Dedicated kernel     │
+                     │  Egress allowlist     │
+                     └──────────────────────┘
+```
+
+## The AI Gateway Layer
+
+Between the LLM and the execution environment sits a new component: the AI Agent Gateway. This is a mandatory proxy that intercepts every tool call and evaluates it against the current tier policy before execution.
+
+The gateway pattern is distinct from permission allowlists because it operates at the syscall level, not the tool-call level. An agent might have permission to run `bash` commands at Tier 2, but the gateway intercepts the actual syscalls and blocks anything outside the policy — `connect()` syscalls are blocked regardless of what the bash command looks like.
+
+This prevents a class of attacks where the agent constructs a command that looks benign at the tool-call level but performs restricted operations at the syscall level. For example, `python -c "import urllib.request; urllib.request.urlopen('http://evil.com')"` passes a naive "python is allowed" check but gets caught by the gateway's network syscall filter.
+
+## What Changes for Agent Developers
+
+If you're building agents today, the graduated trust model changes three things:
+
+**Design for tier awareness.** Structure your agent's workflow so that read-only analysis happens first (Tier 1), edits and tests happen next (Tier 2), and network operations happen last (Tier 3). This minimizes the time spent at higher tiers and reduces attack surface.
+
+**Request minimum viable permissions.** Instead of starting a session with full access, start at Tier 1 and escalate only when needed. The escalation justification becomes part of the agent's reasoning trace, which improves both security and debuggability.
+
+**Plan for escalation failures.** The human may deny a Tier 3 escalation. Your agent needs a fallback path: can it complete the task with only Tier 2 access? Can it produce a partial result and hand off the network-dependent steps to the human?
+
+The graduated trust model doesn't make agents safer by making them less capable. It makes agents safer by making their capabilities precisely scoped to what each phase of work actually requires. The result is agents that can do more total work while maintaining a smaller attack surface at any given moment.
+
+---
+
+*The graduated trust model described here synthesizes patterns from OpenAI's Trusted Access for Cyber (TAC) program, Google's sandbox architecture in Gemini CLI, and Anthropic's permission gate architecture in Claude Code. The three-tier framing is an editorial synthesis — no single vendor has published this exact framework, but all three are converging toward tiered autonomy models as of April 2026.*

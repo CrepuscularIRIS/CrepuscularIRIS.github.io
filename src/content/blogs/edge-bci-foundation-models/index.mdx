@@ -1,0 +1,181 @@
+---
+title: 'Edge BCI: Foundation Models on Wearables'
+description: 'PanLUNA runs EEG/ECG/PPG decoding in 5.4M parameters. The shift from cloud-dependent to edge-native neural interfaces.'
+publishDate: '2026-04-16'
+tags: [BCI, EEG, foundation-models, edge-AI, neural-decoding, wearables, PanLUNA]
+category: research
+language: en
+draft: false
+---
+
+Brain-computer interface research has spent the last three years building larger foundation models. BrainGPT, NeuroLM, BIT — each pushed parameter counts higher, context windows wider, and training datasets bigger. The implicit assumption: more parameters mean better neural decoding, and cloud inference is an acceptable tradeoff for accuracy.
+
+PanLUNA, published by ETH Zurich in early April 2026, inverts this trajectory. It is a 5.4-million-parameter foundation model that jointly processes EEG, ECG, and PPG signals — and it runs on edge hardware. Not as a degraded mobile version of a cloud model, but as an architecture designed from the ground up for sub-watt inference on wearable processors.
+
+This matters because it addresses the two problems that have kept BCI foundation models out of real-world deployment: latency and privacy.
+
+## The Cloud Dependency Problem
+
+Current BCI foundation models follow a familiar pattern. Raw neural signals are captured by a headset or implant, preprocessed locally, transmitted to a cloud server, processed by a large model (100M-1B+ parameters), and the decoded output is sent back to the user.
+
+The round-trip latency for this pipeline is 200-800ms depending on network conditions. For some applications this is fine — offline analysis, clinical monitoring, research. But for the applications that would make BCI a consumer technology — real-time text input, cursor control, prosthetic actuation — 200ms of latency makes the interface feel broken.
+
+The latency budget for responsive BCI interaction is roughly 50ms from signal acquisition to decoded output. That budget leaves no room for a network round trip. The decoding model must run on the device.
+
+```
+Cloud BCI Pipeline (current):
+Headset → Preprocess → Upload → Cloud Model → Download → Output
+                        └──── 200-800ms round trip ────┘
+
+Edge BCI Pipeline (PanLUNA):
+Headset → Preprocess → Edge Model → Output
+          └──── 15-40ms total ────┘
+```
+
+Privacy is the second barrier. EEG signals encode more than the intended BCI control signal. They contain markers for emotional state, cognitive load, attention patterns, sleep quality, and neurological conditions. Streaming raw neural data to a cloud server creates a privacy exposure that no terms-of-service can adequately address. Users generating continuous EEG data from a consumer headset are producing the most intimate biometric data imaginable — a real-time trace of their brain's electrical activity.
+
+Edge processing eliminates both problems. The raw signal never leaves the device. The decoded output (a character, a cursor position, a sleep stage classification) is transmitted instead — a categorical label rather than a continuous neural recording.
+
+## PanLUNA's Architecture
+
+PanLUNA achieves its small footprint through three design decisions that diverge from the standard BCI foundation model playbook.
+
+### Query-Unified Multimodal Encoding
+
+Rather than training separate encoders for EEG, ECG, and PPG (the approach used by most multi-modal biosignal models), PanLUNA uses a shared encoder with modality-specific query tokens. Each modality gets a learned query embedding that conditions the shared transformer backbone to attend to the relevant signal characteristics.
+
+This is architecturally similar to Q-Former in vision-language models, but applied to biosignals. The shared backbone processes all modalities through the same attention layers, while the query tokens route the model's attention to modality-specific features:
+
+```python
+import torch
+import torch.nn as nn
+
+
+class QueryUnifiedEncoder(nn.Module):
+    """Simplified illustration of PanLUNA's shared encoder."""
+    
+    def __init__(self, d_model: int = 128, n_layers: int = 4):
+        super().__init__()
+        self.modality_queries = nn.ParameterDict({
+            "eeg": nn.Parameter(torch.randn(8, d_model) * 0.02),
+            "ecg": nn.Parameter(torch.randn(4, d_model) * 0.02),
+            "ppg": nn.Parameter(torch.randn(4, d_model) * 0.02),
+        })
+        
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model, nhead=4, dim_feedforward=256,
+            batch_first=True,
+        )
+        self.backbone = nn.TransformerEncoder(
+            encoder_layer, num_layers=n_layers,
+        )
+        
+    def forward(
+        self, signal: torch.Tensor, modality: str,
+    ) -> torch.Tensor:
+        queries = self.modality_queries[modality].unsqueeze(0)
+        queries = queries.expand(signal.size(0), -1, -1)
+        # Prepend modality queries to signal tokens
+        combined = torch.cat([queries, signal], dim=1)
+        encoded = self.backbone(combined)
+        # Return only query positions (pooled representation)
+        n_queries = queries.size(1)
+        return encoded[:, :n_queries, :]
+```
+
+The parameter savings are substantial. Instead of three separate encoders (3 x ~2M parameters for a small transformer), PanLUNA uses one shared encoder (~1.5M parameters) plus lightweight query tokens (~50K parameters per modality).
+
+### Aggressive Quantization-Aware Training
+
+PanLUNA is trained with quantization in the loop from epoch 1, not post-hoc quantized after full-precision training. The paper reports quantization-aware training (QAT) with INT8 weights recovering at least 96% of FP32 performance, with straight-through estimators for gradient flow through quantization nodes.
+
+This is a departure from the typical foundation model approach of training in FP16/BF16 and quantizing post-hoc. Post-hoc quantization of small models (under 10M parameters) typically degrades accuracy significantly — the redundancy that makes quantization work in large models doesn't exist in small ones. Training with quantization from the start forces the optimizer to find weight configurations that are robust to low-precision representation.
+
+Further compression to INT4 (which would halve the on-device memory footprint to ~2.7MB) is architecturally feasible but not yet benchmarked in the published paper. The gap between QAT and post-hoc quantization is well-established in the literature; the question for edge BCI is how far below INT8 you can push before task-critical accuracy degrades.
+
+### Task-Specific Adapter Heads
+
+The foundation model produces a general biosignal representation. Task-specific decoding (seizure detection, sleep staging, motor imagery classification, emotion recognition) is handled by lightweight adapter heads — typically a single linear layer or a two-layer MLP with under 50K parameters each.
+
+This follows the adapter pattern from NLP, but the extreme parameter efficiency matters more here. On a wearable processor with 2MB of SRAM, the shared backbone (5.4M parameters at INT4 = ~2.7MB) consumes most of the memory budget. Each adapter head adds negligible overhead, enabling multi-task deployment where the same device simultaneously monitors seizure risk, tracks sleep stages, and provides BCI cursor control.
+
+## What 5.4M Parameters Can and Cannot Do
+
+PanLUNA's published results show competitive performance with much larger models. The following table illustrates the general pattern observed across biosignal foundation models — small models close the gap on detection tasks but fall behind on fine-grained decoding. Exact numbers are approximate and drawn from the paper's reported metrics and comparable benchmarks in the literature:
+
+```
+Task type             | Small FM (~5M) | Large FM (~100M+) | Typical gap
+----------------------|----------------|--------------------|-----------
+Seizure Detection     |    93-95%      |     95-97%         |  1-3%
+Sleep Staging         |    81-84%      |     84-87%         |  2-4%
+Motor Imagery (4-cls) |    69-73%      |     76-80%         |  5-8%
+Emotion (Valence)     |    66-70%      |     73-76%         |  5-8%
+ECG Arrhythmia        |    96-97%      |     97-98%         |  0-1%
+```
+
+The pattern is clear: small foundation models are within 1-3% of cloud-scale models on detection/classification tasks (seizure, arrhythmia, sleep) but fall further behind on tasks requiring fine-grained decoding (motor imagery, emotion). Detection tasks depend on identifying the presence of specific spectral or temporal patterns. Fine-grained decoding requires modeling subtle spatial relationships across electrode arrays — exactly the kind of capacity that scales with parameters.
+
+This has direct implications for which BCI applications are ready for edge deployment:
+
+**Edge-ready now (detection/monitoring):**
+- Seizure prediction and alerting
+- Sleep stage tracking
+- Cardiac arrhythmia detection
+- Attention/drowsiness monitoring
+- Stress level estimation
+
+**Still needs cloud (decoding/generation):**
+- Open-vocabulary speech decoding from EEG
+- High-DOF motor imagery for prosthetic control
+- Imagined speech recognition
+- Neural text generation
+
+## The Hardware Landscape
+
+PanLUNA's target deployment platform is the current generation of neural processing units (NPUs) embedded in mobile and wearable SoCs. The relevant hardware landscape includes chips like the Ambiq Apollo series (designed for always-on wearable inference at single-digit milliwatt power), ARM's Ethos-U NPU family (available in Cortex-M SoCs), and various edge TPU implementations targeting medical wearable applications.
+
+At INT8 precision, PanLUNA's inference requirements for real-time processing of 64-channel EEG at 256 Hz are well within the capability of these NPUs. The paper reports inference latencies compatible with the sub-50ms requirement on GAP9-class processors, though exact power consumption depends heavily on the specific SoC, clock frequency, and duty cycling strategy.
+
+The broader point holds regardless of precise power numbers: running a 5.4M-parameter model locally consumes substantially less energy than streaming continuous multi-channel EEG over Bluetooth to a phone or cloud server. The radio alone typically draws 10-50mW, while the on-device computation is a fraction of that budget.
+
+## Probabilistic Co-Control: The LLM Integration Path
+
+One development that complements edge BCI models is the probabilistic co-control framework from UC San Diego (Huang et al., bioRxiv 2026). Their insight: the neural decoder's uncertainty is itself a useful control signal.
+
+When the decoder is confident about a character or command, it proceeds automatically. When confidence drops below a threshold, the system pauses and engages a language model to generate disambiguation options. The user selects from a reduced set rather than spelling out the full correction.
+
+This architecture naturally pairs with edge BCI models. The neural decoder runs on-device with low latency. When disambiguation is needed, a lightweight LLM (or a cloud LLM, since disambiguation is infrequent and latency-tolerant) generates the options. The result is a hybrid system that combines edge-native speed with cloud-assisted accuracy:
+
+```
+Signal → Edge Decoder → Confidence > θ? ─── Yes ──→ Output
+                              │
+                              No
+                              │
+                              ▼
+                     LLM Disambiguation
+                     (edge or cloud)
+                              │
+                              ▼
+                     User selects from
+                     reduced option set
+```
+
+The co-control framework reduced word error rates by 34% in open-vocabulary brain-to-text decoding, with only 12% of characters requiring LLM disambiguation. The latency penalty for disambiguation rounds is tolerable because it only applies to uncertain predictions.
+
+## Implications for BCI Research
+
+PanLUNA signals a phase transition in BCI foundation model research. The field spent 2024-2025 proving that transformer-based models can decode brain signals. The question is no longer "can foundation models work for BCI" but "what is the minimum viable model that works for each application."
+
+For researchers, this means:
+
+**Architecture efficiency becomes a first-class metric.** Reporting accuracy without parameter count and inference FLOPS is like reporting ImageNet accuracy without disclosing training compute — technically valid but practically useless for deployment decisions.
+
+**Edge-cloud hybrid architectures need dedicated benchmarks.** Current BCI benchmarks evaluate single-model accuracy on clean datasets. Real deployment involves edge preprocessing, edge decoding, cloud fallback, and the latency/accuracy tradeoff across the split. New benchmarks should evaluate the full pipeline, not just the model.
+
+**Privacy-preserving training is the next bottleneck.** Edge inference solves the deployment privacy problem, but the training problem remains. PanLUNA was trained on centralized datasets with conventional data sharing agreements. Federated learning for BCI data — where raw neural signals never leave institutional boundaries — is necessary for the next generation of models to access the diverse, large-scale datasets they need.
+
+The trajectory is clear: BCI foundation models are following the same path as vision and language models, just five years behind. First, prove the paradigm works with large cloud models. Then, compress to edge deployment. Then, build hybrid architectures that combine edge speed with cloud depth. PanLUNA is the first convincing entry in the compression phase.
+
+---
+
+*PanLUNA: Zelic, Tegon, Li et al. (ETH Zurich), arXiv:2604.04297, April 2026. Probabilistic co-control: Huang, Narasimha, Gilja et al. (UC San Diego), bioRxiv 2026.04.02.715749, April 2026.*
