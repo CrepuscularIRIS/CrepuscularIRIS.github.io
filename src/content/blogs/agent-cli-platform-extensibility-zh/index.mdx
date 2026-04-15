@@ -1,0 +1,111 @@
+---
+title: "AI CLI 的 VS Code 时刻"
+description: "Claude Code、Codex CLI、Gemini CLI 正在走向同一条路：平台化。Skills、插件、Marketplace 正在把编码 Agent 变成可扩展平台。"
+publishDate: "2026-04-16"
+tags: [agent-systems, claude-code, codex, gemini-cli, extensibility, platforms, MCP, plugins]
+category: engineering
+language: zh
+draft: false
+---
+
+2015 年的 VS Code 是一个文本编辑器。到 2020 年，它成了一个平台。区别在于扩展市场——一套标准化的方式让第三方在不修改核心产品的前提下增加功能。过去十年存活下来的开发者工具，无一例外都完成了从工具到平台的转变。
+
+同样的转变正在 AI 编码 CLI 上发生。2026 年 4 月，Claude Code 提供了 Skills 和 Agents 清单系统。Codex CLI v0.121.0 引入了 `codex marketplace add` 用于集成第三方工具。Gemini CLI 支持自定义 MCP 服务器配置和扩展加载。三者正在收敛到相同的架构模式：一个核心编排引擎，通过声明式清单发现、加载和分派工作给可插拔的能力模块。
+
+## 共享架构
+
+尽管来自三家竞争公司，三个 CLI 的可扩展性模型共享同一骨架：
+
+```
+CLI 核心（编排器）
+├── 能力注册表（发现可用扩展）
+├── 意图路由器（将请求匹配到最佳能力）
+├── 上下文管理器（为扩展提供相关文件/状态）
+└── 扩展运行时（在受控环境中执行扩展）
+```
+
+### Claude Code：YAML 声明式 Skills 和 Agents
+
+Claude Code 的扩展模型是三者中最声明式的。Skills 是带 YAML frontmatter 的 Markdown 文件，定义触发条件、可用工具和行为约束。关键的架构选择是：**Skills 扩展主 Agent 的行为；Agents 将行为隔离到独立进程。** 这和 VS Code 的内联语言特性与 Language Server Protocol 进程之间的区别如出一辙。
+
+### Codex CLI：Marketplace 模式
+
+Codex CLI v0.121.0 走了不同路线。它引入了 marketplace 机制，从 GitHub 仓库拉取工具定义：
+
+```bash
+codex marketplace add github.com/user/my-custom-tool
+```
+
+新增的 `outputSchema` 技术上很重要。没有类型化输出时，编排器把工具结果当作不透明字符串，必须启发式解析。有了 schema，编排器可以验证结果、结构化处理错误、将工具调用组合成类型安全的流水线。
+
+### Gemini CLI：MCP 原生扩展
+
+Gemini CLI 重度依赖 MCP 作为通用扩展接口。这种方式的互操作性最广——为 Gemini CLI 编写的 MCP 服务器同样适用于 Claude Code 和其他任何 MCP 兼容客户端。这相当于编辑器大战中的 LSP——一个协议让一个语言服务器能跨 VS Code、Neovim 和 Emacs 工作。
+
+## 为什么可扩展性胜过集成
+
+把所有功能直接构建到 CLI 核心中的方案（集成模式）有三个问题：
+
+**维护负担与功能数量线性增长。** 每个集成工具都是 CLI 团队必须更新、测试和支持的依赖。
+
+**领域专业知识是分布式的。** 构建 SQL 客户端的团队比构建编码 Agent 的团队更懂 SQL。扩展架构让领域专家构建领域工具。
+
+**用户需求是异构的。** 前端开发者和数据科学家需要不同的能力组合。扩展让每个用户精确组合自己需要的工具集。
+
+## 构建跨 CLI 扩展
+
+一个 MCP 服务器，三个客户端。以代码复杂度分析器为例：
+
+```python
+from mcp.server.fastmcp import FastMCP
+import ast
+
+app = FastMCP("code-complexity")
+
+@app.tool()
+def analyze_complexity(file_path: str) -> dict:
+    """分析 Python 文件的圈复杂度。"""
+    with open(file_path) as f:
+        tree = ast.parse(f.read())
+    
+    results = []
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            complexity = 1
+            for child in ast.walk(node):
+                if isinstance(child, (ast.If, ast.While, ast.For,
+                                     ast.ExceptHandler)):
+                    complexity += 1
+            results.append({
+                "function": node.name,
+                "line": node.lineno,
+                "complexity": complexity,
+            })
+    
+    return {
+        "file": file_path,
+        "functions": sorted(results, key=lambda x: -x["complexity"]),
+        "max_complexity": max((r["complexity"] for r in results), default=0),
+    }
+```
+
+Claude Code 通过 `.mcp.json` 发现它。Codex CLI 通过 `codex marketplace add` 发现。Gemini CLI 通过 `mcpServers` 配置发现。一次实现，三端可用。
+
+## 对 Agent 架构的启示
+
+**别再构建单体 Agent。** 正确的复用单元不是"一个什么都做的 Agent"，而是"一个做好一件事的工具服务器"。把你的领域专业知识构建为 MCP 服务器，让 CLI 处理编排。
+
+**为组合设计，不为完整性设计。** 返回结构化数据的扩展可以被编排器组合成工作流。返回散文的扩展需要编排器重新解释，这是有损且不可靠的。
+
+**投资共享协议。** 如果你构建的工具需要跨 CLI 工作，就构建在 MCP 上。协议处理了认证（OAuth 2.1）、发现（`.well-known` 端点）和传输（streamable HTTP）。
+
+VS Code 的教训值得铭记：微软赢得编辑器之战，不是因为最好的内置功能，而是因为最好的扩展平台。最快学会这个教训的编码 CLI 将获得同样的优势。
+
+---
+
+## 参考资料
+
+- Anthropic, "Claude Code Skills and Agents Documentation," April 2026
+- OpenAI, "Codex CLI v0.121.0 Release Notes," April 15, 2026
+- Google, "Gemini CLI MCP Integration Guide," April 2026
+- Model Context Protocol Specification, [modelcontextprotocol.io](https://modelcontextprotocol.io)

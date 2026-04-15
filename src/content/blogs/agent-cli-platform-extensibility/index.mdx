@@ -1,0 +1,187 @@
+---
+title: "The VS Code Moment for Agent CLIs"
+description: "Claude Code, Codex CLI, and Gemini CLI converge on the VS Code extensibility model. Coding agents are becoming platforms."
+publishDate: "2026-04-16"
+tags: [agent-systems, claude-code, codex, gemini-cli, extensibility, platforms, MCP, plugins]
+category: engineering
+language: en
+draft: false
+---
+
+In 2015, VS Code was a text editor. By 2020, it was a platform. The difference was the extension marketplace — a standardized way for third parties to add capabilities without modifying the core product. Every major developer tool that survived the last decade did so by becoming a platform, not by trying to ship every feature internally.
+
+The same transition is happening right now with AI coding CLIs. In April 2026, Claude Code ships with a skills and agents manifest system. Codex CLI v0.121.0 introduced `codex marketplace add` for third-party tool integration. Gemini CLI supports custom MCP server configuration and extension loading. All three are converging on the same architectural pattern: a core orchestration engine that discovers, loads, and dispatches work to pluggable capabilities defined in declarative manifests.
+
+This is the VS Code moment for agent CLIs. The tools that get extensibility right will dominate the next generation of developer infrastructure. The ones that don't will be replaced by the ones that do.
+
+## The Shared Architecture
+
+Despite coming from three competing companies, the extensibility models of Claude Code, Codex CLI, and Gemini CLI share a common skeleton:
+
+```
+CLI Core (orchestrator)
+├── Capability Registry (discovers available extensions)
+├── Intent Router (matches user request to best capability)
+├── Context Manager (provides relevant files/state to the extension)
+└── Extension Runtime (executes the extension in a controlled environment)
+```
+
+Each CLI implements this differently, but the functional decomposition is identical. The orchestrator doesn't try to handle every request itself. It classifies the request, looks up which extension is best suited, prepares a scoped context, and delegates.
+
+### Claude Code: Skills and Agents as YAML Manifests
+
+Claude Code's extensibility model is the most declarative of the three. Skills are Markdown files with YAML frontmatter that define trigger conditions, available tools, and behavioral constraints:
+
+```yaml
+# ~/.claude/skills/security-audit/SKILL.md frontmatter
+---
+name: security-audit
+description: "Scan code changes for OWASP Top 10 vulnerabilities"
+triggers:
+  - "security review"
+  - "check for vulnerabilities"
+  - "audit this code"
+tools: [Read, Grep, Glob, Bash]
+---
+```
+
+The skill body is a prompt that gets injected into the agent's context when the trigger fires. Agents are more powerful — they run as isolated subprocesses with their own system prompts, tool permissions, and model selection. A `code-reviewer` agent can use Claude Sonnet for cost efficiency while the main session runs on Opus.
+
+The key architectural choice: **skills extend the main agent's behavior; agents isolate behavior into separate processes.** This mirrors the distinction between VS Code's inline language features (snippets, completions) and full Language Server Protocol processes.
+
+### Codex CLI: The Marketplace Model
+
+Codex CLI v0.121.0 took a different approach. Rather than defining extensions locally, it introduced a marketplace mechanism that pulls tool definitions from GitHub repositories:
+
+```bash
+codex marketplace add github.com/user/my-custom-tool
+```
+
+This installs a tool definition that includes an `outputSchema` for typed interactions. The agent knows what shape of data the tool returns, enabling more reliable multi-step workflows. The marketplace model has a significant advantage: discoverability. A local-only extension system requires developers to know which extensions exist. A marketplace surfaces them.
+
+The `outputSchema` addition is technically important. Without typed outputs, the orchestrator treats tool results as opaque strings and must parse them heuristically. With schemas, the orchestrator can validate results, handle errors structurally, and compose tool calls into pipelines with type safety.
+
+### Gemini CLI: MCP-Native Extension
+
+Gemini CLI's approach leans heavily on MCP (Model Context Protocol) as the universal extension interface. Custom capabilities are MCP servers that the CLI discovers and connects to:
+
+```json
+{
+  "mcpServers": {
+    "custom-database": {
+      "command": "npx",
+      "args": ["my-db-mcp-server"],
+      "env": {
+        "DATABASE_URL": "postgres://..."
+      }
+    }
+  }
+}
+```
+
+The MCP-native approach has the broadest interoperability. An MCP server written for Gemini CLI works with Claude Code and any other MCP-compatible client. This is the equivalent of LSP in the editor wars — the protocol that made it possible for one language server to work across VS Code, Neovim, and Emacs.
+
+## Why Extensibility Beats Integration
+
+The naive alternative to extensibility is integration: build every capability directly into the CLI core. Ship a built-in security scanner, a built-in database client, a built-in test runner. This approach fails for three reasons.
+
+**Maintenance burden scales linearly with capabilities.** Every integrated tool is a dependency the CLI team must update, test, and support. VS Code tried this briefly with built-in Git support — it worked, but only because they kept the surface area minimal and pushed everything else to extensions.
+
+**Domain expertise is distributed.** The team that builds a SQL client knows SQL better than the team that builds a coding agent. Extension architectures let domain experts build domain tools. The Anthropic team doesn't need to understand PostgreSQL internals to let a community-built MCP server handle database queries.
+
+**User needs are heterogeneous.** A frontend developer needs different capabilities than a data scientist. A monolithic CLI either ships everything (bloated) or ships a subset (insufficient for someone). Extensions let each user compose exactly the toolset they need.
+
+## The Convergence Pattern
+
+The convergence across all three CLIs follows a predictable pattern from platform theory:
+
+**Phase 1: Monolithic.** The CLI does everything itself. All tools are built-in. This is where all three started in 2025.
+
+**Phase 2: Configuration.** Users can configure behavior through settings files. The CLI still does everything, but behavior is adjustable. This is Claude Code's `CLAUDE.md` era, Codex's `codex.json` era.
+
+**Phase 3: Extension.** Third-party code can add new capabilities. The CLI provides an API and runtime for extensions. This is where all three are now in April 2026.
+
+**Phase 4: Ecosystem.** Extensions become the primary way capabilities are added. The core CLI stabilizes around orchestration, and innovation moves to the extension layer. This hasn't happened yet, but the trajectory is clear.
+
+The critical question is whether the industry converges on a single extension protocol (likely MCP) or fragments into three incompatible ecosystems. The LSP analogy suggests convergence: Microsoft created LSP, but it was adopted by every editor because the alternative — every editor reimplementing every language — was untenable. MCP is in the same position. Building an MCP server once and having it work across Claude Code, Codex CLI, and Gemini CLI is strictly better than building three separate integrations.
+
+## Building an Extension: A Practical Example
+
+To make this concrete, here's what building a cross-CLI extension looks like today. This MCP server exposes a code complexity analyzer that works with all three CLIs:
+
+```python
+from mcp.server.fastmcp import FastMCP
+import ast
+
+app = FastMCP("code-complexity")
+
+@app.tool()
+def analyze_complexity(file_path: str) -> dict:
+    """Analyze cyclomatic complexity of a Python file.
+    
+    Returns complexity metrics per function and a file-level summary.
+    """
+    with open(file_path) as f:
+        source = f.read()
+    
+    tree = ast.parse(source)
+    results = []
+    
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            complexity = 1  # Base complexity
+            for child in ast.walk(node):
+                if isinstance(child, (ast.If, ast.While, ast.For,
+                                     ast.ExceptHandler, ast.With,
+                                     ast.Assert, ast.BoolOp)):
+                    complexity += 1
+            
+            results.append({
+                "function": node.name,
+                "line": node.lineno,
+                "complexity": complexity,
+                "risk": "high" if complexity > 10 else
+                        "medium" if complexity > 5 else "low",
+            })
+    
+    return {
+        "file": file_path,
+        "functions": sorted(results, key=lambda x: -x["complexity"]),
+        "max_complexity": max((r["complexity"] for r in results), default=0),
+        "avg_complexity": (
+            sum(r["complexity"] for r in results) / len(results)
+            if results else 0
+        ),
+    }
+
+if __name__ == "__main__":
+    app.run()
+```
+
+This server runs as a subprocess. Claude Code discovers it through `.mcp.json`. Codex CLI discovers it through `codex marketplace add` (pointing to a GitHub repo containing this file and a manifest). Gemini CLI discovers it through `mcpServers` configuration. One implementation, three clients.
+
+The tool's return type is a structured dictionary, not a string. This matters because the orchestrator can inspect the `risk` field to decide whether to flag the file for human review, or check `max_complexity` against a threshold to pass/fail a CI check. Structured outputs enable programmatic composition. String outputs force the orchestrator to re-parse natural language.
+
+## What This Means for Agent Architecture
+
+The platform shift changes how we should think about building agent systems.
+
+**Stop building monolithic agents.** The correct unit of reuse is not "an agent that does everything" but "a tool server that does one thing well." Build your domain expertise as an MCP server. Let the CLI handle orchestration, context management, and user interaction.
+
+**Design for composition, not completeness.** An extension that returns structured data can be composed into workflows by the orchestrator. An extension that returns prose requires the orchestrator to re-interpret, which is lossy and unreliable. Always return structured data with typed fields.
+
+**Invest in the shared protocol.** If you're building tools that should work across CLIs, build on MCP. The protocol handles authentication (OAuth 2.1), discovery (`.well-known` endpoints), and transport (streamable HTTP). Building on a proprietary extension API locks you into one platform.
+
+**Expect the ecosystem to matter more than the core.** Within two years, the quality of a coding CLI will be determined more by its extension ecosystem than by its base model. The model is necessary but not sufficient. The extensions are what let the tool fit into specific workflows, teams, and tech stacks.
+
+The VS Code lesson is instructive: Microsoft didn't win the editor war by having the best built-in features. They won by building the best extension platform and getting out of the way. The coding CLI that learns this lesson fastest will have the same advantage.
+
+---
+
+## References
+
+- Anthropic, "Claude Code Skills and Agents Documentation," April 2026
+- OpenAI, "Codex CLI v0.121.0 Release Notes," April 15, 2026
+- Google, "Gemini CLI MCP Integration Guide," April 2026
+- Model Context Protocol Specification, [modelcontextprotocol.io](https://modelcontextprotocol.io)
+- Microsoft, "Language Server Protocol," [microsoft.github.io/language-server-protocol](https://microsoft.github.io/language-server-protocol/)
