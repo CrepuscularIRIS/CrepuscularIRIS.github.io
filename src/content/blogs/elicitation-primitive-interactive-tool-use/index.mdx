@@ -1,0 +1,248 @@
+---
+title: "The Elicitation Primitive: When Agent Tools Talk Back"
+description: "MCP tools can now pause execution and ask questions. This changes the entire control flow model for agent systems."
+publishDate: "2026-04-16"
+tags: [MCP, agents, tool-use, elicitation, human-in-the-loop, architecture]
+category: engineering
+language: en
+draft: false
+---
+
+The standard model for tool use in agent systems is call-and-return: the agent decides to invoke a tool, passes arguments, waits for a result, and continues reasoning. The tool is a pure function from the agent's perspective — input goes in, output comes back, no interaction in between.
+
+This model breaks for a specific class of operations where the tool encounters a decision point that the agent cannot resolve with the information it has. A deployment tool hits a confirmation gate. A data query returns ambiguous results that need human disambiguation. A code refactor tool discovers two equally valid approaches and needs a preference signal.
+
+The standard workaround is for the tool to fail, return an error or partial result, and hope the agent retries with better parameters or escalates to the user. This works, but it forces every ambiguity into the error path — and error paths in agent systems are where reliability degrades fastest.
+
+The MCP elicitation primitive, introduced in the April 2026 protocol revision, provides a cleaner mechanism: tools can pause mid-execution, request structured input from a human or another agent, receive it, and resume. The tool call doesn't fail — it blocks on an input, then continues.
+
+## The Protocol Mechanics
+
+*Note: The MCP elicitation spec is evolving rapidly. The examples below illustrate the architectural pattern; exact method names and field schemas may differ from the current draft at `modelcontextprotocol.org`. The spec uses `elicitation/create` as a server-initiated request (not a notification), and the Python SDK exposes `ctx.elicit()` rather than `app.elicit()`. The conceptual model — tools that pause for structured input — is stable even as the wire format solidifies.*
+
+In the MCP specification, an elicitation is a structured request that a server sends to the MCP client during processing. The client is responsible for presenting the elicitation to the appropriate responder (human user, orchestrating agent, or another tool server) and forwarding the response back.
+
+The conceptual wire format looks like this (simplified from the actual spec):
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "elicitation/create",
+  "params": {
+    "message": "Found 3 matching database migrations. Which should be applied?",
+    "requestedSchema": {
+      "type": "object",
+      "properties": {
+        "migration_id": {
+          "type": "string",
+          "enum": ["001_add_users", "002_add_roles", "003_add_permissions"],
+          "description": "Migration to apply"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": ["migration_id"]
+    }
+  }
+}
+```
+
+The key design decisions:
+
+1. **Typed schemas.** The elicitation request includes a `requestedSchema` describing what input is expected. This allows the MCP client to render appropriate UI — a dropdown for enums, a confirmation toggle for booleans, a text field for free-form input. The agent doesn't need to parse natural language from the user; it receives structured data.
+
+2. **Request-scoped.** Each elicitation is tied to a specific request context. Multiple concurrent tool calls can independently elicit without interference. The client tracks which elicitation belongs to which pending call.
+
+3. **Blocking semantics.** The server pauses execution at the elicitation point. The HTTP connection (or stdio stream) stays open, and the server resumes only when the client sends the response. From the implementation perspective, it's an `await` on user input.
+
+## Implementation Patterns
+
+### Pattern 1: Confirmation Gates
+
+The most straightforward use — pause before destructive operations:
+
+```python
+from mcp.server.fastmcp import FastMCP
+
+app = FastMCP("infrastructure-tools")
+
+@app.tool()
+async def apply_terraform(plan_file: str, target_env: str):
+    """Apply a Terraform plan to the specified environment."""
+    plan = await load_plan(plan_file)
+    changes = plan.summarize_changes()
+
+    if target_env == "production":
+        # Elicit human confirmation before applying to prod
+        approval = await app.elicit(
+            message=f"Applying to PRODUCTION will {changes.summary}. "
+                    f"{changes.resources_destroyed} resources will be destroyed.",
+            schema={
+                "type": "object",
+                "properties": {
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Approve production deployment"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Deployment justification (required for audit)"
+                    }
+                },
+                "required": ["confirm", "reason"]
+            }
+        )
+
+        if not approval["confirm"]:
+            return {"status": "aborted", "reason": "User declined production apply"}
+
+        await audit_log.record(
+            action="terraform_apply",
+            env=target_env,
+            approved_by="human",
+            reason=approval["reason"]
+        )
+
+    result = await terraform.apply(plan)
+    return {"status": "applied", "resources_changed": result.changed_count}
+```
+
+Without elicitation, this pattern requires the agent to perform a separate "ask user" step before calling the tool — splitting a single logical operation into a multi-turn conversation. The agent must track that it's waiting for confirmation and remember to call the tool again with the same parameters. With elicitation, the confirmation is internal to the tool call.
+
+### Pattern 2: Disambiguation
+
+When a tool encounters ambiguity that it cannot resolve from its inputs alone:
+
+```python
+@app.tool()
+async def search_and_replace(
+    pattern: str,
+    replacement: str,
+    file_glob: str
+):
+    """Search and replace across files matching a glob pattern."""
+    matches = await find_matches(pattern, file_glob)
+
+    if len(matches) > 50:
+        # Too many matches — ask which subset to process
+        preview = [
+            {"file": m.file, "line": m.line_num, "context": m.context}
+            for m in matches[:10]
+        ]
+
+        scope = await app.elicit(
+            message=f"Found {len(matches)} matches across {len(set(m.file for m in matches))} files. "
+                    f"First 10 shown. How should I proceed?",
+            schema={
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": ["apply_all", "apply_first_n", "select_files", "abort"],
+                        "description": "How to handle the large match set"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Number of matches to apply (for apply_first_n)"
+                    },
+                    "file_filter": {
+                        "type": "string",
+                        "description": "Refined glob pattern (for select_files)"
+                    }
+                },
+                "required": ["action"]
+            }
+        )
+
+        if scope["action"] == "abort":
+            return {"status": "aborted", "matches_found": len(matches)}
+        elif scope["action"] == "apply_first_n":
+            matches = matches[:scope.get("limit", 10)]
+        elif scope["action"] == "select_files":
+            matches = [m for m in matches if fnmatch(m.file, scope["file_filter"])]
+
+    results = await apply_replacements(matches, replacement)
+    return {"status": "completed", "files_modified": results.file_count}
+```
+
+### Pattern 3: Agent-to-Agent Elicitation
+
+Elicitation isn't limited to human interaction. When the MCP client is an orchestrating agent rather than a human-facing IDE, elicitation requests can be routed to specialized sub-agents.
+
+```python
+@app.tool()
+async def generate_migration(schema_diff: dict):
+    """Generate a database migration from a schema diff."""
+    migration_sql = await sql_generator.from_diff(schema_diff)
+
+    # Elicit review from a specialized agent
+    review = await app.elicit(
+        message="Review this generated migration for safety.",
+        schema={
+            "type": "object",
+            "properties": {
+                "approved": {"type": "boolean"},
+                "concerns": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "suggested_modifications": {"type": "string"}
+            },
+            "required": ["approved"]
+        },
+        # Hint to the MCP client about routing
+        metadata={"elicitation_target": "database-reviewer-agent"}
+    )
+
+    if not review["approved"]:
+        if review.get("suggested_modifications"):
+            migration_sql = await sql_generator.apply_modifications(
+                migration_sql, review["suggested_modifications"]
+            )
+        else:
+            return {"status": "rejected", "concerns": review["concerns"]}
+
+    return {"status": "ready", "sql": migration_sql}
+```
+
+This pattern enables **nested agent review** within a single tool call. The primary agent calls a tool, the tool elicits input from a reviewer agent, and the reviewed result flows back — without the primary agent needing to orchestrate the review loop explicitly.
+
+## Control Flow Implications
+
+The elicitation primitive changes the control flow model for agent systems in a specific way: it moves decision authority from the agent to the tool (or more precisely, to whatever entity answers the elicitation).
+
+In the standard model, the agent is the sole decision-maker. It gathers information from tools, reasons about what to do next, and issues instructions. If a tool encounters a decision point, it can only report the ambiguity and let the agent decide on the next call.
+
+With elicitation, tools become **interactive processes** rather than pure functions. A single tool call can contain multiple decision points, each resolved by a different authority (human, agent, or another tool). The agent delegates a complex operation and gets back a result that incorporates decisions it never had to make.
+
+This has two significant architectural consequences.
+
+**First, it reduces the agent's cognitive load.** An infrastructure deployment that requires three confirmation gates and two disambiguation steps is a single tool call with five elicitations, not a five-step agent plan. The agent doesn't need to track intermediate states or remember context between steps.
+
+**Second, it creates a new failure mode: elicitation deadlock.** If tool A elicits from agent B, which calls tool C, which elicits from agent A, you have a circular dependency. The MCP specification handles this by requiring elicitation timeouts — if a response doesn't arrive within a configurable window, the tool call fails with a timeout error. But designing elicitation graphs that avoid cycles requires the same kind of dependency analysis that concurrent programming demands.
+
+## When to Use Elicitation vs. Multi-Turn
+
+Elicitation is not always the right pattern. The decision framework:
+
+**Use elicitation when:**
+- The decision point is internal to the tool's operation and doesn't change the agent's overall plan
+- The responder needs context that only the tool has (e.g., partial results, internal state)
+- The operation should be atomic — either fully completed or fully rolled back
+
+**Use multi-turn agent interaction when:**
+- The decision changes the agent's plan (not just a parameter within a single operation)
+- Multiple tools need to be coordinated based on the decision
+- The agent needs to reason about the decision in the context of its broader goal
+
+The practical heuristic: if the decision is about *how* to complete an operation, use elicitation. If the decision is about *whether* to complete it or *what* to do instead, use multi-turn.
+
+## The Broader Pattern
+
+Elicitation is part of a broader trend in agent infrastructure: tools are becoming stateful, interactive services rather than stateless function endpoints. MCP's progression from simple tool schemas (2024) to resources and prompts (early 2025) to elicitation (2026) traces the gradual recognition that the boundary between "agent" and "tool" is not a clean function call interface.
+
+The endpoint of this trajectory is tools that are themselves agents — with their own reasoning, their own context, and their own ability to negotiate with the caller about what should happen. At that point, the distinction between "calling a tool" and "delegating to an agent" disappears, and MCP becomes an agent-to-agent communication protocol. The A2A extension is already heading in this direction.
+
+For practitioners building agent systems now, the elicitation primitive is worth adopting for any tool that currently has a "are you sure?" or "which one did you mean?" failure mode. Replacing those error paths with structured elicitation requests makes the system more reliable and the user experience less frustrating — the tool asks a clear question with typed options instead of failing with an ambiguous error message.

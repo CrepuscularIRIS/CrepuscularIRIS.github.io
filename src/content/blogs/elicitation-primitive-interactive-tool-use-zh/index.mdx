@@ -1,0 +1,239 @@
+---
+title: "Elicitation 原语：当 Agent 工具学会反问"
+description: "MCP 工具现在可以在执行中途暂停并向人类或其他 Agent 提问。这彻底改变了 Agent 系统的控制流模型。"
+publishDate: "2026-04-16"
+tags: [MCP, agents, tool-use, elicitation, human-in-the-loop, architecture]
+category: engineering
+language: zh
+draft: false
+---
+
+Agent 系统中工具调用的标准模型是"调用-返回"：Agent 决定调用工具、传入参数、等待结果、继续推理。从 Agent 的视角看，工具是一个纯函数——输入进去、输出出来，中间没有交互。
+
+这种模型在一类特定操作上会失效：工具在执行过程中遇到了一个决策点，而 Agent 凭借已有信息无法解决。部署工具碰到了确认关卡。数据查询返回了歧义结果需要人工消歧。代码重构工具发现了两种同样合理的方案需要偏好信号。
+
+标准的应对方式是：让工具失败、返回错误或部分结果，然后期望 Agent 用更好的参数重试或升级到用户。这能工作，但它把所有歧义都推到了错误路径——而在 Agent 系统中，错误路径恰恰是可靠性最快恶化的地方。
+
+MCP 在 2026 年 4 月协议修订中引入的 Elicitation 原语提供了更干净的机制：工具可以在执行中途暂停，向人类或另一个 Agent 请求结构化输入，接收响应后继续执行。工具调用不会失败——它阻塞在一个输入上，然后继续。
+
+## 协议机制
+
+*注：MCP elicitation 规范正在快速演进。以下示例展示的是架构模式；确切的方法名和字段 schema 可能与 `modelcontextprotocol.org` 上的当前草案有所不同。规范使用 `elicitation/create` 作为 server 发起的 request（而非 notification），Python SDK 暴露的是 `ctx.elicit()` 而非 `app.elicit()`。核心概念模型——工具暂停等待结构化输入——在线路格式趋于稳定的过程中保持不变。*
+
+在 MCP 规范中，Elicitation 是服务器在处理过程中发回给 MCP 客户端的结构化请求。客户端负责将 Elicitation 呈现给合适的响应者（人类用户、编排 Agent 或另一个工具服务器），并将响应转发回来。
+
+概念上的线路格式如下（相对实际规范做了简化）：
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "elicitation/create",
+  "params": {
+    "message": "Found 3 matching database migrations. Which should be applied?",
+    "requestedSchema": {
+      "type": "object",
+      "properties": {
+        "migration_id": {
+          "type": "string",
+          "enum": ["001_add_users", "002_add_roles", "003_add_permissions"],
+          "description": "Migration to apply"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": ["migration_id"]
+    }
+  }
+}
+```
+
+关键设计决策：
+
+1. **类型化 Schema。** Elicitation 请求包含 JSON Schema 描述预期输入。MCP 客户端可以据此渲染合适的 UI——枚举类型渲染为下拉菜单、布尔类型渲染为确认开关、自由文本渲染为输入框。Agent 不需要解析用户的自然语言回复，它收到的是结构化数据。
+
+2. **请求作用域绑定。** 每个 Elicitation 通过 `request_id` 绑定到特定的工具调用。多个并发工具调用可以独立发起 Elicitation 互不干扰。
+
+3. **阻塞语义。** 工具服务器在 Elicitation 点暂停执行。HTTP 连接（或 stdio 流）保持打开，工具仅在客户端发送响应后才恢复。从工具实现角度看，就是一个 `await` 用户输入。
+
+## 实现模式
+
+### 模式一：确认关卡
+
+最直接的用途——在破坏性操作前暂停：
+
+```python
+from mcp.server.fastmcp import FastMCP
+
+app = FastMCP("infrastructure-tools")
+
+@app.tool()
+async def apply_terraform(plan_file: str, target_env: str):
+    """Apply a Terraform plan to the specified environment."""
+    plan = await load_plan(plan_file)
+    changes = plan.summarize_changes()
+
+    if target_env == "production":
+        approval = await app.elicit(
+            message=f"即将应用到 PRODUCTION: {changes.summary}。"
+                    f"将销毁 {changes.resources_destroyed} 个资源。",
+            schema={
+                "type": "object",
+                "properties": {
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "批准生产环境部署"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "部署理由（审计必填）"
+                    }
+                },
+                "required": ["confirm", "reason"]
+            }
+        )
+
+        if not approval["confirm"]:
+            return {"status": "aborted", "reason": "用户拒绝生产环境部署"}
+
+        await audit_log.record(
+            action="terraform_apply",
+            env=target_env,
+            approved_by="human",
+            reason=approval["reason"]
+        )
+
+    result = await terraform.apply(plan)
+    return {"status": "applied", "resources_changed": result.changed_count}
+```
+
+没有 Elicitation 时，这种模式需要 Agent 在调用工具前执行一个单独的"询问用户"步骤——把一个逻辑上完整的操作拆成多轮对话。Agent 必须追踪自己正在等待确认，并记得用相同参数再次调用工具。有了 Elicitation，确认被内化到工具调用内部。
+
+### 模式二：消歧
+
+当工具遇到无法仅凭输入解决的歧义时：
+
+```python
+@app.tool()
+async def search_and_replace(
+    pattern: str,
+    replacement: str,
+    file_glob: str
+):
+    """Search and replace across files matching a glob pattern."""
+    matches = await find_matches(pattern, file_glob)
+
+    if len(matches) > 50:
+        scope = await app.elicit(
+            message=f"找到 {len(matches)} 处匹配，跨 {len(set(m.file for m in matches))} 个文件。"
+                    f"如何处理？",
+            schema={
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": ["apply_all", "apply_first_n", "select_files", "abort"],
+                        "description": "处理策略"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "替换上限数量（apply_first_n 时使用）"
+                    },
+                    "file_filter": {
+                        "type": "string",
+                        "description": "细化的 glob 模式（select_files 时使用）"
+                    }
+                },
+                "required": ["action"]
+            }
+        )
+
+        if scope["action"] == "abort":
+            return {"status": "aborted", "matches_found": len(matches)}
+        elif scope["action"] == "apply_first_n":
+            matches = matches[:scope.get("limit", 10)]
+        elif scope["action"] == "select_files":
+            matches = [m for m in matches if fnmatch(m.file, scope["file_filter"])]
+
+    results = await apply_replacements(matches, replacement)
+    return {"status": "completed", "files_modified": results.file_count}
+```
+
+### 模式三：Agent 间 Elicitation
+
+Elicitation 不限于人类交互。当 MCP 客户端是编排 Agent 而非面向人类的 IDE 时，Elicitation 请求可以路由到专门的子 Agent。
+
+```python
+@app.tool()
+async def generate_migration(schema_diff: dict):
+    """Generate a database migration from a schema diff."""
+    migration_sql = await sql_generator.from_diff(schema_diff)
+
+    review = await app.elicit(
+        message="请审查生成的 Migration 安全性。",
+        schema={
+            "type": "object",
+            "properties": {
+                "approved": {"type": "boolean"},
+                "concerns": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "suggested_modifications": {"type": "string"}
+            },
+            "required": ["approved"]
+        },
+        metadata={"elicitation_target": "database-reviewer-agent"}
+    )
+
+    if not review["approved"]:
+        if review.get("suggested_modifications"):
+            migration_sql = await sql_generator.apply_modifications(
+                migration_sql, review["suggested_modifications"]
+            )
+        else:
+            return {"status": "rejected", "concerns": review["concerns"]}
+
+    return {"status": "ready", "sql": migration_sql}
+```
+
+这种模式实现了单次工具调用内的**嵌套 Agent 审查**。主 Agent 调用工具，工具向审查 Agent 请求输入，审查后的结果返回——主 Agent 无需显式编排审查循环。
+
+## 控制流影响
+
+Elicitation 原语以一种特定方式改变了 Agent 系统的控制流模型：它将决策权从 Agent 转移到了工具（更准确地说，是转移到了回答 Elicitation 的实体）。
+
+标准模型中，Agent 是唯一的决策者。它从工具收集信息、推理下一步行动、发出指令。如果工具遇到决策点，只能上报歧义让 Agent 在下一次调用中决定。
+
+有了 Elicitation，工具变成了**交互式进程**而非纯函数。一次工具调用中可以包含多个决策点，每个由不同的权限方（人类、Agent 或另一个工具）解决。Agent 委托一个复杂操作，得到的结果中包含了它从未参与的决策。
+
+这带来两个重要的架构影响。
+
+**第一，降低了 Agent 的认知负担。** 一个需要三次确认关卡和两次消歧步骤的基础设施部署，变成了一次工具调用加五次 Elicitation，而不是 Agent 计划中的五个步骤。Agent 不需要追踪中间状态或在步骤间维持上下文。
+
+**第二，引入了新的失败模式：Elicitation 死锁。** 如果工具 A 向 Agent B 发起 Elicitation，B 调用工具 C，C 又向 Agent A 发起 Elicitation，你就有了一个循环依赖。MCP 规范通过 Elicitation 超时处理此问题——如果响应在可配置窗口内未到达，工具调用以超时错误失败。但设计无环的 Elicitation 图需要与并发编程相同类型的依赖分析。
+
+## 何时使用 Elicitation vs 多轮对话
+
+Elicitation 并非总是正确的模式。判断框架：
+
+**使用 Elicitation 当：**
+- 决策点是工具操作的内部事务，不改变 Agent 的整体计划
+- 响应者需要只有工具才具备的上下文（如部分结果、内部状态）
+- 操作应当是原子的——要么全部完成，要么全部回滚
+
+**使用多轮 Agent 交互当：**
+- 决策改变了 Agent 的计划（不只是单次操作中的一个参数）
+- 需要基于决策协调多个工具
+- Agent 需要在更广泛目标的上下文中推理这个决策
+
+实用的经验法则：如果决策关于**如何**完成一个操作，用 Elicitation。如果决策关于**是否**完成或**改做什么**，用多轮对话。
+
+## 更宏观的趋势
+
+Elicitation 是 Agent 基础设施更广泛趋势的一部分：工具正在从无状态的函数端点演变为有状态的交互式服务。MCP 从简单的工具 Schema（2024）到资源和提示词（2025 年初）再到 Elicitation（2026）的演进轨迹，体现了对一个事实的逐步承认：Agent 与工具之间的边界并非一个干净的函数调用接口。
+
+这条轨迹的终点是工具本身就是 Agent——拥有自己的推理能力、自己的上下文、以及与调用者协商的能力。到那时，"调用工具"和"委托 Agent"的区别将消失，MCP 将成为一个 Agent 间通信协议。A2A 扩展已经在向这个方向发展。
+
+对于现在正在构建 Agent 系统的实践者来说，Elicitation 原语值得应用于任何当前有"你确定吗？"或"你是指哪一个？"失败模式的工具。将这些错误路径替换为结构化 Elicitation 请求，既提升了系统可靠性，也改善了用户体验——工具提出清晰的类型化选项问题，而不是以模糊的错误信息失败。

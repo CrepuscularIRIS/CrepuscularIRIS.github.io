@@ -1,0 +1,149 @@
+---
+title: "KV-Cache Compression and Million-Token Economics"
+description: "The real bottleneck in long-context inference is memory, not compute. Recent compression techniques are changing the cost curve."
+publishDate: "2026-04-16"
+tags: [kv-cache, long-context, inference, architecture, efficiency, transformers]
+category: research
+language: en
+draft: false
+---
+
+The attention mechanism has a memory problem. For a sequence of length $n$ with KV heads $H_{kv}$ of dimension $d_h$ across $L$ layers, the KV-cache occupies $2 \times L \times H_{kv} \times n \times d_h$ floating-point values. At FP16 precision, a model with 80 layers and 8 KV heads (GQA) processing a 1M-token context requires roughly 300 GB of KV-cache alone — before accounting for model weights, activations, or batch overhead. Even a smaller 32-layer model with 4 KV heads needs ~75 GB.
+
+This is the actual bottleneck for long-context inference. Not the quadratic attention compute (which FlashAttention and its descendants have largely tamed), but the linear-in-sequence-length memory that the KV-cache demands. Every token you've ever seen stays resident in GPU memory for the entire generation process. At 1M tokens, you're storing the equivalent of a 400-page technical book as dense floating-point vectors, and you need random access to any page at every decoding step.
+
+The April 2026 wave of KV-cache compression results — most notably from Google DeepMind's work on quantized caches and selective eviction — suggests that 4-6x compression ratios are achievable without measurable quality degradation on standard benchmarks. The implications for inference economics are substantial.
+
+## Why KV-Cache Dominates Long-Context Cost
+
+To understand why compression matters, start with the cost decomposition of a single generation step in a long-context setting.
+
+The forward pass through the model has two phases: **prefill** (processing the entire prompt) and **decode** (generating tokens one at a time). Prefill is compute-bound — it processes all prompt tokens in parallel and is dominated by matmul throughput. Decode is memory-bandwidth-bound — each new token requires reading the full KV-cache to compute attention, and the bottleneck is how fast you can stream those cached tensors through the memory bus.
+
+For a 1M-token context on an H100 (80GB HBM3, ~3.35 TB/s bandwidth):
+
+```python
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class KVCacheProfile:
+    """Memory and bandwidth profile for KV-cache at different context lengths."""
+    seq_len: int
+    layers: int
+    heads: int
+    head_dim: int
+    dtype_bytes: int = 2  # FP16
+
+    @property
+    def cache_bytes(self) -> int:
+        return 2 * self.layers * self.heads * self.seq_len * self.head_dim * self.dtype_bytes
+
+    @property
+    def cache_gb(self) -> float:
+        return self.cache_bytes / (1024 ** 3)
+
+    @property
+    def read_time_ms(self) -> float:
+        """Time to read full cache once at H100 HBM bandwidth (3.35 TB/s)."""
+        return (self.cache_bytes / (3.35e12)) * 1000
+
+
+# Mid-size model with GQA (32 layers, 4 KV heads, head_dim=128)
+profile_1m = KVCacheProfile(seq_len=1_000_000, layers=32, heads=4, head_dim=128)
+profile_32k = KVCacheProfile(seq_len=32_000, layers=32, heads=4, head_dim=128)
+
+# 1M context: ~61 GiB cache, ~19 ms per decode step just for KV reads
+# 32K context: ~1.9 GiB cache, ~0.6 ms per decode step
+```
+
+At 1M tokens, the KV-cache read alone takes ~19ms per decode step. The actual attention computation on top of that adds more. You're generating at roughly 30-50 tokens/second — and most of that time is spent streaming cached key-value pairs from HBM, not computing with them.
+
+This is why naive long-context serving is expensive: the cost per output token scales linearly with context length, driven almost entirely by memory bandwidth for KV-cache access.
+
+## Three Compression Strategies
+
+The recent results cluster into three approaches, each attacking a different aspect of the KV-cache memory footprint.
+
+### 1. Quantization: Fewer Bits Per Element
+
+The simplest approach: store KV-cache entries in reduced precision. The key insight is that KV-cache values are more tolerant of quantization noise than model weights, because attention is a weighted average — small perturbations in individual key/value vectors average out across the attention computation.
+
+Google DeepMind's TurboQuant approach uses per-channel asymmetric INT4 quantization for the KV-cache, with FP16 computation for the attention scores themselves. The cache is quantized after each prefill/decode step and dequantized on-the-fly during attention.
+
+```python
+import torch
+
+def quantize_kv_cache(
+    keys: torch.Tensor,     # [batch, heads, seq_len, head_dim], FP16
+    values: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor, dict]:
+    """Per-channel INT4 quantization of KV-cache."""
+    # Compute per-channel min/max for asymmetric quantization
+    k_min = keys.amin(dim=-2, keepdim=True)
+    k_max = keys.amax(dim=-2, keepdim=True)
+
+    # Scale to [0, 15] range (4-bit unsigned)
+    k_scale = (k_max - k_min) / 15.0
+    k_quantized = ((keys - k_min) / k_scale).round().to(torch.uint8)
+
+    # Pack two 4-bit values per byte
+    k_packed = (k_quantized[..., 0::2] << 4) | k_quantized[..., 1::2]
+
+    # Same for values
+    v_min = values.amin(dim=-2, keepdim=True)
+    v_max = values.amax(dim=-2, keepdim=True)
+    v_scale = (v_max - v_min) / 15.0
+    v_quantized = ((values - v_min) / v_scale).round().to(torch.uint8)
+    v_packed = (v_quantized[..., 0::2] << 4) | v_quantized[..., 1::2]
+
+    meta = {"k_min": k_min, "k_scale": k_scale, "v_min": v_min, "v_scale": v_scale}
+    return k_packed, v_packed, meta
+```
+
+The compression ratio is 4x (FP16 to INT4). Combined with group quantization and outlier handling, practical systems report 3.5-4x compression with less than 0.5% degradation on MMLU, HumanEval, and needle-in-a-haystack tasks.
+
+### 2. Eviction: Fewer Elements
+
+Instead of storing every token's KV pair, selectively discard tokens that are unlikely to be attended to in future steps. The challenge is deciding which tokens to evict without knowing future queries.
+
+The most effective heuristic is **attention-score-based eviction**: tokens that received low attention scores in recent steps are unlikely to be important for future steps. This exploits the empirical observation that attention distributions in trained transformers are heavy-tailed — a small fraction of tokens capture most of the attention mass at any given step.
+
+Practical eviction policies maintain a fixed-size cache (say, 128K entries for a model that can handle 1M context) and evict the least-recently-attended tokens when the cache is full. The eviction decision uses an exponentially-weighted moving average of attention scores across recent steps.
+
+The compression ratio depends on the eviction budget: a 128K cache for 1M context gives ~8x compression. The quality trade-off is task-dependent — eviction works well for tasks where the relevant context is localized (question answering, summarization) but degrades for tasks requiring uniform access to the full context (counting, multi-document cross-referencing).
+
+### 3. Structured Compression: Fewer Dimensions
+
+The third approach exploits redundancy in the key/value representations themselves. Adjacent layers in deep transformers produce highly correlated KV pairs — the cosine similarity between KV-cache entries at layers $l$ and $l+1$ is often above 0.9 for the same token position.
+
+**Cross-layer KV sharing** stores the full cache only at every $k$-th layer and reconstructs intermediate layers via learned linear projections. For $k=4$ (share every 4 layers), this gives 4x compression with a small reconstruction overhead.
+
+**Multi-Query Attention (MQA)** and **Grouped-Query Attention (GQA)** achieve similar compression by reducing the number of KV heads. GQA with 8 KV heads instead of 64 gives 8x compression on the KV-cache at the cost of marginal quality loss. This is now the default in most production models (Llama 3, Gemma 2+, Claude).
+
+## The Compounding Effect
+
+These techniques compose. A production deployment might use:
+
+- GQA (8 KV heads instead of 64): **8x** compression
+- INT4 quantization of remaining cache: **4x** compression  
+- Selective eviction at 50% capacity: **2x** compression
+
+Total: **~64x** compression on KV-cache memory. A cache that would require 65 GB at FP16 with GQA-4 drops to ~1 GB. The 1M-context model now fits on a single GPU with room for batching.
+
+The catch is that these compression ratios don't compose cleanly — quantization noise and eviction errors interact. The empirical finding from the April 2026 results is that the practical sweet spot is around **6x total compression** before quality starts degrading noticeably on challenging long-context tasks. For less demanding tasks, 10-20x is achievable.
+
+## What This Changes
+
+The economic consequence is direct. If KV-cache memory is the bottleneck for long-context serving, and 6x compression is achievable, then:
+
+1. **The 1M-token context window becomes practical for batch serving.** Previously, each 1M-context request monopolized an entire GPU's memory. With compression, you can serve 4-6 concurrent 1M-context requests on the same hardware.
+
+2. **Context length stops being a premium feature.** The cost gap between 32K and 1M context narrows from ~30x to ~5x. Providers can offer long context without dramatic pricing tiers.
+
+3. **The architecture design space shifts.** Models designed from scratch with KV-cache compression in mind (built-in GQA, quantization-aware training, learned eviction policies) will outperform models that bolt compression on after training. The next generation of efficient architectures will co-design the attention mechanism and the cache compression jointly.
+
+4. **Retrieval augmentation loses some of its economic argument.** RAG exists partly because long context is expensive. If 1M tokens of context costs only 5x more than 32K tokens (instead of 30x), the break-even point for "just put it all in the context" shifts dramatically. For knowledge bases under ~500K tokens, in-context processing becomes cheaper than maintaining a retrieval pipeline.
+
+The deeper architectural question is whether the KV-cache itself is the right abstraction. Recurrent and state-space models (Mamba, RWKV) replace the growing cache with fixed-size state, eliminating the memory scaling problem entirely. But attention-based models with compressed KV-caches currently outperform these alternatives on tasks requiring precise long-range retrieval. The compression approach is a pragmatic bet that attention's quality advantage justifies the engineering effort of managing its memory overhead.
+
+For now, the practical takeaway is that long-context inference is 4-6x cheaper than it was six months ago, and the compression techniques are mature enough for production deployment. The million-token context window has moved from a benchmark curiosity to an economically viable serving configuration.

@@ -1,0 +1,149 @@
+---
+title: "KV-Cache 压缩与百万级 Token 上下文的经济学"
+description: "长上下文推理的真实瓶颈在于显存而非计算。近期出现的压缩技术正从根本上改变这一领域的成本曲线。"
+publishDate: "2026-04-16"
+tags: [kv-cache, long-context, inference, architecture, efficiency, transformers]
+category: research
+language: zh
+draft: false
+---
+
+Attention 机制正面临着严峻的显存挑战。对于一个序列长度为 $n$、特征维度为 $d$、包含 $L$ 层和 $H$ 个 Attention Head 的模型，其 KV-cache 需要占用 $2 \times L \times H \times n \times d_h$ 个浮点数。在 FP16 精度下，一个 80 层、8 个 KV Head（GQA）的模型处理 1M token 上下文时，仅 KV-cache 就需要大约 300 GB 的空间——这还没算上模型权重、激活值或 Batch 开销。即使是较小的 32 层、4 KV Head 模型也需要约 75 GB。
+
+这才是长上下文推理的真实瓶颈。不是二次方复杂度的 Attention 计算（FlashAttention 及其后继者已经很大程度上解决了这个问题），而是随序列长度线性增长的 KV-cache 显存需求。在整个生成过程中，你所看到的每一个 token 都必须常驻在 GPU 显存中。在 1M token 的尺度下，你存储的相当于一本 400 页的技术书籍，以稠密浮点向量的形式存在，同时你需要在每一个 Decoding 步骤中随机访问其中的任何一页。
+
+2026 年 4 月，KV-cache 压缩领域迎来了一波研究突破——其中最引人注目的是 Google DeepMind 在量化缓存和选择性剔除（Selective Eviction）方面的工作。研究表明，在不影响标准 Benchmark 质量的前提下，可以实现 4-6 倍的压缩比。这对推理经济学的影响是深远的。
+
+## 为什么 KV-Cache 主导了长上下文的成本
+
+要理解压缩的重要性，首先要拆解长上下文场景下单个生成步骤的成本。
+
+模型的 Forward Pass 分为两个阶段：**Prefill**（处理整个 Prompt）和 **Decode**（逐个生成 token）。Prefill 是计算受限型（Compute-bound）的——它并行处理所有 Prompt token，其性能主要受 Matmul 吞吐量影响。而 Decode 则是显存带宽受限型（Memory-bandwidth-bound）的——每生成一个新的 token 都需要读取完整的 KV-cache 来计算 Attention，瓶颈在于将这些缓存的 Tensor 通过显存总线流转的速度。
+
+以 H100 (80GB HBM3, ~3.35 TB/s 带宽) 处理 1M token 上下文为例：
+
+```python
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class KVCacheProfile:
+    """Memory and bandwidth profile for KV-cache at different context lengths."""
+    seq_len: int
+    layers: int
+    heads: int
+    head_dim: int
+    dtype_bytes: int = 2  # FP16
+
+    @property
+    def cache_bytes(self) -> int:
+        return 2 * self.layers * self.heads * self.seq_len * self.head_dim * self.dtype_bytes
+
+    @property
+    def cache_gb(self) -> float:
+        return self.cache_bytes / (1024 ** 3)
+
+    @property
+    def read_time_ms(self) -> float:
+        """Time to read full cache once at H100 HBM bandwidth (3.35 TB/s)."""
+        return (self.cache_bytes / (3.35e12)) * 1000
+
+
+# Mid-size model with GQA (32 layers, 4 KV heads, head_dim=128)
+profile_1m = KVCacheProfile(seq_len=1_000_000, layers=32, heads=4, head_dim=128)
+profile_32k = KVCacheProfile(seq_len=32_000, layers=32, heads=4, head_dim=128)
+
+# 1M context: ~61 GiB cache, ~19 ms per decode step just for KV reads
+# 32K context: ~1.9 GiB cache, ~0.6 ms per decode step
+```
+
+在 1M token 时，仅 KV-cache 的读取就要耗费每个 Decode 步约 19ms。加上 Attention 计算，总耗时还会进一步增加。生成速度大约在 30-50 token/s，而大部分时间都花在了从 HBM 流式传输 KV 对，而非进行计算。
+
+这就是原生长上下文服务昂贵的原因：每个输出 token 的成本随上下文长度线性增长，几乎完全由 KV-cache 访问的显存带宽驱动。
+
+## 三种压缩策略
+
+近期的研究结果集中在三种路径，分别针对 KV-cache 显存占用的不同维度。
+
+### 1. 量化（Quantization）：减少每个元素的位宽
+
+最直接的方法：以较低精度存储 KV-cache 条目。核心观察是，KV-cache 对量化噪声的容忍度高于模型权重，因为 Attention 本质上是加权平均——单个 Key/Value 向量中的微小扰动会在计算过程中被平滑掉。
+
+Google DeepMind 的 TurboQuant 方法对 KV-cache 使用 Per-channel 非对称 INT4 量化，而 Attention Score 自身的计算仍保留 FP16。缓存会在每个 Prefill/Decode 步之后量化，在 Attention 计算时即时反量化。
+
+```python
+import torch
+
+def quantize_kv_cache(
+    keys: torch.Tensor,     # [batch, heads, seq_len, head_dim], FP16
+    values: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor, dict]:
+    """Per-channel INT4 quantization of KV-cache."""
+    # Compute per-channel min/max for asymmetric quantization
+    k_min = keys.amin(dim=-2, keepdim=True)
+    k_max = keys.amax(dim=-2, keepdim=True)
+
+    # Scale to [0, 15] range (4-bit unsigned)
+    k_scale = (k_max - k_min) / 15.0
+    k_quantized = ((keys - k_min) / k_scale).round().to(torch.uint8)
+
+    # Pack two 4-bit values per byte
+    k_packed = (k_quantized[..., 0::2] << 4) | k_quantized[..., 1::2]
+
+    # Same for values
+    v_min = values.amin(dim=-2, keepdim=True)
+    v_max = values.amax(dim=-2, keepdim=True)
+    v_scale = (v_max - v_min) / 15.0
+    v_quantized = ((values - v_min) / v_scale).round().to(torch.uint8)
+    v_packed = (v_quantized[..., 0::2] << 4) | v_quantized[..., 1::2]
+
+    meta = {"k_min": k_min, "k_scale": k_scale, "v_min": v_min, "v_scale": v_scale}
+    return k_packed, v_packed, meta
+```
+
+从 FP16 到 INT4 实现了 4 倍压缩比。结合 Group 量化和离群值处理，实际系统在 MMLU、HumanEval 和 "大海捞针" 任务上的性能损失不到 0.5%。
+
+### 2. 剔除（Eviction）：减少缓存元素数量
+
+与其存储每一个 token 的 KV 对，不如选择性地丢弃那些在未来步骤中不太可能被关注的 token。挑战在于如何在不知道未来 Query 的情况下做出剔除决策。
+
+最有效的启发式方法是**基于 Attention Score 的剔除**：在近期步骤中获得低 Attention Score 的 token，在未来也不太可能变得重要。这利用了经验观察：训练好的 Transformer 中的 Attention 分布通常是长尾的——在任何给定步骤中，只有极小比例的 token 占据了大部分的 Attention 权重。
+
+实际的剔除策略维持一个固定大小的缓存（例如 1M 上下文模型只保留 128K 条目），在缓存满时剔除最近最少被关注的 token。剔除决策使用近期步骤中 Attention Score 的指数加权移动平均。
+
+压缩比取决于剔除预算：1M 上下文配合 128K 缓存可获得约 8 倍压缩。质量权衡取决于具体任务——剔除在上下文相关性集中（如问答、摘要）的任务中表现良好，但在需要均匀访问全上下文（如计数、多文档交叉引用）的任务中会下降。
+
+### 3. 结构化压缩（Structured Compression）：减少维度
+
+第三种方法利用 Key/Value 表示本身的冗余。深层 Transformer 中，相邻层生成的 KV 对高度相关——对于同一个 token 位置，第 $l$ 层和第 $l+1$ 层的 KV-cache 条目之间的余弦相似度通常超过 0.9。
+
+**跨层 KV 共享**仅在每隔 $k$ 层存储完整缓存，通过学习到的线性投影来重构中间层。$k=4$ 时可获得 4 倍压缩，重构开销很小。
+
+**Multi-Query Attention (MQA)** 和 **Grouped-Query Attention (GQA)** 通过减少 KV Head 数量实现类似压缩。8 个 KV Head 代替 64 个可以实现 8 倍压缩，质量损失微乎其微。这已成为大多数生产模型（Llama 3、Gemma 2+、Claude）的默认配置。
+
+## 复合效应
+
+这些技术可以叠加使用。一个生产部署方案可能包含：
+
+- GQA（8 个 KV Head 代替 64 个）：**8 倍**压缩
+- 对剩余缓存进行 INT4 量化：**4 倍**压缩
+- 在 50% 显存水位时进行选择性剔除：**2 倍**压缩
+
+总计：KV-cache 显存占用降低 **~64 倍**。原本在 GQA-4 模式下需要 65 GB 的 FP16 缓存，现在降到约 1 GB。1M 上下文模型不仅能跑在单个 GPU 上，还有余力进行 Batch 处理。
+
+需要注意的是，这些压缩比并不能完美叠加——量化噪声和剔除误差会相互影响。从 2026 年 4 月的实验结果来看，质量明显下降前的**实际平衡点约为 6 倍总压缩比**。对于要求较低的任务，10-20 倍也可行。
+
+## 行业变革
+
+经济效应立竿见影。如果 KV-cache 显存是长上下文服务的瓶颈，且 6 倍压缩可实现，那么：
+
+1. **1M token 上下文窗口在 Batch 模式下变得实用。** 此前每个 1M 上下文请求独占一整块 GPU 显存，现在同一台硬件可以同时服务 4-6 个 1M 上下文请求。
+
+2. **上下文长度不再是"奢侈功能"。** 32K 和 1M 上下文之间的成本差距从 ~30 倍缩小到 ~5 倍。
+
+3. **架构设计空间发生转移。** 从零开始针对 KV-cache 压缩设计的模型（内置 GQA、量化感知训练、可学习的剔除策略）将优于事后补丁式的压缩。
+
+4. **RAG 的部分经济优势正在丧失。** 如果 1M token 上下文的成本仅比 32K 贵 5 倍（而不是 30 倍），对于 500K token 以下的知识库，Context 内处理比维护检索流水线更便宜。
+
+更深层的问题在于：KV-cache 本身是否是正确的抽象？循环模型和状态空间模型（Mamba, RWKV）用固定大小的状态取代了增长的缓存，彻底消除了显存扩展问题。但目前在需要精确长程检索的任务上，带有压缩 KV-cache 的 Attention 模型仍然胜出。压缩方案反映了一种实用主义判断：Attention 的质量优势足以抵消管理显存开销所需的工程投入。
+
+就目前而言，长上下文推理的成本比半年前降低了 4-6 倍，且压缩技术已足够成熟可投入生产。百万 token 的上下文窗口已从 Benchmark 新鲜事变成了在经济上完全可行的服务配置。
