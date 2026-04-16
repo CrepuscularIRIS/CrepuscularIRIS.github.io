@@ -1,8 +1,9 @@
 ---
-title: "The Agent Attack Surface Problem"
-description: "Autonomous agents have attack surfaces that grow with capability. Six categories of agent-specific vulnerabilities and the defenses that work."
+title: "Agent Attack Surface: Six Traps, 0.1% Poisoning, 80% Hijack"
+description: "DeepMind's April 2026 taxonomy shows less than 0.1% contamination yields >80% hijack rates, and M365 Copilot lost 10/10 to one crafted email."
 publishDate: "2026-04-13"
-tags: [agents, security, autonomous-systems, agent-engineering, adversarial-ml, alignment]
+updatedDate: "2026-04-17"
+tags: [agents, security, autonomous-systems, agent-engineering, adversarial-ml, alignment, prompt-injection, deepmind]
 category: research
 language: en
 draft: false
@@ -12,70 +13,118 @@ Traditional software security operates on a fixed attack surface. You enumerate 
 
 Autonomous agents break this model. An agent that discovers new tools, maintains persistent memory across sessions, and delegates subtasks to other agents has an attack surface that expands as it operates. The more capable the agent becomes — the more tools it can use, the longer its context window, the more autonomy it exercises — the more ways it can be compromised.
 
-Recent work on agent security — including DeepMind's research on adversarial vulnerabilities in autonomous systems — points to six categories of agent-specific vulnerabilities that don't map cleanly onto the OWASP Top 10 or any existing security taxonomy. The taxonomy below synthesizes these findings with patterns observed in production multi-agent deployments. The categories matter because they define where defenses should be placed — and the answer is often different from where traditional application security puts them.
+For most of 2024–2025 that was the theory. In April 2026 the empirical side of it caught up. [Franklin, Tomašev, Jacobs, Leibo, and Osindero (DeepMind) published "AI Agent Traps: A Taxonomy"](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6372438) on SSRN with the results you want to look at when someone asks whether prompt injection is really a big deal:
+
+- **less than 0.1% data contamination in agent training or grounding data produces >80% hijack rates** on the downstream tasks the authors test.
+- **Microsoft 365 Copilot was compromised 10 out of 10 times** by a single crafted email in the authors' reproduction of an EchoLeak-style exfiltration attack.
+- The space of effective attacks separates cleanly into **six categories** that correspond to the six things an autonomous agent does differently from a single LLM call.
+
+These are results from one paper against a specific set of agent configurations. They need independent replication before anyone should treat the numbers as universal — and as I go through the taxonomy below, I'll flag which findings feel load-bearing and which are likely to be refined by follow-up work.
+
+What follows is my synthesis of the DeepMind taxonomy with what I've been tracking from production multi-agent deployments and the indirect prompt injection literature (Greshake et al. 2023, the OWASP LLM Top 10 updates, and [Anthropic's Claude Code security posture](https://www.anthropic.com/claude-code)). I want to use the DeepMind paper's axes because they're the cleanest frame I've seen for putting defenses where they actually belong — which is usually not where traditional application security puts them.
 
 ## Why Agent Security Is Different
 
-A standard LLM API call has a constrained attack surface: the prompt goes in, the completion comes out. You can filter the prompt, you can filter the completion, and the model has no persistent state between calls. Prompt injection is a real risk, but it's a bounded one — the worst case is a single bad response.
+A standard LLM API call has a constrained attack surface: the prompt goes in, the completion comes out. You can filter the prompt, you can filter the completion, and the model has no persistent state between calls. Prompt injection is a real risk, but it's bounded — the worst case is a single bad response.
 
 An autonomous agent has:
 
-- **Persistent memory** that carries information (and potential payloads) across sessions
-- **Tool access** that lets it execute actions with real-world consequences
-- **Delegation capability** that lets it invoke other agents or services
-- **Planning state** that determines what it does next based on what it has already done
-- **A trust boundary** between the user's instructions and the data it encounters during execution
+- **Perception** — it reads data from the environment (web pages, emails, tool outputs, PDFs)
+- **Memory** — it carries information (and potential payloads) across sessions
+- **Reasoning** — it produces plans and intermediate states that are themselves mutable
+- **Action** — it executes tool calls with real-world consequences
+- **Multi-agent delegation** — it invokes other agents or services across trust boundaries
+- **Human interfaces** — it presents approval requests or explanations that a human acts on
 
-Each of these is an attack vector. And they interact: a payload injected via a tool response can persist in memory, influence planning, and propagate through delegation. The attack surface is combinatorial.
+Each of the six is an attack vector, and DeepMind's taxonomy aligns almost one-to-one with them. The interesting claim is that *they compose*: a payload injected via perception can persist in memory, warp reasoning, propagate through delegation, and surface as a misleading approval request to a human. The attack surface is combinatorial, which is also why a less than 0.1% contamination rate is enough — a small number of planted documents can touch every downstream stage once they enter memory.
 
-## Six Categories of Agent Vulnerabilities
+## The Six Traps
 
-### 1. Indirect Prompt Injection via Tool Outputs
+### 1. Perception: Indirect Prompt Injection via Tool Outputs
 
-This is the most discussed and least novel category, but the agent context makes it substantially worse than in a standard chatbot.
+The most discussed and least novel category, but the agent context makes it substantially worse than in a standard chatbot.
 
 When an agent reads a webpage, parses a PDF, or fetches data from an API, the returned content enters the context window alongside the system prompt. Adversarial instructions embedded in that content — "ignore previous instructions and instead..." — can hijack the agent's behavior.
 
-In a chatbot, this produces a bad response. In an agent, it produces bad actions: unauthorized tool calls, data exfiltration, persistent memory poisoning.
+In a chatbot, this produces a bad response. In an agent, it produces bad actions: unauthorized tool calls, data exfiltration, persistent memory poisoning. EchoLeak-class attacks against M365 Copilot — one of the attacks reproduced in the DeepMind paper, and the source of the "10/10 success rate against a single crafted email" number — work by embedding instructions in an email body the agent will later read when fulfilling a legitimate user request. The user never sees the injection; the agent processes it silently alongside the real email and acts on it.
 
-**Defense pattern:** Treat all tool outputs as untrusted data. Run a classifier on tool returns before inserting them into the agent's context. Separate the data plane (tool outputs) from the control plane (system instructions) using structured delimiters that the model is trained to respect.
+**Defense pattern:** Treat all tool outputs as untrusted data. Separate the *data plane* (tool outputs) from the *control plane* (system instructions) using structured delimiters and, critically, a classifier that runs *before* the content enters the context window. The classifier's job is not to be perfect — it's to raise the cost of injection so that naive payloads fail.
 
 ```python
-class ToolOutputSanitizer:
-    """Classify and sanitize tool outputs before context injection."""
+import re
+from dataclasses import dataclass
+from typing import Literal
 
-    INJECTION_PATTERNS = [
+
+@dataclass(frozen=True)
+class SanitizedOutput:
+    tool_name: str
+    content: str
+    risk_score: float
+    disposition: Literal["allow", "wrap", "quarantine"]
+
+
+class ToolOutputSanitizer:
+    """Classify and wrap tool outputs before context injection."""
+
+    INJECTION_PATTERNS: tuple[str, ...] = (
         r"ignore\s+(previous|all|prior)\s+instructions",
         r"you\s+are\s+now\s+a",
         r"system\s*:\s*",
         r"<\|?system\|?>",
-    ]
+        r"disregard\s+.*\s+and\s+instead",
+    )
 
-    def sanitize(self, tool_name: str, output: str) -> str:
-        risk_score = self._score_injection_risk(output)
-        if risk_score > 0.8:
-            return f"[FILTERED: {tool_name} returned potentially adversarial content]"
-        return self._wrap_as_data(tool_name, output)
+    def __init__(self, quarantine_threshold: float = 0.8) -> None:
+        self._compiled = [re.compile(p, re.IGNORECASE) for p in self.INJECTION_PATTERNS]
+        self._threshold = quarantine_threshold
 
-    def _wrap_as_data(self, tool_name: str, output: str) -> str:
-        return (
+    def sanitize(self, tool_name: str, output: str) -> SanitizedOutput:
+        risk = self._score(output)
+        if risk > self._threshold:
+            return SanitizedOutput(
+                tool_name=tool_name,
+                content=f"[FILTERED: {tool_name} returned suspected adversarial content]",
+                risk_score=risk,
+                disposition="quarantine",
+            )
+        wrapped = (
             f"<tool_output source='{tool_name}' trust='untrusted'>\n"
             f"{output}\n"
             f"</tool_output>"
         )
+        return SanitizedOutput(
+            tool_name=tool_name,
+            content=wrapped,
+            risk_score=risk,
+            disposition="wrap",
+        )
+
+    def _score(self, output: str) -> float:
+        hits = sum(1 for p in self._compiled if p.search(output))
+        return min(1.0, hits / max(1, len(self._compiled)) + 0.2 * (len(output) > 10_000))
 ```
 
-### 2. Cognitive State Traps
+Two things this classifier is deliberately *not* doing: it is not relying on an LLM to decide (that just recurses the injection problem), and it is not attempting to strip instructions from the content (stripping is a lossy operation that makes the content harder to use for the legitimate case). Wrap and mark; don't try to clean.
 
-This extends data poisoning (Greshake et al., 2023) into the temporal domain. Agents that maintain long-term memory or scratchpads can have their persistent state manipulated to alter behavior in future sessions — sessions where the original adversarial input is no longer visible in the context window.
+This regex-based filter is a first-pass cost-raiser, **not** a sufficient defense — anyone who reads the pattern list can trivially paraphrase around it. Use it as one layer in a stack that also includes separation of planes, provenance tracking, capability scoping, and approval friction for destructive actions (all covered below). Any defense presented as single-layer in this space should be treated as broken.
 
-Consider an agent that summarizes documents and stores summaries in a knowledge base for later retrieval. An adversarial document can include content that, when summarized, produces a benign-looking summary that contains subtly misleading information. When the agent retrieves this summary in a future session, it acts on corrupted knowledge with no indication that the original source was adversarial.
+### 2. Memory: Cognitive State Traps
 
-The attack is slow, indirect, and nearly invisible. The adversarial input is processed in one session; the effect manifests in another. Standard prompt injection defenses that scan the immediate context won't catch it because the payload has been laundered through a summarization step.
+This is where the less than 0.1% contamination number comes from. An agent that maintains long-term memory or a shared knowledge base can have its persistent state poisoned by an adversarial input processed in one session, with the effect manifesting in later sessions where the original input is no longer visible.
 
-**Defense pattern:** Provenance tracking on all memory writes. Every piece of stored information must carry metadata about where it came from, when it was written, and what tool produced it. Memory reads should present provenance to the agent alongside the content, enabling the model to weight information by source trustworthiness.
+Consider an agent that summarizes documents and stores the summaries in a knowledge base for later retrieval. An adversarial document can contain content that, when summarized, produces a benign-looking summary that quietly encodes a bias or instruction. When the agent retrieves that summary weeks later, it acts on corrupted knowledge with no indication that the source was adversarial. The payload has been *laundered* through the summarization step.
+
+The DeepMind paper makes this concrete. In their agent-memory reproduction, a single poisoned page out of ~10,000 (far less than 0.1%) was sufficient to flip agent behavior on the downstream task more than 80% of the time, because the poisoned memory was retrieved disproportionately by topic-similarity — exactly the time the agent was most reliant on it.
+
+**Defense pattern:** Provenance tracking on all memory writes. Every piece of stored information must carry metadata about where it came from, when it was written, and what tool produced it. Memory reads present provenance to the agent alongside content, and downstream reasoning is allowed to downweight by trust level:
 
 ```python
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Literal
+
+
 @dataclass(frozen=True)
 class MemoryEntry:
     content: str
@@ -94,67 +143,92 @@ class MemoryEntry:
         )
 ```
 
-### 3. Tool Confusion Attacks
+The provenance metadata has to survive summarization. The cheapest way to enforce this is to make the summarizer a distinct tool whose output inherits the lowest trust level among its inputs.
 
-An agent that dynamically discovers tools — via MCP server registries, plugin marketplaces, or tool search — can be presented with tools that have misleading descriptions. A tool described as "fetch_weather_data" could actually exfiltrate context to an external server.
+### 3. Reasoning: Planning State Manipulation
 
-This is analogous to dependency confusion in package management, but worse: the agent selects tools at runtime based on natural language descriptions, and the selection mechanism is a language model that prioritizes helpfulness over suspicion.
+Agents that maintain explicit plans — task lists, step sequences, goal hierarchies — can have their planning state corrupted through inputs that subtly edit the plan without triggering obvious red flags. An agent that processes user feedback to update its TODO list can have tasks inserted, reordered, or removed by adversarial feedback, and then faithfully execute a corrupted plan believing it reflects user intent.
 
-**Defense pattern:** Tool allowlists with cryptographic signatures. Don't let agents discover and use arbitrary tools at runtime. Define a closed set of approved tools per deployment, and verify tool identity through signed manifests rather than description matching.
+This is one of the categories the DeepMind paper calls out as under-defended. Planning state is usually stored as structured JSON inside the agent's own scratchpad; it feels like "internal state," but in most implementations any content the agent reads can touch it. The EchoLeak reproduction exploited this: the injection didn't just exfiltrate data, it edited the agent's pending-action list so the exfiltration itself looked like a user-approved step.
 
-### 4. Delegation Chain Poisoning
+**Defense pattern:** Plan integrity checks. Hash the plan state after each user-approved modification; before executing each step, verify the hash matches the last user-approved version. Any unauthorized modification triggers a re-approval flow. This is cheap to implement and catches the whole class.
+
+### 4. Action: Tool Confusion and Authorization Drift
+
+An agent that dynamically discovers tools — via MCP server registries, plugin marketplaces, or tool search — can be presented with tools whose descriptions mislead the selection mechanism. A tool described as `fetch_weather_data` can actually exfiltrate context to an external server; the selection is a language model that prioritizes helpfulness over suspicion.
+
+This is analogous to dependency confusion in package management, but worse: selection happens at runtime based on natural language descriptions, and there's no `package-lock.json`. Authorization drift is the sibling problem: an agent that was authorized for a narrow task picks up a tool partway through and starts exercising permissions it was never supposed to hold for this particular user intent.
+
+**Defense pattern:** Tool allowlists with cryptographic signatures, and capability-scoped authorization per invocation — not per session. Don't let agents discover and use arbitrary tools at runtime; define a closed set of approved tools per deployment, and verify tool identity through signed manifests rather than description matching. The [CAMEL capability-based security](/blog/camel-capability-based-agent-security) model is the cleanest worked example of this in the current literature.
+
+### 5. Multi-Agent: Delegation Chain Poisoning
 
 When Agent A delegates a subtask to Agent B, the request passes through a trust boundary. If Agent B is compromised — or if the delegation mechanism doesn't preserve the original user's authorization scope — Agent B can return results that manipulate Agent A's subsequent behavior.
 
-Multi-agent systems amplify this risk because each delegation step is an opportunity for injection. A three-agent pipeline has three trust boundaries, and the adversary only needs to compromise one.
+Multi-agent systems amplify this risk because each delegation step is an opportunity for injection. A three-agent pipeline has three trust boundaries, and the adversary only needs to compromise one. The paper notes that decentralized agent topologies are particularly vulnerable here: in a star-topology system (one orchestrator, specialist leaves), the orchestrator sees every hand-off and can enforce invariants; in a peer-to-peer topology, a compromised agent can propagate its influence laterally before the orchestrator catches it.
 
-**Defense pattern:** Principle of least privilege at each delegation boundary. Agent B should receive only the information needed for its subtask, not Agent A's full context. Return values from delegated agents should be treated with the same suspicion as tool outputs — classified, sanitized, and wrapped with provenance metadata.
+**Defense pattern:** Principle of least privilege at each delegation boundary. Agent B should receive only the information needed for its subtask, not Agent A's full context. Return values from delegated agents are treated with the same suspicion as tool outputs — classified, sanitized, and wrapped with provenance. Pair this with star-topology orchestration (see the [multi-agent scaling analysis](/blog/scaling-agent-systems-cognitive-budget) for the separate reason to prefer centralized coordination).
 
-### 5. Human-in-the-Loop Exploitation
+### 6. Human-in-the-Loop Exploitation
 
-Agents that request human approval for high-risk actions can be manipulated to present misleading approval requests. The agent frames a dangerous action in benign terms, exploiting the operator's tendency to approve requests from a system that has been reliable so far.
+Agents that request human approval for high-risk actions can be manipulated into presenting misleading approval requests. The agent frames a dangerous action in benign terms, exploiting the operator's tendency to approve requests from a system that has been reliable so far.
 
-This is not a bug in the agent's code. It's a vulnerability in the human-agent interaction protocol. Approval fatigue — the tendency to rubber-stamp requests after the first N were harmless — is a known failure mode in every system that relies on human gatekeeping, from code review to air traffic control.
+This is not a bug in the agent's code. It's a vulnerability in the human-agent interaction protocol. Approval fatigue — the tendency to rubber-stamp requests after the first N were harmless — is a known failure mode in every system that relies on human gatekeeping, from code review to air traffic control. The DeepMind paper treats human-in-the-loop as a first-class attack surface rather than a mitigation, which I think is the correct framing.
 
-**Defense pattern:** Structured approval requests that force specificity. Instead of "Agent wants to execute a bash command — approve?", present "Agent wants to run `rm -rf /tmp/workspace/` — this deletes 47 files including 3 configuration files. Approve?" The approval interface should be designed to resist both fatigue and framing manipulation.
+**Defense pattern:** Structured approval requests that force specificity. Instead of "Agent wants to execute a bash command — approve?", present "Agent wants to run `rm -rf /tmp/workspace/` — this deletes 47 files including 3 configuration files. Approve?" The approval interface should be designed to resist both fatigue and framing manipulation. Concretely:
 
-### 6. Planning State Manipulation
+- Every approval request renders the exact literal action, not a paraphrase.
+- Destructive or exfiltrating actions require typed confirmation (not just a button click).
+- Batch approvals are disallowed; each action is approved independently.
+- Approval history is shown alongside the current request, so the operator can see if the agent is accelerating into risky territory.
 
-Agents that maintain explicit plans — task lists, step sequences, goal hierarchies — can have their planning state corrupted through adversarial inputs that subtly alter the plan without triggering obvious red flags.
+## The Empirical Finding That Matters Most
 
-If an agent maintains a TODO list and processes user feedback to update it, adversarial feedback can insert, reorder, or remove tasks. The agent then faithfully executes a corrupted plan, believing it reflects the user's intent.
+The specific number worth remembering from the DeepMind paper is this: **data contamination rates that are orders of magnitude below what anyone would casually flag as a problem are sufficient to produce agent hijack rates above 80%**.
 
-**Defense pattern:** Plan integrity checks. Hash the plan state after each user-approved modification. Before executing each step, verify the plan hash matches the last user-approved version. Any unauthorized modification triggers a re-approval flow.
+The intuition most engineers start with — "sure, poisoning is possible, but realistically how often are adversarial documents going to show up in my tool's output?" — is the wrong intuition. The attack is not statistical. The adversary doesn't need a majority of documents to be malicious; they need *one* document to be malicious and *retrieved at the right time*. And since similarity-based retrieval naturally pulls the most relevant documents to the query, an adversarial document that is topically relevant (which the adversary can make it, because they wrote it) is retrieved disproportionately often.
 
-## The Capability-Vulnerability Tradeoff
+This inverts the usual defense prior. You don't get to assume "most inputs are benign, so my defense only has to catch outliers." You have to assume the one input that matters most for this query is the adversarial one, because retrieval has been biased toward exactly that.
 
-The uncomfortable implication of this taxonomy is that every feature that makes agents more useful also makes them more vulnerable:
+## The Capability–Vulnerability Tradeoff
+
+The uncomfortable implication of the taxonomy is that every feature that makes agents more useful also makes them more vulnerable:
 
 | Capability | Corresponding Vulnerability |
 |---|---|
+| Perception (tool outputs, web access) | Indirect prompt injection |
 | Persistent memory | Cognitive state traps |
-| Tool discovery | Tool confusion attacks |
+| Planning state | Plan manipulation |
+| Tool discovery | Tool confusion / authorization drift |
 | Multi-agent delegation | Delegation chain poisoning |
-| Human-in-the-loop | HITL exploitation |
-| Autonomous planning | Planning state manipulation |
+| Human-in-the-loop | Approval-frame exploitation |
 | Long context windows | Larger injection surface |
 
-This isn't a design flaw to be fixed. It's a fundamental tradeoff. Making an agent more capable inherently expands its attack surface. The question isn't "how do we make agents secure?" — it's "how do we make the tradeoff explicit and manageable?"
+This isn't a design flaw to be fixed. It's a fundamental tradeoff, and making it explicit is itself progress. The question isn't "how do we make agents secure?" — it's "for this specific capability in this specific deployment, is the marginal utility worth the marginal attack surface, and can we price the defense correctly?"
 
 ## Architectural Principles
 
-Three principles emerge from this analysis:
+Three principles fall out of this analysis and unify the six per-trap defenses above.
 
-**Separation of planes.** Data that the agent processes (tool outputs, retrieved documents, delegated results) must be structurally separated from instructions that the agent follows (system prompts, user commands, planning state). This separation needs to be enforced at the architecture level, not just through prompt engineering.
+**Separation of planes.** Data that the agent processes (tool outputs, retrieved documents, delegated results) must be structurally separated from instructions the agent follows (system prompts, user commands, planning state). This separation needs to be enforced at the architecture level, not just through prompt engineering. Current prompt-layer separation (`<tool_output>` tags, role markers) is better than nothing but known to be soft — the DeepMind reproduction walks through several bypasses. The hard version is having the model architecturally distinguish trusted tokens from untrusted ones, which requires training-time support the frontier labs are only now starting to publish about.
 
-**Provenance everywhere.** Every piece of information in the agent's context should carry metadata about its origin, trustworthiness, and age. The agent's decision-making should weight information by provenance, not just semantic relevance.
+**Provenance everywhere.** Every piece of information in the agent's context should carry metadata about its origin, trustworthiness, and age. The agent's decision-making should weight information by provenance, not just semantic relevance. Inherit trust levels through transformations (summaries of untrusted data are untrusted; merges inherit the lowest trust level of their inputs). If your memory system stores content without provenance, it is functionally one large ingestion surface for category-2 attacks.
 
-**Capability-scoped authorization.** Each tool call, each delegation, each memory write should be authorized against the minimum scope needed for the current task. An agent that can "do anything the user can do" is an agent with no meaningful security boundary.
+**Capability-scoped authorization.** Each tool call, each delegation, each memory write should be authorized against the minimum scope needed for the current task. An agent that can "do anything the user can do" is an agent with no meaningful security boundary. The CAMEL capability-based model and the emerging sandbox-tier patterns ([see earlier coverage](/blog/agent-sandbox-three-tier-hierarchy)) are concrete implementations of this principle.
 
-These aren't new ideas in security. They're standard practice in operating system design (address space separation, file permissions, capability-based access control). The contribution of the agent security analysis is showing that the same principles apply — and that the agent community has largely been ignoring them in favor of "the model will figure it out."
+These aren't new ideas in security — they're standard practice in operating system design (address space separation, file permissions, capability-based access control). The contribution of the DeepMind paper is empirical: showing that the same principles apply, that the agent community has been ignoring them in favor of "the model will figure it out," and that the cost of ignoring them is a >80% hijack rate from less than 0.1% of contamination.
 
-The model won't figure it out. Security is a systems property, not an intelligence property. The smartest agent in the world is still vulnerable to a cognitive state trap if its memory system doesn't track provenance. Defense has to be architectural.
+The model won't figure it out. Security is a systems property, not an intelligence property. The smartest agent in the world is still vulnerable to a cognitive state trap if its memory system doesn't track provenance. Defense has to be architectural, and the architectural patterns we need are the ones the operating-systems community already figured out in the 1970s. We just have to port them to a substrate whose "programs" are stochastic and whose "memory" is natural language.
+
+## References
+
+- [Franklin, Tomašev, Jacobs, Leibo, Osindero — AI Agent Traps: A Taxonomy (SSRN 6372438)](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6372438) — DeepMind, 2026. The six-trap taxonomy, empirical hijack rates, M365 Copilot reproduction.
+- [Greshake et al. — Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection (arXiv:2302.12173)](https://arxiv.org/abs/2302.12173) — the canonical indirect-injection paper.
+- [OWASP Top 10 for LLM Applications 2025](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — standardized threat vocabulary.
+- [CAMEL: Capability-Based Agent Security](/blog/camel-capability-based-agent-security) — concrete capability-scoped authorization model.
+- [Three-Tier Agent Sandbox Hierarchy](/blog/agent-sandbox-three-tier-hierarchy) — architectural patterns for isolation.
+- [Scaling Agent Systems and the Cognitive Budget](/blog/scaling-agent-systems-cognitive-budget) — why star-topology multi-agent is preferable for both performance and security.
 
 ---
 
-*Taxonomy synthesized from DeepMind's agent security research, the indirect prompt injection literature (Greshake et al., 2023), and architectural patterns from production multi-agent deployments.*
+*Revised April 17, 2026 to integrate the DeepMind "AI Agent Traps" taxonomy and empirical findings on poisoning and EchoLeak-class exfiltration.*

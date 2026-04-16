@@ -1,0 +1,116 @@
+---
+title: "Recursive Language Models: Context as an Environment"
+description: "MIT CSAIL's RLM treats the prompt as a REPL variable explored with sub-LLMs. Long-context evaluation is converging with program synthesis."
+publishDate: "2026-04-17"
+tags: [agents, context-engineering, long-context, RLM, tool-use, MIT, reinforcement-learning, recursive-language-models]
+category: research
+language: en
+draft: false
+---
+
+The dominant mental model for "long context" is that you shove more tokens into the prompt and hope the attention mechanism holds up. Every frontier lab has spent the last two years pushing that curve — 128K, 200K, 1M, 2M — and every curve has the same shape: smooth accuracy for the first tens of thousands of tokens, then a shelf, then a cliff somewhere past a quarter of the advertised window. The benchmarks that show this most clearly (BrowseComp-Plus, HashHop, Needle-in-a-Haystack-at-scale) are precisely the benchmarks frontier labs have stopped leading with.
+
+A paper out of MIT CSAIL in April 2026 — [Zhang, Kraska, Khattab, "Recursive Language Models"](https://arxiv.org/abs/2512.24601), with a readable accompanying write-up on [Prime Intellect's blog](https://www.primeintellect.ai/blog/rlm) — proposes a different move. Instead of making the root LLM ingest longer contexts, give it a Python REPL and load the "context" as a variable in that REPL. The root model never reads the long input. It writes code that greps, slices, summarizes, and calls sub-LLMs over fragments. The full context becomes an *environment* the model navigates, not a stream it consumes.
+
+The reported numbers are loud enough that the framing deserves to be unpacked. On a single-benchmark configuration with 10M+ token environments (BrowseComp-Plus-style deep-research, specific dataset splits), the paper reports GPT-5 going from roughly 24% to 62% accuracy when wrapped as an RLM root, and the RLM scaffold matching GPT-5-Pro using a smaller root model. These are single-study numbers on specific setups — they need independent replication before anyone should treat them as universal. What matters past the scores is what the architecture implies about where long-context ability comes from and how it should be trained.
+
+## The Core Move: `llm_batch(x, prompt)` as a Primitive
+
+Here is the picture in one block. The root model receives a user question and a *handle* to the corpus — not the corpus itself.
+
+```python
+# This runs inside the root model's REPL, not before it.
+# `context` is bound in the REPL environment as a Python variable.
+# The root model has never seen the tokens of `context`.
+
+docs = context.load("internal_wiki")           # ~10M tokens, a list[str]
+# Grep-class filtering, zero LLM tokens used:
+candidates = [d for d in docs if "refund" in d.lower()]
+# Sub-LLM call — each invocation runs on a fragment, independently:
+summaries = llm_batch(
+    candidates,
+    prompt="Summarize any refund-policy claim in one sentence. "
+           "Return '' if none.",
+)
+# Aggregate, still in Python:
+evidence = [s for s in summaries if s]
+```
+
+The root model now decides what to do with `evidence`. It might synthesize a final answer directly, it might re-grep with a different string, it might call `llm_batch` again over the summaries with a cross-referencing prompt. Critically, the cost of every step is measurable and local: `context.load` is I/O, list comprehensions are CPU, and `llm_batch(xs, prompt)` costs roughly `len(xs) * per_call_tokens` — all of which the scheduler around the REPL can parallelize trivially.
+
+The three pieces that make this work as an LM primitive rather than a framework pattern:
+
+1. **Context as a variable**, not a prefix. Loading a document doesn't consume tokens of the root's window. The root reads a handle, a length, and some metadata. It decides whether to read further by writing code.
+2. **Sub-LLM calls are batched and prompt-carrying.** `llm_batch` is pure from the root's perspective — input list in, parallel calls out, results back — which means the root doesn't have to reason about hidden per-call state.
+3. **A single REPL session persists variables.** `evidence` from step one is still bound at step two. This is what makes RLM recursive rather than just "agent with tools": the root progressively builds up its own data structures over the corpus, and decides when those structures are good enough to answer from.
+
+Each of those three pieces already exists individually in tool-using agents. What RLM does is pin them to a concrete, minimal interface — `context`, `llm_batch`, a persistent Python session — and argue that interface is worth training *into* the model rather than prompting around.
+
+## Why "Context as Environment" Breaks the Long-Context Tax
+
+The standard long-context failure mode is not that the model forgets what it read. It is that it pays quadratic (or near-quadratic) attention cost on tokens that are irrelevant to the question. A 2M-token prompt where 99% of the tokens are irrelevant still has the root model compute attention patterns over every pair. At best, the model learns to ignore most of it — at a computational cost equal to not ignoring it.
+
+RLM makes this cost visible to the model. The root never sees irrelevant tokens. Filtering happens before any token enters any attention matrix. Summarization is done by parallel sub-LLM workers whose context is bounded per call.
+
+The benchmark story reflects this in a specific way. The paper reports that the RLM wrapper produces near-monotonic accuracy gains as corpus size grows, while bare long-context LLMs fall off a cliff somewhere around 200K tokens. The absolute numbers depend on which benchmark you look at, but the shape is the same across BrowseComp-Plus, HashHop, and the longer configurations of HELM. The underlying reason is that the RLM's effective context is whatever the root's Python code chooses to materialize — which grows with the model's code-writing ability, not with its native attention budget.
+
+There is also a second effect that is under-discussed in the write-ups: **failure modes move from hallucination to exception**. A long-context LLM that doesn't find a fact in the haystack will often confabulate one. An RLM root whose grep returns nothing gets an empty list. Empty list is a control-flow signal; hallucinated fact is not. The error surface shifts from "wrong answer confidently" to "stuck with no evidence," which is dramatically easier to detect and route around.
+
+## Why It's Different from RAG, Tool-Use, and CodeAct
+
+Three patterns look superficially similar and are worth distinguishing.
+
+**RAG.** A retriever produces top-k passages. The LLM reads them. The retriever is fixed (a separate embedding model) and stateless; the LLM has no way to decide "retrieve again with different keywords" except by being explicitly re-invoked by the orchestrator. RLM collapses retriever and reasoner into the same model, operating over the corpus variable with arbitrary code. The retrieval function is whatever Python the root chooses to write.
+
+**Tool-using agent.** A React-style agent calls tools like `search(q)` and reads back a short result. Each tool call consumes tokens of the root's context window — the result is injected into the conversation. Over a 100-step workflow, the context window fills with tool I/O and the agent's own reasoning, eventually colliding with the very long-context failure mode RLM is trying to avoid. RLM's sub-LLM calls return values to *variables*, not to the context window. The root's window stays small.
+
+**CodeAct / executable actions.** CodeAct-style agents already write Python to invoke tools. This is the closest relative. The difference is philosophical: in CodeAct, Python is a *cleaner way to express tool calls*. In RLM, Python is the control plane for an LLM swarm — `llm_batch` is the primitive, and the root's job is to write code that decides which sub-calls to spawn. A CodeAct agent without `llm_batch` cannot parallelize reasoning over a 10M-token corpus. An RLM with `llm_batch` but without external tools can still solve deep-research tasks, because the sub-LLMs *are* the tools.
+
+Put differently: RLM treats the LLM population as a compute fabric, and teaches one LLM to schedule work across it. Tool-use teaches an LLM to delegate to non-LLM services.
+
+## What Needs to Happen in Training
+
+An off-the-shelf GPT-5 can act as an RLM root — the paper demonstrates this — but its performance is bounded by how well it writes the REPL code. Two training deltas separate "model that can play along with RLM if you prompt carefully" from "model trained for RLM as its first-class interface":
+
+**Cost-aware planning.** The root's job is to minimize total tokens across all sub-LLM calls while answering correctly. This is a *program synthesis under a cost budget* problem. Naive RL fine-tuning on answer correctness alone will converge to "call llm_batch on every document, check everything," which is correct but infinitely expensive. Training needs a reward that penalizes both wrong answers and wasted sub-LLM calls. Prime Intellect has integrated exactly this shape — an `RLMEnv` in their `verifiers` library — which is why their write-up leads with the RL integration rather than the benchmark scores.
+
+**REPL-native outputs.** A model trained to emit Python over a long-running REPL session is qualitatively different from a model trained to emit one-shot code. Variable naming, incremental refinement, "let me check my work by printing an intermediate result" — these are habits that don't emerge from standard code-completion pretraining. The RLM paper's ablations suggest that the gap between few-shot prompting an RLM root and fine-tuning one is substantial on 10M+ token tasks, and the delta is almost entirely in how well the root writes incremental, observable code.
+
+**Sub-LLM calibration.** When a sub-LLM returns "no refund policy mentioned," how much should the root trust it? Training the root to probabilistically weight sub-LLM outputs, ask for corroboration across parallel calls, or fall back to re-reading at a finer granularity is a new axis of RL signal that doesn't exist in single-call LLM training. This is where the "agent calls itself" framing matters — the root is essentially doing self-supervised error correction over its own outputs.
+
+## Training-Time vs. Inference-Time Context Folding
+
+One of the more interesting implications in the RLM paper, and the part most relevant to where frontier labs are heading, is that **RLM turns long-context capability into something you train for rather than scale into the weights**. The current frontier approach is to throw longer sequences at pretraining, pray the positional embedding interpolates, and evaluate at the end. RLM's approach is to keep the per-call context small, and train the model to fold long contexts into structured data at inference time.
+
+This has two knock-on effects worth watching.
+
+First, it decouples model size from context length. A Haiku-class root that writes good REPL code can answer questions over 10M tokens of corpus that a bare-context Opus cannot, because the Opus is pouring compute into useless attention while the Haiku is running grep. The interesting frontier becomes "smallest model that can orchestrate well," not "largest model that can read 2M tokens."
+
+Second, it reframes the KV-cache-compression arms race. Current work on KV-cache compression (which the blog has [covered elsewhere](https://zakura-world.com/blog/kv-cache-compression-long-context-economics)) tries to keep the 1M-token prompt cheap to serve. RLM says: don't serve the 1M-token prompt. Serve ten 10K-token prompts in parallel, orchestrated by a small root. The economics are different in direction: more calls per query, but much cheaper per call, and dramatically more parallelizable.
+
+## What This Does to Evaluation
+
+The more important implication is methodological. Every long-context benchmark that assumes the model reads all tokens linearly is measuring the wrong quantity. An RLM root that answers a 10M-token question correctly by reading 30K tokens of targeted fragments is not "cheating" — it is doing what any competent human researcher would do. But it scores indistinguishably from a bare long-context model that ingested all 10M tokens, on any benchmark that only measures final-answer correctness.
+
+The correct benchmark shape is going to have to include *token-budget accuracy curves* — how well does the system do at varying total sub-LLM call budgets — and *program-quality metrics* over the REPL code the root produces. Both of these are borrowed from program-synthesis evaluation, not NLP evaluation. That's the durable observation: long-context LLM evaluation is converging with program synthesis evaluation, because long-context reasoning is converging with program synthesis.
+
+## What to Build Now
+
+If you are building agent infrastructure in 2026, the practical takeaways are specific.
+
+1. **Expose your corpus as a variable, not a prompt prefix.** Agents should receive handles (document IDs, database connections, filesystem paths) and load what they need programmatically. A flat "here is 500K tokens, do your best" prompt is an increasingly poor default — it pays attention cost on irrelevant tokens and closes the door on programmatic filtering.
+2. **Build `llm_batch`-shaped primitives into your agent runtime.** Parallel sub-LLM calls over homogeneous inputs are the workload that benefits most from scheduling, and the least well-served by synchronous ReAct loops.
+3. **Start measuring token budget, not just accuracy.** If your agent can answer a question using 20K tokens or 2M tokens, those are different products at different prices. The cost-quality curve is the benchmark.
+4. **Treat the REPL session as first-class state.** Agents that maintain a persistent Python (or JS/Lua) session across tool calls have strictly more expressive power than agents that re-prompt from scratch each turn. If your runtime resets state between calls, you've thrown away half the RLM benefit.
+
+The RLM paper is careful not to overclaim: it's one paper, and the numbers need independent replication before anyone should bet a production system on them. But the architectural statement behind the numbers — **context is an environment, not a stream; the LLM is the scheduler, not the reader** — is the direction long-context AI has been pointed for two years. The question the frontier labs now have to answer is whether they keep pushing native attention windows toward 10M, or pivot to making their models better scheduler-shaped for workloads that were never going to fit in any window.
+
+My bet: both, but the second is the one that changes the shape of the stack.
+
+## References
+
+- [Recursive Language Models (arXiv:2512.24601)](https://arxiv.org/abs/2512.24601) — Zhang, Kraska, Khattab (MIT CSAIL), December 2025 / April 2026 revision.
+- [Prime Intellect — Training Recursive Language Models with RL](https://www.primeintellect.ai/blog/rlm) — accompanying engineering write-up, `RLMEnv` integrated into the `verifiers` library.
+- [BrowseComp-Plus](https://arxiv.org/abs/2405.19200) — long-context retrieval benchmark used in the RLM evaluations.
+- [CodeAct: Executable Action Representations for LLM Agents (arXiv:2402.01030)](https://arxiv.org/abs/2402.01030) — the closest-relative pattern RLM extends.
+- [KV Cache Compression and the Economics of Long Context](/blog/kv-cache-compression-long-context-economics) — earlier post on why raw long-context is expensive.

@@ -1,0 +1,133 @@
+---
+title: "When More Agents Hurts: Multi-Agent Cognitive Budget"
+description: "Google Research tested 180 multi-agent configurations. The answer hinges on one variable frameworks ignore: parallelizable vs. sequential."
+publishDate: "2026-04-17"
+tags: [agents, multi-agent, orchestration, scaling, evaluation, empirical, google-research]
+category: research
+language: en
+draft: false
+---
+
+Multi-agent orchestration frameworks spent 2025 pitching the same story: one model is a bottleneck, so spawn more of them. LangGraph, CrewAI, AutoGen, MetaGPT, and every MCP orchestration demo followed the same pattern — a planner, a small team of specialists, a critic, a synthesizer. The intuition behind the pitch is plausible: if one agent is good, several specialized agents should be better.
+
+The intuition is wrong often enough that it matters. [Google Research's "Towards a Science of Scaling Agent Systems" (April 2026)](https://research.google/blog/towards-a-science-of-scaling-agent-systems/) ran 180 multi-agent configurations across two benchmarks and reports the kind of result that should change how practitioners design. On one benchmark, centralized multi-agent coordination gave +80.9% over a single agent. On the other, every multi-agent configuration degraded performance by 39–70%. Same framework, same models, same number of reasoning steps — opposite outcomes.
+
+The load-bearing variable is not the one most orchestration frameworks expose. It is whether the underlying task is *parallelizable* or *sequential*, and whether the agent team's coordination cost is smaller or larger than the cognitive budget that single-agent reasoning would have spent on the same problem.
+
+This post walks through the finding, explains the mechanism, and extracts a decision procedure for when multi-agent helps, when it hurts, and what to do when you genuinely can't tell.
+
+## The Two Benchmarks
+
+Google's study uses two task families, chosen specifically because they have very different structural properties.
+
+**FinanceBench-style analysis.** Given a 10-K or 10-Q, answer a specific factual or inferential question about it (revenue by segment, one-time charges, derivative exposure, etc.). These tasks decompose cleanly: different specialists can read different sections of the document in parallel, extract structured claims, and hand them to a synthesizer that composes the final answer. The dependency graph across subtasks is shallow — most subtasks only depend on the document, not on each other's outputs.
+
+**PlanCraft.** A planning benchmark where each step depends tightly on the previous step (building a crafting chain, navigating a dependency graph, repairing a broken plan mid-execution). The task is fundamentally serial — the output of step N is an input to step N+1 — and every branch point requires *the same* reasoner to have the full stack of prior state in mind.
+
+The reported numbers tell a clean story:
+
+| Task type | Single agent | Centralized multi-agent | Decentralized multi-agent |
+|-----------|:---:|:---:|:---:|
+| Finance (parallelizable) | baseline | **+80.9%** | +45% |
+| PlanCraft (sequential) | baseline | **−39%** | **−70%** |
+
+Centralized beats decentralized beats single on parallel tasks. Single beats centralized beats decentralized on sequential ones. The 150-percentage-point swing between the best and worst configurations — with the same models doing the actual work — is entirely in how the coordination was structured.
+
+## The Cognitive Budget Model
+
+The mechanism the Google paper proposes (and the one I find most predictive from production deployments) treats every agent interaction as consuming a *cognitive budget*: the total tokens and attention cycles spent on coordination, context transfer, and reconciliation, rather than on the task itself.
+
+For a task of intrinsic difficulty $D$ measured in reasoning tokens, a single agent spends roughly $D$ tokens on the problem. A $k$-agent centralized team spends something like $D / k + C(k)$, where $C(k)$ is the coordination overhead:
+
+- Each specialist needs context transfer in (what's my subtask, what's the shared state)
+- Each specialist emits a report that the coordinator reads
+- The coordinator reconciles conflicting or overlapping reports
+- Any shared state (a plan, a scratchpad) is serialized, mutated, and re-serialized
+
+$C(k)$ grows at least linearly with $k$ on parallelizable tasks and roughly *quadratically* on sequential tasks, because each new agent introduces a new edge in the dependency graph that has to be walked every time state changes.
+
+Multi-agent helps precisely when $D/k + C(k) < D$, which is just saying "$C(k) < D(k-1)/k$" — coordination cost has to be smaller than the speedup from splitting the task. The inequality holds when:
+
+1. The task decomposes cleanly (low coupling between subtasks, so $D/k$ actually captures specialist work).
+2. Coordination is cheap (structured hand-offs, not free-form conversation).
+3. The per-subtask work is large compared to per-subtask hand-off cost.
+
+When any of those fails — especially (1) — coordination overhead dominates and the multi-agent system loses to a single agent that would have kept all the state local.
+
+## Why Sequential Tasks Specifically Break Multi-Agent
+
+The PlanCraft result is more informative than the finance result. A −70% degradation is not noise; it is a predictable failure mode. Three specific mechanisms compound:
+
+**Serialization loss.** Every time one agent hands off state to another, the state passes through natural language (or structured JSON, but same problem). Serialization is lossy — the receiving agent has to reconstruct whatever implicit understanding the sender had, from an explicit transcript. For sequential tasks, this loss compounds at every step. By the time the tenth agent acts, the accumulated misreading of the original plan is large enough to produce a different plan.
+
+**Distributed fault localization.** When a sequential plan fails, someone has to figure out *where* it failed. In a single-agent system, the agent has the full trajectory in its own context and can reason about which step was wrong. In a multi-agent system, no one agent has the full trajectory — they have their own subtask and their hand-off transcripts. Debugging and repair require a meta-agent to stitch the trajectory back together, and that meta-agent is itself subject to serialization loss.
+
+**Redundant recomputation.** On sequential tasks, later steps often need to re-derive facts that were already in the reasoning of earlier steps. In a single-agent system, those facts are in the context window. In a multi-agent system, they have to be recomputed or re-retrieved, often by different agents who don't know the earlier derivation existed. This is the cognitive equivalent of cache misses, and it scales with plan depth.
+
+The parallelizable-task case dodges all three. Specialists on different sections of a 10-K don't serialize to each other (they serialize only to the synthesizer). There's no distributed fault localization because each specialist's output can be checked independently. And there's no redundant recomputation because the subtasks were by construction independent.
+
+## Centralized vs. Decentralized: Why Centralized Wins When Multi-Agent Wins
+
+The Google study's secondary finding is nearly as useful as the primary one. Among multi-agent configurations, *centralized* coordination (one orchestrator routes subtasks and aggregates) beats *decentralized* coordination (agents freely message each other) on essentially every benchmark where multi-agent helps at all.
+
+The reason is again the coordination term. Decentralized systems are $O(k^2)$ in communication edges — any agent can talk to any other, and they will, because LLM agents prompted with "collaborate with the team" generate more messages than are needed. Centralized systems are $O(k)$ in edges: every agent talks only to the orchestrator. The orchestrator absorbs the coordination complexity into a single context window that can be reasoned over coherently.
+
+This matches what you see in production agent systems that work. Claude Code's subagent model is centralized: a parent Claude spawns subagents, reads their reports, and never lets them talk to each other. Cursor's agent mode is centralized. The "swarm" frameworks that let agents message freely tend to produce the kind of runaway conversations where three agents take seven turns to decide whose turn it is.
+
+The practical implication: if you're reaching for multi-agent, start from a star topology. Give one orchestrator read access to all subagent outputs, and give subagents no communication channel with each other. Add peer communication only when you have evidence the centralized version fails for a specific reason.
+
+## A Decision Procedure
+
+Google's data plus what has worked in production agent deployments gives a fairly concrete decision procedure. Before reaching for a multi-agent framework, walk through these in order.
+
+**Step 1: Is the task parallelizable?** Draw the dependency graph of subtasks. If it's mostly a star (one document, many independent questions) or mostly disjoint (different files, independent analyses), multi-agent can help. If it's a chain or a deep DAG, stay single-agent. The PlanCraft failure mode says sequential tasks lose even with optimal orchestration.
+
+**Step 2: Is the total work large enough to justify coordination overhead?** Coordination cost is roughly constant per agent-invocation in token terms. If the task fits comfortably in a single context window and the single-agent version runs in under a minute, multi-agent adds latency without adding capability. In Google's specific setup, the break-even appeared around tasks requiring ~50K+ reasoning tokens from a single agent — treat that threshold as a benchmark-specific order-of-magnitude hint, not a universal constant; it will shift with model, task family, and coordination protocol.
+
+**Step 3: Can you express the decomposition cleanly?** If the specialist subtasks can be described as "apply this fixed prompt to this fixed input," multi-agent will work. If the subtasks require the specialist to reason about what the other specialists are doing, you're back to the sequential problem.
+
+**Step 4: If steps 1–3 say yes, use centralized, not decentralized.** One orchestrator, many leaf specialists, star topology. No peer-to-peer communication.
+
+**Step 5: Bound the team size.** Google's data shows diminishing returns past ~4 specialists on most tasks, and negative returns past ~8. Bigger teams are a red flag: they usually indicate the task wasn't actually parallelizable and the framework is adding agents to paper over coordination failures.
+
+## How This Interacts with Current Trends
+
+Three current trends change how this decision procedure reads in 2026.
+
+**Larger single-model context windows reshape the break-even point.** Current frontier models (Claude Opus and GPT-5 generations as of this writing) advertise 200K+ token context windows, and in my own usage they handle the first ~100K of real, dense context reliably. A lot of work that *looks* parallelizable — "analyze this 10-K from five angles" — fits in one window now. The break-even for multi-agent has moved up, not down. Tasks that needed splitting in 2024 often don't need splitting in 2026.
+
+**Self-verification inside the model (Opus 4.7's "I will check my own output" behavior) eats part of the centralized-multi-agent value proposition.** One of the reasons centralized multi-agent helped on parallelizable tasks was the orchestrator's ability to catch inconsistencies across specialists. If the single agent reliably catches its own inconsistencies, the external orchestrator is doing less unique work. This doesn't eliminate the parallelism win — you still get real speedup from reading five sections concurrently — but it shrinks the *quality* gap.
+
+**Recursive language models (RLM, previously [discussed](/blog/recursive-language-models-context-environment)) are a better alternative for many parallelizable tasks than multi-agent.** An RLM root with `llm_batch` over fragments is a centralized multi-agent system where the "agents" are stateless sub-LLM calls with homogeneous prompts. The orchestrator is the root's Python code. This is strictly simpler than a framework-managed multi-agent team, and it scales better: 100 sub-LLM calls in `llm_batch` is trivial; 100 specialized agents in a LangGraph DAG is a debugging nightmare.
+
+Looking at these together, the direction of travel is: *multi-agent as a production pattern is narrowing, not widening*. Big contexts absorb what multi-agent used to handle. Self-verification absorbs what orchestrators used to handle. RLM absorbs what fan-out-fan-in workflows used to handle. The remaining legitimate use case is genuinely decomposable tasks with clean specialist boundaries — which is a smaller niche than the framework ecosystem implies.
+
+## What I've Stopped Using Multi-Agent For
+
+Concrete examples from my own agent work, as a check against the framework above.
+
+- **Code review of a PR.** Previously: a specialist for each language/file type, a synthesizer. Now: a single Opus call with the full diff and a structured rubric. The synthesizer was doing more work than the specialists, and most of that work was reconciling specialist outputs that disagreed on the same lines. Single-agent is more consistent and ~3x cheaper.
+- **Multi-hop research questions.** Previously: a researcher agent, a verifier agent, a writer agent. Now: one agent with web search, told to verify its own claims before writing. The verifier agent's only real job was catching hallucinations — the model does that natively when prompted for it.
+- **Plan generation for long tasks.** Previously: a planner, an estimator, an executor. Now: a single agent that plans and executes, with explicit checkpoint prompts. The estimator agent never disagreed with the planner usefully.
+
+What I *have* kept multi-agent for:
+
+- **Parallel document analysis over a document corpus that doesn't fit in context.** Classic map-reduce shape; centralized orchestrator with homogeneous leaf prompts. This is the case RLM formalizes, and the Google finance result validates empirically.
+- **Red-team / blue-team evaluations** where the adversarial structure is inherent to the task (one agent generates, another attacks, a judge scores). Here the "multi-agent" structure isn't optimization — it's task definition.
+
+## Reading the Result Carefully
+
+One thing to be careful about with the Google paper: the benchmarks it uses are synthetic in the sense that task structure is known in advance. In production, the structure is usually mixed — a task might have a parallelizable front half (analyze these documents) and a sequential back half (generate a coherent plan from the analysis). The framework above applies *per phase*, not per task. Use multi-agent for the parallel phase, single-agent for the sequential one, and accept the coordination cost of handing off between phases. A mono-architecture answer ("we are a multi-agent shop" or "we are a single-agent shop") is going to lose to a system that picks per phase.
+
+The larger story the Google paper tells — and the reason it's worth tracking past this one study — is that **agent system design is starting to produce empirically grounded engineering principles** rather than vibes-based best practices. The 180-configuration sweep is exactly the methodology that was missing from the 2025 multi-agent discourse. More studies like this, with this level of configuration coverage, will shrink the gap between what frameworks claim and what they actually deliver.
+
+My bet on where this converges: by late 2026, the dominant agent pattern will be "one large-context model doing self-verification, with occasional parallel fan-out to sub-calls that return to variables in a persistent runtime," and the 2025-era multi-agent frameworks will look roughly like the microservice frameworks did after the "modular monolith" reaction — oversold, over-applied, useful in specific places, retired from the default stack.
+
+## References
+
+- [Towards a Science of Scaling Agent Systems — Google Research](https://research.google/blog/towards-a-science-of-scaling-agent-systems/) — 180-configuration sweep across Finance and PlanCraft benchmarks.
+- [FinanceBench](https://arxiv.org/abs/2311.11944) — the finance QA dataset the Google study uses for the parallelizable condition.
+- [PlanCraft](https://arxiv.org/abs/2412.21033) — the sequential planning benchmark where multi-agent underperforms.
+- [The Cognitive Router](/blog/cognitive-routing-agent-architectures) — earlier post on skill-routed agent architectures.
+- [Recursive Language Models: When Context Becomes an Environment](/blog/recursive-language-models-context-environment) — the RLM alternative to classic multi-agent fan-out.
+- [Coordination Tax in Multi-Agent Systems](/blog/coordination-tax-multi-agent) — earlier treatment of the same overhead term.
