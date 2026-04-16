@@ -1,0 +1,143 @@
+---
+title: "MCP Elicitation：当工具开始反向提问"
+description: "MCP 2.0 的 Elicitation 原语允许工具暂停执行并请求人工输入。这一特性彻底改变了所有智能体工作流的控制流逻辑。"
+publishDate: "2026-04-16"
+tags: [mcp, agent-infrastructure, human-in-the-loop, protocol-design, elicitation]
+category: engineering
+language: zh
+draft: false
+---
+
+Model Context Protocol (MCP) 的最初设计基于一个清晰的隔离架构：客户端发起请求，服务端执行工具，结果返回。在这种模式下，工具就像是一个"黑盒"，接收参数并返回输出。如果工具在执行过程中发现信息不足，通常只有两个选择：要么报错失败，要么盲目猜测。在生产级的 Agent 工作流中，这两种选择往往都会导致糟糕的结果。
+
+MCP 2.0 引入了 **Elicitation (反向征询)** 原语——这是一种允许工具服务端在执行中途暂停、向客户端发送结构化的人工输入请求、并在收到响应后恢复执行的机制。这彻底反转了所有 MCP 集成方案中"控制流固定"的假设：工具不再仅仅是回答问题，它们现在可以反向提问。
+
+从协议层面看，这一改动很小；但从架构层面看，它具有深远的意义。它将 MCP 从一个纯粹的"请求-响应"协议，转变为 Agent、工具与人类之间更接近"协作对话"的模式。工具在对话中不再是被动执行者，而是主动参与者。
+
+## Elicitation 解决的核心痛点
+
+假设有一个部署工具作为 MCP 服务暴露给 Agent。Agent 调用 `deploy(service="payments", env="production")`。虽然工具拥有执行所需的全部参数，但它是否应该直接执行？在大多数组织中，生产环境的部署都需要人工审批。在没有 Elicitation 机制之前，工具的实现通常有三种方案：
+
+**方案一：无条件拒绝。** 工具返回错误："生产环境部署需要手动审批。" Agent 将错误报告给用户，用户随后在 Agent 工作流之外手动执行部署。这导致 Agent 在任务最关键、最需要监管的环节失去了效用。
+
+**方案二：无条件接受。** 工具在没有任何确认的情况下直接部署到生产环境。这种方式在出问题之前都很完美，而一旦出事，就是由 Agent 未经人类验证的操作引发的生产事故。任何安全审查都会立即封杀这种模式。
+
+**方案三：外部审批流。** 工具触发 Slack 消息、PagerDuty 告警或自定义审批界面，Agent 持续轮询审批状态。这虽然可行，但需要为每个工具、每个组织构建专属的审批基础设施。审批流对 MCP 客户端是不可见的——Agent 无法以结构化的方式获知审批正在挂起，也无法直接向用户展示请求或辅助审批。
+
+Elicitation 提供了第四种选择：工具暂停执行，通过 MCP 协议本身发送一个结构化的审批请求，客户端原生处理该请求——并在其提供的任何 UI 界面中直接呈现给用户。
+
+## 协议机制
+
+Elicitation 流程在 MCP 协议中只增加了一种新的消息类型。当工具在执行期间需要人工输入时，它会向客户端发送一个 `elicit` 请求，并附带一个描述预期输入的 JSON Schema：
+
+```python
+@server.tool()
+async def deploy_service(service: str, env: str, ctx: Context) -> str:
+    if env == "production":
+        response = await ctx.elicit(
+            message=f"Deploy {service} to production. Current version: v2.3.1. "
+                    f"Last deploy was 6 hours ago. Confirm?",
+            schema={
+                "type": "object",
+                "properties": {
+                    "approved": {
+                        "type": "boolean",
+                        "description": "Approve production deployment"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Optional: reason for approval/rejection"
+                    }
+                },
+                "required": ["approved"]
+            }
+        )
+
+        if response.action == "decline" or not response.data.get("approved"):
+            return f"Deployment to {env} cancelled by user."
+
+    result = await execute_deployment(service, env)
+    return f"Deployed {service} to {env}: {result}"
+```
+
+调用 `ctx.elicit()` 会挂起工具的执行。MCP 服务端发送征询请求，客户端将其以表单、确认对话框或其他合适的 UI 形式展现。用户响应后，客户端将数据传回服务端，工具携带这些响应数据恢复执行。
+
+系统支持三种响应动作：`accept` (用户提供了数据)、`decline` (用户拒绝了请求) 和 `cancel` (用户希望终止整个工具调用)。工具开发者可以显式处理每种情况。
+
+## 架构层面的变革
+
+Elicitation 将 MCP 工具从"无状态函数"转变为"有状态工作流"。支持 Elicitation 的工具不再是单纯的"参数到输出"的映射函数，而是一个可以挂起、与人类交互并恢复的协程 (Coroutine)。这产生了几个连锁反应：
+
+**连接生命周期：** Elicitation 要求客户端与服务端之间的连接在人类响应期间保持开启。在 MCP 新的 Streamable HTTP 传输协议下，这意味着服务端必须保持 HTTP 响应挂起（类似长轮询）或使用 Server-Sent Events (SSE) 进行回调。对于部署在负载均衡器后的无状态服务，这重新引入了某些会话亲和性 (Session Affinity) 问题，而这原本是 Streamable HTTP 试图消除的——不过其影响范围较窄（仅限于需要 Elicitation 的工具）。
+
+**超时处理：** 人类可能需要几分钟甚至更久来响应征询请求。工具服务端必须优雅地处理超时——如果在配置的时间窗口内没有收到响应，则取消挂起的操作。MCP 规范建议服务端实现自己的超时逻辑，而不是完全依赖传输层超时，因为不同的上下文所需的超时时间迥异（审批部署可能需要 30 分钟，而确认文件名只需 30 秒）。
+
+**安全模型：** 征询请求是从服务端流向客户端的，这反转了典型的信任方向。恶意的 MCP 服务端可能会构造征询请求，通过社会工程学手段诱导用户批准危险操作。MCP 通过要求客户端在展示请求时明确显示工具服务端身份，并允许配置基于服务端的征询策略（始终允许、始终拒绝、按需询问）来解决这一问题。
+
+## Human-in-the-Loop 模式
+
+Elicitation 正式规范化了 Agent 框架中长期存在的"人工干预检查点"模式。在 Elicitation 出现之前，这种模式需要在 Agent 编排层编写大量自定义代码。Agent 必须预先知道哪些工具调用需要审批，在转发给 MCP 之前拦截调用，展示 UI，并在获得批准后才继续执行。
+
+这种旧做法存在两个问题：首先，审批逻辑耦合在 Agent 侧而非工具侧，这意味着每个使用该工具的 Agent 都必须独立实现相同的审批逻辑。其次，Agent 很难在不破坏抽象边界的前提下，区分"该工具始终需要审批"和"仅在特定条件下需要审批"。
+
+有了 Elicitation，审批逻辑回到了工具自身。部署工具自行决定生产环境部署需要审批；数据库工具自行决定 `DROP TABLE` 操作需要确认；文件工具自行决定删除项目目录外的文件需要显式授权。Agent 无需感知这些细节——它只需调用工具，如果工具需要人工输入，征询请求就会通过协议自动流转。
+
+```python
+@server.tool()
+async def execute_sql(query: str, database: str, ctx: Context) -> str:
+    parsed = parse_sql(query)
+
+    if parsed.is_destructive:
+        response = await ctx.elicit(
+            message=f"Destructive SQL on {database}:\n\n```sql\n{query}\n```\n\n"
+                    f"This will affect approximately {estimate_rows(query)} rows.",
+            schema={
+                "type": "object",
+                "properties": {
+                    "confirmed": {"type": "boolean"}
+                },
+                "required": ["confirmed"]
+            }
+        )
+        if not response.data.get("confirmed"):
+            return "Query cancelled."
+
+    return await run_query(query, database)
+```
+
+## 多阶段征询
+
+更有趣的场景是在单次执行中进行多次征询。一个迁移工具可能会经历以下过程：
+
+1. 分析当前架构。
+2. 征询："这是迁移计划，确认执行吗？"
+3. 在测试数据库运行迁移。
+4. 征询："测试环境迁移成功，是否推向生产环境？"
+5. 运行生产环境迁移。
+6. 返回最终结果。
+
+每一次征询都是一个检查点，人类可以检查中间结果并决定是否继续。工具在多次征询之间保持执行状态，而不是每次都从头开始。这构建了一个结构化的工作流：人类和工具协作完成复杂操作，工具驱动流程，人类在关键节点提供授权。
+
+这种模式比大多数 Agent 框架使用的二元化"批准/拒绝工具调用"要强大得多。它允许在人类判断能产生价值的精确节点引入监管，而无需人类去理解或管理所有的中间步骤。
+
+## 对智能体设计的影响
+
+Elicitation 改变了 Agent 使用 MCP 工具时的交互预期。以前假设所有工具调用都会在几秒内同步返回，而现在 Agent 需要处理可能挂起数分钟等待人工输入的阻塞调用。这影响了：
+
+**规划与并行：** 执行多工具计划的 Agent 不能再假设工具执行时间是有界的。如果工具 B 依赖工具 A 的输出，而工具 A 正在等待征询响应，Agent 必须学会在等待期间释放计算资源。在实践中，这意味着 Agent 应该在征询期间将控制权交还给用户，而不是在轮询循环中空转。
+
+**错误恢复：** 如果用户拒绝了征询请求，Agent 需要将其视为"软失败"而非错误。工具返回了一个有效的结果（"操作被用户取消"），而不是一个异常。Agent 应当确认取消操作并据此调整计划，而不是盲目重试。
+
+**上下文窗口管理：** 漫长的征询等待意味着对话上下文可能会随之增长，因为用户可能会针对征询请求提出问题。Agent 需要在处理这些中间问题的同时，不丢失挂起的工具调用状态。
+
+## 协议栈中的位置
+
+Elicitation 是将 MCP 的无状态传输协议重构连接到生产级 Agent 工作流的最后一块拼图。Streamable HTTP 解决了负载均衡问题；工具注解 (Tool Annotations) 解决了工具发现问题；而 Elicitation 解决了人工监管问题。
+
+这三项改进共同将 MCP 从一个"本地开发的小工具"转变为"生产级的 Agent-工具交互协议"。一年前，MCP 只是你用来让 Claude Code 访问文件系统的手段。而在 2026 年 4 月，MCP 已成为调解自主智能体、企业级工具和人类操作员之间交互的核心协议——每一方都能在交互中获得恰到好处的控制权。
+
+从"工具是函数"到"工具是协作者"的转变虽然微妙，但影响深远。函数是被调用并返回的，而协作者会协商、请求信息并根据上下文进行调整。Elicitation 让 MCP 工具真正成为了 Agent 工作流中的协作伙伴，而不仅仅是一个个 API 端点。
+
+---
+
+*MCP Elicitation 在 2026 年 4 月的规范修订中与 Streamable HTTP 传输协议及工具注解共同发布。规范文档维护在 modelcontextprotocol.io。*

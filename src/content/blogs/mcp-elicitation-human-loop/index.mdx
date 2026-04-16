@@ -1,0 +1,143 @@
+---
+title: "MCP Elicitation: When Tools Ask Questions Back"
+description: "MCP 2.0's elicitation primitive lets tools pause execution and request human input. This changes the control flow of every agent workflow."
+publishDate: "2026-04-16"
+tags: [mcp, agent-infrastructure, human-in-the-loop, protocol-design, elicitation]
+category: engineering
+language: en
+draft: false
+---
+
+The Model Context Protocol's original design assumed a clean separation: the client sends requests, the server executes tools, results flow back. Tools were black boxes that accepted parameters and returned outputs. If a tool needed additional information mid-execution, it had two options: fail with an error message, or guess. Both options produce bad outcomes in production agent workflows.
+
+MCP 2.0 introduces the **elicitation primitive** — a mechanism that allows a tool server to pause execution, send a structured request back to the client for human input, and resume with the response. This inverts the control flow that every MCP integration assumed was fixed: tools no longer just answer questions, they can ask them.
+
+The change is small at the protocol level and significant at the architectural level. It turns MCP from a pure request-response protocol into something closer to a cooperative dialogue between agent, tool, and human — with the tool as an active participant in the conversation rather than a passive executor.
+
+## The Problem Elicitation Solves
+
+Consider a deployment tool exposed as an MCP server. An agent calls `deploy(service="payments", env="production")`. The tool has enough information to execute, but should it? Production deployments at most organizations require human approval. Without elicitation, the tool has three implementation options:
+
+**Option 1: Refuse unconditionally.** The tool returns an error: "Production deployments require manual approval." The agent reports the error to the user, who then deploys manually outside the agent workflow. The agent's utility for the hardest part of the task — the part that actually needs oversight — drops to zero.
+
+**Option 2: Accept unconditionally.** The tool deploys to production without confirmation. This works until it doesn't, and when it doesn't, the failure is a production incident caused by an agent acting without human verification. Every security review flags this pattern immediately.
+
+**Option 3: External approval flow.** The tool triggers a Slack message, a PagerDuty alert, or a custom approval UI. The agent polls for approval status. This works but requires building bespoke approval infrastructure per tool, per organization. The approval flow is invisible to the MCP client — the agent has no structured way to know that approval is pending, display the request to the user, or facilitate the approval.
+
+Elicitation provides a fourth option: the tool pauses, sends a structured approval request through the MCP protocol itself, and the client handles it natively — presenting the request to the user in whatever UI the client provides.
+
+## Protocol Mechanics
+
+The elicitation flow adds a single new message type to the MCP protocol. When a tool needs human input during execution, it sends an `elicit` request to the client with a JSON Schema describing the expected input:
+
+```python
+@server.tool()
+async def deploy_service(service: str, env: str, ctx: Context) -> str:
+    if env == "production":
+        response = await ctx.elicit(
+            message=f"Deploy {service} to production. Current version: v2.3.1. "
+                    f"Last deploy was 6 hours ago. Confirm?",
+            schema={
+                "type": "object",
+                "properties": {
+                    "approved": {
+                        "type": "boolean",
+                        "description": "Approve production deployment"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Optional: reason for approval/rejection"
+                    }
+                },
+                "required": ["approved"]
+            }
+        )
+
+        if response.action == "decline" or not response.data.get("approved"):
+            return f"Deployment to {env} cancelled by user."
+
+    result = await execute_deployment(service, env)
+    return f"Deployed {service} to {env}: {result}"
+```
+
+The `ctx.elicit()` call suspends tool execution. The MCP server sends an elicitation request to the client. The client presents the request to the user — as a form, a confirmation dialog, or whatever UI is appropriate. The user responds. The client sends the response back to the server. The tool resumes execution with the response data.
+
+Three response actions are possible: `accept` (user provided data), `decline` (user rejected the request), and `cancel` (user wants to abort the entire tool call). The tool handles each case explicitly.
+
+## What This Changes Architecturally
+
+Elicitation shifts MCP tools from stateless functions to stateful workflows. A tool that elicits is no longer a pure function from parameters to output — it's a coroutine that can suspend, interact with a human, and resume. This has several downstream implications.
+
+**Connection lifetime.** Elicitation requires the connection between client and server to remain open while the human responds. With MCP's new Streamable HTTP transport, this means the server must either hold the HTTP response open (long-polling style) or use server-sent events for the elicitation callback. For stateless deployments behind load balancers, this reintroduces some of the session affinity problems that Streamable HTTP was designed to eliminate — though the scope is narrower (only tools that elicit need session awareness, not all tools).
+
+**Timeout handling.** A human might take minutes to respond to an elicitation request. The tool server must handle timeouts gracefully — cancelling the pending operation if the human doesn't respond within a configurable window. The MCP specification recommends that servers implement their own timeout logic rather than relying on transport-level timeouts, because the appropriate timeout varies by context (a deployment approval might need 30 minutes; a filename confirmation might need 30 seconds).
+
+**Security model.** Elicitation requests flow from server to client, which inverts the typical trust direction. A malicious MCP server could craft elicitation requests that social-engineer the user into approving dangerous operations. MCP addresses this by requiring clients to display the tool server's identity alongside elicitation requests and by allowing clients to configure per-server elicitation policies (always allow, always deny, ask per request).
+
+## The Human-in-the-Loop Pattern
+
+Elicitation formalizes a pattern that agent frameworks have been implementing ad hoc: the human-in-the-loop checkpoint. Before elicitation, this pattern required custom code at the agent orchestration level. The agent had to know which tool calls needed human approval, intercept those calls before forwarding them to MCP, present a confirmation UI, and only proceed if the user approved.
+
+This worked but had two problems. First, the approval logic lived in the agent, not in the tool — which meant every agent that used the tool had to independently implement the same approval checks. If a new tool required approval, every agent had to be updated. Second, the agent couldn't distinguish between "this tool always needs approval" and "this tool needs approval only in specific circumstances" without tool-specific knowledge that broke the abstraction boundary.
+
+With elicitation, the approval logic lives in the tool itself. The deployment tool decides that production deployments need approval. The database tool decides that `DROP TABLE` operations need confirmation. The file tool decides that deleting files outside the project directory requires explicit consent. The agent doesn't need to know any of this — it calls the tool, and if the tool needs human input, the elicitation request flows through the protocol.
+
+```python
+@server.tool()
+async def execute_sql(query: str, database: str, ctx: Context) -> str:
+    parsed = parse_sql(query)
+
+    if parsed.is_destructive:
+        response = await ctx.elicit(
+            message=f"Destructive SQL on {database}:\n\n```sql\n{query}\n```\n\n"
+                    f"This will affect approximately {estimate_rows(query)} rows.",
+            schema={
+                "type": "object",
+                "properties": {
+                    "confirmed": {"type": "boolean"}
+                },
+                "required": ["confirmed"]
+            }
+        )
+        if not response.data.get("confirmed"):
+            return "Query cancelled."
+
+    return await run_query(query, database)
+```
+
+## Multi-Step Elicitation
+
+The more interesting use case is tools that elicit multiple times during a single execution. A migration tool might:
+
+1. Analyze the current schema
+2. Elicit: "Here's the migration plan. Approve to proceed?"
+3. Run the migration on a staging database
+4. Elicit: "Staging migration succeeded. Promote to production?"
+5. Run the production migration
+6. Return the final result
+
+Each elicitation is a checkpoint where the human can inspect intermediate results and decide whether to continue. The tool maintains execution state across elicitations — it doesn't restart from scratch each time. This creates a structured workflow where the human and the tool collaborate on a multi-step operation, with the tool driving the process and the human providing authorization at critical junctures.
+
+This pattern is substantially more powerful than the binary "approve/reject tool call" pattern used by most agent frameworks. It allows fine-grained human oversight at exactly the points where human judgment adds value, without requiring the human to understand or manage the intermediate steps.
+
+## Implications for Agent Design
+
+Elicitation changes the expected interaction model for agents that use MCP tools. An agent that previously assumed all tool calls returned synchronously within seconds now needs to handle tool calls that block for minutes while waiting for human input. This affects:
+
+**Planning and parallelism.** An agent executing a multi-tool plan cannot assume tools execute in bounded time. If tool B depends on tool A's output, and tool A is blocking on an elicitation request, the agent needs to handle the wait without consuming unnecessary compute. In practice, this means agents should yield control to the user during elicitation rather than spinning in a polling loop.
+
+**Error recovery.** If a user declines an elicitation request, the agent needs to treat this as a soft failure rather than an error. The tool returned a valid result ("operation cancelled by user"), not an exception. The agent should acknowledge the cancellation and adjust its plan accordingly, not retry the operation.
+
+**Context window management.** Long elicitation waits mean the conversation context may grow as the user asks questions about the elicitation request ("what version is currently deployed?", "how many rows will this affect?"). The agent needs to handle these intermediate questions without losing the pending tool call state.
+
+## Where This Fits in the Stack
+
+Elicitation is the missing piece that connects MCP's stateless transport redesign to production agent workflows. Streamable HTTP solved the load-balancing problem. Tool annotations (added alongside elicitation in the same spec revision) solved the tool discovery problem. Elicitation solves the human oversight problem.
+
+Together, these three changes transform MCP from a local development convenience into a production-grade protocol for agent-tool interaction. A year ago, MCP was the thing you used to give Claude Code access to your file system. In April 2026, MCP is the protocol that mediates between autonomous agents, enterprise tools, and human operators — with each party having appropriate control over the interaction.
+
+The transition from "tools are functions" to "tools are collaborators" is subtle but consequential. Functions are called and return. Collaborators negotiate, request information, and adapt based on context. Elicitation makes MCP tools collaborators in the agent workflow, not just endpoints.
+
+---
+
+*MCP elicitation was introduced in the April 2026 specification revision alongside Streamable HTTP transport and tool annotations. The specification is maintained at modelcontextprotocol.io.*

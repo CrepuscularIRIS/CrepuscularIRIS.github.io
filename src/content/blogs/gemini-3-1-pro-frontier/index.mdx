@@ -1,8 +1,8 @@
 ---
-title: 'Gemini 3.1 Pro: Engineering Guide'
-description: 'Gemini 3.1 Pro 的技术边界、分层编排策略与 Agent 工程实践，基于官方文档和生产部署经验。'
-publishDate: '2026-03-19'
-updatedDate: '2026-04-16'
+title: "Gemini 3.1 Pro: Production Deployment Guide"
+description: "Where Gemini 3.1 Pro fits in the agent stack, how the Gemma 4 cost gradient changes deployment architecture, and what to watch for in production."
+publishDate: "2026-03-19"
+updatedDate: "2026-04-16"
 category: engineering
 tags:
   - gemini
@@ -13,84 +13,79 @@ tags:
   - agent-infrastructure
   - model-card
   - gemma-4
-language: zh
+language: en
 draft: false
 ---
 
-## 这篇文章的定位
+This is not a feature list. Google's product pages already do that. This post derives where Gemini 3.1 Pro belongs in production systems — and which scenarios to avoid — based on published specs, API behavior, and deployment experience.
 
-这不是一篇功能清单罗列。Google 的官方页面已经做了那件事。这篇文章做的是：根据 Gemini 3.1 Pro 的已公开规格和设计哲学，推导出它在生产环境中的最佳使用位置，以及哪些场景应该避开。
+All conclusions are drawn from official documentation, model cards, and observed behavior. No speculation on undisclosed parameters.
 
-所有结论仅基于官方发布页、模型文档和 API 行为观察。不猜测未披露参数。
-
-**官方来源：**
-- [DeepMind Gemini 模型入口](https://deepmind.google/gemini/)
+**Sources:**
+- [DeepMind Gemini models](https://deepmind.google/gemini/)
 - [Google AI for Developers](https://ai.google.dev/)
 
-## 核心技术定位
+## Core Technical Position
 
-### 设计哲学：复杂任务的可靠执行
+### Design Philosophy: Reliable Execution of Complex Tasks
 
-Gemini 3.1 Pro 不是追求单一维度极限的模型。它的设计目标是**复杂多步骤工作流中的稳定性**。
+Gemini 3.1 Pro isn't optimized for any single dimension. Its design target is **stability across multi-step workflows**. Three priorities emerge from the official materials:
 
-这在官方材料中体现为三个方向：
+1. **Complex task decomposition** — breaking large tasks into sub-steps, reducing error propagation per step
+2. **Cross-tool coordination** — native function calling designed to compose with external tools into workflows
+3. **Multimodal co-processing** — text, code, and images reasoning within the same context window
 
-1. **复杂问题分解** — 将大任务拆解为子步骤，减少单步推理的错误传播
-2. **跨工具协同** — 原生支持函数调用，设计上鼓励模型与外部工具组成工作流
-3. **多模态综合处理** — 文本、代码、图像在同一上下文窗口内协同推理
+This positioning means Gemini 3.1 Pro's optimal use case is not answering isolated questions but **driving core reasoning nodes in agent workflows**.
 
-这个定位意味着 Gemini 3.1 Pro 的最佳使用场景不是回答单个问题，而是**驱动 Agent 工作流中的核心推理节点**。
+### Capability Boundaries
 
-### 能力边界
+Boundaries matter more than feature lists for production decisions.
 
-比功能清单更重要的是边界。以下是影响生产决策的关键约束：
+**Prompt structure sensitivity.** The model is more sensitive to prompt formatting, delimiters, and instruction ordering than you'd expect. Identical information presented in different structures produces measurable quality differences. In agent scenarios, prompt templates require strict version control.
 
-**提示词结构敏感。** 模型对提示词的格式、分隔符和指令顺序敏感度高于预期。同样的信息以不同结构呈现可能产生质量差异。在 Agent 场景中，提示词模板需要严格版本管理。
+**Long-context attention decay.** Despite supporting a large context window, fact extraction accuracy drops in the latter half. For precise retrieval tasks, place critical information in the first 30% or supplement with retrieval augmentation.
 
-**长上下文的注意力衰减。** 虽然支持大上下文窗口，但窗口后半段的事实提取准确率下降。对于精确引用任务，建议将关键信息放在前 30%，或使用检索增强补充。
+**Tool call hallucination risk.** Function calling is capable but imperfect. The model occasionally generates structurally valid but semantically incorrect tool calls. Production deployments must add validation at the tool call layer.
 
-**工具调用的幻觉风险。** 函数调用能力强但不完美。模型偶尔生成格式正确但语义错误的工具调用。生产环境必须在工具调用层加入校验逻辑。
+### Scale Context
 
-### 规模背景
+As of April 2026, Google reports 750 million monthly active users across the Gemini platform. This scale creates strong incentives to optimize inference cost-efficiency at the Pro tier — it's the workhorse model serving the majority of production traffic.
 
-截至 2026 年 4 月，Gemini 平台报告有 7.5 亿月活用户。这个规模意味着 Google 有极强的激励去优化 Pro 层级的推理成本效率——它是承载绝大多数生产流量的主力模型。
+## Position Within the Gemma 4 Ecosystem
 
-## 在 Gemma 4 生态中的位置
+Google released Gemma 4 in April 2026, built on the same research as Gemini 3, under Apache 2.0:
 
-2026 年 4 月，Google 发布了 Gemma 4 系列，基于与 Gemini 3 相同的研究，采用 Apache 2.0 许可证：
+| Model | Parameters | Active Params | Context | Target |
+|-------|-----------|---------------|---------|--------|
+| Gemma 4 E2B | 2.3B | 2.3B | 128K | On-device inference |
+| Gemma 4 E4B | 4.5B | 4.5B | 128K | Edge deployment |
+| Gemma 4 26B MoE | 26B | 3.8B | 256K | Efficient inference |
+| Gemma 4 31B Dense | 31B | 31B | 256K | Local full capability |
+| Gemini 3.1 Pro | Undisclosed | Undisclosed | Large | Production API |
 
-| 模型 | 参数量 | 活跃参数 | 上下文 | 定位 |
-|------|--------|----------|--------|------|
-| Gemma 4 E2B | 2.3B | 2.3B | 128K | 端侧推理 |
-| Gemma 4 E4B | 4.5B | 4.5B | 128K | 边缘部署 |
-| Gemma 4 26B MoE | 26B | 3.8B | 256K | 高效推理 |
-| Gemma 4 31B Dense | 31B | 31B | 256K | 本地全能 |
-| Gemini 3.1 Pro | 未公开 | 未公开 | 大窗口 | API 生产级 |
+Gemma 4 26B MoE ranks 6th on Arena AI using only 3.8B active parameters. This directly impacts Gemini 3.1 Pro's positioning: if your task can be handled locally by a model with 3.8B active parameters, you shouldn't be calling the Pro API.
 
-Gemma 4 26B MoE 在 Arena AI 排名第 6，仅用 3.8B 活跃参数。这对 Gemini 3.1 Pro 的定位产生直接影响：如果你的任务可以在本地用 3.8B 活跃参数的模型完成，就不应该调用 Pro API。
-
-**分工原则：**
+**Division of labor:**
 
 ```
-任务复杂度 ──────────────────────────────────────────►
-│                                                     │
-│  Gemma 4 E2B/E4B    Gemma 4 26B MoE    Gemini 3.1 Pro
-│  本地简单任务         本地中等任务         多步推理/编排
-│  分类、提取           代码生成、摘要       Agent 核心节点
-│  <50ms               <200ms              500ms-2s
-│  免费                 免费                 API 计费
+Task complexity ──────────────────────────────────────────►
+│                                                         │
+│  Gemma 4 E2B/E4B    Gemma 4 26B MoE     Gemini 3.1 Pro
+│  Local simple tasks   Local moderate       Multi-step reasoning
+│  Classification       Code gen, summaries  Agent core nodes
+│  <50ms                <200ms               500ms-2s
+│  Free                 Free                 API billing
 ```
 
-### Gemma 4 原生多模态的工程意义
+### Gemma 4 Native Multimodal: The Engineering Significance
 
-Gemma 4 不只是参数量和速度的升级。整个系列原生支持多模态输入（文本、图像，小模型甚至支持视频和音频），这改变了本地部署的架构假设。
+Gemma 4 is not just a parameter/speed upgrade. The entire family natively supports multimodal input (text, images; smaller models support video and audio). This changes deployment architecture assumptions.
 
-之前的典型模式是：本地模型处理文本，需要多模态理解时调用云端 API。Gemma 4 E4B 就能在设备端处理图像+文本的联合推理，意味着对于简单的多模态任务（截图分析、图表识别、UI 元素检测），完全不需要网络调用。
+The previous pattern: local models handle text; multimodal understanding requires cloud API calls. Gemma 4 E4B handles image+text joint reasoning on-device. For simple multimodal tasks (screenshot analysis, chart reading, UI element detection), no network calls needed.
 
 ```python
-# 之前：多模态任务必须调用云端
+# Before: multimodal tasks required cloud API
 async def analyze_screenshot(image_path: str) -> str:
-    # 必须调用 Gemini API，增加延迟和成本
     image_data = load_image(image_path)
     response = await gemini_client.generate(
         model="gemini-3.1-pro",
@@ -98,9 +93,9 @@ async def analyze_screenshot(image_path: str) -> str:
     )
     return response.text
 
-# 现在：本地 Gemma 4 E4B 就能完成
+# Now: local Gemma 4 E4B handles it
 def analyze_screenshot_local(image_path: str) -> str:
-    # 零网络延迟，零 API 成本，数据不离开设备
+    # Zero network latency, zero API cost, data stays on device
     image_data = load_image(image_path)
     response = gemma_local.generate(
         contents=[image_data, "Describe this UI element"],
@@ -108,57 +103,57 @@ def analyze_screenshot_local(image_path: str) -> str:
     return response.text
 ```
 
-这对隐私敏感场景（医疗、金融、政府）的影响很大：多模态 AI 第一次可以完全在本地运行，不需要把数据发送给任何第三方。
+The impact on privacy-sensitive domains (healthcare, finance, government) is significant: multimodal AI can now run entirely on-premises without sending data to third parties.
 
-## 分层编排策略
+## Tiered Orchestration Strategy
 
-单模型架构在生产环境中几乎总是次优解。Gemini 3.1 Pro 最有效的使用方式是作为分层编排系统中的特定角色。
+Single-model architecture is almost always suboptimal in production. Gemini 3.1 Pro is most effective as a specific role within a tiered orchestration system.
 
-### 推荐架构：三层模型编排
+### Recommended Architecture: Three-Layer Model Orchestration
 
 ```
-Layer 1: 路由层（Gemma 4 E4B / 规则引擎）
-  → 任务分类、意图识别、简单问答直接处理
-  → 复杂任务路由到 Layer 2
-  → 目标：50ms 以内处理 60-70% 的请求
+Layer 1: Routing (Gemma 4 E4B / rule engine)
+  → Task classification, intent recognition, direct handling of simple queries
+  → Route complex tasks to Layer 2
+  → Target: handle 60-70% of requests within 50ms
 
-Layer 2: 推理层（Gemini 3.1 Pro）
-  → 多步骤推理、代码生成、工具调用编排
-  → 需要高可靠性的核心决策
-  → 仅处理 30-40% 的请求
+Layer 2: Reasoning (Gemini 3.1 Pro)
+  → Multi-step reasoning, code generation, tool call orchestration
+  → High-reliability core decisions
+  → Handles only 30-40% of requests
 
-Layer 3: 校验层（Gemma 4 + 规则引擎）
-  → 输出格式校验、事实核查、安全过滤
-  → 工具调用参数验证
-  → 结构化输出 JSON schema 约束
+Layer 3: Validation (Gemma 4 + rule engine)
+  → Output format validation, fact-checking, safety filtering
+  → Tool call parameter verification
+  → Structured output JSON schema enforcement
 ```
 
-**为什么不直接用 Pro 处理一切？** 成本和延迟。路由层可以用 Gemma 4 E4B 在 50ms 以内处理大多数请求。Pro 只需要处理真正需要复杂推理的部分。在 850 亿次月请求的规模下，即使路由层只分流 60% 的简单请求，也意味着 500 亿次请求不需要触碰 Pro。
+**Why not use Pro for everything?** Cost and latency. The routing layer handles most requests via Gemma 4 E4B within 50ms. Pro only processes tasks requiring complex reasoning. At 85 billion monthly requests, even routing 60% of simple requests away from Pro means 50 billion requests never touch the paid API.
 
-### 与其他模型的分工
+### Cross-Model Task Allocation
 
-| 任务类型 | 推荐模型 | 原因 |
-|----------|----------|------|
-| 简单分类/提取 | Gemma 4 E4B | 本地部署，零成本，50ms 以内 |
-| 中等推理/代码 | Gemma 4 26B MoE | 3.8B 活跃参数，效率极高 |
-| 复杂编排/多步推理 | Gemini 3.1 Pro | 核心定位，工具调用可靠性 |
-| 极端推理深度 | 更高层级模型 | 仅在 Pro 不足时使用 |
-| 本地隐私敏感 | Gemma 4 31B Dense | 全参数本地推理 |
-| 端侧多模态 | Gemma 4 E2B/E4B | 图像+文本联合推理，设备端 |
+| Task Type | Recommended Model | Rationale |
+|-----------|------------------|-----------|
+| Simple classification/extraction | Gemma 4 E4B | Local, zero cost, &lt;50ms |
+| Moderate reasoning/code | Gemma 4 26B MoE | 3.8B active params, high efficiency |
+| Complex orchestration/multi-step | Gemini 3.1 Pro | Core strength: tool call reliability |
+| Extreme reasoning depth | Higher-tier model | Only when Pro is insufficient |
+| Local privacy-sensitive | Gemma 4 31B Dense | Full-parameter local inference |
+| On-device multimodal | Gemma 4 E2B/E4B | Image+text on device |
 
-## Agent 场景的工程实践
+## Agent Engineering in Practice
 
-### Function Calling 的生产级用法
+### Production-Grade Function Calling
 
-Gemini 3.1 Pro 的函数调用不只是"让模型调 API"。在 Agent 架构中，它是模型与外部世界的标准化接口。关键是要在调用层加入校验——模型偶尔会生成格式正确但参数不合理的调用。
+Gemini 3.1 Pro's function calling isn't just "let the model call APIs." In agent architectures, it's the standardized interface between model and external world. The critical requirement is validation at the call layer — the model occasionally generates structurally valid but semantically unreasonable calls.
 
 ```python
 from typing import Any
 
-# Function calling schema 设计原则：
-# 1. 每个参数有明确的 description
-# 2. 使用 enum 约束可选值
-# 3. 设置合理的默认值
+# Function calling schema design principles:
+# 1. Every parameter gets a clear description
+# 2. Use enum to constrain valid values
+# 3. Set sensible defaults
 tools = [
     {
         "name": "search_codebase",
@@ -171,29 +166,29 @@ tools = [
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": "File pattern (glob) or content pattern (regex)"
+                    "description": "File pattern (glob) or content (regex)",
                 },
                 "search_type": {
                     "type": "string",
                     "enum": ["file_pattern", "content_search"],
-                    "description": "Whether to search file names or contents"
+                    "description": "Whether to search file names or contents",
                 },
                 "max_results": {
                     "type": "integer",
                     "description": "Maximum results to return",
-                    "default": 10
-                }
+                    "default": 10,
+                },
             },
-            "required": ["query", "search_type"]
-        }
+            "required": ["query", "search_type"],
+        },
     }
 ]
 
 
 def validate_tool_call(call: dict[str, Any]) -> bool:
     """Validate that the model's tool call has sensible parameters.
-    
-    This catches the most common hallucination patterns:
+
+    Catches the most common hallucination patterns:
     - Empty or excessively long queries
     - Invalid enum values
     - Out-of-range numeric parameters
@@ -203,7 +198,8 @@ def validate_tool_call(call: dict[str, Any]) -> bool:
         if len(query) < 2 or len(query) > 500:
             return False
         if call["parameters"].get("search_type") not in (
-            "file_pattern", "content_search"
+            "file_pattern",
+            "content_search",
         ):
             return False
         max_results = call["parameters"].get("max_results", 10)
@@ -212,9 +208,9 @@ def validate_tool_call(call: dict[str, Any]) -> bool:
     return True
 ```
 
-### 提示词模板版本管理
+### Prompt Template Version Control
 
-Agent 工作流中，提示词模板是代码，不是配置。需要和代码一样进行版本管理：
+In agent workflows, prompt templates are code, not configuration. They require the same version control discipline:
 
 ```yaml
 # prompts/v2.3/orchestrator.yaml
@@ -242,29 +238,29 @@ template: |
   - "confidence": 0.0-1.0 estimate of action correctness
 ```
 
-**格式敏感性的实际影响。** 在生产测试中，以下变更均显著影响输出质量：
-- 分隔符从 `##` 改为 `###`：输出结构化程度下降约 15%
-- 工具描述放在约束条件之前 vs 之后：工具选择准确率差异约 8%
-- 增加 `confidence` 字段到输出格式：幻觉工具调用减少约 20%
+**The practical impact of format sensitivity.** In production testing, these changes each measurably affected output quality:
+- Changing delimiters from `##` to `###`: ~15% drop in output structure quality
+- Moving tool descriptions before vs. after constraints: ~8% difference in tool selection accuracy
+- Adding a `confidence` field to output format: ~20% reduction in hallucinated tool calls
 
-这些数字是经验观察值，不是严格的基准测试结果。不同任务分布可能有不同结果，但方向一致：**提示词结构是 Gemini 3.1 Pro 调优中最高 ROI 的工作。**
+These are empirical observations, not rigorous benchmarks. Different task distributions will produce different numbers, but the direction is consistent: **prompt structure is the highest-ROI optimization for Gemini 3.1 Pro.**
 
-### 错误处理模式
+### Error Handling Patterns
 
-Agent 场景中最常见的故障模式和对策：
+The most common failure modes in agent deployments and their countermeasures:
 
-| 故障 | 频率 | 对策 | 检测方式 |
-|------|------|------|----------|
-| 工具参数幻觉 | 中频 | 参数类型/范围校验 | Schema 验证 |
-| 无限工具调用循环 | 低频 | 最大调用次数限制 (10-15) | 计数器 |
-| 上下文窗口溢出 | 中频 | 历史消息压缩/摘要 | Token 计数 |
-| 输出格式偏移 | 中频 | 结构化输出 + JSON schema | JSON parse |
-| 工具选择错误 | 中频 | 工具描述优化 + few-shot | 结果校验 |
-| 多步推理中途放弃 | 低频 | 显式进度追踪 | 状态机 |
+| Failure | Frequency | Countermeasure | Detection |
+|---------|-----------|----------------|-----------|
+| Tool parameter hallucination | Medium | Type/range validation | Schema check |
+| Infinite tool call loops | Low | Max call limit (10-15) | Counter |
+| Context window overflow | Medium | History compression/summarization | Token count |
+| Output format drift | Medium | Structured output + JSON schema | JSON parse |
+| Wrong tool selection | Medium | Tool description tuning + few-shot | Result validation |
+| Mid-workflow abandonment | Low | Explicit progress tracking | State machine |
 
-### 结构化输出的最佳实践
+### Structured Output
 
-Gemini 3.1 Pro 支持 JSON schema 约束输出格式，这在 Agent 场景中是关键能力：
+Gemini 3.1 Pro supports JSON schema-constrained output, which is a critical capability for agent systems:
 
 ```python
 from dataclasses import dataclass
@@ -273,150 +269,146 @@ from typing import Literal
 
 @dataclass
 class AgentAction:
-    """Agent 的结构化输出格式。"""
+    """Structured output format for agent actions."""
+
     reasoning: str
     action_type: Literal["tool_call", "respond", "escalate"]
     tool_name: str | None
     tool_params: dict | None
     confidence: float  # 0.0-1.0
-    
+
     def should_proceed(self, threshold: float = 0.7) -> bool:
-        """低置信度动作需要人工确认。"""
+        """Low-confidence actions require human confirmation."""
         return self.confidence >= threshold
 
 
-# JSON Schema 传给 API 的 response_schema 参数
 response_schema = {
     "type": "object",
     "properties": {
         "reasoning": {"type": "string"},
         "action_type": {
             "type": "string",
-            "enum": ["tool_call", "respond", "escalate"]
+            "enum": ["tool_call", "respond", "escalate"],
         },
         "tool_name": {"type": "string"},
         "tool_params": {"type": "object"},
-        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
     },
-    "required": ["reasoning", "action_type", "confidence"]
+    "required": ["reasoning", "action_type", "confidence"],
 }
 ```
 
-### Gemini 3.1 Pro 与 MCP 的集成模式
+### MCP Integration Patterns
 
-在 MCP 生态中，Gemini 3.1 Pro 作为推理层与 MCP 工具服务器的集成有两种主要模式：
+In the MCP ecosystem, Gemini 3.1 Pro integrates with MCP tool servers through two primary patterns:
 
-**模式一：直接集成。** 通过 Google ADK（Agent Development Kit）直接连接 MCP 工具服务器。ADK 处理 MCP 协议协商、OAuth 认证和工具发现，Gemini 3.1 Pro 专注于推理和工具选择。
+**Pattern 1: Direct integration.** Google ADK (Agent Development Kit) connects directly to MCP tool servers. ADK handles protocol negotiation, OAuth authentication, and tool discovery while Gemini 3.1 Pro focuses on reasoning and tool selection.
 
-**模式二：网关代理。** 在 Gemini 3.1 Pro 和 MCP 工具服务器之间放置一个网关（如 Envoy + 自定义过滤器），负责请求频率限制、工具调用审计和结果缓存。这种模式适合企业环境，因为它在不修改模型交互逻辑的情况下增加了安全和可观察性。
+**Pattern 2: Gateway proxy.** Place a gateway (e.g., Envoy + custom filter) between Gemini 3.1 Pro and MCP tool servers. The gateway handles rate limiting, tool call auditing, and result caching. This pattern suits enterprise environments because it adds security and observability without modifying the model interaction logic.
 
 ```python
-# 网关代理模式的工具调用路径
 async def route_tool_call(
     call: ToolCall,
     gateway: AgentGateway,
 ) -> ToolResult:
-    # 1. 网关层：速率限制 + 审计日志
+    # 1. Gateway layer: rate limiting + audit log
     if not gateway.check_rate_limit(call.agent_id):
         return ToolResult(error="Rate limit exceeded")
-    
+
     gateway.log_audit_event(call)
-    
-    # 2. 缓存层：幂等调用直接返回缓存
+
+    # 2. Cache layer: return cached results for idempotent calls
     if call.is_idempotent:
         cached = gateway.cache.get(call.cache_key)
         if cached:
             return cached
-    
-    # 3. MCP 层：实际执行工具调用
+
+    # 3. MCP layer: execute the actual tool call
     result = await gateway.mcp_client.call_tool(
         server=call.tool_server,
         tool=call.tool_name,
         params=call.params,
     )
-    
-    # 4. 结果校验 + 缓存
+
+    # 4. Result validation + caching
     if call.is_idempotent:
         gateway.cache.set(call.cache_key, result)
-    
+
     return result
 ```
 
-## 成本优化
+## Cost Optimization
 
-### 三级成本控制
+### Three-Tier Cost Control
 
-1. **路由分流**（影响最大）。用 Gemma 4 E4B 在路由层处理简单请求，Pro 调用量减少 60-70%。这是成本优化的主要手段。
+1. **Routing offload** (highest impact). Use Gemma 4 E4B at the routing layer to handle simple requests. Pro call volume drops 60-70%. This is the primary cost lever.
 
-2. **提示词缓存**。Agent 工作流中重复的系统提示词部分，缓存可减少 50-75% 的输入 token 成本。对于固定系统提示 + 动态用户输入的模式，缓存效果最显著。
+2. **Prompt caching**. Repeated system prompt sections in agent workflows benefit from caching, reducing input token costs by 50-75%. Most effective for fixed system prompt + dynamic user input patterns.
 
-3. **批量处理**。非实时任务（代码审查、文档生成）使用批量 API，成本降低约 50%。
+3. **Batch processing**. Non-realtime tasks (code review, doc generation) use the batch API, cutting costs ~50%.
 
 ```python
-# 成本优化决策树
 def select_model(task: Task) -> str:
-    # Layer 1: 简单任务用本地模型
+    # Layer 1: simple tasks use local model
     if task.complexity <= Complexity.SIMPLE:
-        return "gemma-4-e4b"  # 本地，零 API 成本
-    
-    # Layer 2: 中等任务用高效 MoE
+        return "gemma-4-e4b"  # Local, zero API cost
+
+    # Layer 2: moderate tasks use efficient MoE
     if task.complexity <= Complexity.MODERATE:
         if task.requires_api:
             return "gemini-3.1-pro"
-        return "gemma-4-26b-moe"  # 3.8B 活跃参数
-    
-    # Layer 3: 复杂任务用 Pro
+        return "gemma-4-26b-moe"  # 3.8B active params
+
+    # Layer 3: complex tasks use Pro
     if task.complexity <= Complexity.COMPLEX:
         return "gemini-3.1-pro"
-    
-    # 极端情况用 Ultra
+
+    # Extreme cases use Ultra
     return "gemini-3.1-ultra"
 ```
 
-### 监控指标
+### Monitoring Metrics
 
-生产环境中应该监控的关键指标：
+Key metrics for production deployments:
 
-```python
-metrics = {
-    "tool_call_success_rate": "工具调用成功比例 (目标 > 95%)",
-    "tool_call_validation_failures": "参数校验失败次数 (异常检测)",
-    "avg_steps_per_task": "每个任务的平均步骤数 (警戒线: > 15)",
-    "context_window_utilization": "上下文窗口使用率 (警戒线: > 80%)",
-    "latency_p99": "P99 延迟",
-    "route_to_pro_ratio": "路由到 Pro 的请求比例 (目标: < 40%)",
-    "cache_hit_rate": "提示词缓存命中率 (目标: > 60%)",
-    "cost_per_task": "每任务平均成本 (按任务类型分组)",
-    "local_model_fallback_rate": "本地模型回退率 (本地→API 升级比例)",
-}
-```
+| Metric | Target | Purpose |
+|--------|--------|---------|
+| Tool call success rate | >95% | Reliability baseline |
+| Parameter validation failures | Anomaly detection | Hallucination tracking |
+| Avg steps per task | Alert if >15 | Loop detection |
+| Context window utilization | Alert if >80% | Overflow prevention |
+| Route-to-Pro ratio | &lt;40% | Cost control |
+| Cache hit rate | >60% | Prompt caching ROI |
+| Cost per task (by type) | Trend monitoring | Budget planning |
+| Local model fallback rate | Track trend | Escalation patterns |
 
-## 与竞品的工程定位对比
+## Competitive Positioning
 
-| 维度 | Gemini 3.1 Pro | Claude Opus 4.6 | GPT-5.4 |
-|------|---------------|-----------------|---------|
-| 核心强项 | 工具调用可靠性 | 长文本理解/生成 | 统一推理+编码 |
-| 上下文窗口 | 大 | 1M (beta) | 大 |
-| 本地替代品 | Gemma 4 (Apache 2.0) | 无 | 无开放权重 |
-| Agent 框架 | Google ADK | Claude Agent SDK | Codex CLI |
-| 成本优化手段 | 路由到 Gemma 4 | 无低成本替代 | 无低成本替代 |
-| 批量 API | 支持 | 支持 (300K max) | 支持 |
-| 原生多模态本地部署 | Gemma 4 全系列 | 不适用 | 不适用 |
-| MCP 集成 | Google ADK 原生 | Claude Code 原生 | Codex CLI 支持 |
+| Dimension | Gemini 3.1 Pro | Claude Opus 4.6 | GPT-5.4 |
+|-----------|---------------|-----------------|---------|
+| Core strength | Tool call reliability | Long-text understanding | Unified reasoning+coding |
+| Context window | Large | 1M (beta) | Large |
+| Local alternative | Gemma 4 (Apache 2.0) | None | No open weights |
+| Agent framework | Google ADK | Claude Agent SDK | Codex CLI |
+| Cost optimization | Route to Gemma 4 | No low-cost alternative | No low-cost alternative |
+| Batch API | Yes | Yes (300K max) | Yes |
+| Native multimodal local | Gemma 4 full family | N/A | N/A |
+| MCP integration | Google ADK native | Claude Code native | Codex CLI |
 
-Gemini 3.1 Pro 最独特的优势不是模型本身，而是它与 Gemma 4 构成的**成本梯度**：你可以在同一个技术栈内，从零成本的本地 2.3B 模型平滑过渡到全能力的 Pro API，无需切换框架或重写代码。Claude 和 GPT 没有对应的开放权重本地替代品。
+Gemini 3.1 Pro's most distinctive advantage isn't the model itself — it's the **cost gradient** with Gemma 4: you can transition smoothly from a zero-cost local 2.3B model to the full-capability Pro API within the same tech stack, without switching frameworks or rewriting code. Claude and GPT have no corresponding open-weight local alternatives.
 
-2026 年 4 月的新增维度是**多模态本地部署**。Gemma 4 E2B/E4B 的原生多模态能力意味着隐私敏感的多模态任务可以完全在设备端完成——这是竞品目前无法匹配的能力。
+The April 2026 addition is **multimodal local deployment**. Gemma 4 E2B/E4B's native multimodal capabilities mean privacy-sensitive multimodal tasks can run entirely on-device — a capability competitors currently cannot match.
 
-## 版本变更说明
+## Changelog
 
-本文初版（2026-03-19）为前瞻推测文。当前版本（2026-04-16）基于以下原则重写：
+Initial version (2026-03-19) was a forward-looking analysis. Current version (2026-04-16) rewrites based on:
 
-- 仅保留官方文档可确认的技术信息
-- 增加 Gemma 4 生态的定位分析，特别是原生多模态的工程意义
-- 补充竞品对比和成本梯度分析
-- 新增 MCP 集成模式章节
-- 所有架构建议来自生产环境验证的模式
-- 移除未披露规格的推测
+- Only retaining information confirmable from official documentation
+- Adding Gemma 4 ecosystem positioning, particularly native multimodal engineering significance
+- Adding competitive comparison and cost gradient analysis
+- Adding MCP integration patterns section
+- All architectural recommendations from production-validated patterns
+- Removing speculation on undisclosed specifications
+- Translating from Chinese to English for broader accessibility
 
-后续更新条件：官方文档变更、API 行为变化、或新的生产部署经验。
+Update triggers: official documentation changes, API behavior changes, or new production deployment experience.
