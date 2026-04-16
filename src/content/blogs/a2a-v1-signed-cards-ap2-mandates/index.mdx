@@ -1,0 +1,142 @@
+---
+title: "A2A v1.0: Signed Agent Cards and the AP2 Payment Mandate"
+description: "A2A hit v1.0 with cryptographic agent identity and the AP2 extension adds signed payment mandates. Together they form a real trust stack for agents."
+publishDate: "2026-04-17"
+tags: [A2A, AP2, agents, protocol, identity, payments, multi-agent, cryptography, governance]
+category: engineering
+language: en
+draft: false
+---
+
+On April 9, 2026 the Agent2Agent (A2A) protocol cut v1.0, one year after Google announced it at Cloud Next 2025. The one-year mark is a poor proxy for protocol maturity — the interesting datapoint is what changed between the first spec and v1.0, because the delta is almost entirely about identity, trust, and money. The new features are **Signed Agent Cards** (cryptographic agent identity), enterprise multi-tenancy, and the **Agent Payments Protocol (AP2)** extension. These are not the problems you solve during a prototype phase. They are the problems you solve once agents start transacting with counterparties that don't trust them by default.
+
+This post walks through what v1.0 actually ships, how Signed Agent Cards work at the JWT level, and what AP2 mandates look like in practice. The framing I want to push: the A2A stack is best understood as **the missing trust layer for MCP**. MCP gave us agent-to-tool. A2A v1.0 gives us agent-to-agent with provable identity. AP2 gives us agent-to-counterparty with provable consent. The three together are the first non-hand-wavy answer to the question every regulator has been asking since early 2025: who is liable when an agent does the wrong thing?
+
+## What A2A v1.0 Ships
+
+The public milestones from the April 9 announcement at Google Cloud and the A2A protocol site (a2a-protocol.org/latest/):
+
+- **Signed Agent Cards** — every agent now publishes a cryptographically signed descriptor. The signature binds the agent's identity (a DID — Decentralized Identifier) to its advertised capabilities, making capability claims non-repudiable.
+- **Multi-protocol transport** — WebSocket, HTTPS/SSE, and gRPC are all supported bindings. The same Agent Card points to one or more transport endpoints.
+- **Enterprise multi-tenancy** — formal tenant isolation for enterprise deployments, so a single A2A node can safely host agents belonging to multiple customer organizations.
+- **Production deployments** — Azure AI Foundry and Amazon Bedrock AgentCore announced native A2A support. The protocol now has at least three independent cloud runtimes (Google, Microsoft, Amazon) that speak it, though genuine cross-cloud federation is still aspirational rather than production-proven.
+- **Ecosystem scale** — 150+ organizations, 22k+ GitHub stars, SDKs in Python / JS / Java / Go / .NET. This is past the critical-mass threshold where the protocol is more expensive to ignore than to adopt.
+
+All of this is stewarded by the Linux Foundation's Agentic AI Foundation, the same umbrella that now holds MCP. That matters. It means A2A and MCP are governed by the same foundation, which is the closest thing we have to a guarantee that the two protocols will stop drifting apart.
+
+## Signed Agent Cards at the JWT Level
+
+The pre-v1.0 Agent Card was a plain JSON document. An agent advertised it at a well-known URL, a client fetched it, and the card's contents — capabilities, endpoints, metadata — were trusted on the basis that you got the card from the expected domain. Classic TLS-trust model. Fine for a demo, insufficient the moment you want to route work to an agent based on its claimed capabilities.
+
+v1.0 replaces the plain JSON card with a **JWT** signed by the agent's private key. The agent's DID resolves to a DID Document that contains the public key. Verifying a card means: fetch the card (still at a well-known URL), resolve the DID, verify the signature against the public key, then — and only then — trust the claims inside.
+
+A minimal signed Agent Card, shown as the decoded JWT payload (the wire form is the usual `header.payload.signature` base64url triple with `alg=EdDSA` or similar), looks roughly like this:
+
+```json
+{
+  "iss": "did:web:agents.example.com:billing",
+  "sub": "agent://billing/invoice-processor",
+  "iat": 1713312000,
+  "exp": 1713398400,
+  "aud": "a2a",
+  "capabilities": [
+    { "id": "invoice.read",   "scope": "tenant:acme" },
+    { "id": "invoice.create", "scope": "tenant:acme", "constraints": { "max_amount_usd": 10000 } }
+  ],
+  "endpoints": [
+    { "transport": "grpc", "url": "grpc://agents.example.com:8443" },
+    { "transport": "sse",  "url": "https://agents.example.com/a2a/sse" }
+  ],
+  "extensions": {
+    "ap2": {
+      "payment_methods": ["stripe:usd", "ach"],
+      "mandate_formats": ["ap2/v1"]
+    }
+  }
+}
+```
+
+The `capabilities` field is where this stops being just "HTTPS with extra steps." Every capability the agent claims is a signed claim. A verifier that only trusts agents with `invoice.create` capped at $10k can enforce that policy by rejecting any card whose signed constraint is missing or higher. The constraint travels with the identity — you don't have to trust a separate authorization server to tell you what the agent is allowed to do, because the agent itself has signed a statement about what it is allowed to do, and the verifier checks the policy against the signed claim.
+
+The obvious objection: agents can sign whatever they want. Yes — and that's exactly why the signing key is tied to a DID that is resolvable and publishable. If an agent signs a claim that exceeds the authority granted by its controlling organization, the organization can revoke the DID's key binding, invalidating every card signed with it. The signature isn't proof of good behavior. It's proof of accountability: the card is attributable to a specific key, controlled by a specific organization, which can be sued or sanctioned.
+
+This is the same JWT-over-DID pattern that the Verifiable Credentials ecosystem has been refining since 2020. A2A isn't inventing it. A2A is importing it into the agent ecosystem at the exact moment agents start doing things that need to be attributable.
+
+## AP2: Mandates as First-Class Objects
+
+The Agent Payments Protocol (AP2) is the payments extension to A2A. Google first announced AP2 in 2025; the v1.0 window is when it matured from "announced" to "advertised as production-ready" in Google's own agent stack, with extension-point support surfacing in Azure AI Foundry's A2A integrations.
+
+A **mandate** in AP2 is a cryptographic consent receipt. The user (or a delegated authority — an employer, a bank, an insurance policy) signs a statement that says: "this agent is authorized to make these kinds of payments, within these limits, until this expiry." The agent then attaches the mandate to any payment action it takes. A counterparty that wants to execute the agent's payment request verifies both the mandate signature and the agent's signed card. If either fails, the payment is refused.
+
+A rough mandate structure:
+
+```json
+{
+  "mandate_id": "mnd_01JNZ3...",
+  "version": "ap2/v1",
+  "principal": "did:web:example.com:users:alice",
+  "agent":     "did:web:agents.example.com:shopping-assistant",
+  "purpose":   "grocery-autorefill",
+  "constraints": {
+    "currency": "USD",
+    "max_per_transaction":   200,
+    "max_per_period_usd":    800,
+    "period":                "P30D",
+    "allowed_counterparties": ["merchant:instacart", "merchant:costco"]
+  },
+  "expires_at": "2026-07-17T00:00:00Z",
+  "revocation_endpoint": "https://api.example.com/ap2/revocations"
+}
+```
+
+The interesting bit is that this object has four signatures in its full form, not one:
+
+1. **Principal signature** — the user (or delegated authority) asserting that the agent is authorized.
+2. **Agent signature** — the agent acknowledging the mandate and binding its own identity to it.
+3. **Counterparty signature (at execution)** — the payment-receiving party signing the specific transaction.
+4. **Settlement signature (from the payment network)** — the rail (Stripe, ACH, card network) acknowledging settlement.
+
+Any action executed under a mandate ends up with an unbroken signature chain from the human principal to the payment rail. This is not new in payments (chip-and-PIN card authorization, 3DS2 flows, signed commitments in crypto-native payments all have analogous chains). What's new is that there is a non-human actor in the middle of the chain, and the protocol forces that actor to declare — in its card, in the mandate it accepts, in every payment it makes — exactly what authority it is operating under.
+
+The revocation endpoint is the other critical piece. If the user detects anomalous activity, they hit the revocation endpoint and the mandate is invalidated. Counterparties are expected to check revocation status for anything above a latency-sensitive threshold; for high-value transactions they check every time. This is just OCSP for payment mandates, but the same pattern is what makes the system operationally viable — a signature that cannot be revoked is a signature that no mature counterparty will accept.
+
+## Why This Matters: The Trust-Stack Assembly
+
+Put the three layers together:
+
+```
+┌───────────────────────────────────────────────┐
+│ AP2  — signed payment mandates                │  consent + liability
+│ A2A  — signed agent cards, capability scopes  │  identity + capability
+│ MCP  — tool schemas, streamable HTTP, tasks   │  tool access
+└───────────────────────────────────────────────┘
+         |              |              |
+       Principal   Delegating Agent  Counterparty
+```
+
+A real production flow in mid-2026 looks like: a shopping agent receives a mandate signed by the user (AP2). The agent advertises its capabilities via a Signed Agent Card (A2A). When it needs to place an order, it connects to a merchant-side A2A endpoint, presents its card plus mandate, negotiates the order, and uses MCP tool calls to invoke the actual payment and fulfillment APIs on the merchant side. Each layer has a signature. Each layer is independently revocable. Each layer has an audit trail that a regulator or incident-response team can reconstruct after the fact.
+
+A production flow in early 2025 looked like: a shopping agent has an API key in an environment variable, makes requests that the merchant can't distinguish from a human's, and if anything goes wrong nobody can tell whose agent it was or what it was authorized to do. The difference is night and day for anyone who has to answer a compliance question.
+
+The right way to read v1.0 is not as an incremental protocol revision but as the moment A2A stopped being a polite RPC scheme for agents and became a trust protocol with real teeth.
+
+## Pragmatic Engineering Notes
+
+A few things I would pay attention to if you are building on this stack now:
+
+- **DID method choice matters.** `did:web` is easy but ties you to DNS. `did:key` is self-contained but has no revocation story. Most production A2A deployments are picking `did:web` with a short-TTL revocation list, knowing they'll migrate to a more robust method (likely `did:ion` or an LF-blessed `did:agent` method) over the next 12 months.
+
+- **Mandate scope creep is the real risk.** A mandate with `max_per_transaction: 200` is safe. A mandate with `max_per_transaction: 1_000_000` is the agent equivalent of giving someone a company credit card with no limit. Expect most of the next year's AP2 incident reports to come from mandates that were too permissive, not from signature forgery.
+
+- **Your A2A runtime is probably not your tenant boundary.** v1.0 ships multi-tenancy, but multi-tenancy in the protocol is not multi-tenancy in your deployment. Isolate tenants at the OS/container level, not by relying on the protocol to enforce it. A compromised A2A runtime can still observe cross-tenant traffic if you share a process.
+
+- **MCP ↔ A2A integration is where the bugs will be.** The two protocols are governed by the same foundation, but they are not yet jointly specified. Expect edge cases where an A2A-advertised capability maps imperfectly to an MCP tool schema — especially around async `tasks` (MCP's new lifecycle primitive, which we'll cover separately).
+
+## References
+
+- [A2A Protocol v1.0 site](https://a2a-protocol.org/latest/)
+- [Google Cloud — Agent2Agent protocol is getting an upgrade](https://cloud.google.com/blog/products/ai-machine-learning/agent2agent-protocol-is-getting-an-upgrade)
+- [Linux Foundation Agentic AI Foundation](https://www.linuxfoundation.org/projects)
+- [Verifiable Credentials Data Model 1.1 (W3C)](https://www.w3.org/TR/vc-data-model/)
+- [DID Core specification (W3C)](https://www.w3.org/TR/did-core/)
+- [Model Context Protocol](https://modelcontextprotocol.io)

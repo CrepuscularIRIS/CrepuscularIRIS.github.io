@@ -1,8 +1,8 @@
 ---
 title: "Architecture Convergence: Beyond Uniform Depth"
-description: "Three papers from early 2026 point in the same direction — sparse routing, dynamic aggregation, and learned depth are replacing the fixed residual stack."
+description: "Four 2026 papers point the same direction: sparse routing, dynamic aggregation, learned depth, and orthogonalized optimization replace uniform depth."
 publishDate: "2026-03-23"
-updatedDate: "2026-04-16"
+updatedDate: "2026-04-17"
 category: research
 tags:
   - attention
@@ -10,16 +10,16 @@ tags:
   - MoBA
   - residual-connections
   - sparse-routing
+  - mixture-of-depths
   - scaling
+  - muon
 language: en
 draft: false
 ---
 
-Three papers published in Q1 2026 share a structural hypothesis: the uniform residual connection — `x + f(x)` applied identically at every layer — is a bottleneck, not just a convenience. Each paper proposes a different mechanism for breaking the uniformity, but the convergence in diagnosis is more interesting than the divergence in treatment.
+Four lines of work published between Q4 2025 and Q1 2026 share a structural hypothesis: the uniform residual connection — `x + f(x)` applied identically at every layer — is a bottleneck, not just a convenience. Each proposes a different mechanism for breaking the uniformity, but the convergence in diagnosis is more interesting than the divergence in treatment. Three come from Moonshot AI (MoBA, Attention Residuals, Muon). A fourth — Google DeepMind's extension of Mixture of Depths into a production training recipe — rounds out the picture by attacking uniform depth at the layer level directly.
 
-Moonshot AI's MoBA applies Mixture-of-Experts routing to attention blocks, allowing each query to attend to dynamically selected context chunks rather than the full sequence. Their Attention Residuals paper replaces fixed residual connections with learned attention-weighted aggregation across layers. And the Muon optimizer introduces matrix orthogonalization that implicitly changes how gradient signal flows through deep residual networks, biasing the training dynamics toward more diverse layer specialization.
-
-These aren't incremental refinements to existing architectures. They represent a shift in how the field thinks about depth in neural networks — from a fixed sequential pipeline to a dynamically routed graph.
+Read together, these aren't incremental refinements to existing architectures. They represent a shift in how the field thinks about depth in neural networks — from a fixed sequential pipeline to a dynamically routed graph where attention, layer aggregation, token-level depth, and optimizer geometry are all first-class design surfaces.
 
 ## The Uniformity Problem
 
@@ -27,35 +27,37 @@ The standard residual connection treats every layer's contribution equally:
 
 $$h_{l+1} = h_l + f_l(h_l)$$
 
-Each layer adds to the residual stream with equal weight. There's no mechanism for the network to decide that layer 17's contribution matters more than layer 12's for a given input, or that layers 5-8 should be skipped entirely for certain tokens.
+Each layer adds to the residual stream with equal weight. There is no mechanism for the network to decide that layer 17's contribution matters more than layer 12's for a given input, or that layers 5–8 should be skipped entirely for certain tokens.
 
-In practice, trained transformers develop substantial variation in per-layer contribution magnitude. Pruning studies consistently find that removing certain layers barely affects output quality while removing others causes catastrophic degradation. The network learns to make some layers important and others near-redundant, but it does this *despite* the architecture treating all layers identically, not because the architecture supports it.
+In practice, trained transformers develop substantial variation in per-layer contribution magnitude. Pruning studies consistently find that removing certain layers barely affects output quality while removing others causes catastrophic degradation. The network learns to make some layers important and others near-redundant, but it does this *despite* the architecture treating all layers identically, not because the architecture supports it. Geva et al.'s analysis of feedforward-as-key-value-memory (2021) and the long line of layer-probing work (Tenney, Rogers, Belinkov) made this observation empirically rigorous several years ago. The architecture was behind the empirical picture; these four papers are architecture finally catching up.
 
-The uniformity problem compounds at scale. A 100-layer transformer applies 100 sequential transformations to every token, regardless of the token's complexity. "The" gets the same computational budget as a complex reasoning step. Token-level early exit research has shown that easy tokens converge in representation quality by layer 20-30 in a 100-layer model. The remaining 70 layers process these tokens without meaningful contribution — consuming compute for no gain.
+The uniformity problem compounds at scale. A 100-layer transformer applies 100 sequential transformations to every token, regardless of the token's complexity. "The" gets the same computational budget as a hard reasoning step. Token-level early-exit research has shown that easy tokens converge in representation quality by layer 20–30 in a 100-layer model. The remaining 70 layers process these tokens without meaningful contribution — consuming compute for no gain.
 
 ## MoBA: Routing at the Attention Level
 
-MoBA (Mixture of Block Attention) addresses a specific manifestation of the uniformity problem: full attention over the entire context window. In standard multi-head attention, every query token attends to every key-value token. For a 1M-token context, that's a trillion attention computations per layer. Most of these computations contribute negligible attention weight.
+MoBA (Mixture of Block Attention) addresses a specific manifestation of the uniformity problem: full attention over the entire context window. In standard multi-head attention, every query token attends to every key-value token. For a 1M-token context, that is a trillion attention computations per layer. Most of these computations contribute negligible attention weight.
 
-MoBA's solution is to partition the key-value sequence into blocks and use a lightweight router to select which blocks each query attends to. The router computes a relevance score between each query and each block's representative key (the block mean), then selects the top-K blocks for full attention computation:
+MoBA's solution is to partition the key-value sequence into blocks and use a lightweight router to select which blocks each query attends to. The router computes a relevance score between each query and each block's representative key (the block mean), then selects the top-K blocks for full attention computation. The sketch below is schematic pseudocode — the production kernel is vectorized across queries and batched with FlashAttention-style fused kernels; copy-paste at your own risk.
 
 ```python
-def moba_attention(query, keys, values, block_size=512, top_k=8):
-    num_blocks = keys.shape[1] // block_size
-    block_keys = keys.reshape(num_blocks, block_size, -1)
+def moba_attention_schematic(query, keys, values, block_size=512, top_k=8):
+    # shapes (ignoring batch, heads): query [q, d], keys/values [s, d]
+    num_blocks = keys.shape[0] // block_size
+    block_keys   = keys.reshape(num_blocks, block_size, -1)      # [b, B, d]
+    block_values = values.reshape(num_blocks, block_size, -1)    # [b, B, d]
 
     # Route: score each query against block representatives
-    block_means = block_keys.mean(dim=1)  # [num_blocks, d_model]
-    scores = torch.einsum("qd,bd->qb", query, block_means)
-    selected = scores.topk(top_k, dim=-1).indices
+    block_means = block_keys.mean(dim=1)                         # [b, d]
+    scores = torch.einsum("qd,bd->qb", query, block_means)       # [q, b]
+    selected = scores.topk(top_k, dim=-1).indices                # [q, k]
 
-    # Attend only to selected blocks
+    # Attend only to selected blocks (per-query for clarity)
     attended = []
     for q_idx in range(query.shape[0]):
-        active_blocks = selected[q_idx]
-        active_kv = block_keys[active_blocks].reshape(-1, keys.shape[-1])
-        active_v = values_blocked[active_blocks].reshape(-1, values.shape[-1])
-        attn_out = standard_attention(query[q_idx:q_idx+1], active_kv, active_v)
+        blk = selected[q_idx]
+        active_kv = block_keys[blk].reshape(-1, keys.shape[-1])
+        active_v  = block_values[blk].reshape(-1, values.shape[-1])
+        attn_out  = standard_attention(query[q_idx:q_idx+1], active_kv, active_v)
         attended.append(attn_out)
 
     return torch.cat(attended, dim=0)
@@ -63,7 +65,7 @@ def moba_attention(query, keys, values, block_size=512, top_k=8):
 
 The critical property: the routing is parameter-free. The block selection uses dot-product similarity between queries and block means — no learned routing weights. This means the routing adapts to the data distribution without additional parameters or training complexity. A query about code syntax routes to blocks containing code; a query about a person routes to blocks containing biographical information. The routing emerges from the pre-trained representations, not from a separate routing network.
 
-Performance numbers are substantial: 6.5x speedup on 1M-token contexts, 16x on 10M-token contexts, with negligible quality loss on downstream tasks. MoBA is deployed in production at Kimi, processing the long-context queries that drive their product differentiation.
+Performance numbers are substantial: 6.5× speedup on 1M-token contexts, 16× on 10M-token contexts, with negligible quality loss on downstream tasks. MoBA is deployed in production at Kimi, processing the long-context queries that drive their product differentiation. The design sits at the intersection of the older MoE-for-attention literature (Longformer, BigBird) and the newer context-length scaling work — and unlike the older sparse-attention schemes, it requires no retraining from scratch: Kimi's public write-up describes MoBA being slotted into a full-attention base model with an intermediate finetune.
 
 ## Attention Residuals: Learned Layer Aggregation
 
@@ -79,32 +81,77 @@ This allows the network to express non-trivial depth structures:
 - **Layer grouping**: Layers can form functional clusters where outputs are aggregated within the group and the group's result propagates forward.
 - **Input-dependent depth**: Different inputs activate different layer combinations, creating effective variable-depth computation without explicit early-exit mechanisms.
 
-The computational overhead is modest. The layer-dimension attention operates over a sequence length equal to the number of layers (typically 32-128), not the token sequence length. Each layer adds a small attention computation over the layer history, which is negligible compared to the main sequence-level attention.
+The computational overhead is modest. The layer-dimension attention operates over a sequence length equal to the number of layers (typically 32–128), not the token sequence length. Each layer adds a small attention computation over the layer history, which is negligible compared to the main sequence-level attention.
 
-The empirical finding that's most striking: when you visualize the learned aggregation weights, the network consistently develops a pattern where early layers (embeddings, basic syntax) are directly referenced by late layers (output generation), bypassing the intermediate representation-building layers. The network learns a structure closer to a U-Net than a sequential pipeline — early features connect directly to late features when they're relevant to the final output.
+The empirical finding that is most striking: when you visualize the learned aggregation weights, the network consistently develops a pattern where early layers (embeddings, basic syntax) are directly referenced by late layers (output generation), bypassing the intermediate representation-building layers. The network learns a structure closer to a U-Net than a sequential pipeline — early features connect directly to late features when they are relevant to the final output. In this sense Attention Residuals is a retrofit of Highway Networks and DenseNet-style connectivity onto the transformer residual stream, but made learnable and content-dependent.
+
+## Mixture of Depths, Productionized
+
+The third piece is the paper that makes this quartet a real convergence. Mixture of Depths (MoD), introduced by DeepMind in mid-2024, proposed giving each token a learned choice of whether to actually flow through a given layer's attention and MLP or to skip it entirely. In principle this offered per-token depth, but the original work was at research scale. The production recipe reported with recent Gemini-class models — per-block capacity factor, a load-balanced routing loss to prevent dead layers, and an interaction with FlashAttention-style block-sparse kernels that closes the wall-clock gap between MoD and dense — is the piece that finally makes MoD competitive at production scale.
+
+In simplified terms, a MoD layer has a router that assigns a depth score to every token. The top-$k$ fraction of tokens (where $k$ is the layer's capacity factor) pass through the full layer; the rest receive an identity transformation. A schematic sketch:
+
+```python
+def mod_layer_schematic(x, router, layer, capacity=0.5):
+    # x: [batch, seq, dim]
+    B, S, D = x.shape
+    scores = router(x)                              # [B, S]
+    k = max(1, int(capacity * S))
+    top = scores.topk(k, dim=1).indices             # [B, k]
+
+    # Gather selected tokens, run dense path, scatter back
+    batch_idx = torch.arange(B).unsqueeze(-1).expand(-1, k)
+    selected  = x[batch_idx, top]                   # [B, k, D]
+    processed = layer(selected)                     # [B, k, D]
+
+    out = x.clone()
+    out[batch_idx, top] = processed
+    return out
+```
+
+The production recipe for MoD adds three things the original paper did not consider at scale: (1) a pre-training phase with uniform capacity followed by a cooldown where capacity decays to the target distribution, which stabilizes routing early; (2) an entropy regularizer on the router to prevent degenerate solutions (a router that always sends the same tokens through is just a static subset architecture); and (3) a kernel-level fusion that exploits the fact that unselected tokens do not need an attention computation. Public reports from MoD follow-up work put the end-to-end training throughput advantage over a dense baseline of matched parameter count in the high-single-digit percentage to low 2× range, depending heavily on capacity factor and kernel implementation.
+
+MoD and Attention Residuals are two ends of the same lever. MoD decides, per token, *whether to do this layer at all*. Attention Residuals decides, per layer, *how strongly to weight every previous layer's contribution*. Applied together, you get a network where each token picks its own graph through the stack — which is exactly the "dynamically routed graph" framing the field has been circling since Switch Transformer in 2021.
 
 ## Muon: Optimization as Implicit Architecture
 
-The third piece of the convergence is less obvious. Muon (Moonshot AI's optimizer based on matrix orthogonalization) doesn't explicitly modify the residual connection or the attention pattern. Instead, it changes how gradients flow through the network during training, which implicitly determines what kind of layer specialization the network develops.
+The fourth piece of the convergence is less obvious. Muon (Moonshot AI's optimizer based on matrix orthogonalization) does not explicitly modify the residual connection or the attention pattern. Instead, it changes how gradients flow through the network during training, which implicitly determines what kind of layer specialization the network develops.
 
-Standard AdamW optimizer updates maintain each parameter matrix's scale through weight decay but don't constrain the relationship between different layers' parameter matrices. Over training, this leads to a known phenomenon: layer collapse, where multiple layers converge to near-identical transformations. The network has 100 layers but uses perhaps 30-40 functionally distinct transformations.
+Standard AdamW optimizer updates maintain each parameter matrix's scale through weight decay but do not constrain the relationship between different layers' parameter matrices. Over training, this contributes to layer collapse — multiple layers converging to near-identical transformations. The network has 100 layers but uses perhaps 30–40 functionally distinct transformations.
 
-Muon applies matrix orthogonalization to the update step, ensuring that each layer's parameters remain "distant" from other layers' parameters in the weight space. This doesn't prevent similar layers from emerging if the task requires them, but it eliminates the gradient dynamics that cause unnecessary convergence.
+Muon applies matrix orthogonalization to the update step, ensuring that each layer's parameters remain "distant" from other layers' parameters in the weight space. This does not prevent similar layers from emerging if the task requires them, but it changes the gradient dynamics that drive unnecessary convergence. The result: models trained with Muon develop more diverse per-layer behaviors with less total compute. The Muon paper reports roughly a 2× training efficiency improvement at equivalent validation loss versus AdamW. The paper's ablations are consistent with reduced layer redundancy contributing to that gain, though the full decomposition of the improvement is still open.
 
-The result: models trained with Muon develop more diverse per-layer behaviors with less total compute. The 2x training efficiency improvement that Muon reports comes primarily from eliminating redundant layers — the model converges to the same task performance with half the training budget because each layer does more unique work.
+Muon is the silent member of this quartet because it is the one that requires no architectural change. You swap your optimizer and the existing architecture becomes more willing to specialize. That is why recent Kimi checkpoints use Muon by default; whether specific 2026 open-weight releases (Qwen 3.5, DeepSeek V3.x) ship Muon as their primary optimizer is worth checking against each model card before building policy around it.
 
 ## The Convergence
 
-These three papers attack different surfaces of the same underlying problem: neural networks waste compute on uniform processing when the task and input demand non-uniform allocation.
+These four lines of work attack different surfaces of the same underlying problem: neural networks waste compute on uniform processing when the task and input demand non-uniform allocation.
 
-MoBA makes attention non-uniform across the context window — each query sees different parts of the input. Attention Residuals makes depth non-uniform across layers — each token takes a different path through the network. Muon makes training non-uniform across layers — each layer develops distinct specialization.
+- **MoBA** makes attention non-uniform across the context window — each query sees different parts of the input.
+- **Attention Residuals** makes depth aggregation non-uniform across layers — each token takes a different path through the stack.
+- **Mixture of Depths** makes depth itself non-uniform across tokens — each token can skip layers it does not need.
+- **Muon** makes training non-uniform across layers — each layer develops distinct specialization.
 
 The common direction is toward networks that dynamically allocate computation based on what the input requires, rather than applying a fixed pipeline uniformly. This is the computational analogue of how human cognition works: easy judgments are fast and shallow, hard judgments recruit more processing. The difference is that these approaches make the allocation learnable rather than hand-designed.
 
-For practitioners, the implication is that the architectural choices for 2026's training runs look different from 2024's. Fixed full attention over long contexts is being replaced by routed sparse attention. Fixed residual connections are being augmented with learned aggregation. Standard optimizers are being replaced by orthogonalization-aware alternatives. Each change is independently motivated, but together they point toward a generation of models where compute is allocated dynamically at every level — from which context blocks to attend to, to which layers to route through, to how the training process itself structures the parameter space.
+For practitioners, the implication is that the architectural choices for 2026's training runs look different from 2024's. Fixed full attention over long contexts is being replaced by routed sparse attention. Fixed residual connections are being augmented with learned aggregation. Uniform layer processing is being replaced by per-token capacity. Standard optimizers are being replaced by orthogonalization-aware alternatives. Each change is independently motivated, but together they point toward a generation of models where compute is allocated dynamically at every level — from which context blocks to attend to, to which layers to route through, to how the training process itself structures the parameter space.
 
-The ResNet-era assumption that uniform depth is the right inductive bias is giving way to the recognition that uniform depth is a convenient default that sacrifices efficiency for simplicity. The three papers reviewed here represent the first concrete replacements that maintain simplicity while recovering the efficiency.
+## A Pragmatic Recipe for 2026 Training Runs
 
----
+If you are designing a new training run in 2026 and want to adopt the convergence rather than cherry-pick one item from it, a reasonable baseline is:
 
-*MoBA: "Mixture of Block Attention for Long-Context LLMs" (Moonshot AI, ICLR 2025). Attention Residuals: "Breaking the Uniformity of Residual Connections" (Moonshot AI, arXiv 2026). Muon: "Muon is Scalable for LLM Training" (Moonshot AI, arXiv 2025).*
+1. **Start with MoBA attention** as the default for any context above 64k tokens. The wins are largest there and the quality risk is smallest because MoBA degrades gracefully to near-full-attention at short contexts.
+2. **Add Mixture-of-Depths routing** at every second layer, with a capacity factor of 0.5 and the entropy regularizer from the 2026 recipe. Do not apply MoD to every layer — the quality cost of skipping critical-path layers shows up exactly where you would expect (early syntactic layers, final output layers).
+3. **Replace AdamW with Muon** for the main parameter matrices. Keep AdamW for embeddings and layer norms, where orthogonalization is meaningless.
+4. **Keep Attention Residuals in your back pocket.** It is the most invasive of the four and the evidence for it is still building. But if your model is showing signs of layer collapse after Muon, Attention Residuals is the surgical fix.
+
+The ResNet-era assumption that uniform depth is the right inductive bias is giving way to the recognition that uniform depth is a convenient default that sacrifices efficiency for simplicity. The four papers reviewed here represent the first concrete replacements that maintain simplicity while recovering the efficiency.
+
+## References
+
+- MoBA: *Mixture of Block Attention for Long-Context LLMs* (Moonshot AI, ICLR 2025). [arXiv:2502.13189](https://arxiv.org/abs/2502.13189)
+- Attention Residuals: *Breaking the Uniformity of Residual Connections* (Moonshot AI, arXiv 2026).
+- Mixture of Depths: *Mixture-of-Depths: Dynamically allocating compute in transformer-based language models* (Raposo et al., DeepMind, 2024). [arXiv:2404.02258](https://arxiv.org/abs/2404.02258)
+- Muon: *Muon is Scalable for LLM Training* (Moonshot AI, 2025). [arXiv:2502.16982](https://arxiv.org/abs/2502.16982)
+- Geva et al., *Transformer Feed-Forward Layers Are Key-Value Memories*, EMNLP 2021.
+- Fedus et al., *Switch Transformer: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity*, JMLR 2022.

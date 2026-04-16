@@ -1,0 +1,118 @@
+---
+title: "MCP 2026: The Tasks Primitive and a Stateful Protocol"
+description: "The April 2026 MCP roadmap is small on paper and large in implication. The Tasks primitive in SEP-1686 is the piece that finally makes MCP look stateful."
+publishDate: "2026-04-17"
+tags: [MCP, protocol, agents, tasks, SEP-1686, streamable-http, governance, agent-engineering]
+category: engineering
+language: en
+draft: false
+---
+
+The Model Context Protocol 2026 roadmap dropped on April 10, alongside a maintainer update that landed two days earlier. Taken together the two posts represent the first time since MCP left Anthropic that the community has a clear, scoped plan for what the protocol will ship in the next twelve months. The plan is short by design: four priority workstreams, one major new primitive (Tasks), one transport fix (Streamable HTTP at scale), one governance reform (working-group delegation), and one enterprise push (audit + SSO + gateway).
+
+The interesting item is Tasks. Everything else on the roadmap is either infrastructure or governance. Tasks is a semantic change — the thing that pushes MCP from a stateless RPC protocol into a protocol that has a real, first-class notion of long-running work. The Tasks primitive (SEP-1686) is small enough that it will pass without much fanfare, and large enough that once it ships, the shape of every non-trivial MCP server will change. This post walks through what's on the 2026 roadmap, zooms into the Tasks primitive and the problems it's trying to solve, and closes with what the governance shift signals for people building production servers.
+
+## The April 2026 Roadmap: What's In, What's Not
+
+The four priority workstreams announced in the April 10 blog post are:
+
+1. **Streamable HTTP scalability.** Today's Streamable HTTP binding works for a small number of concurrent sessions but breaks in production when you put a load balancer in front of it — sessions are stateful, and plain L7 load balancers route requests round-robin without respecting session affinity. The 2026 plan calls out session-aware routing primitives, per-session connection pooling, and a formal definition of what "resumption" looks like when the session survives a dropped connection. In other words: the plan to make the transport actually usable behind a normal cloud load balancer.
+
+2. **Tasks primitive (SEP-1686).** The new lifecycle primitive. Tasks are named, retrievable, durable work units with explicit states (`pending`, `running`, `succeeded`, `failed`, `expired`) and explicit retry / expiry policies. They replace the current ad-hoc convention of "call this tool, get back something that has a URL, poll the URL yourself." Covered in depth below.
+
+3. **Working-Group delegation.** The SEP (Specification Enhancement Proposal) pipeline was bottlenecked on core maintainers reviewing every proposal. The new plan formalizes working groups (authorization, transport, extensions, etc.) that own SEPs for their domain, with the core maintainer team serving as final arbiter rather than default reviewer. The point is throughput: the open-SEP backlog has been growing faster than the small active reviewer set can close it, and working-group delegation is the usual pattern for unblocking that class of problem.
+
+4. **Enterprise extensions.** Audit logging, SSO integration, gateway patterns — all expected to land as optional extensions layered on top of the core protocol. The SEP-2350 family (authorization and security) picks up RFC 8707 Resource Indicators so tokens can be scoped per-resource, which is the missing piece for enterprise fine-grained access control.
+
+Notice what's _not_ on the roadmap: no new serialization format, no new transport beyond Streamable HTTP, no schema-language overhaul. The maintainers are explicitly signaling that MCP's shape is settled and 2026 is about making the existing shape production-grade.
+
+The companion April 8 maintainer update named Den Delimarsky as Lead Maintainer and added several new maintainers, all under the Linux Foundation's Agentic AI Foundation. The foundation now stewards MCP and A2A (covered in the companion post on signed Agent Cards). Both protocols are governed under the same umbrella, which is how you stop the two-protocol-drift problem before it starts.
+
+## The Tasks Primitive: Why It's a Big Deal
+
+Here is what the MCP surface looks like without Tasks, paraphrased:
+
+- `listTools` — what can you do?
+- `callTool(name, args)` — do it.
+
+Every tool call is synchronous in the protocol's model. If your tool actually takes five minutes, your options are:
+
+- Block the response until the tool finishes. Works if no network element between client and server enforces idle timeouts — in practice, load balancers, API gateways, CDN layers, and HTTP/2 implementations all do.
+- Return immediately with an opaque handle and expect the caller to poll. Works, but every server invents its own polling convention, every client implements it slightly differently, and failure modes (retry, expiry, cancellation) are not protocol-defined.
+- Upgrade to a streaming response and emit progress events. Better, but still leaves "what does retry mean when my stream died mid-task?" undefined.
+
+The Tasks primitive formalizes option 2 and upgrades option 3. The draft shape of the Tasks lifecycle (verb names below are illustrative paraphrase of SEP-1686, not direct quotations — check the SEP before wiring to it) looks like this:
+
+```
+client                          server
+  │                               │
+  │── callTool(..., mode=task)──▶│
+  │                               │── create Task(t1, pending)
+  │                               │── schedule work
+  │◀── taskCreated(t1, pending)──│
+  │                               │
+  │── getTask(t1) ────────────── ▶│
+  │◀── task(t1, running, 30%) ──│
+  │                               │
+  │                               │── work completes
+  │                               │── Task(t1, succeeded, result=...)
+  │── getTask(t1) ────────────── ▶│
+  │◀── task(t1, succeeded, r) ──│
+  │                               │
+  │                               (task retained per retention policy)
+```
+
+The key additions over the status-quo polling convention:
+
+- **Named, queryable state.** Every task has an ID, a state, and a retention window. You can ask the server what state any of your tasks are in at any time, without remembering how you originally kicked them off.
+- **Explicit retry policy.** Servers declare whether a task is retryable and under what conditions (e.g. `transient_failure_only`, `max_retries=3`). The client stops implementing retry logic per-tool.
+- **Expiry semantics.** Servers declare a retention TTL for finished tasks. Clients know when the task will stop being retrievable and can archive results accordingly.
+- **Cancellation is a first-class verb.** `cancelTask(t1)` is part of the protocol, not a server-specific convention.
+- **Events instead of polling.** Streamable HTTP lets servers push state transitions to subscribed clients, so well-behaved integrations don't poll at all.
+
+This is not a new idea in distributed systems. It is exactly the design you find in any mature job-queue or workflow engine — Temporal, Sidekiq, AWS Step Functions, Airflow, every async-task library written in the last 20 years. What's new is that it's being added to the MCP standard, so every MCP server that ships a long-running tool will expose the same lifecycle, and every MCP client can handle them without special-casing.
+
+The practical upshot for server authors: once Tasks lands, you stop inventing your own long-running-tool conventions. Your job becomes "register a tool as `mode=task`, implement the work, let the MCP runtime handle lifecycle." For client (agent) authors: you stop writing bespoke polling loops. You get a typed task handle from the runtime, await it, and the runtime figures out whether that means polling, subscribing to a stream, or sleeping until an event fires.
+
+## What This Changes for Production MCP Servers
+
+If you run an MCP server in production today you've probably already hit the spots this roadmap is patching:
+
+- You've written your own session-affinity hack because plain HTTP LB's break your streams. **Fixed by:** Streamable HTTP scalability work.
+- You return an opaque handle and have a custom polling endpoint. **Fixed by:** Tasks primitive.
+- You've bolted your own audit log on top. **Fixed by:** Enterprise audit extension.
+- Your token format is custom because nothing in MCP lets you scope a token to a specific resource. **Fixed by:** RFC 8707 resource indicators via SEP-2350.
+
+The roadmap reads as "take the patterns every mature MCP deployment has already implemented and promote them into the protocol." It's not glamorous, but it's exactly what an infrastructure protocol at this stage of adoption should be doing. The alternative — leaving these to private implementation — is what kills protocols in years three to five, when the fragmented private conventions fork into incompatible dialects.
+
+## The Governance Shift: Why It Matters More Than Any Single SEP
+
+The April 8 maintainer update is easy to skim past as normal OSS housekeeping. It isn't. Three things changed in a way that affects how fast MCP can ship:
+
+- **Lead Maintainer role.** Den Delimarsky is now the explicit decision-maker of last resort on SEP acceptance. Previously, acceptance required consensus among a diffuse maintainer group; in practice that meant SEPs piled up waiting for someone to drive resolution. A named Lead closes that loop.
+
+- **Working groups.** Authorization / transport / extensions each get their own WG. WGs own review and acceptance for SEPs in their domain. This is the pattern that unblocks HTTP (IETF working groups), Python (PEPs delegated to Steering Council + SIGs), and every other protocol that has successfully crossed the transition from single-company to multi-company stewardship.
+
+- **Linux Foundation scaffolding.** The Agentic AI Foundation isn't just a neutral brand. It's the legal and organizational machinery that lets Microsoft, Google, AWS, and Anthropic contribute to the same protocol without any of them being the owner. That machinery — IP assignment, trademark, code of conduct, technical steering committee — is what makes the difference between a protocol that becomes a standard and one that becomes someone's product.
+
+The governance work and the technical work are not separate bets. A protocol can only ship primitives like Tasks if the governance is mature enough to debate, refine, and ratify the spec at a reasonable cadence. The April 2026 roadmap is only possible because the April 2026 maintainer update happened.
+
+## What to Watch Next
+
+A few dates and signals I'd track over the rest of 2026:
+
+- **SEP-1686 acceptance** — the signal that Tasks has moved from proposal to specification. Expect the first reference implementations in the official Python and TypeScript SDKs within one cycle of acceptance.
+- **A reference Streamable HTTP scalability doc** — likely mid-2026, probably coauthored with one of the cloud providers (Cloudflare, Google, AWS) that has real operational experience running MCP behind a load balancer.
+- **The first SEP-2350 token format standardization** — this is the authorization WG's biggest deliverable and unblocks real enterprise deployments.
+- **Backward-compatibility story for pre-Tasks servers** — every well-governed protocol handles this explicitly. Expect a migration guide rather than a hard break.
+
+The 2026 roadmap is modest. That is exactly what makes it credible. The people who have been running MCP in production have spent a year collecting the list of things that need to change; the roadmap is that list, scoped.
+
+## References
+
+- [The 2026 MCP Roadmap](https://blog.modelcontextprotocol.io/posts/2026-mcp-roadmap/)
+- [Expanding the MCP Maintainer Team (April 8 update)](https://blog.modelcontextprotocol.io/posts/2026-04-08-maintainer-update/)
+- [The New Stack — MCP Roadmap coverage](https://thenewstack.io/model-context-protocol-roadmap-2026/)
+- [SEP process overview](https://modelcontextprotocol.io/development/contributing)
+- [RFC 8707 — Resource Indicators for OAuth 2.0](https://datatracker.ietf.org/doc/html/rfc8707)
+- [Linux Foundation Agentic AI Foundation](https://www.linuxfoundation.org/projects)
