@@ -1,0 +1,137 @@
+---
+title: "Claude Code Routines：当 Agent 脱离终端存活"
+description: "Anthropic Routines 将 Agent 工作流从终端会话中解耦。事件驱动持久化 Agent 的架构与失败模式。"
+publishDate: "2026-04-16"
+tags: [agents, anthropic, claude-code, routines, infrastructure, agent-engineering, persistent-agents, event-driven]
+category: engineering
+language: zh
+draft: false
+---
+
+每个 Agent 框架都会撞上同一堵墙：关掉终端，Agent 就死了。你精心编排的多步工作流——调研、实现、测试、部署——在 SSH 连接断开或笔记本休眠的瞬间化为乌有。
+
+4 月 14 日，Anthropic 为 Claude Code 发布了 Routines 功能。表面上很简单：定义一个 prompt，指向一个仓库，接上触发器（connector），Agent 就能在没有活跃终端会话的情况下运行。每个 Routine 有独立的 endpoint 和 auth token。Agent 可以跨越断连、崩溃和重启持续存活。
+
+但架构层面的意义比功能描述暗示的更大。Routines 将 Agent 工程师们已经手动搭建了数月的模式正式化为一等原语：**Agent 即服务**——部署单元不再是一次对话，而是绑定到基础设施事件的持久化工作流。
+
+## 会话问题
+
+理解 Routines 为什么重要，先看看今天运行复杂 Agent 任务时会发生什么：
+
+```
+终端会话启动
+  → Agent 加载上下文（仓库状态、指令、工具）
+  → Agent 开始多步任务
+  → ... 45 分钟过去 ...
+  → SSH 超时 / 笔记本休眠 / OOM Kill
+  → 会话丢失
+  → Agent 从零重启
+```
+
+根本问题是**会话-进程耦合**。Agent 的状态——上下文窗口、执行计划、中间结果——都活在一个与终端会话绑定的进程里。杀掉终端，杀掉状态。
+
+之前的解决方案都是变通：
+- **tmux/screen**：在分离会话中保活进程。服务器重启就失效。
+- **Checkpoint 文件**：定期把状态写入磁盘。直到 checkpoint 格式跟恢复逻辑对不上。
+- **Managed Agents API**：Anthropic 自己的服务端基础设施（4 月 8 日发布）。可用，但面向程序化编排——不是"我想让这个 Agent 监视我的仓库然后自动干活"的场景。
+
+Routines 解决的问题和 Managed Agents 不同。Managed Agents 给你 API 来构建 Agent 基础设施。Routines 给你一个**声明式接口来部署 Agent 工作流**。
+
+## Routine 的结构
+
+一个 Routine 由三个组件定义：
+
+**1. Prompt** —— Agent 应该做什么。这不是一次性指令，而是一个持续性指令。"监视这个仓库的 CI 运行状态。当 CI 失败时，分析错误，在一个分支上尝试修复，然后开一个 draft PR。"
+
+**2. Repository** —— Agent 操作的代码库。Routine 有持久化访问权限，可以观察随时间变化的状态，而不只是对一个快照做出反应。
+
+**3. Connectors** —— 触发 Routine 的事件源。GitHub webhook（issue 创建、PR 事件、CI 状态变更）、定时 cron、或者你可以从任何系统 POST 的 HTTP endpoint。
+
+执行模型：
+
+```
+事件到达（webhook / cron / HTTP POST）
+  → Routine 唤醒
+  → 加载当前仓库状态
+  → 在事件上下文中执行 prompt
+  → 采取行动（编辑文件、运行命令、创建 PR）
+  → 回到休眠状态
+  → 等待下一个事件
+```
+
+每个 Routine 有隔离的 auth token，因此你可以给不同 Routine 不同权限。CI 修复 Routine 可能对 staging 分支有写权限但对 `main` 没有。文档 Routine 可能到处有读权限但只对 `docs/` 有写权限。
+
+## 这个架构能做什么
+
+### 事件驱动的 CI/CD 集成
+
+最直接的用例：响应基础设施事件的 Agent。CI 失败触发 Agent，Agent 读取错误日志、定位问题、推送修复、重新触发 CI。如果修复通过就开 PR；如果失败两次就提 issue 附上分析报告然后停止。
+
+这个模式已经以 ad hoc 实现存在——调用 Claude API 的 GitHub Actions、触发 Codex CLI 的自定义 webhook。Routines 把它正式化为具有适当 auth 隔离和生命周期管理的一等原语。
+
+### 持续代码库维护
+
+按 cron 调度运行的 Routines 可以执行人类一直推迟的维护任务：依赖更新、文档漂移检测、死代码识别、测试覆盖率审计。Agent 凌晨 3 点运行，产出一个 PR，人类早上审查。
+
+经济账很重要。一个每晚运行 10 分钟的 Routine 每月 API 消耗几美元。一个人类工程师做同样的事需要每周数小时的上下文切换。
+
+### 多 Routine 编排
+
+多个 Routines 可以在同一个仓库上以不同触发器和权限运行：
+
+| Routine | 触发器 | 权限 | 任务 |
+|---------|--------|------|------|
+| `ci-fixer` | CI 失败 webhook | 写 `fix/*` 分支 | 分析并修复测试失败 |
+| `dep-updater` | 每周 cron | 写 `deps/*` 分支 | 更新依赖并运行测试 |
+| `doc-sync` | PR 合并 webhook | 写 `docs/` | API 变更时更新文档 |
+| `issue-triager` | Issue 创建 webhook | 仅 labels 和 comments | 分类、标签、估算 |
+
+每个 Routine 可独立部署、独立审计、独立撤销。这是微服务模式应用于 Agent 工作流。
+
+## 哪些地方会崩溃
+
+### 陈旧上下文漂移
+
+交互式 Agent 在会话开始时读取仓库并基于该快照工作。Routine 在事件触发时读取仓库——但两次事件之间仓库在变化。如果两个 Routines 修改重叠的文件，或者人类在 Routine 读写之间推送了变更，就会产生冲突。
+
+当前的缓解是 git 自身的冲突检测。Routine 在分支上操作，合并冲突在 PR 阶段暴露。但这意味着接触相同文件的 Routines 需要协调，而 Routines 目前无法彼此协调。
+
+### 无界重试循环
+
+交互式会话中，人类看着 Agent 工作，卡住时介入。Routine 无人值守运行。如果 prompt 的成功条件模糊——"修复失败的测试"而测试本身有 bug——Routine 会循环：尝试修复→运行测试→失败→尝试另一种修复→运行测试→失败→重复。
+
+防护措施是每次调用的超时和 token 预算。但正确设置这些值需要理解任务的预期成本，而这在不同仓库和不同失败类型间差异巨大。
+
+### 权限范围蔓延
+
+Routines 鼓励"给它权限然后让它干活"的模式。诱惑是授予宽泛权限以应对边界情况。但一个凌晨 3 点在没有人类监督下运行且对 `main` 有写权限的 Agent，与你在终端里盯着运行的同一个 Agent，风险画像完全不同。
+
+正确的模式是每个 Routine 最小权限，升级路径是创建 issue 或通知人类，而不是在 Routine 预期范围外直接行动。
+
+## Routines vs. Managed Agents vs. 交互式会话
+
+| 维度 | 交互式会话 | Managed Agents | Routines |
+|------|-----------|----------------|----------|
+| 生命周期 | 绑定终端 | API 管理 | 事件驱动 |
+| 状态 | 进程内 | 服务端会话日志 | 每次调用独立 |
+| 触发器 | 人类输入消息 | API 调用 | Webhook / cron / HTTP |
+| Auth 模型 | 用户凭据 | API token | 每 Routine token |
+| 主要用户 | 键盘前的开发者 | 平台工程师 | DevOps / SRE |
+| 失败模式 | 人类介入 | 程序化重试 | 超时 + 升级 |
+
+三个产品构成一个栈：
+- **交互式会话**用于需要人类判断持续参与的探索性工作
+- **Routines** 用于应当自主运行的明确定义的工作流
+- **Managed Agents** 用于构建不适合上述两种模式的自定义 Agent 基础设施
+
+## 工程启示
+
+更深层的启示是关于 Agent 部署单元的。行业一直把 Agent 当函数——调用它，拿到结果，丢掉状态。Routines 把 Agent 当服务——部署它，给它触发器，让它无限期运行。这跟 Web 开发从 CGI 脚本到长驻应用服务器的演进是同一条路。
+
+问题是 Agent 工作负载是否真的从服务模型中受益，还是函数模型（调用、执行、终止）对大多数 Agent 任务来说就是正确的抽象。答案可能取决于 Agent 是否需要跨调用维护状态——而 Routines，有些矛盾地，作为服务是持久的，但每次调用是无状态的。
+
+## 参考
+
+- [Anthropic Claude Code Routines 发布，2026 年 4 月 14 日](https://docs.anthropic.com/en/docs/claude-code)
+- [Claude Managed Agents 文档](https://docs.anthropic.com/en/docs/agents)
+- [Codex CLI v0.120.0 发布说明](https://github.com/openai/codex)

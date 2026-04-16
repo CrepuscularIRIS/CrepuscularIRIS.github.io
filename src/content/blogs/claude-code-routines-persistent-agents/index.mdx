@@ -1,0 +1,143 @@
+---
+title: "Claude Code Routines: When Agents Outlive Their Sessions"
+description: "Anthropic's Routines decouple agent workflows from terminal sessions. Here is what breaks."
+publishDate: "2026-04-16"
+tags: [agents, anthropic, claude-code, routines, infrastructure, agent-engineering, persistent-agents, event-driven]
+category: engineering
+language: en
+draft: false
+---
+
+Every agent framework hits the same wall: the agent dies when you close the terminal. Your carefully orchestrated multi-step workflow — research, implement, test, deploy — evaporates the moment your SSH connection drops or your laptop goes to sleep.
+
+On April 14, Anthropic shipped Routines for Claude Code. The feature is deceptively simple: define a prompt, point it at a repository, attach connectors, and the agent runs without a connected session. Each Routine gets its own endpoint and auth token. The agent persists across disconnections, crashes, and restarts.
+
+The architecture is more significant than the feature description suggests. Routines formalize a pattern that agent engineers have been building ad hoc for months: the agent-as-service, where the unit of deployment isn't a conversation but a persistent workflow bound to infrastructure events.
+
+## The Session Problem
+
+To understand why Routines matter, consider what happens today when you run a complex agent task in Claude Code:
+
+```
+Terminal session starts
+  → Agent loads context (repo state, instructions, tools)
+  → Agent begins multi-step task
+  → ... 45 minutes pass ...
+  → SSH timeout / laptop sleep / OOM kill
+  → Session lost
+  → Agent restarts from zero
+```
+
+The fundamental issue is **session-process coupling**. The agent's state — its context window, its plan, its intermediate results — lives inside a process that's coupled to your terminal session. Kill the terminal, kill the state.
+
+Prior solutions all involve workarounds:
+- **tmux/screen**: Keep the process alive in a detached session. Works until the server reboots.
+- **Checkpoint files**: Periodically dump state to disk. Works until the checkpoint format doesn't match the resumption logic.
+- **Managed Agents API**: Anthropic's own server-side infrastructure (launched April 8). Works, but designed for programmatic orchestration — not for the "I want this agent to watch my repo and do things" use case.
+
+Routines solve a different problem than Managed Agents. Managed Agents give you an API for building agent infrastructure. Routines give you a **declarative interface for deploying agent workflows**.
+
+## Anatomy of a Routine
+
+A Routine is defined by three components:
+
+**1. The Prompt** — what the agent should do. This isn't a one-shot instruction; it's a standing directive. "Monitor this repository for failing CI runs. When a run fails, analyze the error, attempt a fix on a branch, and open a draft PR."
+
+**2. The Repository** — the codebase the agent operates on. The Routine has persistent access, meaning it can observe changes over time, not just react to a snapshot.
+
+**3. The Connectors** — event sources that trigger the Routine. GitHub webhooks (issue creation, PR events, CI status changes), scheduled crons, or HTTP endpoints you can POST to from any system.
+
+The execution model:
+
+```
+Event arrives (webhook / cron / HTTP POST)
+  → Routine wakes up
+  → Loads current repo state
+  → Executes prompt against the event context
+  → Takes actions (edit files, run commands, create PRs)
+  → Returns to dormant state
+  → Waits for next event
+```
+
+Each Routine gets an isolated auth token, so you can grant different Routines different permissions. A CI-fixer Routine might have write access to a staging branch but not to `main`. A documentation Routine might have read access everywhere but write access only to `docs/`.
+
+## What This Architecture Enables
+
+### Event-Driven CI/CD Integration
+
+The most immediate use case: agents that respond to infrastructure events. A failing CI run triggers the agent, which reads the error logs, identifies the issue, pushes a fix, and re-triggers CI. If the fix passes, it opens a PR. If it fails twice, it files an issue with its analysis and stops.
+
+This isn't hypothetical. The pattern already existed in ad hoc implementations — GitHub Actions that invoke Claude via the API, custom webhooks that trigger Codex CLI runs. Routines formalize it into a first-class primitive with proper auth isolation and lifecycle management.
+
+### Continuous Codebase Maintenance
+
+Routines running on a cron schedule can perform maintenance that humans consistently defer: dependency updates, documentation drift detection, dead code identification, test coverage audits. The agent runs at 3 AM, produces a PR, and the human reviews it in the morning.
+
+The economics matter here. A Routine that runs for 10 minutes every night costs a few dollars per month in API usage. A human engineer doing the same work costs hours of context-switching per week.
+
+### Multi-Routine Orchestration
+
+Multiple Routines can operate on the same repository with different triggers and permissions. Consider a setup for a production service:
+
+| Routine | Trigger | Permissions | Task |
+|---------|---------|-------------|------|
+| `ci-fixer` | CI failure webhook | Write to `fix/*` branches | Analyze and fix test failures |
+| `dep-updater` | Weekly cron | Write to `deps/*` branches | Update dependencies, run tests |
+| `doc-sync` | PR merge webhook | Write to `docs/` | Update docs when API changes |
+| `issue-triager` | Issue creation webhook | Labels and comments only | Classify, tag, and estimate issues |
+
+Each Routine is independently deployable, independently auditable, and independently revocable. This is the microservice pattern applied to agent workflows.
+
+## What Breaks
+
+Routines introduce failure modes that don't exist in interactive sessions:
+
+### Stale Context Drift
+
+An interactive agent reads the repo at session start and operates on that snapshot. A Routine reads the repo at event trigger time — but between events, the repo changes. If two Routines modify overlapping files, or if a human pushes changes between a Routine's read and write, you get conflicts.
+
+The current mitigation is git's own conflict detection. The Routine operates on a branch, and merge conflicts surface at PR time. But this means Routines that touch the same files need coordination, and Routines don't currently coordinate with each other.
+
+### Unbounded Retry Loops
+
+In an interactive session, a human watches the agent work and intervenes when it's stuck. A Routine runs unattended. If the prompt's success condition is ambiguous — "fix the failing test" when the test has a genuine bug — the Routine can loop: attempt fix, run test, fail, attempt different fix, run test, fail, repeat.
+
+The safeguard is a per-invocation timeout and token budget. But setting these correctly requires understanding the task's expected cost, which varies wildly across repositories and failure types.
+
+### Permission Scope Creep
+
+Routines encourage the "give it access and let it work" pattern. The temptation is to grant broad permissions so the Routine can handle edge cases. But an agent with write access to `main` that runs at 3 AM without human oversight is a different risk profile than the same agent running in your terminal while you watch.
+
+The correct pattern is minimal permissions per Routine, with escalation paths that create issues or notify humans rather than taking direct action outside the Routine's intended scope.
+
+## Routines vs. Managed Agents vs. Interactive Sessions
+
+| Dimension | Interactive Session | Managed Agents | Routines |
+|-----------|-------------------|----------------|----------|
+| Lifecycle | Tied to terminal | API-managed | Event-driven |
+| State | In-process | Server-side session log | Per-invocation |
+| Trigger | Human types a message | API call | Webhook / cron / HTTP |
+| Auth model | User's credentials | API token | Per-routine token |
+| Primary user | Developer at keyboard | Platform engineer | DevOps / SRE |
+| Failure mode | Human intervenes | Programmatic retry | Timeout + escalation |
+
+The three products form a stack:
+- **Interactive sessions** for exploratory work where human judgment is continuous
+- **Routines** for well-defined workflows that should run autonomously
+- **Managed Agents** for building custom agent infrastructure that doesn't fit either pattern
+
+## Engineering Implications
+
+If you're building agent-powered development workflows, Routines change the deployment model. Instead of wrapping agent invocations in GitHub Actions or custom webhook handlers, you declare the workflow as a Routine and let Anthropic handle the execution infrastructure.
+
+The tradeoff is vendor lock-in. A Routine is deeply coupled to Claude Code's execution model. If you want portability across LLM providers, the Managed Agents API (or the open-source equivalent — running your own harness on Codex CLI or a generic agent framework) gives you more control at the cost of more infrastructure work.
+
+The deeper implication is about the agent deployment unit. The industry has been treating agents as functions — invoke them, get a result, throw away the state. Routines treat agents as services — deploy them, give them triggers, let them run indefinitely. This is the same evolution that web development went through from CGI scripts to long-running application servers.
+
+The question is whether agent workloads actually benefit from the service model, or whether the function model (invoke, execute, terminate) is the right abstraction for most agent tasks. The answer probably depends on whether the agent needs to maintain state across invocations — and Routines, somewhat paradoxically, are stateless per invocation despite being persistent as services.
+
+## References
+
+- [Anthropic Claude Code Routines announcement, April 14, 2026](https://docs.anthropic.com/en/docs/claude-code)
+- [Claude Managed Agents documentation](https://docs.anthropic.com/en/docs/agents)
+- [Codex CLI v0.120.0 release notes](https://github.com/openai/codex)

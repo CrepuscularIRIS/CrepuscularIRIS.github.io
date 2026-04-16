@@ -1,0 +1,105 @@
+---
+title: "Agent 框架大收敛：为什么 2026 是整合之年"
+description: "微软合并 Semantic Kernel 与 AutoGen。CrewAI 日均 1200 万次执行。框架抽象正在收敛。"
+publishDate: "2026-04-16"
+tags: [agents, multi-agent, orchestration, microsoft, crewai, frameworks, agent-engineering, semantic-kernel, autogen]
+category: engineering
+language: zh
+draft: false
+---
+
+2026 年 4 月的前两周，Agent 编排领域发生了三件事。单看每一件都只是脚注，但放在一起揭示了一个结构性变化。
+
+微软发布了 Agent Framework v1.0——将 Semantic Kernel 和 AutoGen 合并为单一运行时的产物。CrewAI 披露其平台日均处理 1200 万次 Agent 执行。新的层级化 Agent 框架持续涌现——最新一批 CEO-Manager-Worker 委派工具在发布数周内就斩获数千 GitHub stars。
+
+表面观察：Agent 框架很火。深层观察：它们正在收敛到相同的抽象，尽管出发点对多 Agent 系统应该如何工作有截然不同的假设。
+
+## 胜出的五种模式
+
+看看 2026 年 4 月在发布的每一个主流 Agent 框架——微软 Agent Framework、CrewAI、LangGraph、Anthropic Managed Agents——你会发现相同的五种编排模式以不同名字实现：
+
+| 模式 | 微软 AF | CrewAI | LangGraph | 描述 |
+|------|---------|--------|-----------|------|
+| 顺序 | Pipeline | sequential | 线性图 | Agent 按固定顺序执行 |
+| 并发 | Parallel dispatch | parallel | Fan-out/fan-in | 独立 Agent 同时运行 |
+| 交接 | Agent handoff | Delegation | Edge routing | 一个 Agent 将控制权传递给另一个 |
+| 群聊 | Group chat mgr | consensual | Multi-node cycle | Agent 协商达成共识 |
+| 层级 | Orchestrator | Manager delegation | Supervisor | 顶层 Agent 分解并委派 |
+
+这不是表面上的相似。它们在结构上是等价的。微软 AF 的"顺序流水线"和 CrewAI 的"顺序流程"产生相同的执行图。差异在 API 表面，而非计算模型。
+
+这种收敛不是协调的结果。它的发生是因为 Agent 编排的设计空间比 2024-2025 年看起来更小——那时每个框架都试图通过新奇的执行模型来差异化。存活下来的模式是映射到真实生产工作负载的那些。
+
+## 微软的合并揭示了什么
+
+Agent Framework v1.0 的合并在架构上最具信息量，因为它涉及合并两个哲学不同的框架：
+
+**Semantic Kernel** 起步为企业 SDK——强类型、插件导向、设计用于与现有 .NET/Java/Python 应用集成。心智模型：LLM 是你从应用代码中调用的函数。
+
+**AutoGen** 起步为研究框架——对话导向、设计用于多 Agent 交互实验。心智模型：Agent 是互相对话的自主实体。
+
+合并它们需要找到共同的抽象层。微软的答案是 **Agent 运行时**——一个管理 Agent 生命周期、消息路由和状态持久化的进程，与单个 Agent 的实现方式无关。
+
+关键设计决策：
+
+1. **默认流式**。每个 Agent 交互都是流，而非请求-响应。这使得实时监控和提前终止成为可能。
+2. **内建 Checkpoint**。运行时定期快照 Agent 状态，崩溃的工作流从最后一个 checkpoint 恢复而非从头开始。
+3. **Human-in-the-loop 作为一等模式**。任何步骤都可以配置为暂停并等待人类批准后再继续。
+4. **MCP 管工具，A2A 管跨框架通信**。工具是 MCP server。不同框架中 Agent 之间的通信使用 A2A 协议。
+
+## CrewAI 的规模数据及其含义
+
+CrewAI 的 1200 万日执行量提供了关于 Agent 框架实际大规模使用方式的经验数据。
+
+生产环境中编排模式的分布（基于 CrewAI 公开案例和社区报告）大致为：
+
+- **顺序**：~60% 的工作流。最常见的模式是"Agent A 做调研，Agent B 写作，Agent C 审查。"简单、可预测、可调试。
+- **层级**：~25% 的工作流。管理者 Agent 分解复杂任务并委派给专家 Agent。
+- **并发**：~10% 的工作流。独立任务并行执行以降低延迟。
+- **群聊/共识**：~5% 的工作流。最不常用，因为出错时最难调试。
+
+结论：生产 Agent 系统压倒性地使用能用的最简单编排模式。复杂模式——共识、动态路由、自适应层级——是研究产物，很少能经受住生产需求（延迟预算、成本控制、可调试性）的考验。
+
+## 简单性信号
+
+2026 年初极简层级框架的快速采用展示了框架构建者应该内化的市场信号：开发者不想要更多抽象层，他们想要更少。
+
+最受欢迎的新进入者共享一个三概念 API：
+- **Planner**：接收目标的顶层 Agent
+- **Manager**：将目标分解为任务的中层 Agent
+- **Worker**：执行单个任务的叶 Agent
+
+没有插件系统，没有中间件，没有生命周期钩子。Planner-Manager-Worker 层级直接映射到人类思考委派的方式，开发者无需学习框架特有概念就能推理系统行为。
+
+代价是灵活性。这些极简框架无法表达循环工作流、动态 Agent 生成或条件路由。但对于 60% 的顺序委派链工作流，简单性是特性而非限制。
+
+## 协议收敛：MCP + A2A 成为基础设施
+
+框架层之下，更重要的收敛发生在协议层。2026 年 4 月发布的每个主流框架都支持：
+
+- **MCP（Model Context Protocol）** 用于工具访问——Agent 通过 MCP server 调用工具，无论哪个框架托管 Agent
+- **A2A（Agent-to-Agent Protocol）** 用于跨框架通信——CrewAI 中的 Agent 可以通过 A2A 的 Agent Card 发现机制与微软 Agent Framework 中的 Agent 通信
+
+MCP v2.0 强制要求 OAuth 2.1 加动态客户端注册，意味着工具访问默认具有适当的认证。这是之前阻止 MCP 在生产多租户环境中可用的缺失部分。
+
+A2A v1.0 带着 gRPC transport 和签名 Agent Card 发布。Agent Card 是描述 Agent 能力、输入输出 schema 和认证要求的 JSON 文档。Agent 发现通过从已知注册中心或直接从 Agent endpoint 获取 Agent Card 实现。
+
+实际后果：你可以构建一个多 Agent 系统，其中一些 Agent 跑在 Anthropic 基础设施上、一些在 Azure 上、一些在你自己的服务器上，它们通过标准化协议通信。框架选择变成实现细节，而非架构承诺。
+
+## 对 Agent 工程师的意义
+
+**如果你今天在选框架**：编排模式在各框架间是等价的。根据你的现有基础设施选择（微软栈 → Agent Framework，Python 原生 → CrewAI，图导向工作流 → LangGraph，追求简单 → Paperclip）。
+
+**如果你在构建 Agent 基础设施**：投资 MCP 和 A2A 集成，而非框架特有的抽象。框架在收敛；协议是稳定接口。
+
+**如果你在设计 Agent 系统**：从顺序编排开始，只在有证据表明顺序不够用时才增加复杂度。生产部署的数据很清楚：大多数 Agent 工作流不需要复杂编排模式，简单模式在调试、监控和运维方面有数量级的优势。
+
+2026 年的收敛故事最终是关于成熟化。Agent 框架领域在 2024-2025 年探索设计空间。现在正在向共享的理解收敛——什么有用。有趣的研究问题已经从"如何编排 Agent"转向"如何让编排后的 Agent 可靠、可观测、成本可控"——框架收敛使这些问题更容易回答，因为评估标准正在标准化。
+
+## 参考
+
+- [Microsoft Agent Framework v1.0](https://devblogs.microsoft.com/agent-framework/microsoft-agent-framework-version-1-0/)
+- [MCP 授权规范: OAuth 2.1](https://spec.modelcontextprotocol.io/specification/2025-03-26/basic/authorization/)
+- [A2A 协议规范](https://google.github.io/A2A/)
+- [AI Agent 协议生态图 2026](https://www.digitalapplied.com/blog/ai-agent-protocol-ecosystem-map-2026-mcp-a2a-acp-ucp)
+- [CrewAI 多 Agent 框架](https://www.crewai.com/)
