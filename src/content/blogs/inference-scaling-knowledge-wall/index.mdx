@@ -1,0 +1,102 @@
+---
+title: "Inference-Time Scaling Hits a Knowledge Wall"
+description: "Longer reasoning chains solve math and code. They do not reliably solve questions where the answer was never in the model. April 2026 evidence."
+publishDate: "2026-04-17"
+tags: [inference-time-scaling, reasoning, evaluation, llm-research, test-time-compute, hallucination]
+category: research
+language: en
+draft: false
+---
+
+Inference-time scaling — letting the model think longer per query, whether by extending chain-of-thought, sampling multiple attempts, or running tree search — is the defining capability story of 2024–2026. OpenAI's o1 demonstrated it, DeepSeek-R1 productized it, Claude Opus 4.6 exposed it as a tunable `effort` parameter, GPT-5.4 priced it as "reasoning minutes." The through-line is consistent: pay more compute at inference time, get measurably better answers on math, code, and competition-style puzzles.
+
+Where the same story has been less loud is where this fails. A growing body of April 2026 work points to a specific class of task where inference-time scaling does not just plateau — it can actively make the model *worse*. The class is knowledge-intensive questions, especially those that require grounded facts the model may not have encoded cleanly during training.
+
+This matters because a lot of what we want agents to do — research assistants, customer-support bots, compliance reviewers, anything that quotes a real source — is precisely knowledge-intensive. If the "just let the model think longer" story breaks there, agent designers need a more nuanced picture than the current "more reasoning tokens = better" folk wisdom.
+
+## What the April 2026 Evidence Actually Says
+
+Two pieces of work are worth pulling into the same frame.
+
+The first is an OpenReview paper titled "Test-Time Scaling in Reasoning Models Is Not Effective for Knowledge-Intensive Tasks Yet." It evaluated 14 reasoning models across knowledge-heavy benchmarks including SimpleQA and FRAMES. The finding: extending the thinking budget (more tokens per answer, deeper chain-of-thought) did not consistently improve accuracy. On several configurations, longer reasoning *increased* the hallucination rate. The model, given more room to think, used that room to construct more confident false answers.
+
+The second is an arXiv paper from earlier in the year, "The Cost of Dynamic Reasoning: Demystifying AI Agents and Test-Time Scaling from an AI Infrastructure Perspective," which examines the compute-accuracy curve of agents under different inference-time scaling knobs — reflection depth, parallel sampling, few-shot count. Its headline is not about failure modes; it is about diminishing returns. Accuracy climbs with compute, but the slope flattens fast, and latency variance widens. Under tight production SLOs, the marginal reasoning token is often worth less than the marginal retrieved document.
+
+These two findings are pointing at the same underlying structure: inference-time scaling is a *search* over a solution space, and search only helps when the right answer is reachable from what the model already has. For math and code, the solution space is procedural — the model composes steps from operators it has memorized. Longer search gives it more attempts to compose the correct sequence. For knowledge, the solution space is retrieval — the answer is either in the weights or it is not. Thinking longer does not put a fact into the weights that was never there.
+
+## Why Thinking Longer Can Make It Worse
+
+The counterintuitive part is not that scaling plateaus on knowledge tasks — that's almost trivial — but that it sometimes *reverses*. The mechanism worth understanding:
+
+When a reasoning model is prompted for a fact it does not cleanly know, the short-CoT baseline usually surfaces an uncertainty marker: "I'm not certain, but I think X." Long-CoT post-training changes this. The model is rewarded for producing structured reasoning traces. It learns, implicitly, to decorate weak answers with supporting scaffolding — invented references, plausible-sounding derivations, fabricated intermediate conclusions. The reasoning chain is self-consistent but hallucinated.
+
+This is not a bug in any single model. It is a predictable consequence of the training signal. If "more reasoning tokens" is rewarded as a strategy, the model finds ways to fill those tokens even when it has no real signal to reason from. For a math problem, this is fine — the correct answer is verifiable, so filler gets pruned by the reward function. For a knowledge problem, this is bad — there's no in-training verifier for "did the model make up a citation," so the filler persists.
+
+A useful way to think about this: the hallucination rate does not explode, but it shifts *character*. Shorter, more uncertain hedges turn into longer, more confident fabrications. Net accuracy may stay flat; trust loss is larger than the accuracy delta suggests, because confident-but-wrong is a worse failure mode than uncertain-but-wrong for most downstream uses.
+
+## What Actually Works on Knowledge Tasks
+
+The alternatives are not mysterious. They just require admitting that reasoning compute is the wrong thing to spend on a retrieval problem.
+
+**Retrieval first, reasoning second.** The cleanest pattern, and the one most production systems are already on. Resolve the question into one or more retrieval calls, then let the model reason over retrieved text, not from memory. The compute dial shifts from "more reasoning tokens" to "better retrieval." The "Cost of Dynamic Reasoning" work characterizes how accuracy-cost tradeoffs flatten as reasoning budgets grow, which — combined with the OpenReview result above — implies that on knowledge-bound tasks, marginal retrieval compute tends to dominate marginal reasoning compute. The exact crossover depends heavily on the task, the retriever, and the model.
+
+**Structured verifiers for generated content.** When the model emits a citation, a date, a quote, an API name — verify it programmatically before returning. Some agents now run a post-generation verification pass where every concrete claim gets a lookup. It doesn't catch everything, but it catches the embarrassing subset (invented paper titles, wrong authors, dead URLs) that most users judge the agent on.
+
+**Confidence-aware decoding.** Instead of letting the model pad its answer with reasoning-style filler, expose calibrated uncertainty. "I don't have a confident answer for this" is a better failure mode than a confident fabrication. Some teams are experimenting with training signals that penalize long-CoT when the model's internal confidence is low — a promising direction, not yet a solved problem.
+
+**Pick the right mode per task.** The emerging best practice in agent design is *not* to crank the `effort` dial globally. It is to route per subtask. Math-like subtasks get high reasoning budgets. Retrieval-like subtasks get high retrieval budgets and low reasoning budgets. Code subtasks sit somewhere in between. A harness that respects this distinction spends compute where it pays and saves compute where it doesn't.
+
+## A Sketch of the Routing Logic
+
+A minimal router might look like this. It's pseudocode — do not treat it as drop-in production code — but it captures the shape.
+
+```python
+def route(task: Task) -> ExecutionPlan:
+    """Route a task to an execution mode based on its dominant failure risk."""
+    kind = classify(task)  # cheap classifier: knowledge / procedural / mixed
+
+    if kind == 'knowledge':
+        return ExecutionPlan(
+            reasoning_budget='low',         # short CoT
+            retrieval_budget='high',        # many lookups, fresh sources
+            verification='strict',          # post-check every concrete claim
+        )
+    if kind == 'procedural':                # math, code, derivation
+        return ExecutionPlan(
+            reasoning_budget='high',        # let it think
+            retrieval_budget='low',
+            verification='self-consistency',
+        )
+    # Mixed
+    return ExecutionPlan(
+        reasoning_budget='medium',
+        retrieval_budget='medium',
+        verification='strict-on-claims',
+    )
+```
+
+The critical observation: `reasoning_budget` and `retrieval_budget` are separate dials. The last two years of inference-time scaling work has implicitly collapsed them into one — "more compute" meant "more reasoning tokens" — and that conflation is what produces the knowledge-wall failure mode. Separating them is the first step back.
+
+## Implications for Benchmark Reading
+
+If you're reading SWE-bench Pro scores, GPQA scores, MATH scores — you're reading procedural benchmarks. Inference-time scaling results there generalize to similar procedural tasks and very little else. When a vendor announces "our new high-effort mode achieves 64% on SWE-bench Pro," that number tells you something about procedural subtasks in code, not about whether the model will hallucinate a wrong quarterly revenue number in your enterprise research assistant.
+
+The benchmarks that actually predict knowledge-task behavior — TriviaQA under adversarial prompts, FreshQA, domain-specific factual QA — are consistently missing from vendor release posts. That absence is not neutral. It reflects which capabilities the vendors want to be judged on, and knowledge grounding is not one of them.
+
+A practical move for 2026 is to run a small internal knowledge-QA eval against each new model before migrating an existing knowledge-grounded agent. A set of fifty questions that require retrieving from *your* domain, with gold answers. Score models on that, not on the headline reasoning numbers. The two rankings often disagree.
+
+## The Bigger Picture
+
+Inference-time scaling is real. It changed what models can do on procedural problems, and it is going to change what agents can do on long-horizon plans. The story is not false — it is just narrower than the marketing suggests.
+
+What 2026 is clarifying is that reasoning compute and retrieval compute are two different resources, and *test-time* is only a useful thing to scale when the reward signal for that specific task class is well-defined. For math and code, it is. For knowledge, it isn't — not yet. Until training regimes explicitly reward grounded, uncertainty-calibrated, retrieval-integrated long-CoT on knowledge tasks, longer thinking will continue to produce more confident hallucinations where we wanted fewer and shorter ones.
+
+The workaround is already in production. Route knowledge questions to retrieval and short reasoning. Route procedural questions to long reasoning and cheap retrieval. Spend compute where the reward signal lives. It is not a glamorous research direction, but it is the one that actually makes agents correct on the tasks users care about.
+
+## References
+
+- Test-Time Scaling in Reasoning Models Is Not Effective for Knowledge-Intensive Tasks Yet — https://openreview.net/forum?id=r5WpkObeYa
+- The Cost of Dynamic Reasoning: Demystifying AI Agents and Test-Time Scaling — https://arxiv.org/abs/2506.04301
+- AI Agent Papers (biweekly tracker) — https://github.com/masamasa59/ai-agent-papers
+- Awesome Inference-Time Scaling paper list — https://github.com/ThreeSR/Awesome-Inference-Time-Scaling
+- Sebastian Raschka, State of LLMs 2025 — https://magazine.sebastianraschka.com/p/state-of-llms-2025

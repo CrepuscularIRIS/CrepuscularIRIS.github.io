@@ -1,0 +1,119 @@
+---
+title: "GitHub Becomes the Neutral Control Plane for Coding Agents"
+description: "GitHub's April 14 model selection for Claude and Codex agents signals where agent gravity is converging: the integration surface, not the IDE."
+publishDate: "2026-04-17"
+tags: [github, claude-code, codex, agents, platform, multi-model, agent-engineering]
+category: engineering
+language: en
+draft: false
+---
+
+On April 14, 2026, GitHub rolled out a change that looks small in the changelog and is large in consequence. Users can now pick which model runs behind the Claude and Codex third-party coding agents directly from github.com. Previously, launching one of those agents from a repo meant accepting whatever default model the provider had picked that week. Now the dropdown is yours: GPT-5.2-Codex, GPT-5.3-Codex, GPT-5.4 for the Codex agent; various Claude Opus and Sonnet revisions for the Claude agent. The agents themselves are still third-party. The *selection surface* is GitHub.
+
+This is not an obscure PM detail. It reshapes where agent orchestration gravity lives, and it answers — provisionally — a question the industry has been dodging since late 2025: *will users standardize on one vendor's agent stack, or will they choose per-task?*
+
+## Where Agent Gravity Was Living
+
+Through most of 2025 and early 2026, the dominant pattern was vertical: each vendor wanted you inside their agent stack end-to-end. Anthropic shipped Claude Code, Claude Managed Agents, the Claude Desktop app, and the Claude Platform. OpenAI shipped the Codex CLI, the Codex IDE integration, Codex Cloud agents, and through 2026 has been moving toward a more unified ChatGPT/Codex/browser surface. Cursor shipped a rebuilt interface for orchestrating parallel agents of its own. Each of these was, in effect, a vertically integrated play: the model, the harness, the tool surface, the UI, and — crucially — the repository integration were all one vendor's problem.
+
+That integration story started breaking in early April 2026. Two things happened within ten days:
+
+1. Cursor's April refresh treated Claude Code and Codex as first-class orchestratable agents, not standalone competitors — the interface layer started acknowledging that users were already mixing stacks.
+2. GitHub's April 14 change extended the pattern further: on github.com itself, Claude and Codex agents sit side-by-side, model-selectable, running over the same repo context.
+
+The ground truth: a growing share of practitioners are running multiple vendors side by side. Cursor as the interface layer, Claude Code as the reasoning engine, Codex for code-specific generation. The "I use Claude Code" and "I use Codex" tribalism of mid-2025 has decayed into "I use whichever one solves the subtask." The neutral integration surface — the place where these heterogeneous agents meet the user's actual code — is no longer any single vendor's IDE plugin. It is GitHub.
+
+## Why GitHub Is the Natural Control Plane
+
+This isn't a coincidence and isn't a branding exercise. It falls out of the underlying distribution of code, identity, and CI:
+
+- **Code is already on GitHub.** About 150 million developers, 420+ million repositories. Any agent that edits code has to either mirror that state or borrow it. Mirroring is painful — SSH keys, clone times, LFS quirks, large mono-repos that don't fit on a single VM. Borrowing means running inside GitHub's integration surface.
+- **Identity is already on GitHub.** OAuth, SSO, org membership, SAML. Agents need identity to do PR review, comment, or push. Re-plumbing enterprise IdP into a non-GitHub integration is months of security review each time.
+- **CI is already on GitHub Actions.** An agent's write action is not useful unless it ends with a PR that runs tests. The test runner lives on GitHub infrastructure. Any alternative runs into a coordination tax.
+- **The PR is the transactional unit.** Code review is the agent's output contract. The PR page is where humans validate the agent's work. It is cheaper to host the agent where the review surface already is than to build a new one.
+
+Those four facts mean any vendor-neutral agent control plane is going to converge on GitHub whether GitHub wants it or not — unless GitHub actively resists, which it is not doing. The April 14 rollout is GitHub leaning into that role.
+
+## The User-Visible Architecture
+
+The pattern GitHub is shipping looks like this, sketched as pseudocode:
+
+```ts
+// Pseudocode — illustrative of the shape, not the real protocol.
+interface AgentTaskRequest {
+  repository: RepoRef
+  branch: string
+  issue_or_prompt: string
+  agent: 'codex' | 'claude' | 'copilot'
+  model?: ModelRef  // user-selectable, per-task
+}
+
+async function dispatch(req: AgentTaskRequest) {
+  const agent = await AgentRegistry.load(req.agent)
+  const session = await GitHubSessionBroker.create({
+    repo: req.repository,
+    branch: req.branch,
+    identity: currentUser,
+  })
+  // The agent runs in its own vendor's infrastructure, but
+  // the session credentials, repo access, and PR surface are
+  // brokered by GitHub.
+  return agent.run({
+    session,
+    model: req.model ?? agent.defaultModel,
+    prompt: req.issue_or_prompt,
+  })
+}
+```
+
+The key design decision is that the agent's *compute* runs at the vendor (Anthropic or OpenAI infrastructure), but the *session credentials, repo access, and PR surface* are brokered by GitHub. The relationship looks like the one GitHub Apps already have for bots: scoped tokens minted per installation, constrained by what the user granted, revocable from a central settings page. Whether the exact broker model GitHub ends up using for third-party agents matches the App model or something narrower is still evolving, but the direction is clear — GitHub gets to set the blast radius of what a third-party agent can do inside a repo, independent of the vendor's harness. Vendors end up competing on model quality and harness behavior, not integration depth.
+
+## Why This Matters for Model Selection
+
+On its face, model selection is a trivial feature. Drop-down, pick a model, go. The non-trivial part is that with one control, GitHub has decoupled three things that used to move together:
+
+1. **The model** (GPT-5.4, Claude Opus 4.6, Haiku 4.5…)
+2. **The agent harness** (Codex's loop, Claude Code's loop)
+3. **The integration surface** (github.com PRs, issues, Actions)
+
+Previously, picking Claude Code meant accepting Anthropic's current default Claude model, running inside Anthropic's agent loop, integrated via whatever Anthropic's GitHub app exposes. Picking Codex meant the OpenAI stack end-to-end. The model–harness–integration trio moved as a unit.
+
+Decoupling lets users exploit the fact that harness quality and model quality are *not* correlated the way vendors' marketing implies. Codex's harness has distinctive strengths — aggressive parallel task execution, its apply-patch tool, its realtime progress streaming shipped in March 2026. Claude Opus has distinctive model strengths — long-range reasoning, architectural tradeoff analysis. Under the old regime you had to pick one bundle. Now you can run the Codex harness on GPT-5.4 when you want speed, swap to Claude when you're doing a large refactor, and route a security review through the Claude agent with a tuned Opus model — all from the same PR.
+
+The practical implication is that *benchmark comparisons published by vendors* lose a lot of informational value. "Claude Code beats Codex on SWE-bench" might just mean "Claude Opus 4.6 beats GPT-5.2-Codex on SWE-bench"; when you swap the model underneath, the ranking flips. The signal worth reading is now harness-specific: given a fixed model, which harness wins? That's a much harder question and one the vendors are far less eager to have published.
+
+## Consequences for Agent Developers
+
+If you're building an agent today, the GitHub control-plane pattern changes a few things about how you design.
+
+**Assume the PR is the output contract.** Your agent's success gets measured in GitHub's native units — PR merge rate, CI pass rate, reviewer acceptance. Anything it does that doesn't surface as a green PR is invisible to most measurement. Design your loop backward from the PR page.
+
+**Assume identity is short-lived and scoped.** The era of "paste your PAT into the agent config" is ending. GitHub-brokered sessions are the norm, and they expire. Your harness must handle credential rotation mid-task without losing state. This meshes naturally with durable execution patterns (checkpoint after each tool call, resume with fresh credentials) and badly with the "single long-lived process holds everything in memory" model that dominated early agent demos.
+
+**Assume the model is swappable.** This is the big one. A harness that over-fits to one model's tool-calling quirks will be outcompeted by one that degrades gracefully across the top three. Design your prompts, your parsers, and your retries against a model *interface*, not a specific model's behavior. When your user can flip from Claude Opus to GPT-5.4 mid-task, your harness has to survive that flip.
+
+**Assume the integration surface is GitHub's.** If you're asking the user to install your IDE plugin *and* a GitHub App *and* a dashboard, you've lost. The successful pattern ships as a single GitHub App with a thin web surface for logs. Everything else lives inside GitHub's existing views.
+
+## The Open Question: Governance
+
+The deeper question is who sets agent policy when agents are vendor-heterogeneous but the integration surface is unified. Today each vendor has its own safety posture: Anthropic leans on its constitution-based harness, OpenAI ships model-level refusals. If two third-party agents with different safety postures are both running in the same repo, whose policy wins when they disagree? The most plausible answer is that GitHub becomes the policy enforcement point — it already is for branch protections, required reviews, and Dependabot. Extending that to agent-issued diffs is a natural move and one several people are predicting.
+
+This is not a speculative long-term bet. It is a close-in, months-to-quarters question. Who gets to block an agent's commit on the PR page has real product consequences. If GitHub builds it, agents are governed by Git semantics. If vendors try to keep it inside their own runtime, we get fragmented policy and an auditor's nightmare.
+
+## What to Watch Next
+
+Three specific things will tell you whether this control-plane pattern holds or regresses:
+
+1. **Does GitHub ship agent *runtime* APIs** — specifically, a way for third-party agents to run inside GitHub's compute for tasks where data residency forbids sending code out? If yes, the control-plane pattern hardens. If no, we'll see fragmentation into vendor-specific enterprise tiers.
+2. **Does the model-selection dropdown acquire routing semantics** — "use Claude for reviews, Codex for test generation"? That would formalize the harness-agnostic model-per-task pattern and make benchmark comparisons even less meaningful.
+3. **Does GitHub publish an agent-output SLO** — a committed floor on PR pass rate per agent? That would turn agent selection from vibes into procurement, which is what enterprises actually need.
+
+The pattern on April 17, 2026 is unambiguous: agents are converging on GitHub as their neutral integration surface, and the model-selection dropdown is the first user-visible sign. The more interesting question is whether vendors will fight this convergence or let it settle.
+
+## References
+
+- GitHub Changelog, "Model selection for Claude and Codex agents on github.com" (Apr 14, 2026) — https://github.blog/changelog/2026-04-14-model-selection-for-claude-and-codex-agents-on-github-com/
+- Anthropic, Claude Managed Agents public-beta announcement (Apr 8, 2026) — https://www.anthropic.com/news
+- OpenAI Codex product page and release notes index — https://openai.com/codex/ (feature-specific claims in this post are drawn from publicly reported release notes aggregated at https://releasebot.io/updates/openai/codex)
+- The New Stack, "Anthropic wants to run your AI agents for you" — https://thenewstack.io/with-claude-managed-agents-anthropic-wants-to-run-your-ai-agents-for-you/
+- GitHub Apps permissions model (used as an analog for how scoped-token brokering works today) — https://docs.github.com/en/apps

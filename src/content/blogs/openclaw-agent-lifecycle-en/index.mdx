@@ -1,0 +1,211 @@
+---
+title: "OpenClaw's Five-Agent Lifecycle: Cognitive Isolation"
+description: "An English walkthrough of OpenClaw's five-agent decomposition — why cognitive isolation, heartbeat staggering, and hard-coded stoppage beat a single agent."
+publishDate: "2026-04-17"
+tags: [openclaw, multi-agent, agent-lifecycle, heartbeat, mailbox-protocol, agent-engineering]
+category: engineering
+language: en
+draft: false
+---
+
+Single general-purpose agents hit two structural walls on long-horizon work. The first is **context pollution**: implementation, review, and research share one conversation, attention drifts, and bad decisions compound. The second is **no stop function**: with no external arbiter, the agent gravitates toward infinite polite retries and increasingly elaborate explanations of why this time it will work.
+
+These are not hypothetical. A single agent that both writes code and reviews it tends toward self-justification — its context is already full of the reasons it made each decision, so "review" degrades into a confirmation-bias exercise. This is the engineering instantiation of a point several multi-agent analyses have made in 2025–2026: the expected utility of a multi-agent system with no independent information sources is upper-bounded by the utility of the single best agent in it. Five agents that all see the same thing and reason the same way are not better than one good agent. They are five times more expensive.
+
+What produces lift, then, is not parallelism — it is **cognitive isolation**: each agent holds information or capabilities the others do not, and the couplings between them are narrow and structural, not conversational.
+
+OpenClaw is the five-agent decomposition I've been running as my personal AI OS. This piece is the English-language account of the architecture: why five, why heartbeats, why JSONL mailboxes, and — the single design decision that matters most — why stoppage is hard-coded, not prompted.
+
+## The Five Roles
+
+| Agent | Role | Core Responsibility | What It Does *Not* Do |
+|-------|------|---------------------|-----------------------|
+| **Lacia** | Orchestration | Task decomposition, prioritization, routing | Does not implement, does not research |
+| **Methode** | Build | Code, test, build verification | Does not make architectural decisions |
+| **Satonus** | Review | Code review, quality assessment, PASS/FAIL verdicts | Does not fix what it finds |
+| **Snowdrop** | Research | Literature, API docs, option comparison | Does not make final decisions |
+| **Kouka** | Delivery | Packaging, stoppage decisions, "seen" tracking | Does not research, does not implement |
+
+The division is not arbitrary. Two rules drive it: *the person who writes the code does not review it*, and *the person who gathers evidence does not decide what to do with it*. Satonus never fixes what it finds — because the fixer-as-reviewer loop is exactly where confirmation bias lives. Snowdrop gathers options but does not pick one — because the evidence provider should not be the evidence consumer.
+
+### Why Five and Not Three or Ten
+
+Five is the minimum complete cover of the software-engineering lifecycle: plan, build, verify, research, deliver. Fewer than five means some agent is wearing two hats, which reinstates context pollution. More than five increases the communication surface without obvious gain.
+
+A quick combinatorics sanity check: five agents have $\binom{5}{2} = 10$ pairwise channels. The Mailbox protocol uses a *mostly-star topology*: Lacia is the default router for task dispatch, review outcomes, and delivery — so the vast majority of meaningful coordination traffic runs through four Lacia-centric channels. Direct non-Lacia paths exist (e.g. Methode directly asking Satonus for a review once a task is in flight, or Kouka dispatching research to Snowdrop), but they are narrow, contractual, and logged the same way. That distinction matters. Decentralized N-to-N communication becomes cognitively unmanageable above N=3 very quickly. The Lacia-centric backbone keeps routing tractable and gives one agent the global view while the others keep local ones.
+
+### The Independent Information Sources
+
+Why can five OpenClaw agents outperform one well-tuned agent at all? Because each one holds signal the others don't:
+
+- **Methode** sees the live state of the repo and real build/test feedback — hard signals that are not themselves drawn from a language model's distribution.
+- **Satonus** operates on a separate context. It never sees Methode's implementation-time reasoning, only the artifact. That's structural distance, not a prompt trick.
+- **Snowdrop** holds external-world grounding — papers, API docs, option matrices — that the other agents do not have in context.
+- **Kouka** holds delivery history and stoppage metrics. Structured data, not LLM-reasoned narrative.
+
+This asymmetry is designed in. If two agents end up with overlapping information, the lift from splitting them disappears and you're just paying 2x inference for the same decision.
+
+## The Heartbeat
+
+The system runs on a **30-minute heartbeat cycle**. The number is not aesthetic. It's roughly the amount of real clock time a Claude Code session spends doing useful work before its context window starts compacting in ways that drop load-bearing detail. Shorter than 30 minutes and you don't finish a coherent work unit. Longer and you lose the earlier context you were building on.
+
+Each heartbeat is the same shape:
+
+```
+1. Agent reads its mailbox (~/inbox/<agent>.jsonl)
+2. Sort pending messages by priority
+3. Execute the highest-priority task
+4. Execute scheduled cron tasks (e.g. Blog-Maintenance-Kouka)
+5. If no work left → emit idle_report to Lacia
+6. Lacia aggregates idle signals and decides whether to escalate to the human
+```
+
+The key property: **agents do not poll each other.** They only read their mailboxes. Behavior is a pure function of mailbox contents. Replay the mailbox history and you replay the decision. That's what makes this debuggable at all — without it, multi-agent systems are stochastic in a way that makes post-mortems impossible.
+
+### Staggered Heartbeats
+
+The five heartbeats are deliberately **staggered** by five minutes each, not synchronized:
+
+```
+T=0min   Lacia  heartbeat — dispatches tasks
+T=5min   Methode heartbeat — picks up work
+T=10min  Snowdrop heartbeat — picks up research requests
+T=15min  Satonus heartbeat — picks up review requests
+T=20min  Kouka   heartbeat — picks up delivery requests
+T=25min  (idle buffer)
+T=30min  Lacia  heartbeat — next cycle
+```
+
+The stagger guarantees a message written by Lacia at T=0 is already in Methode's inbox when Methode wakes at T=5. No race condition, no "read from empty inbox" footgun. The cost is end-to-end latency: a full dispatch→build→review→deliver loop takes ~30 minutes instead of the naive five-minute ideal. That tradeoff is correct for unattended systems. Reliability beats throughput when no human is watching.
+
+### The Granularity Assumption
+
+The 30-minute heartbeat has a hidden assumption baked in: **work units must fit inside a single heartbeat's context.** "Add JWT middleware to auth/service.py" fits. "Refactor the whole auth system" does not. That refactor has to be decomposed by Lacia into many heartbeat-sized subtasks, each with explicit acceptance criteria.
+
+Which, not coincidentally, is exactly why Lacia exists. If every task were one-heartbeat-sized to start with, you wouldn't need an orchestrator. Lacia's job is to translate human-scale goals ("ship this feature") into agent-scale tasks ("in auth/middleware.py add JWT validation, acceptance: three specific tests pass"). That translation is the entire value add of the coordination layer.
+
+## The Mailbox Protocol
+
+The mailbox is JSONL. Each message is a standalone JSON object appended to the recipient's inbox file. Example lines (truncated):
+
+```jsonl
+{"id":"msg-001","from":"lacia","to":"methode","type":"task_assignment","priority":1,"subject":"Implement control-plane logging module","body":{"spec":"...","acceptance_criteria":["JSONL output","timestamp and agent ID"],"deadline":"2026-04-10T12:00:00Z"},"timestamp":"2026-04-10T10:00:00Z"}
+{"id":"msg-002","from":"satonus","to":"lacia","type":"review_verdict","priority":1,"subject":"Control-plane logging PASS","body":{"verdict":"PASS","findings":[],"coverage":"87%"},"timestamp":"2026-04-10T11:30:00Z"}
+```
+
+### Message Type Contract
+
+| type | Sender | Receiver | Meaning | Priority |
+|------|--------|----------|---------|----------|
+| `task_assignment` | Lacia | Methode/Snowdrop | Assign work | 1 (high) |
+| `review_request` | Lacia/Methode | Satonus | Request review | 1 (high) |
+| `review_verdict` | Satonus | Lacia | PASS/FAIL verdict | 1 (high) |
+| `delivery_request` | Lacia | Kouka | Ship a reviewed artifact | 1 (high) |
+| `delivery_note` | Kouka | Lacia | Delivery confirmation | 2 (med) |
+| `idle_report` | any | Lacia | Idle heartbeat report | 3 (low) |
+| `research_dispatch` | Kouka/Lacia | Snowdrop | Research task | 2 (med) |
+| `escalation` | any | Lacia | Anomaly escalation | 0 (urgent) |
+
+A typical end-to-end flow forms a causal chain:
+
+```
+Lacia → task_assignment("implement JWT middleware") → Methode
+  Methode implements, generates commit
+Methode → review_request(commit_sha="abc123") → Satonus
+  Satonus reviews
+Satonus → review_verdict(FAIL, findings=["missing token expiry check"]) → Lacia
+  Lacia converts FAIL into a new task
+Lacia → task_assignment("fix token expiry check") → Methode
+  Methode fixes, commits again
+Methode → review_request(commit_sha="def456") → Satonus
+Satonus → review_verdict(PASS) → Lacia
+Lacia → delivery_request → Kouka
+  Kouka verifies build, updates seen record
+Kouka → delivery_note(status="shipped") → Lacia
+```
+
+Lacia participates in every hop — it holds the full causal chain. Everyone else sees only their local slice. The asymmetry is intentional. The agents with partial views cannot make decisions outside their scope, by construction.
+
+### Why JSONL and Not SQLite or Redis
+
+Four reasons, in order of importance:
+
+1. **Git-friendly.** One message per line. Diffs are readable. `git log` on `~/inbox/` *is* the system's communication history.
+2. **No dependencies.** No database process. One fewer thing that can fail silently at 3 AM.
+3. **Atomic append.** POSIX `O_APPEND` makes single-line appends atomic, which solves the per-message integrity problem. The Lacia-centric topology already avoids most concurrent writes to the same file, so in practice you rarely see contention. Global *ordering* across writers to one inbox is a separate concern — see the open-problems section below.
+4. **Human-readable.** When something goes wrong, `cat` the file and read it. That sentence sounds trivial until you try to debug a multi-agent system stored in Redis.
+
+The cost is query efficiency — scanning 10,000 messages linearly gets slow. The workaround is monthly archiving to `~/inbox/archive/YYYY-MM/`. The deeper principle is **observability over performance**. In an agent system, the worst failure is not being slow — it is being incomprehensible. JSONL plus Git gives you free versioned communication history. SQLite could match it in theory; in practice it's one more thing to grep.
+
+## Stoppage: The Most Important Design Decision
+
+In unattended agent systems, the dangerous failure mode is not a crash. Crashes are safe — they stop immediately, loudly. The dangerous mode is **unbounded polite effort**: the agent keeps retrying a task that is not reachable from its current state, burning tokens and time with no output.
+
+Kouka is not just the packager. Kouka is the **stoppage decider**. And stoppage rules are *hard-coded*, not LLM-judged.
+
+**Trigger conditions (any one is sufficient):**
+
+| Condition | Threshold | Reason |
+|-----------|-----------|--------|
+| Task age with no progress | >24h | Beyond the reasonable span of a single task |
+| Consecutive heartbeats with no state change | 2 | Agent may be spinning |
+| Token burn without a commit | >50k tokens | Input/output ratio is off |
+| Build failures in a row | 3 | Probably systemic, not incidental |
+| Satonus FAIL on the same task | 3 | Direction is probably wrong at the design level |
+
+**Stoppage action sequence:**
+
+```
+1. Mark task as wontfix or deferred
+2. Record stoppage rationale with context snapshot
+3. Notify Lacia to reprioritize
+4. If a Git branch is in flight, create a WIP commit to preserve state
+5. Write a stoppage record to ~/logs/stoppage/YYYY-MM-DD.jsonl for audit
+```
+
+The crucial detail is rule 0: **stoppage is hard-coded, not LLM-judged.** If you let the agent decide whether to stop, it will almost always decide to continue. Language models trained on optimistic framing evaluate their own progress optimistically. Stoppage has to be external, mechanical, and non-negotiable.
+
+This is a deliberate contrast to governance frameworks that use continuous trust scores and graduated degradation — effectively a ring model with multiple intermediate states between "autonomous" and "terminated." Continuous is more expressive. OpenClaw chose binary — continue or stop — because binary is simpler to reason about and harder to game. The cost is a lack of middle states. Sometimes you want "slow down but don't stop," and OpenClaw can't express that cleanly. Future work.
+
+## When the 5-Agent Architecture Actually Pays Off
+
+OpenClaw is not always worth it. A comparison:
+
+| Property | Single Agent | OpenClaw 5-Agent |
+|----------|--------------|------------------|
+| Context cleanliness | Low (mixed roles) | High (role isolation) |
+| Error isolation | None | Satonus gate |
+| Stoppage | Prompt-dependent | Structural (hard-coded) |
+| Observability | Low (black box) | High (mailbox audit log) |
+| Extensibility | Linear complexity growth | Add role types on demand |
+| Deployment complexity | Low (single process) | Medium (heartbeats + cron) |
+| Single-task latency | Low | High (~30 min per cycle) |
+| Cost | Low | ~5x base + communication overhead |
+
+The rule of thumb: **if the task fits in one heartbeat from start to delivery, use a single agent. If it needs multiple heartbeats, or the cost of a silent failure is higher than the cost of orchestration, use the five-agent shape.** Weekly blog maintenance, multi-day feature development, research-implement-review cycles — these fit. Fixing a typo does not.
+
+## Open Problems
+
+Known limitations:
+
+- **Latency is high.** A full dispatch→build→review→deliver loop is ~30 minutes. Urgent fixes need a fast-path escape hatch — Lacia can tag a task `priority: 0` to force Methode and Satonus to act inside the current heartbeat and bypass the 5-minute stagger.
+- **No global ordering guarantee on mailbox writes.** In pathological cases (multiple agents writing the same JSONL), messages can interleave. The star topology avoids this almost all the time, but it isn't a fundamental fix.
+- **In-heartbeat state is volatile.** If an agent's session dies mid-heartbeat, intermediate state goes with it. Frequent checkpoint commits mitigate; durable-execution patterns (journaling every non-deterministic event) would properly solve it, and this is the direction Cloudflare-style "fibers" are pushing the field generally.
+- **Idle cost accumulates.** Even an idle agent has to load context and emit a report each heartbeat. Across five agents that's a real baseline spend. An idle-sleep policy (skip heartbeat after three consecutive idles) is on the roadmap.
+
+In progress:
+
+- Control-plane decision log — every Lacia routing decision with rationale, for post-mortems.
+- Mailbox concurrency stress test — sustained five-agent high-frequency writes against one JSONL file.
+- Satonus review quality metrics — historical PASS/FAIL data to calibrate whether review standards are too strict or too loose.
+
+Planned:
+
+- Adaptive heartbeat frequency — urgent tasks on 5-minute cycles, routine on 30-minute.
+- Confidence-scored review verdicts (replacing binary PASS/FAIL) to express "conditional pass."
+- Heartbeat-boundary context compression, retaining decision points and discarding intermediate reasoning.
+- Idle-agent sleep — skip heartbeats after three consecutive idle reports.
+
+---
+
+*This post is the English counterpart of the original Chinese walkthrough. Related: [Beatless Architecture (EN)](/en/blog/beatless-architecture-en/). Previous in this series covers the Claude Managed Agents session/harness/sandbox decomposition, which is the vendor-hosted analogue of the pattern described here.*
