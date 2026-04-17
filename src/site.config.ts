@@ -44,6 +44,7 @@ export const theme: ThemeUserConfig = {
     menu: [
       { title: '工程圈子', link: '/blog/engineering' },
       { title: '科研圈子', link: '/blog/research' },
+      { title: 'Activity', link: '/activity' },
       { title: 'Projects', link: '/projects' },
       { title: 'Links', link: '/links' },
       { title: 'About', link: '/about' }

@@ -1,0 +1,150 @@
+---
+import PageLayout from '@/layouts/CommonPage.astro'
+import activity from '../data/github-activity.json'
+
+const headings = [
+  { depth: 2, slug: 'highlights', text: 'Highlights' },
+  { depth: 2, slug: 'trending', text: 'Trending Repositories' },
+  { depth: 2, slug: 'by-person', text: 'By Person' },
+]
+
+const ICONS: Record<string, string> = {
+  'new-repo': '🆕',
+  release: '🚀',
+  'open-sourced': '🌐',
+  'pr-merged': '✅',
+  'pr-opened': '🔀',
+  fork: '🍴',
+  issue: '❓',
+  star: '⭐',
+  tag: '🏷️',
+  branch: '🌿',
+  push: '📦',
+}
+
+const formatTime = (iso: string) => {
+  const d = new Date(iso)
+  const diff = Date.now() - d.getTime()
+  const hr = Math.floor(diff / 3600000)
+  if (hr < 1) return `${Math.floor(diff / 60000)}m ago`
+  if (hr < 24) return `${hr}h ago`
+  const day = Math.floor(hr / 24)
+  return `${day}d ago`
+}
+
+const generated = new Date(activity.generatedAt)
+const generatedStr = generated.toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
+---
+
+<PageLayout title='GitHub Activity' {headings} info='/activity'>
+  <p class='text-sm opacity-70 mb-6'>
+    Live feed from {activity.followingCount} people I follow on GitHub.
+    Bots filtered, big-org star/fork noise suppressed.
+    Generated {generatedStr}.
+  </p>
+
+  <p class='text-sm opacity-60 mb-10'>
+    <strong>{activity.activeUserCount}</strong> active users ·
+    <strong>{activity.eventCount}</strong> events · last 7 days
+  </p>
+
+  <h2 id='highlights' class='text-xl font-medium mt-8 mb-4'>Highlights</h2>
+  <p class='text-sm opacity-60 mb-4'>
+    New repos, releases, and fork/star of indie projects by people I follow.
+  </p>
+  {
+    activity.highlights.length === 0 ? (
+      <p class='text-sm opacity-60'>No highlights in the last 7 days.</p>
+    ) : (
+      <ul class='space-y-2 not-prose mb-10'>
+        {activity.highlights.map((h: any) => (
+          <li class='flex items-start gap-3 text-sm'>
+            <span class='shrink-0 w-6 text-center'>{ICONS[h.kind] ?? '•'}</span>
+            <span class='flex-1'>
+              <a href={`https://github.com/${h.user}`} class='font-medium hover:underline'>
+                @{h.user}
+              </a>
+              <span class='opacity-80'> {h.text.replace(/^[^ ]+ /, '')}</span>
+              {h.url && (
+                <>
+                  {' — '}
+                  <a href={h.url} class='opacity-60 hover:opacity-100 hover:underline'>
+                    link
+                  </a>
+                </>
+              )}
+            </span>
+            <span class='shrink-0 opacity-50 text-xs'>{formatTime(h.at)}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  <h2 id='trending' class='text-xl font-medium mt-8 mb-4'>Trending Repositories</h2>
+  <p class='text-sm opacity-60 mb-4'>
+    Repos with the most activity from followed users in the last 7 days.
+  </p>
+  <ul class='space-y-1 not-prose mb-10'>
+    {
+      activity.trending.map((t: any) => (
+        <li class='flex items-baseline gap-2 text-sm'>
+          <a href={`https://github.com/${t.repo}`} class='font-mono hover:underline'>
+            {t.repo}
+          </a>
+          <span class='opacity-60'>
+            — {t.count} event{t.count === 1 ? '' : 's'}
+          </span>
+          {t.bigOrg ? (
+            <span class='text-xs opacity-50 px-1 rounded border border-current'>big-org</span>
+          ) : (
+            t.starers.length > 0 && (
+              <span class='text-xs opacity-60'>
+                ({t.starers.map((s: string) => `@${s}`).join(', ')})
+              </span>
+            )
+          )}
+        </li>
+      ))
+    }
+  </ul>
+
+  <h2 id='by-person' class='text-xl font-medium mt-8 mb-4'>By Person</h2>
+  <p class='text-sm opacity-60 mb-4'>Each person's recent public events, most active first.</p>
+  <div class='space-y-8 not-prose'>
+    {
+      activity.perUser.map((u: any) => (
+        <div>
+          <div class='flex items-center gap-3 mb-2'>
+            <img src={u.avatar} alt={u.login} class='w-8 h-8 rounded-full' loading='lazy' />
+            <a href={u.profile} class='font-medium hover:underline'>
+              @{u.login}
+            </a>
+            <span class='text-xs opacity-60'>
+              {u.eventCount} event{u.eventCount === 1 ? '' : 's'}
+            </span>
+          </div>
+          <ul class='space-y-1 ml-11 text-sm'>
+            {u.events.map((e: any) => (
+              <li class='flex items-start gap-2'>
+                <span class='shrink-0 w-5 text-center text-xs'>{ICONS[e.kind] ?? '•'}</span>
+                <span class='flex-1 opacity-80'>
+                  {e.text}
+                  {e.url && (
+                    <>
+                      {' '}
+                      <a href={e.url} class='opacity-60 hover:opacity-100 hover:underline text-xs'>
+                        (link)
+                      </a>
+                    </>
+                  )}
+                </span>
+                <span class='shrink-0 opacity-50 text-xs'>{formatTime(e.at)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</PageLayout>

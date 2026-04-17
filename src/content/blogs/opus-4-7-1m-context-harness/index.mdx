@@ -1,0 +1,81 @@
+---
+title: "Claude Opus 4.7 at 1M Context: What the Harness Layer"
+description: "Opus 4.7 extends the frontier context window to 1M tokens. The architectural question is not what you can now fit — it's which parts of the agent harness just"
+publishDate: "2026-04-17"
+tags: [Claude, Anthropic, long-context, agent-harness, context-engineering, 1M-context, kv-cache]
+category: engineering
+language: en
+draft: false
+---
+
+Anthropic has shipped Claude Opus 4.7 with a 1M-token context window. The announcement read like a version bump — a step-up from Opus 4.6's "Mythos" architecture without a new name — but a 5x context expansion on the flagship reasoning model is not a minor change, because agent harnesses are designed around the context limits of the model they were written for. Every compaction heuristic, summary injection, and memory file was motivated by a specific number, and when the number moves, parts of the harness become dead weight.
+
+The interesting question is not "what can you now fit into 1M tokens?" — the answer is "obviously more things." The interesting question is *which harness components you built around the 200K limit just lost their job*, and which ones are now more important than before.
+
+## The 1M Threshold Is Not New — But The Reasoning Model at 1M Is
+
+Gemini has offered 1M-token context on reasoning-capable models since 2024, and 2M variants exist. What is new with Opus 4.7 is that the model at 1M is also the one you would pick for the hardest architectural decisions in an autonomous coding loop — the orchestrator in a cognitive-router pattern, the synthesizer in a cross-provider review flow, the final verifier of a generator-verifier pipeline. Long context on fast-but-cheap models has been available; long context on the capability frontier has been rationed.
+
+The rationing mattered because agent harnesses developed a division of labor around it. The pattern is visible in almost every production Claude Code setup: Opus (or the equivalent Anthropic tier) plans, Sonnet or Haiku executes, and some external retrieval layer — vector DB, ripgrep, structured memory file — feeds focused context back into the planner. The planner's context was the scarce resource, and the harness was built to economize on it.
+
+1M on Opus 4.7 inverts that constraint. The scarce resource shifts from tokens-available-to-the-planner to *signal density inside those tokens*. That reframes what the harness is supposed to do.
+
+## Three Harness Components That Just Lost Their Job
+
+Three things become noticeably less useful when the planner has 1M tokens to work with:
+
+**Aggressive summarization of completed work.** In a 200K-context world, a sufficiently long agent session forced you to compress older turns — either via model-produced summaries, structured "what we learned so far" notes, or lossy truncation. Every compression step introduced information loss, and the loss was most painful exactly where you could not predict what later steps would need. At 1M tokens, a Claude Code session can run for hours of tool-calling without hitting the ceiling. The old "generate a summary every N turns" loop is now a net negative — it discards state to solve a problem the model no longer has.
+
+**RAG over your own repository for architectural decisions.** Retrieval-augmented generation over the project itself was a workaround for the fact that an LLM could not hold the whole codebase. At 200K context you needed a retriever to pick the right five files. At 1M you can dump the full `src/` tree of most projects directly into the context and let the model do its own retrieval via attention. This does not kill RAG — it kills RAG *for the specific purpose of working around context limits on owned code*. RAG over external knowledge (docs, legal, scientific literature) is still the only option.
+
+**Multi-stage "planner → summary → executor" pipelines where the summary was the only artifact handed between stages.** If your harness had a middle stage whose sole job was to compress a plan into something the executor could fit, that stage was a pure tax on information fidelity. At 1M the executor can read the full plan plus the full context in which the plan was drafted. The pipeline shortens by one hop.
+
+Each of these was built to solve a real problem in 2024-2025. None of them are harmless once the problem is gone. Dead components in an agent harness are active risks — they still execute, still consume tokens, still fail in ways that surprise you, while contributing nothing.
+
+## Three Harness Components That Matter More
+
+The flip side is that *signal density* becomes the constraint, and a different set of harness components now shoulder the weight.
+
+**Attention control via structured context.** A model with 1M tokens available will happily attend over 1M tokens if you let it, and doing so dilutes signal. The harness now needs to do what a good human research assistant does: present the most relevant material first, order the rest by decreasing relevance, and clearly demarcate the boundaries between active and archival content. The Claude Code pattern of explicit `<system-reminder>` blocks for high-priority information, plus structured sections in a `CLAUDE.md` file, becomes more important at 1M than at 200K because the risk has flipped from "information doesn't fit" to "important information is buried."
+
+**KV-cache management as a performance primitive.** At 1M tokens, the prefill cost of each turn dominates cost and latency. Harnesses that pin long prefixes (codebase dump, project conventions, skill manifest) to the front of the context — never modifying them — can exploit prompt caching for 80-95% savings on that portion. At 200K this was a nice-to-have optimization; at 1M it is the difference between a harness that costs pennies per turn and one that costs several dollars. The cache-friendliness of your context layout is now a first-order engineering concern. (For the economics, see [KV-Cache Compression and Long-Context Economics](/blog/kv-cache-compression-long-context-economics).)
+
+**Provenance tracking for claims in long context.** With 50K tokens of loaded code, hallucinated line numbers were a rare nuisance. With 800K tokens of mixed source + logs + commit history, the model can confidently invent a quote that looks plausible because it could have come from anywhere in that mass. The harness needs to stamp every claim with a retrievable source: "line 142 of `src/auth.py`" or "from the commit message of `a7bf92c`." Without that, you get a confidence-competence mismatch where the planner reasons authoritatively over sources that do not exist. This is the 1M-context version of the "ground your answer in the retrieved passage" pattern that RAG systems have relied on for years.
+
+## The Pipe-vs-Switch Framing Applied Here
+
+The shift from short- to long-context-frontier-model is a specific instance of a more general move — the one from [pipes to switches](/blog/from-pipes-to-switches). A pipeline assumes information flows through ordered stages, each of which can only hold a small amount of state. A switch assumes any point in the state can be queried from any other point at any time. 200K context enforces the pipeline discipline by making serial compression unavoidable. 1M context lets you run the system as a switch, with retrieval-style attention over the full working state instead of staged hand-offs.
+
+The switch framing has consequences for how you draw the boundary between "the model" and "the harness." In the pipeline era, the harness did a lot of structural work that the model could not — sequencing, compression, retrieval. In the switch era, the harness does a lot of *curation* work that the model still cannot do — deciding what goes into the context, what provenance is attached, what gets cached versus refreshed. The curator's job is harder than the sequencer's job, because the failure mode is no longer "we hit the limit" but "we put garbage in front of a large attention field and got confidently wrong output."
+
+## What the Release Implies for Agent-Framework Design
+
+The five-pattern convergence documented in [The Agent Framework Convergence of 2026](/blog/agent-framework-convergence-2026) — sequential, concurrent, handoff, group chat, hierarchical — was derived from frameworks designed around short-context planners. Of the five, three (sequential, handoff, hierarchical) depend explicitly on information compression at stage boundaries. If the planner has 1M tokens, stage boundaries lose some of their reason to exist.
+
+That does not flatten the orchestration stack. What it does is change which layer differentiates. When context was the bottleneck, frameworks competed on compression and delegation cleverness. When signal density is the bottleneck, frameworks compete on *context composition* — which files to load, in what order, with what annotations, cached versus live, with what explicit provenance pointers. The competitive surface moves from "how do we fit more in?" to "how do we decide what matters?"
+
+This is why the protocol layer (MCP, A2A, AP2) is likely to become more important than the framework layer, not less: protocols standardize how context gets assembled from tools and other agents, which is exactly the curation problem. The framework's internal routing logic matters less when the planner can see everything; the interop standards for *what gets handed to the planner* matter more.
+
+## The Economics Caveat
+
+None of this arrives free. 1M context on Opus 4.7 is not the same price point as 200K on Opus 4.6, and the prefill compute for a full 1M context is non-trivial. The practical deployment pattern is not "always run at 1M" but "run at whatever length signal density justifies." An agent harness that automatically scales its context window to the task — short tasks use short context, long tasks unlock the full window — will outperform one that defaults to maximum context on every call. This is the same calibration problem `temperature` and `top_p` have always been: the useful range is a function of the task, not a single global setting.
+
+For cost planning: expect the median Claude Code session to not hit 1M. Expect specific long-horizon sessions (codebase migration, multi-hour autonomous debugging, large research synthesis) to hit it and to justify the expense through the elimination of compression-loss failure modes. The ratio of median-cost to peak-cost in your agent traffic is the number to watch.
+
+## Closing: The Harness Has to Be Rewritten Every 18 Months
+
+The broader pattern is that every major capability jump in the frontier model invalidates part of the harness built for the previous generation. The move from 8K to 32K made structured summaries redundant. The move from 32K to 200K made most sliding-window approaches obsolete. The move from 200K to 1M makes aggressive pre-compaction of owned context counterproductive.
+
+The harness components that persist across these generations are the ones that do *curation* — provenance, layout, caching, attention control — not the ones that do *compression*. The durable engineering question is what information should be in front of the model, not how to get it to fit. 1M context on Opus 4.7 is an occasion to revisit every line of your harness code and ask: was this solving the "doesn't fit" problem, or the "doesn't matter" problem? If it's the first, delete it. If it's the second, it just got more important.
+
+The capability curve hasn't stopped moving. The harness layer has to keep pace — which in 2026 means rewriting the parts of it that were written for a model with 20% of the context window it has now.
+
+---
+
+**References**
+
+- Prior analysis of the Opus 4.6 architecture: [Claude Mythos and the Verifiable Reasoning Architecture](/blog/claude-opus-4-6-frontier).
+- Long-context economics: [KV-Cache Compression and Long-Context Economics](/blog/kv-cache-compression-long-context-economics).
+- The switch framing: [From Pipes to Switches](/blog/from-pipes-to-switches).
+- Framework-layer implications: [The Agent Framework Convergence of 2026](/blog/agent-framework-convergence-2026).
+- Anthropic's docs for the Claude model family: [docs.anthropic.com](https://docs.anthropic.com/en/docs/about-claude/models).
