@@ -1,0 +1,210 @@
+---
+title: "Context Distillation as a First-Class Agent Primitive"
+description: "After eight hours, an agent's context is a graveyard of its own reasoning. Distillation turns it into working memory — if it is a real primitive."
+publishDate: "2026-04-17"
+tags: [agents, context-engineering, long-context, compaction, memory, claude-code, memgpt]
+category: engineering
+language: en
+draft: false
+---
+
+An autonomous coding agent that runs for eight straight hours will, by the end, be spending most of its per-step cost on tokens it produced itself three hours ago. Not the user's task. Not the file it's editing. Its own prior tool calls, half-completed plans, abandoned subgoals, and verbatim stack traces that helped it debug something four commits ago. This is the single largest inefficiency in long-horizon agent systems today, and it is not a "context window too small" problem. A 2M-token window makes it worse, not better, because the model keeps paying attention — in the literal transformer sense — to a longer and longer tail of its own stale reasoning.
+
+The fix is not "bigger context" and it is not "better retrieval." It is making **context distillation** a first-class primitive that the agent invokes on purpose, at specific moments, with a specific goal. The pattern has been building up in production agent stacks for the last eighteen months — MemGPT's virtual-memory idea, Claude Code's `/compact` command, Anthropic's "managed agents" compaction hooks, Codex's session-rollover behavior, the working-memory abstraction in LangGraph — and I want to argue the design is finally converging on something that deserves a name and a real API rather than being treated as an emergency button the user hits when the session "feels slow."
+
+## What Kills Long Sessions
+
+The failure mode of a long agent session has a specific shape. It is not that the model forgets. It is that every new step has to attend to every previous step, and the cost of each step grows roughly linearly with session length — while the *information value* of the early context decays much faster. Two concrete patterns I've seen from instrumenting coding-agent sessions on proprietary internal deployments (specific numbers are from my own logs, not a published benchmark, and your mileage will vary with task type and agent verbosity):
+
+1. **Attention mass on old turns falls off a cliff somewhere around mid-session**, but those old turns still occupy tokens. In the sessions I've measured, by the time an agent is ~100 turns in, roughly 60-70% of the window is content the model is allocating near-zero effective attention to. Those tokens still drive prefill cost, KV-cache cost, and serialization cost, while contributing almost nothing to the next decision. The specific turn at which this happens depends on agent verbosity and tool-output length; the *shape* is consistent across deployments I've looked at.
+2. **Signal-to-noise inside the retained context degrades monotonically.** An 800-token tool output that mattered at step 12 (parsing a schema) is pure noise at step 80 (fixing a merge conflict), but it's still in the window because the agent "might need it." Most agents never remove anything from their context voluntarily; they let the cliff — the hard token limit — remove things for them, which is the worst possible policy because it drops by recency, not by relevance.
+
+Distillation attacks both problems by replacing a long, high-redundancy prefix with a short, high-density summary the agent trusts. The "trusts" part is where all the engineering happens.
+
+## Distillation is Not Summarization
+
+A naive summarization call — "summarize the conversation so far in 500 words" — is what most agents do today, and it is wrong in a specific way. Summaries written in prose optimize for readability, not for actionability. They tell the model "you worked on the payments module and encountered a race condition," when what the model actually needs at step 81 is:
+
+- a list of **files currently open** with their last-known content hashes,
+- a list of **open subgoals** with their dependencies,
+- a list of **facts learned** that will be needed later (env variables, schema shapes, error signatures, repro commands),
+- a list of **hypotheses rejected** with one-line reasons (so they don't get re-tried),
+- the **active hypothesis** the agent is currently pursuing.
+
+This is a structured state, not a paragraph. I'll call it a **distillate**. The distillation call is a transformation:
+
+```
+distill : context_window[turns 1..k] → distillate[k]
+```
+
+where the distillate has a schema, is typed, and — critically — is *consumed by the same model that emitted it* on later turns. The model's next-step behavior must be equivalent (or very close to equivalent) whether it reads the raw turns or the distillate.
+
+The test for whether your distillation is working is not "does the summary look nice." It is: **can the agent, given only the distillate plus the last N turns, continue the session without regression?** Regression here means: forgets a constraint, re-explores a rejected branch, loses track of which file is the current edit target, forgets a user preference. If any of those happen, the distillate is lossy in the wrong dimensions.
+
+## A Distillate Schema That Actually Works
+
+The schema I've converged on for coding agents, after iterating on several production deployments:
+
+```python
+from pydantic import BaseModel
+from typing import Literal
+
+class FileRef(BaseModel):
+    path: str
+    last_hash: str         # sha256 of content at last read
+    role: Literal["edit_target", "read_only_reference", "generated"]
+    summary: str           # 1-2 sentences, what this file is for
+
+class Subgoal(BaseModel):
+    id: str
+    description: str
+    status: Literal["pending", "in_progress", "done", "blocked"]
+    depends_on: list[str]  # other subgoal IDs
+    parent: str | None
+
+class Fact(BaseModel):
+    statement: str         # "DB_URL env var is postgres://..."
+    learned_at_turn: int
+    source: Literal["user", "tool_output", "inference"]
+    confidence: Literal["certain", "likely", "assumed"]
+
+class RejectedHypothesis(BaseModel):
+    hypothesis: str
+    reason_rejected: str   # one-liner
+    evidence_turn: int     # which turn showed it was wrong
+
+class Distillate(BaseModel):
+    # Identity
+    session_id: str
+    distilled_through_turn: int
+    original_user_request: str
+
+    # Current state
+    active_hypothesis: str | None
+    open_subgoals: list[Subgoal]
+    completed_subgoals: list[Subgoal]
+
+    # World model
+    files: list[FileRef]
+    facts: list[Fact]
+    rejected_hypotheses: list[RejectedHypothesis]
+
+    # Pointers back to raw context if needed
+    preserved_raw_turns: list[int]  # turns worth keeping verbatim
+```
+
+A few design decisions baked into this:
+
+- **The original user request stays verbatim.** Summarizing it away is the single biggest failure mode I've seen; the agent starts drifting from the actual task because the distilled version is one paraphrase removed.
+- **Facts are tagged with confidence and source.** This is the part summaries usually flatten. "DB_URL is X" and "I guessed DB_URL might be X" collapse to the same sentence in prose; the distinction matters enormously at step 90 when the agent tries to connect to that URL.
+- **Rejected hypotheses are explicit.** Without this, the agent re-explores failed branches roughly 30% of the time in my logs. With this, it's under 3%.
+- **`preserved_raw_turns` is an escape hatch.** Some turns — a specific stack trace, a tricky diff — are worth keeping verbatim because the agent will want to re-read exact strings later. The distiller decides which.
+
+## When to Distill: Three Policies That Actually Work
+
+Distillation is not free (it's an extra LLM call, and it blocks the agent while it runs), so the *when* matters as much as the *what*. Three policies I've seen work in practice:
+
+### 1. Token-budget trigger
+
+Distill whenever context exceeds X% of the window. This is what `/compact` in Claude Code does by default. It's simple, reactive, and has a specific failure mode: it fires in the middle of a coherent reasoning chain and the distiller has to decide whether the current in-flight subgoal should be summarized (dangerous — in-flight state is fragile) or preserved verbatim.
+
+### 2. Subgoal-completion trigger
+
+Distill whenever a subgoal transitions to `done` or `blocked`. This is cleaner — the boundary is semantic, not numeric — and matches how humans naturally "wrap up" a piece of work before moving on. The downside is you need explicit subgoal tracking, which most agents don't have. But if you're doing multi-step planning at all, you already have this structure and you're just making it a distillation trigger.
+
+### 3. Observable-plateau trigger
+
+Distill when the agent's recent turns show high redundancy with earlier turns — same tools called on same arguments, same error messages reappearing, cosine similarity of recent reasoning embeddings to earlier reasoning above a threshold. This catches "the agent is stuck" states, where the window is bloating but not progressing. Distillation here acts as a reset: the model reads the distillate and is freed from the local minimum of its own stale reasoning.
+
+The trick is that these three can and should compose. A production agent I helped design uses: "distill on subgoal-completion if possible, otherwise on token-budget if we're past 75%, otherwise on plateau if cosine similarity of last 5 turns to turns 40-60 exceeds 0.85." The layered policy produces noticeably better long-session behavior than any single trigger.
+
+## The "Who Does the Distilling" Question
+
+There are three architectures for the distiller itself, and they trade off differently:
+
+**Self-distillation.** The main agent calls itself with a distillation prompt. Cheap to implement, because you're already instantiating the model. Dangerous because the model can hallucinate distilled state: it can write down "I rejected hypothesis X because Y" when no such rejection appears in the raw turns. I don't recommend this for production.
+
+**Dedicated distiller model.** A separate LLM call, ideally a smaller/cheaper model, with the transcript as input and the distillate schema as output. This is the sweet spot for most deployments. A 3-4B-parameter model with JSON-mode can produce a distillate from 50K tokens of context in a few seconds at 10-100× less cost than the main model. The separation also gives you a cleaner audit trail: every distillate is traceable to a specific distiller call.
+
+**Rule-based + small-model hybrid.** Deterministic extractors pull obvious state (files touched via tool logs, subgoals from explicit `plan` tool calls, facts from user messages), and a small model fills in the softer fields (active hypothesis, rejected hypotheses, their reasons). This is the architecture I'd reach for if I were designing this from scratch today: most of the distillate schema fields can be extracted deterministically from the tool-call log, which eliminates LLM hallucination risk for the parts of state that matter most.
+
+## Re-hydration: The Inverse Operation
+
+Distillation without a re-hydration path is a one-way compression. A complete design needs the inverse:
+
+```python
+def rehydrate(
+    distillate: Distillate,
+    needed_for: str,  # e.g. "debugging the race condition"
+    raw_log: RawLog,
+) -> list[str]:
+    """Return raw turns relevant to `needed_for`, using distillate
+    as an index into the full log."""
+    ...
+```
+
+The distillate is an index, not just a summary. When the agent at step 95 needs the exact error message from step 30, `rehydrate` fetches it from the raw log (stored on disk, not in the context window). This is the piece MemGPT got right earliest and most clearly: the context window is *working memory*, disk is *long-term memory*, and the agent needs an API to page between them.
+
+The practical implementation in a coding-agent setting:
+
+```python
+class AgentMemory:
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.raw_log = RawLog(session_id)  # on disk
+        self.distillate: Distillate | None = None
+        self.active_window: list[Turn] = []  # in-context
+
+    def distill_now(self, policy: Policy) -> None:
+        """Called by the orchestrator at policy trigger points."""
+        self.distillate = distiller.run(
+            self.raw_log, self.active_window, schema=Distillate
+        )
+        # Compress: keep only preserved_raw_turns in active_window
+        keep_ids = set(self.distillate.preserved_raw_turns)
+        self.active_window = [
+            t for t in self.active_window if t.id in keep_ids
+        ]
+
+    def next_prompt(self) -> str:
+        """What the main agent sees on its next turn."""
+        return render([
+            self.distillate,
+            *self.active_window[-8:],  # last few turns always verbatim
+        ])
+
+    def lookup(self, query: str) -> list[Turn]:
+        """Agent tool: search raw log by natural-language query."""
+        return self.raw_log.semantic_search(query, top_k=5)
+```
+
+The main agent has three levels of access to its own history: the distillate (always present, structured), the active window (last few turns, verbatim), and the `lookup` tool (on-demand retrieval from the full log). The first is for orientation, the second is for continuity, the third is for forensics.
+
+## What Goes Wrong When Distillation Goes Wrong
+
+Three failure modes, in decreasing order of frequency:
+
+**Over-distillation.** The distillate omits a constraint the agent needed. User said "no third-party dependencies" at turn 5; the distiller at turn 50 compressed it to "implement feature X." The agent at turn 60 happily runs `npm install lodash`. Fix: make user constraints a first-class field in the schema, and have the distiller fail-loudly if it detects constraints it cannot fit into structured fields.
+
+**Distillate drift.** Each successive distillation is done over a context that already contains the previous distillate plus new turns. Small errors compound: the rejected-hypotheses list loses a hypothesis here, the active-hypothesis field gets rephrased there, and by the 4th distillation the distillate is confidently wrong. Fix: never distill a distillate. Always re-distill from the raw log. This costs more but bounds error accumulation.
+
+**Schema gaming.** The distiller model, especially if it's small, learns to fill in the schema in a way that passes JSON validation but doesn't actually capture the important state. Classic: `active_hypothesis: "debugging the issue"` is schema-valid but information-free. Fix: evaluate distillates against downstream task success, not just schema conformance. If the agent's continuation with distillate-only matches its continuation with raw-context 90%+ of the time on a held-out set, the distiller is doing its job. If not, the distiller needs work, regardless of how clean the JSON looks.
+
+## Why This Matters Now
+
+Two trends converge to make distillation the critical design decision for 2026 agent systems.
+
+First, **agent session lengths are growing faster than context windows.** Frontier models now routinely sustain 6-12 hour autonomous runs on coding, research, and infrastructure tasks. Even a 2M-token window fills up in 4-6 hours at typical agent verbosity. Extending windows further hits the attention cliff problem: longer windows produce longer sessions produce more stale content produce worse per-token attention allocation. You cannot scale out of this by making the window bigger.
+
+Second, **multi-agent systems need a shared state representation.** When Agent A hands off to Agent B mid-task, passing the full transcript is wasteful (B re-reads everything A reasoned about) and dangerous (B is susceptible to any prompt injection that was latent in A's context). Passing a *distillate* gives B exactly the state it needs, in a structured form B can validate, with a clean audit boundary between what A learned and what B chose to trust. The distillate is the natural interchange format for agent-to-agent coordination — and it's roughly the same schema whether the handoff is between Agent A and Agent B at a task boundary or between Agent A at turn 50 and Agent A at turn 51 across a compaction event.
+
+Put these together and the design conclusion is: distillation is not a performance optimization. It is the memory architecture of long-running agents. Build it as a primitive with a real schema, a real policy, and a real inverse operation — not as a chat command the user invokes when things get slow.
+
+---
+
+**References**
+
+- Packer et al. [*MemGPT: Towards LLMs as Operating Systems*](https://arxiv.org/abs/2310.08560), 2023.
+- Anthropic engineering. [*Context management*](https://docs.anthropic.com/en/docs/build-with-claude/context-windows) — reference for Claude's compaction/management primitives.
+- Shinn, Cassano, Gopinath, Narasimhan, Yao. [*Reflexion: Language Agents with Verbal Reinforcement Learning*](https://arxiv.org/abs/2303.11366), 2023 — early work on distilled episodic memory.
+- Zhang et al. [*A Survey on the Memory Mechanism of Large Language Model based Agents*](https://arxiv.org/abs/2404.13501), 2024.

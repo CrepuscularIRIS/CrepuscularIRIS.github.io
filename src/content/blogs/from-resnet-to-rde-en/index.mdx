@@ -1,0 +1,259 @@
+---
+title: "From ResNet to RDE: Rethinking Depth"
+description: "Residuals are a degenerate form of attention. Seen that way, depth stops being a pipeline stage and starts being a memory address — a case for CDMN."
+publishDate: "2026-04-17"
+tags: [deep-learning, architecture, memory-networks, first-principles, rope, rde, cdmn, attention]
+category: research
+language: en
+draft: false
+---
+
+There is a paradigm I kept tripping over and could not name for a long time. Every neural-architecture paper I read — and I've read a lot of them, because I was looking for the "right" way to stack layers — was optimizing inside the same implicit frame: information enters at the bottom, flows up through discrete layers, and exits at the top. Residual connections, dense connections, attention, even MoE routing — they all preserve this basic image of a *pipeline*. What I could not see until recently is that the pipeline itself is a modeling choice, not a law of nature. The real question is not "how do we optimize flow through the pipeline?" but "why is there a pipeline at all?"
+
+This post is my attempt to write down the argument for replacing the pipeline with a *memory address space*. It takes residual connections apart as a degenerate case of attention, arrives at what I've been calling a Continuous-Depth Memory Network (CDMN) via a concrete mechanism — Rotary Depth Embeddings (RDE) — and argues that this reframing is consistent with both the MoBA/attention-residuals line of work coming out of 2025-2026 and a surprisingly precise correspondence with hippocampal memory systems.
+
+## Part 1: The Tyranny of the Layer
+
+The ResNet success story has settled into a reflex: residual connection = gradient flow = good. This is true at the mechanistic level of "why deep networks can be trained," but the reflex has become a cognitive trap. It stops you from asking whether the layer abstraction — information must be processed in discrete, ordered stages — is doing any real work.
+
+Concretely: at inference time in a trained ResNet-50, what does "layer 34" mean? It is a function applied after layer 33. Removing it degrades accuracy. But the *Residual Networks Behave Like Ensembles of Relatively Shallow Networks* paper (Veit, Wilber, Belongie, NeurIPS 2016) showed two related phenomena that I think are worth taking seriously: dropping individual layers at test time causes only a small, graceful performance drop, and the gradient contribution to training is dominated by paths substantially shorter than the nominal network depth. That is not the behavior of a strictly ordered pipeline. It is closer to the behavior of an ensemble of shallow sub-networks sharing weights, which is to say: the "depth" is not doing what the name promises. It is something more like a distributed memory that a final read-out stage interrogates.
+
+The computational graph abstraction in PyTorch and TensorFlow reinforces the pipeline image: you are forced to declare a `Sequential` or a directed acyclic graph of modules, and autograd needs discrete nodes to differentiate through. The framework shapes how architectures can even be expressed. A pipeline that is mathematically convenient — the Jacobian of `h_{l+1} = h_l + f(h_l)` is `I + ∂f/∂h`, eigenvalues clustered near 1, easy to analyze — is what gets built, and the expressivity questions get silently deferred. Tractability precedes expressivity, and we end up mistaking the tractable corner for the whole design space.
+
+## Part 2: Residuals Are Lazy Attention
+
+The cleanest way to see the problem is to rewrite the residual in attention notation.
+
+```
+Standard residual:
+    h_{l+1} = h_l + f(h_l)
+
+Rewritten with explicit weights:
+    h_{l+1} = α_l · h_l + β_l · f(h_l)
+    with α_l = 1, β_l = 1 (hardcoded, not learned)
+
+Attention, for comparison:
+    h_out = Σ_i α_i · v_i,   α_i = softmax(q · k_i)
+```
+
+A residual connection is attention where the Query is hardcoded to "look at layer $l$," the Key set contains exactly one element, and the weight is frozen at 1. It is the degenerate case. This is not a metaphor — it is an exact statement about the subspace of the general weighted-sum operator that the residual occupies.
+
+The failure mode implied by this view is specific: residuals assume **the layer immediately below always contains exactly the right information**. Empirically this is wrong. When layer 10 is reasoning about object boundaries, it sometimes wants pixel-level edges (layer 1) and sometimes wants semantic concepts (layer 50). It does not reliably want whatever happens to be at layer 9. The forced single-source dependency is an architectural assumption, not a learned behavior, and it is bought at the cost of flexibility.
+
+The 2025 *MoBA* (Mixture of Block Attention) work — which Moonshot pushed into ICLR and which then got rolled into the Kimi-MoBA variant — is, in this frame, a compromise. It lets information be routed with learned weights within a *block* of layers, but between blocks the standard residual pipeline returns. MoBA is the first step away from single-source layer dependencies. The *Attention Residuals* line of work (2026) goes further: it replaces the hard-coded `h_{l+1} = h_l + f(h_l)` with a learned aggregation across all prior layers, treating the residual itself as a small attention problem over the layer history.
+
+Both are partial. They still treat depth as an ordered index. The bigger move is to stop treating depth as an index at all.
+
+## Part 3: Depth Is a Memory Address
+
+Here is the reframe that I think actually changes the design space.
+
+**Old ontology:**
+- Layer = processing stage.
+- Depth = time. Layer 1 happens before layer 2.
+- Forward pass = sequential computation.
+
+**New ontology:**
+- Depth = memory address.
+- Layer 1 and layer 100 are both addressable memory slots.
+- Forward pass = a sequence of content-addressable reads and writes over the depth-indexed memory.
+
+The analogy I find most useful is the shift from a von Neumann architecture (program and data share a single bus; instruction order dictates flow) to a Harvard architecture (program and data live in separate memories, accessed in parallel, with the program orchestrating reads). A ResNet is von Neumann: information at layer $l$ is literally overwritten by the output of `f_l`, with the residual providing a leak path. A CDMN is Harvard: layer-$t$ content is written into a memory location indexed by $t$, and any later computation can issue a query that retrieves from arbitrary addresses without being bottlenecked by "what happened one step ago."
+
+This is not just philosophy. Modern frontier-LLM work is already edging toward this. The use of Rotary Position Embeddings (RoPE) for *context-level* retrieval at inference time — where specific head patterns are trained to treat relative position as an index into retrievable state — is the same mechanism I want to apply at the *depth* axis. If positional embeddings are the memory addresses for the token dimension, then depth embeddings should play the same role for the depth dimension.
+
+Hence the proposed mechanism.
+
+## Part 4: Rotary Depth Embedding (RDE)
+
+The core object is an embedding that maps a continuous depth coordinate $t \in [0, 1]$ to a rotation, applied to the state vector at that depth. It is mechanically identical to RoPE, but the coordinate is depth rather than token position.
+
+```python
+import torch
+import torch.nn as nn
+
+class RotaryDepthEmbedding(nn.Module):
+    """Encode depth coordinate t ∈ [0, 1] as a rotation in feature space.
+    This makes depth a retrievable index rather than a sequential stage.
+    """
+    def __init__(self, dim: int, base: float = 10000.0):
+        super().__init__()
+        assert dim % 2 == 0, "dim must be even for paired rotation"
+        self.dim = dim
+        inv_freq = 1.0 / (base ** (torch.arange(0, dim, 2).float() / dim))
+        self.register_buffer("inv_freq", inv_freq)
+
+    def forward(self, depth_coords: torch.Tensor):
+        # depth_coords: (B,) scalar depth per sample.
+        # Returns cos/sin of shape (B, 1, dim/2) so they broadcast over the token axis.
+        angles = depth_coords.unsqueeze(-1) * self.inv_freq  # (B, dim/2)
+        cos = torch.cos(angles).unsqueeze(1)                 # (B, 1, dim/2)
+        sin = torch.sin(angles).unsqueeze(1)                 # (B, 1, dim/2)
+        return cos, sin
+
+    @staticmethod
+    def apply_rotation(x: torch.Tensor, cos: torch.Tensor, sin: torch.Tensor):
+        # x: (B, N, D); cos/sin: (B, 1, D/2) — broadcasts across tokens.
+        x1, x2 = x[..., ::2], x[..., 1::2]
+        rotated = torch.stack([x1 * cos - x2 * sin,
+                               x1 * sin + x2 * cos], dim=-1)
+        return rotated.flatten(-2)
+```
+
+Two things this buys you, concretely:
+
+1. **Depth distance is measured in phase**, not in layer count. Two computations at depth $t_1$ and $t_2$ have a relative rotation $\theta(t_2 - t_1)$, which means they can be "phase-aligned" (and therefore retrievable by a matching query) even when their layer indices are far apart. Layer 1 and layer 100 can live at the same depth-phase if the mapping wants them to.
+
+2. **Depth becomes differentiable**. You can learn where each block sits on the $[0,1]$ axis, rather than hardcoding it. This is the move that turns "how many layers?" from a hyperparameter into a learned capacity-allocation question.
+
+The full CDMN layer combines RDE with a retrieval operator instead of a residual. Rather than `h_{l+1} = h_l + f(h_l)`, the update is, at the level of math:
+
+```
+h(t) = h(t)  +  OutProj(  Σ_i  α_i(t)  v_i  )
+where
+    α_i(t) = softmax_i(  RotateByPhase(q(t), θ_t)
+                       · RotateByPhase(k_i,   θ_{t_i}) / √d )
+    q(t)   = Q(h(t)),      k_i = K(landmark_states_i)
+    v_i    = V(landmark_states_i)
+    θ_t    = angle embedding of depth coordinate t ∈ [0, 1]
+```
+
+and, as a minimal reference implementation (`pseudocode — shape handling simplified for readability`; a production version batches over landmarks, caches rotated keys, and uses Flash-Attention kernels):
+
+```python
+class CDMNLayer(nn.Module):
+    def __init__(self, dim: int, num_landmarks: int = 8):
+        super().__init__()
+        self.dim = dim
+        self.rde = RotaryDepthEmbedding(dim)
+        # Learned memory slots, each bound to a learned depth coordinate.
+        self.landmark_depths = nn.Parameter(torch.linspace(0, 1, num_landmarks))
+        self.landmark_states = nn.Parameter(torch.randn(num_landmarks, dim) * 0.02)
+        self.q_proj = nn.Linear(dim, dim)
+        self.k_proj = nn.Linear(dim, dim)
+        self.v_proj = nn.Linear(dim, dim)
+        self.out_proj = nn.Linear(dim, dim)
+
+    def _rotate_single(self, x_vec: torch.Tensor, depth: torch.Tensor) -> torch.Tensor:
+        # x_vec: (*, D); depth: scalar tensor -> returns (*, D)
+        angles = depth.view(-1, 1) * self.rde.inv_freq       # (1, D/2)
+        cos, sin = torch.cos(angles), torch.sin(angles)       # (1, D/2)
+        x1, x2 = x_vec[..., ::2], x_vec[..., 1::2]
+        rot = torch.stack([x1 * cos - x2 * sin,
+                           x1 * sin + x2 * cos], dim=-1)
+        return rot.flatten(-2)
+
+    def forward(self, x: torch.Tensor, current_depth: torch.Tensor) -> torch.Tensor:
+        # x: (B, N, D); current_depth: scalar tensor in [0, 1].
+        cos_q, sin_q = self.rde(current_depth.expand(x.size(0)))
+        q = RotaryDepthEmbedding.apply_rotation(self.q_proj(x), cos_q, sin_q)
+
+        # Each landmark gets rotated by its *own* learned depth coordinate.
+        rotated_ks = torch.stack([
+            self._rotate_single(self.k_proj(self.landmark_states[i]),
+                                self.landmark_depths[i])
+            for i in range(self.landmark_states.size(0))
+        ], dim=0)                                             # (L, D)
+        v = self.v_proj(self.landmark_states)                 # (L, D)
+
+        # Scaled dot-product retrieval: (B, N, D) @ (D, L) -> (B, N, L)
+        attn = torch.softmax(q @ rotated_ks.T / (self.dim ** 0.5), dim=-1)
+        retrieved = attn @ v                                   # (B, N, D)
+        return x + self.out_proj(retrieved)
+```
+
+The critical structural property: the state at the current depth is allowed to *retrieve* from a memory indexed by learned landmark depths, rather than being forced to read only from its immediate predecessor. The residual-as-lazy-attention becomes attention-as-retrieval.
+
+## Part 5: Three Levels of Granularity
+
+CDMN without a granularity hierarchy collapses into a single massive attention operation, which is both computationally infeasible and empirically unstable. The mitigation, which also happens to mirror hippocampal-cortical hierarchy, is a three-level pyramid:
+
+- **Coarse (landmark level, ~4–8 slots).** Semantic waypoints: edges detected, parts assembled, object identified. Analogous to consolidated cortical memory.
+- **Middle (block level, O(√n) slots).** Adaptive blocks of layers that share RDE coordinates. Analogous to short-term cortical circuits.
+- **Fine (token level, standard attention).** Per-token precision; the path by which exact signal survives. Analogous to hippocampal high-resolution traces.
+
+A query at any depth is allowed to retrieve from any level, but the default is coarse-to-fine: check landmarks first (cheap), then blocks (medium), then tokens (expensive). This is the "adaptive granularity" mechanism and matches the trade-off between consolidation (low-cost, low-fidelity recall) and retrieval-from-HPC (high-cost, high-fidelity) in the hippocampal literature.
+
+## Part 6: Three Dimensions of Architectural Critique
+
+Once you have this frame, a practical critique of any proposed architecture reduces to three questions. I have found this framework useful when reviewing architecture papers — it produces concrete objections rather than vague aesthetic reactions.
+
+**Dimension 1: Order of interaction.** What is the highest-order relation the architecture natively encodes? MLPs are first-order (isolated units). CNNs and attention are second-order (pairwise). Genuine group-level phenomena — scene understanding, multi-agent coordination, multi-region neural integration — require hypergraph-level interactions, and no standard architecture encodes them without post-hoc glue.
+
+**Dimension 2: Uniformity assumption.** Which axes does the architecture force to be processed uniformly? ResNet forces uniform depth accumulation. Standard attention forces uniform pairwise interaction at each layer. A better question than "how do I train this?" is "where am I paying the uniformity tax, and does my task actually need that axis to be uniform?"
+
+**Dimension 3: Separability assumption.** Which axes are forced to be processed separately? Depth vs width, spatial vs channel, modality vs modality. Every separation is a commitment that cross-axis information is not worth modeling explicitly. Sometimes that is right. When it is wrong, it is very wrong, and progress usually comes from re-entangling the two axes — cross-modal attention in vision-language models, channel-spatial mixing in ConvNeXt-style designs, and the broader hypergraph-convolution literature all make this concrete in different ways.
+
+## Part 7: The Hippocampal Correspondence
+
+The neuroscience parallel is not decorative; it is the reason I think the design is right.
+
+The hippocampus solves the memory-address problem for biological brains. Three well-characterized subcircuits map cleanly onto CDMN components:
+
+| Neural circuit | Function | CDMN analog |
+|---|---|---|
+| Dentate gyrus (DG) | Pattern separation — makes similar inputs distinguishable | Input encoding layer with sparse, near-orthogonal codes |
+| CA3 recurrent network | Pattern completion — retrieves full memory from partial cue | Attention-based retrieval from landmark slots |
+| CA1 time cells | Sequential/temporal encoding | RoPE-style depth positional code |
+
+Two specific phenomena are worth flagging because they suggest concrete architectural constraints rather than vague inspiration:
+
+**Theta-cycle phase coding.** Hippocampal theta oscillations (4–8 Hz) organize spatial and mnemonic information into phase windows, with roughly 4±1 distinguishable items per cycle (consistent with Miller's law). This is direct neural evidence for phase-based indexing of discrete memory contents — which is exactly what RDE does in silico.
+
+**Sparse-dense complementary learning.** The DG-CA3 division of labor (sparse orthogonalization, then dense auto-associative retrieval) corresponds to a specific architectural choice: sparse input encoding is not a performance optimization; it is a prerequisite for stable retrieval. A CDMN trained without sparsity in its landmark-writing step should suffer from catastrophic retrieval interference — a predictable, testable failure mode.
+
+## Part 8: Relationship to MoBA, Attention Residuals, and Muon
+
+CDMN is not opposed to recent architectural work; it subsumes and extrapolates it.
+
+- **MoBA** allows sparse routing within a block. CDMN says: let the block boundary itself be learned (via RDE), and let routing span the whole depth axis.
+- **Attention Residuals** replaces the hardcoded `+ f(h_l)` with a learned aggregation. CDMN says: the aggregation is a retrieval over a memory-addressable depth, not a weighted sum over a layer index.
+- **Muon / Moonlight** optimizers are about how to train aggressively-parametrized layers stably. These techniques should port directly to CDMN, because the differentiability structure is very similar — you are still training a network with smooth, well-conditioned Jacobians, just reshaped.
+
+The historical arc is legible:
+
+```
+Fixed 3×3 CNN (hard structure)
+    ↓
+ResNet (soft bypass: layer l+1 can see layer l directly)
+    ↓
+DenseNet (anyone-to-anyone, but with no selection)
+    ↓
+MoBA / Attention Residuals (learned selection within a block)
+    ↓
+CDMN (continuous selection; depth becomes an address)
+```
+
+Each step softens a hard constraint. CDMN softens the last one: the integer-valued layer index.
+
+## Part 9: What to Test First
+
+This would be vaporware without concrete experimental predictions. Three first-phase experiments, each small enough to run on a single GPU:
+
+1. **RDE-as-retrieval vs. standard residual on CIFAR-10 / ImageNet-32.** Plug an RDE-indexed retrieval into ResNet-18 in place of the residual; report convergence speed, final accuracy, gradient-norm stability. Prediction: comparable final accuracy with fewer epochs to reach 90% of terminal performance, because depth-indexed retrieval removes redundant sequential processing.
+
+2. **Depth phase-alignment visualization.** Train a ResNet-18 with RDE, then plot the learned depth coordinates and their relative phases. Prediction: natural clustering into 3–5 "depth regimes," consistent with the three-level granularity hierarchy.
+
+3. **Landmark ablation on long-range dependency tasks (e.g., Long Range Arena).** Prediction: a small CDMN with a handful of well-placed landmarks matches a much deeper standard Transformer on tasks where information must survive long distances in depth.
+
+If H1 or H2 fails, the framing is wrong at a fundamental level and I need to revisit it. If H3 fails, the memory-as-address metaphor is correct but the specific mechanism is wrong — a different retrieval operator is needed.
+
+## Closing: From Pipes to Switches
+
+The shift I am arguing for is from pipes to switches. A pipeline moves data through ordered stages and accepts the cost of serial dependency; a switch lets data be routed through a space where any point can be queried from any other point at any time. ResNet is a patched pipe (the residual is a bypass valve); MoBA is a partial switch inside a still-serial pipe; CDMN is the switch with the depth axis fully unbundled from the index axis.
+
+The meta-cognitive move that gets you from one to the other is noticing that every time the infrastructure (autograd, compute graphs, tooling) makes one design easy and another design hard, the theoretical reasoning you do on top of that infrastructure inherits its biases. "Residuals work" is true. "Residuals are the *right* way to wire depth" is a much stronger claim, and it is one we accepted because we could not easily build the alternative. The alternative is now buildable. Whether it is worth building is an empirical question with clean experimental predictions — which is the honest place for this line of thinking to bottom out.
+
+---
+
+**References**
+
+- Veit, Wilber, Belongie. [*Residual Networks Behave Like Ensembles of Relatively Shallow Networks*](https://arxiv.org/abs/1605.06431), NeurIPS 2016.
+- Su et al. [*RoFormer: Enhanced Transformer with Rotary Position Embedding*](https://arxiv.org/abs/2104.09864), 2021.
+- Moonshot / MoBA Team. [*MoBA: Mixture of Block Attention for Long-Context LLMs*](https://arxiv.org/abs/2502.13189), 2025.
+- MacDonald et al. *Hippocampal "Time Cells" Bridge the Gap in Memory for Discontiguous Events*. Neuron, 2011.
+- Yassa & Stark. *Pattern Separation in the Hippocampus*. Trends in Neurosciences, 2011.
+
+---
+
+*Chinese version: [从 ResNet 到 RDE](/blog/from-resnet-to-rde/).*
