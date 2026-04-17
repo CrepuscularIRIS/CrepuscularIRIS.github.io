@@ -1,0 +1,186 @@
+---
+title: "CorText: When You Can Chat With a Brain Scan"
+description: "Projecting fMRI activity into LLM latent space enables zero-shot neural readout via natural language queries — no task-specific decoder required."
+publishDate: "2026-04-15"
+tags: [BCI, fMRI, LLM, foundation-models, neural-decoding, neuroscience, cross-modal]
+category: research
+language: en
+draft: false
+---
+
+The standard pipeline for neural decoding follows a rigid pattern: collect brain data under a controlled paradigm, train a task-specific decoder (image classification, speech recognition, emotion detection), and deploy that decoder for the exact task it was trained on. Change the task, retrain the decoder. Change the imaging protocol, retrain the decoder. Change the subject population, retrain the decoder.
+
+CorText breaks this pattern by eliminating the task-specific decoder entirely. Instead of training a mapping from brain activity to a predefined output space, it projects fMRI activation patterns directly into the latent space of a large language model. Once there, you query the brain state in natural language — "what is the subject seeing?", "what emotional valence does this pattern suggest?", "is this consistent with auditory processing?" — and the LLM answers based on the projected neural representation.
+
+The result is zero-shot generalization to semantic categories the model never saw during training. That's the headline. The architecture that makes it work is the more interesting story.
+
+## Why Direct Projection Works (and Why It Shouldn't)
+
+The naive objection to projecting fMRI into an LLM's latent space is dimensionality mismatch. An fMRI volume contains ~100,000 voxels sampled at ~2-second temporal resolution. An LLM's embedding space is ~4,096 dimensions updated at token-level granularity. The signals measure fundamentally different things: metabolic proxies of aggregate neural population activity versus learned statistical regularities over text corpora.
+
+The reason projection works despite this mismatch is that both representations encode semantic structure — they just arrive at it through different processes. The brain organizes semantic knowledge through sensory grounding and embodied experience. The LLM organizes it through distributional statistics over language. The critical empirical finding driving this line of work is that these two semantic organizations are not independent. They share geometric structure.
+
+This was established quantitatively by earlier alignment work (Schrimpf et al., Mitchell et al.) showing that representational similarity matrices computed from brain responses to concepts correlate significantly with similarity matrices computed from language model embeddings of the same concepts. "Dog" and "cat" are close in both neural response space and LLM embedding space. "Dog" and "democracy" are distant in both.
+
+CorText exploits this shared geometry. The projection learns a linear mapping from fMRI space to LLM embedding space that preserves the relative distances between concepts. It's not trying to reconstruct the raw signal — it's trying to place the brain state in the right neighborhood of the LLM's semantic manifold.
+
+```python
+import torch
+import torch.nn as nn
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class ProjectionConfig:
+    fmri_dim: int = 100000       # voxels after masking
+    llm_dim: int = 4096          # target embedding dimension
+    hidden_dim: int = 2048       # bottleneck
+    num_subjects: int = 8
+    dropout: float = 0.1
+
+
+class BrainToLanguageProjector(nn.Module):
+    """Projects fMRI activation vectors into LLM embedding space.
+    
+    Architecture: subject-specific input layer -> shared bottleneck -> 
+    LLM-aligned output. The subject-specific layer handles anatomical
+    variation; the shared layers learn cross-subject semantic structure.
+    """
+    
+    def __init__(self, cfg: ProjectionConfig):
+        super().__init__()
+        # Subject-specific input projection handles anatomical variation
+        self.subject_encoders = nn.ModuleDict({
+            f"sub_{i}": nn.Linear(cfg.fmri_dim, cfg.hidden_dim)
+            for i in range(cfg.num_subjects)
+        })
+        
+        # Shared semantic bottleneck
+        self.shared_projection = nn.Sequential(
+            nn.LayerNorm(cfg.hidden_dim),
+            nn.GELU(),
+            nn.Dropout(cfg.dropout),
+            nn.Linear(cfg.hidden_dim, cfg.llm_dim),
+            nn.LayerNorm(cfg.llm_dim),
+        )
+    
+    def forward(
+        self, fmri_volume: torch.Tensor, subject_id: int
+    ) -> torch.Tensor:
+        """Map fMRI volume to LLM-compatible embedding."""
+        h = self.subject_encoders[f"sub_{subject_id}"](fmri_volume)
+        return self.shared_projection(h)
+```
+
+The subject-specific input layer is architecturally important. Cross-subject anatomical variability means the same voxel index maps to different brain regions across subjects. Rather than requiring anatomical normalization (which introduces spatial smoothing that destroys fine-grained patterns), the per-subject encoder learns the mapping from each subject's native voxel space to a shared semantic representation.
+
+## The Training Objective: Contrastive Alignment
+
+The projection is trained with a contrastive objective that pulls matching brain-language pairs together and pushes non-matching pairs apart in the shared embedding space.
+
+During training, subjects view images or read text while being scanned. Each fMRI volume is paired with the language description of what the subject was experiencing. The projected fMRI embedding should be close to the LLM embedding of the corresponding description and far from embeddings of unrelated descriptions.
+
+```python
+def contrastive_alignment_loss(
+    brain_embeddings: torch.Tensor,   # (batch, llm_dim)
+    text_embeddings: torch.Tensor,    # (batch, llm_dim)
+    temperature: float = 0.07,
+) -> torch.Tensor:
+    """Symmetric contrastive loss aligning brain and language spaces.
+    
+    Follows CLIP-style InfoNCE: within a batch, the diagonal entries
+    are positive pairs (matching brain-text), off-diagonal are negatives.
+    """
+    # L2 normalize for cosine similarity
+    brain_norm = nn.functional.normalize(brain_embeddings, dim=-1)
+    text_norm = nn.functional.normalize(text_embeddings, dim=-1)
+    
+    # Similarity matrix: (batch, batch)
+    logits = brain_norm @ text_norm.T / temperature
+    
+    # Symmetric cross-entropy: brain->text and text->brain
+    labels = torch.arange(logits.size(0), device=logits.device)
+    loss_b2t = nn.functional.cross_entropy(logits, labels)
+    loss_t2b = nn.functional.cross_entropy(logits.T, labels)
+    
+    return (loss_b2t + loss_t2b) / 2
+```
+
+The temperature parameter controls the sharpness of the similarity distribution. Lower temperatures (0.05-0.07) produce harder contrastive learning — the model must place matched pairs very close together. Higher temperatures (0.1-0.2) are more forgiving but produce less discriminative embeddings.
+
+## Zero-Shot Querying: The Payoff
+
+Once the projector is trained, the interaction model changes fundamentally. Instead of running a forward pass through a task-specific classifier, you project the brain state into embedding space and query it through the LLM's language interface:
+
+```python
+from typing import Optional
+
+
+def query_brain_state(
+    fmri_volume: torch.Tensor,
+    subject_id: int,
+    query: str,
+    projector: BrainToLanguageProjector,
+    llm: "LanguageModel",
+    context: Optional[str] = None,
+) -> str:
+    """Query a brain state in natural language.
+    
+    The projected brain embedding is prepended to the LLM's input
+    as a 'perception token' — the model treats it as grounding context
+    for answering the query.
+    """
+    brain_embedding = projector(fmri_volume, subject_id)
+    
+    # Construct prompt with brain embedding as context
+    prompt_parts = ["[BRAIN_STATE]"]  # placeholder for projected embedding
+    if context:
+        prompt_parts.append(f"Experimental context: {context}")
+    prompt_parts.append(f"Question: {query}")
+    
+    # The LLM receives the brain embedding as an additional
+    # input token and generates a natural language response
+    response = llm.generate(
+        text_prompt="\n".join(prompt_parts),
+        prefix_embeddings=brain_embedding.unsqueeze(0),
+    )
+    return response
+```
+
+The zero-shot capability comes from the LLM's pre-existing semantic knowledge. When the projected brain embedding lands in the neighborhood of "visual scene with water and mountains," the LLM can describe it as a lake scene — even if no lake images were in the training set. The projector learned to map brain activity to the right region of semantic space; the LLM's language generation handles the rest.
+
+This is qualitatively different from a classifier that outputs one of N predefined labels. The output vocabulary is unbounded, the query can be anything, and the response incorporates world knowledge that was never part of the neural decoding training data.
+
+## What the Architecture Gets Right
+
+Three design decisions distinguish CorText from prior brain-to-language work:
+
+**Frozen LLM weights.** The language model is never fine-tuned on brain data. Only the projector is trained. This preserves the LLM's full generative capability and world knowledge. Prior approaches that fine-tuned the language model on brain data gained decoding accuracy but lost generalization — the model became specialized to the training paradigm.
+
+**Soft prompt injection.** The brain embedding enters the LLM as a soft prompt token, not as a text description. This preserves the continuous geometric information from the projection rather than discretizing it through a text bottleneck. The difference matters: a text description like "visual cortex activation in V1/V2 with moderate temporal lobe engagement" loses the precise activation magnitudes and spatial patterns that differentiate a beach scene from a forest scene.
+
+**Cross-subject training with subject-specific adapters.** Training across subjects with shared projection layers forces the model to learn subject-invariant semantic structure. The subject-specific input layers handle anatomical variation while the shared layers capture what's universal about how brains represent meaning.
+
+## Limitations That Matter
+
+The temporal resolution constraint is fundamental. fMRI operates at ~0.5 Hz (one volume every 2 seconds). This means CorText can describe sustained perceptual states — what someone is looking at, the general emotional tone of an experience — but cannot track rapid cognitive dynamics. The P300 component that peaks at 300ms post-stimulus is invisible. Speech production unfolding at syllabic rate is invisible. Any cognitive process faster than ~2 seconds is temporally aliased.
+
+This is not a limitation of the architecture; it's a limitation of the imaging modality. Extending the same projection approach to EEG (millisecond resolution, but much lower spatial resolution) is the obvious next step, and the architectural framework supports it — swap the subject-specific input layer dimensions and retrain.
+
+The second limitation is data scale. The contrastive alignment requires paired brain-language data: subjects performing tasks while being scanned, with linguistic descriptions of each task condition. Acquiring this data is expensive ($500-1000/hour for fMRI scanning time) and slow (each subject provides ~1 hour of usable data per session). Current training sets are measured in tens of subjects and hundreds of hours — orders of magnitude smaller than the text corpora that trained the target LLM.
+
+Whether the projection generalizes robustly under this data regime is an open empirical question. The shared geometric structure between brain and language representations provides a strong inductive bias, but the projection could overfit to the specific experimental paradigms used during training.
+
+## Implications for BCI Systems
+
+CorText's architecture suggests a different development trajectory for brain-computer interfaces. The conventional BCI pipeline requires: (1) define the target application, (2) design a paradigm that elicits distinguishable brain states for that application, (3) train a classifier for those states, (4) deploy. Every new application restarts at step 1.
+
+A foundation-model approach based on CorText's projection strategy would instead: (1) collect diverse brain data under many paradigms, (2) train a general brain-to-semantic projector, (3) deploy with any downstream query. New applications require only new queries, not new data collection or model training.
+
+This is the same shift that occurred in NLP when task-specific models (separate models for sentiment, NER, translation) were replaced by general language models that handle all tasks through prompting. Whether the same shift is feasible for neural decoding depends on whether the shared brain-language geometric structure is rich enough to support diverse downstream queries — not just visual scene description, but motor intention decoding, affective state classification, and cognitive workload estimation.
+
+The early results suggest the geometry is richer than expected. Zero-shot generalization to unseen semantic categories implies that the projection captures something more general than stimulus-specific responses. How far that generalization extends is the central open question in this line of work.
+
+---
+
+*References: CorText framework builds on brain-language alignment work by Schrimpf et al. (2021), Mitchell et al. (2008), and cross-modal contrastive methods from CLIP (Radford et al., 2021). The specific architecture details described here synthesize recent preprints from the brain-language fusion literature as of April 2026.*

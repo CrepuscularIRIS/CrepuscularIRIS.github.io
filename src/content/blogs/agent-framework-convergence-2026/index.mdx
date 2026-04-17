@@ -1,53 +1,57 @@
 ---
 title: "The Agent Framework Convergence of 2026"
-description: "Microsoft merges Semantic Kernel and AutoGen. CrewAI hits 12M daily runs. The abstractions are converging."
+description: "Microsoft merges Semantic Kernel and AutoGen. CrewAI claims 12M daily runs. The abstractions are converging — the design space is smaller than 2024 suggested."
 publishDate: "2026-04-16"
-tags: [agents, multi-agent, orchestration, microsoft, crewai, frameworks, agent-engineering, semantic-kernel, autogen]
+updatedDate: "2026-04-17"
+tags: [agents, multi-agent, orchestration, microsoft, crewai, langgraph, frameworks, agent-engineering, semantic-kernel, autogen, mcp, a2a]
 category: engineering
 language: en
 draft: false
 ---
 
-In the first two weeks of April 2026, three things happened in agent orchestration that individually would be footnotes but together reveal a structural shift.
+In the first two weeks of April 2026, three events in agent orchestration individually look like footnotes and together reveal a structural shift. Microsoft released Agent Framework v1.0, the product of merging Semantic Kernel and AutoGen into a single runtime. CrewAI disclosed that its platform processes 12 million agent executions per day. And a fresh crop of minimal hierarchical frameworks — CEO / Manager / Worker in three hundred lines of Python — keep hitting thousands of GitHub stars within days of launch.
 
-Microsoft released Agent Framework v1.0 — the product of merging Semantic Kernel and AutoGen into a single runtime. CrewAI disclosed that its platform processes 12 million agent executions per day. And new hierarchical frameworks keep appearing — the latest crop of CEO-Manager-Worker delegation tools gaining thousands of stars within weeks of launch.
+The surface observation is that agent frameworks are popular. The deeper observation is that they are converging on the same abstractions, despite starting from radically different premises about how multi-agent systems should work. And once you notice the convergence, a second question becomes more pressing than "which framework should I pick?": which layer of the stack is actually the stable interface, and which layer is going to be commoditized?
 
-The surface observation is that agent frameworks are popular. The deeper observation is that they're converging on the same abstractions, despite starting from radically different assumptions about how multi-agent systems should work.
+The answer is not flattering to the framework vendors. The stable interface is the protocol layer — MCP, A2A, AP2, OpenTelemetry GenAI. The framework is rapidly becoming an implementation detail.
 
 ## The Five Patterns That Won
 
-Look at every major agent framework shipping in April 2026 — Microsoft Agent Framework, CrewAI, LangGraph, Anthropic's Managed Agents — and you find the same five orchestration patterns implemented under different names:
+Look at every major agent framework shipping in April 2026 — Microsoft Agent Framework, CrewAI, LangGraph, Anthropic's Managed Agents, OpenAI's Swarm successors — and you find the same five orchestration patterns implemented under different names:
 
-| Pattern | Microsoft AF | CrewAI | LangGraph | Description |
-|---------|-------------|--------|-----------|-------------|
-| Sequential | Pipeline | Process: sequential | Linear graph | Agents execute in fixed order |
-| Concurrent | Parallel dispatch | Process: parallel | Fan-out/fan-in | Independent agents run simultaneously |
-| Handoff | Agent handoff | Delegation | Edge routing | One agent passes control to another |
-| Group chat | Group chat manager | Process: consensual | Multi-node cycle | Agents deliberate to reach consensus |
-| Hierarchical | Orchestrator agent | Manager delegation | Supervisor node | Top-level agent decomposes and delegates |
+| Pattern | Microsoft AF | CrewAI | LangGraph | Managed Agents | Description |
+|---------|-------------|--------|-----------|----------------|-------------|
+| Sequential | Pipeline | Process: sequential | Linear graph | Task chain | Agents execute in fixed order |
+| Concurrent | Parallel dispatch | Process: parallel | Fan-out / fan-in | Parallel tasks | Independent agents run simultaneously |
+| Handoff | Agent handoff | Delegation | Edge routing | Agent transfer | One agent passes control to another |
+| Group chat | Group chat manager | Process: consensual | Multi-node cycle | Council | Agents deliberate to reach consensus |
+| Hierarchical | Orchestrator agent | Manager delegation | Supervisor node | Supervisor / worker | Top-level agent decomposes and delegates |
 
-These aren't superficially similar. They're structurally identical. A "sequential pipeline" in Microsoft AF and a "sequential process" in CrewAI produce the same execution graph. The difference is in the API surface, not the computational model.
+These are not superficially similar. They are structurally identical. A "sequential pipeline" in Microsoft AF and a "sequential process" in CrewAI produce the same execution graph — a linear DAG whose nodes are agent invocations and whose edges are typed messages. The difference is in the API surface, the docs style, and the tooling around it. The computational model is the same.
 
-This convergence didn't happen by coordination. It happened because the design space for agent orchestration is smaller than it appeared in 2024-2025, when every framework tried to differentiate through novel execution models. The surviving patterns are the ones that map to real production workloads.
+Convergence did not happen by coordination. It happened because the design space of orchestration is smaller than it appeared in 2024-2025, when every framework tried to differentiate through novel execution models (voting, auctions, blackboard architectures, dynamic team formation). Most of those models turned out to be research artifacts. The patterns that survive are the ones that have counterparts in distributed systems literature — the same five patterns you see in workflow engines like Airflow, Temporal, or Step Functions.
 
-## What Microsoft's Merge Reveals
+The reason for the overlap is not mysterious: multi-agent orchestration is a distributed-workflow problem with LLMs at the nodes. The LLM novelty does not change the orchestration primitives. The orchestration layer looks like Temporal-with-LLM-nodes, and Temporal has had thirty years of distributed systems research telling it what primitives matter.
 
-The Agent Framework v1.0 merge is the most architecturally informative event because it involved combining two frameworks with different philosophies:
+## What Microsoft's Merge Actually Reveals
 
-**Semantic Kernel** started as an enterprise SDK — strongly typed, plugin-oriented, designed for integration with existing .NET/Java/Python applications. Its mental model: the LLM is a function you call from your application code.
+The Agent Framework v1.0 merge is the most architecturally informative event of the quarter because it forced Microsoft to publicly commit to which abstractions they thought would survive. Merging Semantic Kernel and AutoGen required finding the common layer between two frameworks with opposite philosophies:
 
-**AutoGen** started as a research framework — conversation-oriented, designed for multi-agent interaction experiments. Its mental model: agents are autonomous entities that talk to each other.
+**Semantic Kernel** started as an enterprise SDK — strongly typed, plugin-oriented, designed for embedding LLM calls inside .NET / Java / Python applications. Its mental model: the LLM is a function you call from application code.
 
-Merging them required finding the common abstraction layer. Microsoft's answer: the **agent runtime** — a process that manages agent lifecycle, message routing, and state persistence, independent of how individual agents are implemented.
+**AutoGen** started as a Microsoft Research project — conversation-oriented, designed for multi-agent interaction experiments. Its mental model: agents are autonomous entities that send messages to each other.
+
+Microsoft's merged answer is the **agent runtime** — a process that manages agent lifecycle, message routing, state persistence, and retry semantics, independent of how individual agents are implemented. The agents themselves are actors; the runtime is the mailbox and scheduler.
 
 ```python
-# Pseudocode — illustrates the merged framework's runtime concept
-# Actual API uses autogen_agentchat with AssistantAgent, GroupChat, etc.
+# Illustrative sketch only — not a runnable API.
+# The real framework uses autogen_agentchat with AssistantAgent,
+# GroupChat, and a RoutedAgent base class; the snippet below
+# compresses several layers for readability.
 from agent_framework import AgentRuntime, Agent, Message
 
 class ResearchAgent(Agent):
     async def handle(self, message: Message) -> Message:
-        # Agent-specific logic
         results = await self.tools.search(message.content)
         return Message(role="research", content=results)
 
@@ -58,7 +62,6 @@ class WriterAgent(Agent):
         )
         return Message(role="writer", content=draft)
 
-# The runtime handles orchestration, streaming, checkpointing
 runtime = AgentRuntime()
 runtime.register(ResearchAgent(), WriterAgent())
 runtime.set_pattern("sequential")  # or "handoff", "group_chat", etc.
@@ -66,52 +69,49 @@ runtime.set_pattern("sequential")  # or "handoff", "group_chat", etc.
 result = await runtime.run("Analyze the latest MCP protocol changes")
 ```
 
-The key design decisions in the merged framework:
+Four design decisions in the merged framework are worth making explicit because they represent bets about what production agent infrastructure needs:
 
-1. **Streaming by default.** Every agent interaction is a stream, not a request-response. This enables real-time monitoring and early termination.
+1. **Streaming by default.** Every agent interaction is a stream, not a request-response. This enables real-time observability, early termination, and interactive human-in-the-loop patterns.
+2. **Checkpointing built in.** The runtime periodically snapshots agent state to durable storage, so a crashed workflow resumes from the last checkpoint rather than restarting. This is the same pattern Temporal uses — treat the agent as a durable function.
+3. **Human-in-the-loop as a first-class pattern.** Any step can be configured to pause and wait for human approval. The pause is not an exception — it is a first-class runtime state, with named edges for `approve`, `reject`, `modify`.
+4. **MCP for tools, A2A for inter-framework communication.** Tools are MCP servers. Communication between agents in different frameworks uses A2A. Microsoft's framework is the first major SDK to treat both protocols as load-bearing infrastructure rather than optional integrations.
 
-2. **Checkpointing built in.** The runtime periodically snapshots agent state, so a crashed workflow resumes from the last checkpoint rather than restarting.
+The runtime-centric design is the key move. Both Semantic Kernel's "functions" and AutoGen's "agents" collapse into the same thing: handlers on a runtime. This is the actor model, rediscovered for the third time in computing history. The novelty is not the model — Erlang had this in 1986 — it is that LLM agents happen to fit the actor model almost perfectly. Each agent has private state, processes messages one at a time, can spawn other agents, and communicates only via explicit messages. If you were designing an LLM orchestration runtime from scratch and did not know about actors, you would rediscover them.
 
-3. **Human-in-the-loop as a first-class pattern.** Any step can be configured to pause and wait for human approval before proceeding. This isn't bolted on; it's part of the orchestration pattern definition.
+## CrewAI's Scale Numbers, Read Skeptically
 
-4. **MCP for tools, A2A for inter-framework communication.** Tools are MCP servers. Communication between agents in different frameworks uses the A2A protocol. This is the first major framework to treat both protocols as infrastructure rather than optional integrations.
-
-## CrewAI's Scale Numbers and What They Imply
-
-CrewAI's 12 million daily agent executions number is worth examining because it provides empirical data about how agent frameworks are actually used at scale.
-
-The approximate distribution of orchestration patterns in production (estimated from CrewAI's published case studies, community reports, and conference talks) roughly follows:
+CrewAI's published 12-million-daily-executions figure is worth reading carefully, because the distribution of those executions matters more than the headline. An approximate breakdown, inferred from CrewAI's published case studies, developer-community discussion, and conference talks — not a precise internal metric — roughly maps to:
 
 - **Sequential**: ~60% of workflows. The most common pattern is "Agent A does research, Agent B writes, Agent C reviews." Simple, predictable, debuggable.
 - **Hierarchical**: ~25% of workflows. A manager agent decomposes a complex task and delegates to specialist agents. Common in customer support and content generation.
 - **Concurrent**: ~10% of workflows. Independent tasks executed in parallel for latency reduction.
-- **Group chat / consensus**: ~5% of workflows. Multiple agents deliberate on a decision. The least common in production because it's the hardest to debug when it goes wrong.
+- **Group chat / consensus**: ~5% of workflows. Multiple agents deliberate on a decision. The least common in production because it is the hardest to debug when it fails.
 
-The takeaway: production agent systems overwhelmingly use the simplest orchestration pattern that works. The sophisticated patterns — consensus, dynamic routing, adaptive hierarchies — are research artifacts that rarely survive contact with production requirements like latency budgets, cost control, and debuggability.
+The takeaway: production agent systems overwhelmingly use the simplest orchestration pattern that works. The sophisticated patterns — consensus, dynamic routing, adaptive hierarchies — are research artifacts that rarely survive contact with production requirements like latency budgets, cost controls, and debuggability. Every agent engineer has lived this: the group-chat pattern works beautifully in the demo, and two weeks into production you are trying to figure out why three agents are in a polite disagreement loop that is burning $40/hour.
 
-## The Simplicity Signal
+A complementary data point: the [multi-agent scaling illusion](/blog/multi-agent-scaling-illusion) result formalizes why this distribution is not an accident. Without independent information sources between agents, the expected-utility upper bound of a multi-agent system equals that of a single optimal agent. The simpler patterns — sequential, hierarchical — preserve information asymmetry by construction (each agent has a distinct role and distinct inputs). The consensus patterns routinely destroy it by having all agents read the same context and vote.
 
-The rapid adoption of minimal hierarchical frameworks in early 2026 demonstrates something about the market that framework builders should internalize: developers don't want more abstraction layers. They want fewer.
+## Why the Simplicity Signal Is Real
 
-The most popular new entrants share a three-concept API:
-- **Planner**: Top-level agent that receives the goal
-- **Manager**: Mid-level agent that breaks goals into tasks
-- **Worker**: Leaf agent that executes a single task
+The rapid adoption of minimal hierarchical frameworks in early 2026 is the market signal that framework builders should take seriously: developers do not want more abstraction layers, they want fewer. The most-starred recent entrants share a three-concept API:
 
-No plugin system, no middleware, no lifecycle hooks. The planner-manager-worker hierarchy maps directly to how humans think about delegation, which means developers can reason about the system without learning framework-specific concepts.
+- **Planner**: top-level agent that receives the goal.
+- **Manager**: mid-level agent that breaks goals into tasks.
+- **Worker**: leaf agent that executes a single task.
 
-The tradeoff is flexibility. These minimal frameworks can't express cyclic workflows, dynamic agent spawning, or conditional routing. But for the 60% of workflows that are sequential delegation chains, simplicity is a feature, not a limitation.
+No plugin system, no middleware, no lifecycle hooks. The planner-manager-worker hierarchy maps directly to how humans think about delegation, which means developers can reason about the system without learning framework-specific concepts. The tradeoff is flexibility — these minimal frameworks cannot express cyclic workflows, dynamic agent spawning, or conditional routing beyond a couple of levels. But for the 60% of workflows that are sequential delegation chains, simplicity is a feature, not a limitation.
 
-## Protocol Convergence: MCP + A2A as Infrastructure
+The structural lesson is familiar from every other piece of enterprise infrastructure: the abstractions that win are the ones that map cleanly to the mental model of the user who is *already* under time pressure. Abstractions that require a mental retooling lose to ones that match how people already think, even when the retooled abstractions are technically superior.
 
-The more significant convergence happening beneath the framework layer is at the protocol level. Every major framework shipped in April 2026 supports:
+## Protocol Convergence: MCP + A2A + AP2 as Infrastructure
 
-- **MCP (Model Context Protocol)** for tool access — the agent calls tools through MCP servers, regardless of which framework hosts the agent
-- **A2A (Agent-to-Agent Protocol)** for cross-framework communication — an agent in CrewAI can communicate with an agent in Microsoft Agent Framework through A2A's Agent Card discovery mechanism
+The more significant convergence is at the protocol layer, and this is where framework builders should be most nervous. The major frameworks in the April 2026 landscape — Microsoft Agent Framework, CrewAI, LangGraph, Anthropic's Managed Agents — are all either shipping or in active integration with three interop protocols as infrastructure:
 
-The MCP specification (2025-03-26 revision) added OAuth 2.1 authorization with dynamic client registration, meaning tool access now has proper authentication as a defined capability. This was the missing piece that kept MCP from being usable in production multi-tenant environments — previously, any agent that could reach an MCP server could use it.
+- **MCP (Model Context Protocol)** for tool access. The [MCP 2026 roadmap](/blog/mcp-2026-roadmap-tasks-primitive) added the Tasks primitive (SEP-1686), turning stateless tool calls into first-class long-running operations with explicit input / output schemas. The 2025-03-26 spec revision added OAuth 2.1 authorization with dynamic client registration, closing the multi-tenant gap.
+- **A2A (Agent-to-Agent Protocol)** for cross-framework communication. [A2A v1.0](/blog/a2a-v1-signed-cards-ap2-mandates) shipped Signed Agent Cards — JWS signatures (RFC 7515) over an RFC 8785 JSON-canonicalized Agent Card describing each agent's capabilities, input schema, and authentication requirements. Discovery is now authenticable.
+- **AP2 (Agent Payments Protocol)** for financial actions. AP2's signed Mandate structure gives an agent an interoperable capability token — "this agent may execute up to $X until date Y" — that any counterparty can verify independently.
 
-A2A reached stable status with HTTP+JSON transport and Agent Cards. The Agent Card is a JSON document that describes an agent's capabilities, input/output schemas, and authentication requirements. Agent discovery works by fetching Agent Cards from known registries or directly from agent endpoints.
+An Agent Card looks like this:
 
 ```json
 {
@@ -128,28 +128,67 @@ A2A reached stable status with HTTP+JSON transport and Agent Cards. The Agent Ca
   "auth": {
     "type": "oauth2",
     "token_endpoint": "https://auth.example.com/token"
+  },
+  "signature": {
+    "alg": "ES256",
+    "kid": "issuer-key-2026-q2",
+    "signature": "..."
   }
 }
 ```
 
-The practical consequence: you can build a multi-agent system where some agents run on Anthropic's infrastructure, some on Azure's, and some on your own servers, and they communicate through standardized protocols. Framework choice becomes an implementation detail rather than an architectural commitment.
+The practical consequence is that you can now build a multi-agent system where some agents run on Anthropic's infrastructure, some on Azure's, and some on your own servers, and they communicate through standardized, signed protocols. *Framework choice becomes an implementation detail rather than an architectural commitment.* That sentence is the one every framework vendor is trying to pretend is not true.
+
+Layer above this a fourth convergence: **OpenTelemetry GenAI semantic conventions** for tracing. The semantic-convention draft that stabilized in early 2026 defines attributes (`gen_ai.system`, `gen_ai.request.model`, `gen_ai.usage.input_tokens`, `gen_ai.agent.name`, `gen_ai.operation.name`) that every framework is adopting for spans. Once the traces look the same across frameworks, the observability stack becomes framework-agnostic too. Langfuse, Arize, Phoenix, Datadog all ingest the same schema.
+
+This is the stack in 2026:
+
+```text
+┌────────────────────────────────────────────────┐
+│  Observability: OTel GenAI semantic convs      │
+├────────────────────────────────────────────────┤
+│  Trust / identity: A2A Signed Cards + AP2      │
+├────────────────────────────────────────────────┤
+│  Tool interop: MCP (Tools, Tasks, Resources)   │
+├────────────────────────────────────────────────┤
+│  Agent runtime: Microsoft AF / CrewAI / …      │
+├────────────────────────────────────────────────┤
+│  Model: Claude / GPT / Gemini / Open-weight    │
+└────────────────────────────────────────────────┘
+```
+
+The framework layer is sandwiched between the model layer and a thick protocol layer. Both sandwich layers are standardized (models via OpenAI-compatible APIs for years, protocols via MCP / A2A now). Being sandwiched between two standardized layers is exactly the position where a layer becomes commodified.
+
+## What Gets Given Up in Convergence
+
+Convergence is not free. Each framework lost something distinctive when it adopted the common abstractions, and it is worth naming what was given up:
+
+- **Semantic Kernel** gave up the "LLM as function call" metaphor. The merged Agent Framework treats agents as long-running actors with identity and state. Integrations that used to be a single `semantic_function.invoke()` call are now agent registrations with lifecycle hooks.
+- **AutoGen** gave up its open-ended conversation model. The merged runtime enforces typed messages and explicit patterns. Research-style "let the agents figure it out" is still possible through the `group_chat` pattern, but it is no longer the default.
+- **CrewAI** gave up the option to invent novel coordination primitives. The public API is now pinned to the five standard patterns. CrewAI's distinctive "process" abstraction has become a thin wrapper over the same graph the other frameworks produce.
+- **LangGraph** gave up purity. LangGraph's original pitch was "your agent is a state machine, explicitly." To compete in the 60%-sequential world, LangGraph had to add higher-level wrappers that hide the graph for simple cases — undoing some of the clarity that was its selling point.
+
+Every convergence story looks like this. The frameworks that survive are the ones that accept the cost of matching the shared mental model. The ones that insist on distinctive abstractions become niche.
 
 ## What This Means for Agent Engineers
 
-**If you're choosing a framework today**: The orchestration patterns are equivalent across frameworks. Choose based on your existing infrastructure (Microsoft stack → Agent Framework, Python-native → CrewAI, graph-oriented workflows → LangGraph, simplicity → Paperclip).
+**If you are choosing a framework today.** The orchestration patterns are equivalent across frameworks. Choose based on your existing infrastructure and team: Microsoft stack → Agent Framework, Python-native with high-volume crews → CrewAI, graph-oriented workflows with explicit state → LangGraph, minimal dependencies → one of the planner/manager/worker micro-frameworks. Do not spend weeks on a comparison matrix. The decision is reversible.
 
-**If you're building agent infrastructure**: Invest in MCP and A2A integration rather than framework-specific abstractions. The frameworks are converging; the protocols are the stable interface.
+**If you are building agent infrastructure.** Invest in MCP, A2A, AP2, and OpenTelemetry GenAI integration rather than framework-specific abstractions. The frameworks are converging; the protocols are the stable interface. Code you write against MCP will still work when you swap frameworks. Code you write against a framework's proprietary "workflow DSL" will not.
 
-**If you're designing agent systems**: Start with sequential orchestration and add complexity only when you have evidence that sequential is insufficient. The data from production deployments is clear: most agent workflows don't need sophisticated orchestration patterns, and the simpler patterns are dramatically easier to debug, monitor, and operate.
+**If you are designing agent systems.** Start with sequential orchestration and add complexity only when you have evidence that sequential is insufficient. The production data is clear: most workflows do not need sophisticated patterns, and the simpler patterns are dramatically easier to debug, monitor, and operate. Reach for hierarchical when a single agent's context is overloaded. Reach for concurrent when latency dominates cost. Reach for group-chat essentially never — the [multi-agent scaling illusion](/blog/multi-agent-scaling-illusion) tells you why.
 
-**If you're evaluating agent capabilities**: Benchmark the agent's task performance, not the framework's feature list. A simple agent with good prompts in a sequential pipeline will outperform a sophisticated multi-agent consensus system with mediocre prompts, every time.
+**If you are evaluating agent capabilities.** Benchmark the agent's task performance, not the framework's feature list. A simple agent with good prompts, good tools, and a sequential pipeline will outperform a sophisticated multi-agent consensus system with mediocre prompts every time. The framework-layer differences disappear in the production eval; the prompt, tool, and memory differences stay.
 
-The convergence story of 2026 is ultimately about maturation. The agent framework space spent 2024-2025 exploring the design space. It's now collapsing toward a shared understanding of what works. The interesting research questions have moved from "how do we orchestrate agents?" to "how do we make orchestrated agents reliable, observable, and cost-effective?" — questions that framework convergence makes easier to answer because the evaluation criteria are becoming standardized.
+**If you are thinking about the two-year horizon.** The interesting research questions have moved from "how do we orchestrate agents?" to "how do we make orchestrated agents reliable, observable, secure, and cost-effective?" — questions that framework convergence makes easier to answer because the evaluation criteria are becoming standardized. The innovation is shifting up the stack (evaluation, alignment, capability gating) and down the stack (inference efficiency, scheduling, cost attribution). The middle — the orchestration framework itself — is being commodified, and that is the natural endpoint of any maturing infrastructure layer.
 
 ## References
 
 - [Microsoft Agent Framework v1.0](https://devblogs.microsoft.com/agent-framework/microsoft-agent-framework-version-1-0/)
-- [MCP Authorization Specification: OAuth 2.1](https://spec.modelcontextprotocol.io/specification/2025-03-26/basic/authorization/)
-- [A2A Protocol Specification](https://google.github.io/A2A/)
-- [AI Agent Protocol Ecosystem Map 2026](https://www.digitalapplied.com/blog/ai-agent-protocol-ecosystem-map-2026-mcp-a2a-acp-ucp)
+- [Model Context Protocol Specification](https://modelcontextprotocol.io/specification)
+- [MCP 2026 Roadmap: The Tasks Primitive](/blog/mcp-2026-roadmap-tasks-primitive) — companion post on MCP's stateful protocol shift
+- [A2A v1.0 + AP2 Mandates](/blog/a2a-v1-signed-cards-ap2-mandates) — companion post on the A2A trust stack
+- [A2A Protocol Specification](https://a2a-protocol.org/)
+- [OpenTelemetry GenAI Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
 - [CrewAI Multi-Agent Framework](https://www.crewai.com/)
+- [The Multi-Agent Scaling Illusion](/blog/multi-agent-scaling-illusion) — why more agents rarely means more capability

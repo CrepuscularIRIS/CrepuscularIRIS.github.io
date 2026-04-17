@@ -1,0 +1,78 @@
+---
+title: "认知路由器：为什么单体 Agent Context 正在走向消亡"
+description: "Agent CLI 正在从单一模型的单体架构转向基于技能路由的架构。这种模式演进与当年终结单体 Web 应用的历程如出一辙。"
+publishDate: "2026-04-15"
+tags: [agent-systems, architecture, cognitive-routing, MCP, claude-code, coding-agents]
+category: engineering
+language: zh
+draft: false
+---
+
+随着 Claude Code、Gemini CLI 等 coding agent 的快速演进，我们正目睹一个关键的架构转折点：从依赖单一大模型的 monolithic 架构，转向由 Cognitive Router（认知路由器）进行技能分发的多 Agent 协作架构。这一模式演进，与当年 Web 应用从单体走向 microservices 的历程如出一辙。
+
+## Context 稀释：被忽视的性能杀手
+
+大模型的 context window 越做越长，但工程实践揭示了一个残酷现实：**输入越多，准确率越低**。实测数据表明，当 context 从 5K tokens 膨胀到 50K tokens 时，复杂推理任务的准确率从 92% 骤降至 74%。
+
+这就是 Context Dilution（上下文稀释）问题。你把安全审查、测试生成、架构分析、代码重构的指令和上下文全塞进同一个 prompt，模型不是变强了——而是被淹没了。关键信息被海量无关 context 稀释，推理质量显著下降。
+
+## Cognitive Router 的核心架构
+
+Cognitive Router 的思路很直接：**别让一个模型干所有事，让每个专精 Agent 只处理自己擅长的任务**。其核心组件包括：
+
+- **Skill Manifest（技能清单）**：用 YAML 声明每个 Agent 的能力边界、输入输出格式和适用场景
+- **Router Model（路由模型）**：一个轻量级分类器，根据用户意图将任务分发到对应的专精 Agent
+- **Context Boundary（上下文隔离）**：每个 Agent 只拿到与自身任务相关的最小 context，避免稀释
+- **Result Aggregation（结果聚合）**：将多个 Agent 的输出整合为统一的最终结果
+
+这套架构的本质是**用 routing 换 context 质量**——牺牲一点协调开销，换取每个子任务的高精度执行。
+
+## 跨厂商调度：打破供应商锁定
+
+Cognitive Router 的一大优势是支持跨厂商 Agent 调度。例如，Claude Code 可以将安全审查任务分发给自身处理，同时把大规模代码生成任务 routing 到 Gemini CLI（利用其 1M context window），把特定的代码补全任务交给 Codex CLI。
+
+每个模型在各自擅长的领域发挥最大效能，而不是勉强让一个模型兼顾所有场景。这也是 MCP（Model Context Protocol）等标准化协议存在的意义——定义统一的 Agent 间通信契约。
+
+## 实战对比：Auth 模块的安全审查 + 测试生成
+
+以一个典型场景为例：对 auth 模块进行安全审查并生成测试用例。
+
+**Monolithic 方案**：将整个 auth 模块代码、安全规则文档、测试框架文档、项目约定全部塞入一个 prompt。模型需要在 40K+ tokens 的 context 中同时完成两个本质不同的任务。结果往往是安全审查不够深入，测试用例也不够完整。
+
+**Routed 方案**：Router 识别出两个独立子任务，分别分发给安全审查 Agent 和测试生成 Agent。前者只拿到 auth 代码 + 安全规则（~8K tokens），后者只拿到 auth 代码 + 测试框架文档（~6K tokens）。两个 Agent 并行执行，各自在精简的 context 下产出高质量结果，最后由 aggregator 合并输出。
+
+## 协调税：不可忽视的代价
+
+Cognitive routing 并非没有成本，这些"协调税"需要认真评估：
+
+- **延迟增加**：多了一层 routing 决策和结果聚合，端到端延迟必然上升
+- **Routing 误判**：当前 router model 的错误率在 8-15% 之间，任务被分发到错误的 Agent 会导致质量下降
+- **Manifest 维护成本**：每个 skill 的 YAML manifest 需要持续维护和更新
+- **Context 碎片化**：过度拆分可能导致 Agent 缺少必要的全局上下文
+
+这些问题并非不可解，但在架构选型时必须纳入考量。
+
+## 软件架构的历史轮回
+
+如果你是有经验的后端工程师，这套演进路线应该非常眼熟：
+
+| Web 架构 | Agent 架构 |
+|---------|-----------|
+| Monolith（单体应用） | 单一模型 + 巨大 prompt |
+| SOA（面向服务架构） | 按能力拆分的多 Agent |
+| Microservices | 专精 Agent + skill manifest |
+| Service Mesh | Cognitive Router + 可观测性 |
+
+软件工程的经验告诉我们：这条路是对的，但演进节奏很重要。过早微服务化和过度拆分同样是反模式。
+
+## 落地建议
+
+基于当前生态成熟度，给出以下实施建议：
+
+1. **先 monolithic，后拆分**：在 monolithic 方案确实遇到 context dilution 瓶颈时再引入 routing，不要过早优化
+2. **最小化 manifest**：skill manifest 只声明必要信息，降低维护负担
+3. **选最便宜够用的模型**：routing 层和简单子任务用小模型（如 Haiku），只在需要深度推理时调用大模型
+4. **全链路可观测**：对每次 routing 决策、Agent 执行、结果聚合进行 tracing，这是调试分布式 Agent 系统的生命线
+5. **优雅降级**：当 routing 失败或子 Agent 超时时，必须有 fallback 到 monolithic 执行的能力
+
+Cognitive routing 不是银弹，但它代表了 Agent 架构从"堆 context"到"精准分发"的范式转移。正如 microservices 没有消灭 monolith，而是在正确的场景下提供了更好的选择——Cognitive Router 也是如此。

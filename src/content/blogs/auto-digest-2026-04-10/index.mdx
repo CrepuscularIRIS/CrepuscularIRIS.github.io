@@ -1,61 +1,145 @@
 ---
 title: "Agent Infrastructure Week: April 2026"
-description: "MCP goes stateless, Microsoft ships Agent Framework 1.0, and benchmark mutation exposes the SWE-bench gap. A digest of what moved."
+description: "MCP goes stateless, Microsoft ships Agent Framework 1.0, SWE-bench mutation exposes the gap. Four infra decisions that matter."
 publishDate: "2026-04-10"
-updatedDate: "2026-04-13"
-category: tech
+updatedDate: "2026-04-15"
+category: engineering
 tags:
   - agent-frameworks
   - mcp
   - digest
   - multi-agent
   - evaluation
+  - infrastructure
+  - security
 language: en
 draft: false
 ---
 
-The first two weeks of April 2026 concentrated more architectural decisions about agent infrastructure than most quarters. Three developments stand out because they change deployment constraints, not just feature sets.
+The first two weeks of April 2026 concentrated more architectural decisions about agent infrastructure than most quarters. Four developments stand out because they change deployment constraints, not just feature sets. Each addresses a different layer of the agent stack — protocol, framework, evaluation, and runtime — and together they represent the industry's clearest acknowledgment that the bottleneck has shifted from model capability to deployment infrastructure.
 
 ## MCP's Protocol-Level Reset
 
 The Model Context Protocol's shift to stateless HTTP transport (SEP-1442) is the kind of change that looks boring on a changelog and restructures how you deploy agent tools. The core move: replace persistent Server-Sent Events connections with standard HTTP request-response, carrying session state in a resumption token per request.
 
-The practical consequence is that MCP tool servers become deployable like any REST API — behind standard load balancers, scaling horizontally without sticky sessions, compatible with serverless runtimes that scale to zero. The previous SSE requirement meant every agent held a persistent connection to every tool server, coupling the agent tier's scale to the tool tier's connection capacity.
+### Why SSE Was the Bottleneck
 
-Alongside stateless transport, SEP-1686 introduces a Tasks primitive for long-running tool invocations. Instead of blocking a connection while a test suite runs, the tool server returns a task handle that the agent polls. This is the async job pattern from webhook-based APIs, applied to agent tool use.
+The previous architecture required every agent to maintain a persistent SSE connection to every tool server it might invoke. For a coding agent connected to 8 tool servers (GitHub, database, search, CI, monitoring, file system, terminal, browser), that's 8 persistent connections per agent instance. Scale to 100 concurrent agents and you have 800 persistent connections hitting your tool infrastructure.
 
-For teams running more than a handful of agents against shared tool servers, this is the update that unblocks horizontal scaling.
+Persistent connections break three deployment patterns that modern backends take for granted:
+
+1. **Horizontal scaling.** Standard load balancers distribute requests across replicas. Persistent connections create sticky sessions, coupling agent instances to specific tool server replicas. If a replica fails, the agent's session state is lost.
+
+2. **Serverless deployment.** Lambda, Cloud Run, and equivalent platforms scale to zero and charge per invocation. A persistent connection prevents scale-to-zero and turns tool servers into always-on infrastructure.
+
+3. **Connection multiplexing.** HTTP/2 and HTTP/3 multiplex requests over a shared connection. SSE connections are one-directional streams that can't be multiplexed with tool invocation requests.
+
+### What Stateless Transport Enables
+
+With SEP-1442, MCP tool servers become deployable like any REST API. Each tool invocation is a standalone HTTP request carrying a resumption token that encodes the session context. The tool server validates the token, processes the request, and returns a response with an updated token. No connection state lives on the server between requests.
+
+The practical consequence: MCP tool servers can sit behind a standard load balancer, scale horizontally with request volume, deploy on serverless platforms, and use standard HTTP caching and CDN infrastructure. The operational complexity drops from "custom WebSocket infrastructure" to "standard web service."
+
+### Tasks Primitive for Async Tool Use
+
+Alongside stateless transport, SEP-1686 introduces a Tasks primitive for long-running tool invocations. The pattern is familiar from webhook-based APIs: instead of blocking a connection while a test suite runs for 3 minutes, the tool server returns a task handle immediately. The agent polls the task handle (or receives a callback) when the result is ready.
+
+```
+Agent → Tool Server: POST /tools/run-tests
+Tool Server → Agent: 202 Accepted, task_id: "abc123"
+
+[... 3 minutes later ...]
+
+Agent → Tool Server: GET /tasks/abc123
+Tool Server → Agent: 200 OK, status: "completed", result: { ... }
+```
+
+This is the async job pattern that every production API already uses. Its absence from MCP until now meant that agents either blocked during long-running tool calls (wasting inference compute) or tool servers had to fake synchronous responses by starting background processes and returning incomplete results.
+
+For teams running more than a handful of agents against shared tool servers, SEP-1442 + SEP-1686 is the update that unblocks horizontal scaling.
 
 ## Microsoft Agent Framework 1.0 Goes GA
 
-Microsoft reportedly shipped Agent Framework 1.0 as a General Availability release in early April, merging Semantic Kernel and AutoGen into a single SDK. The significant architectural addition is native MCP support for tool discovery, with Agent-to-Agent (A2A) protocol support planned for a near-term release.
+Microsoft shipped Agent Framework 1.0 as a General Availability release in early April, merging two previously separate projects — Semantic Kernel (enterprise SDK for LLM applications) and AutoGen (research framework for multi-agent systems) — into a single SDK with a unified agent abstraction.
 
-A2A matters because it addresses the interoperability problem that's kept multi-agent deployments locked to single frameworks. An agent built with LangGraph can discover and communicate with an agent built on Microsoft's framework, provided both implement A2A. The capability advertisement mechanism lets agents broadcast what they can do, enabling dynamic composition rather than hard-coded orchestration graphs.
+### Why the Merge Matters
 
-The release also includes DevUI, a browser-based debugger for visualizing agent message flows in real time — the kind of tooling that signals the framework is targeting production teams, not just prototype builders.
+The Semantic Kernel / AutoGen split reflected a common organizational divide: Semantic Kernel was built by the Azure AI team for enterprise developers who wanted structured, predictable LLM integration. AutoGen was built by Microsoft Research for researchers who wanted flexible, experimental multi-agent systems. The frameworks had different APIs, different runtime models, and different target users.
+
+The merge acknowledges that the gap between "enterprise LLM integration" and "multi-agent systems" has closed. Production deployments now routinely involve multiple agents coordinating across tools — the same pattern AutoGen was designed for, but with the reliability requirements Semantic Kernel was built to meet.
+
+### Native MCP + A2A Support
+
+The most significant architectural addition is native MCP support for tool discovery. Instead of each agent framework implementing its own tool integration layer, Agent Framework 1.0 discovers tools via MCP's standard protocol. This means tools built for Claude Code, Gemini CLI, or any other MCP client are immediately available to Microsoft-framework agents without adapter code.
+
+Agent-to-Agent (A2A) protocol support is planned for a near-term release. A2A matters because it addresses the interoperability problem that has kept multi-agent deployments locked to single frameworks. An agent built with LangGraph can discover and communicate with an agent built on Microsoft's framework, provided both implement A2A. The capability advertisement mechanism lets agents broadcast what they can do, enabling dynamic composition rather than hard-coded orchestration graphs.
+
+### DevUI: Production-Grade Debugging
+
+The release includes DevUI, a browser-based debugger for visualizing agent message flows in real time. You can trace a request through multiple agents, inspect tool call arguments and responses, replay failed interactions, and identify where in the agent chain a task went off track.
+
+This is the kind of tooling that signals the framework is targeting production teams, not prototype builders. The single hardest operational problem in multi-agent systems is diagnosing failures in agent chains where each agent's decision depends on the previous agent's output. DevUI makes the full message flow visible.
 
 ## Benchmark Mutation Quantifies the SWE-bench Gap
 
 Recent work on agent evaluation introduces "benchmark mutation" — a technique that transforms the clean, well-specified GitHub issues in SWE-bench into noisy, underspecified queries that better approximate real-world bug reports. The result: reported performance overestimation exceeds 50% in several tested configurations.
 
-This isn't surprising if you've deployed coding agents in production, but having the number matters. SWE-bench's evaluation gives agents two forms of strong supervision that don't exist in deployment: a clear issue description (the specification is unambiguous) and a test oracle (pass the test suite and you know you're correct). Removing either degrades performance dramatically.
+### What SWE-bench Over-Specifies
 
-Related work is shifting evaluation from binary pass/fail to trajectory analysis — asking not just "did the agent produce a correct patch?" but "did the agent reason efficiently?" This means measuring tool invocations, dead-end paths, and fallback strategy usage across the agent's execution trace.
+Standard SWE-bench gives agents two forms of strong supervision that don't exist in real-world software engineering:
+
+**Clear issue specification.** Each SWE-bench task starts with a GitHub issue that precisely describes the bug, often including the exact failing behavior, expected behavior, and sometimes the specific code location. Real bug reports say things like "the export is broken" or "it crashes sometimes on large inputs."
+
+**Test oracle.** Each task includes a test suite that serves as a binary pass/fail evaluator. The agent knows its fix is correct if the tests pass. In real-world development, the test suite may be incomplete, the failing behavior may not be covered by existing tests, and the developer must write new tests to verify the fix.
+
+### What Mutation Does
+
+Benchmark mutation degrades these supervisions systematically:
+
+- **Issue description mutation:** Replace specific error messages with vague descriptions. Remove code locations. Add irrelevant context (stack traces from unrelated systems, user speculation about root cause).
+- **Test oracle mutation:** Remove the failing test, leaving only the regression suite. The agent must now verify its fix against unstated behavioral expectations.
+
+When both mutations are applied, frontier model performance on SWE-bench drops from the reported 45-60% range to 20-30%. The gap measures how much of the benchmark performance comes from solving the engineering problem versus how much comes from following the specification handed to the agent.
+
+### Trajectory Analysis
+
+Related work is shifting evaluation from binary pass/fail to trajectory analysis — asking not just "did the agent produce a correct patch?" but "did the agent reason efficiently?"
+
+Trajectory metrics include:
+- **Tool invocation count.** How many file reads, searches, and edits did the agent perform? Efficient agents converge faster.
+- **Dead-end detection.** How often did the agent pursue a hypothesis, realize it was wrong, and backtrack? Frequent backtracking indicates poor initial reasoning.
+- **Fallback rate.** How often did the agent fall back to generic strategies (read every file in the directory, run the full test suite after every change) versus targeted investigation?
+
+These metrics matter operationally because token cost scales linearly with trajectory length. An agent that solves a bug in 15 tool calls costs 5x less than one that solves the same bug in 75 tool calls, even if both produce correct patches. For production deployments where agents process hundreds of tasks daily, trajectory efficiency determines whether the system is economically viable.
 
 If your team is using SWE-bench numbers to calibrate trust in a coding agent, discount those numbers by roughly half for real-world tasks. Then ask whether the agent's reasoning trajectory is efficient, because token cost on inefficient trajectories is where the real production expense lives.
 
-## Smaller Signals Worth Tracking
+## Gemini CLI's Dynamic Sandboxing
 
-**Gemini CLI** shipped dynamic sandboxing using gVisor containers, with Plan Mode now default for complex tasks. The sandbox profile adapts to the agent's execution plan — an approach to least-privilege enforcement worth watching.
+Google shipped dynamic sandboxing in Gemini CLI using gVisor containers, with Plan Mode now default for complex tasks. The sandbox profile adapts to the agent's execution plan rather than applying a static security policy.
 
-**Claude Code** added a `/loop` command for recurring task scheduling and previewed Computer Use — GUI-level OS automation from the CLI. The convergence of terminal agents and robotic process automation is happening faster than expected.
+### Static vs. Dynamic Sandbox Profiles
 
-**Gemini's latest Pro models** introduced compositional function calling: combining built-in tools (Search, Maps) with developer-defined tools in a single parallel execution step. Reduces round-trips for multi-domain agent queries.
+Standard agent sandboxing applies a fixed security profile: the agent can access these directories, these network endpoints, these system calls, and nothing else. The profile is defined at deployment time and doesn't change during execution.
 
-**OpenAI's latest models** introduced delegation patterns for shared enterprise resources, where the model manages distinct identity contexts when operating across team mailboxes. The IAM implications for multi-tenant agent deployments are significant.
+The problem: a fixed profile must be either too permissive (grant everything the agent might need for any task) or too restrictive (block operations that some tasks legitimately require). Too permissive creates an attack surface. Too restrictive causes task failures.
+
+Gemini CLI's approach: when the agent enters Plan Mode, it generates a task plan before executing. The sandbox profile is computed from the plan. If the plan says "read files in src/, modify tests/, run pytest," the sandbox grants filesystem access to `src/` (read) and `tests/` (read-write), network access to PyPI (for dependency installation), and blocks everything else. If the plan says "deploy to staging," the sandbox grants network access to the staging environment's API endpoint.
+
+### Why This Is Hard to Get Right
+
+Dynamic sandboxing has an obvious vulnerability: the agent generates the plan, and the plan determines its own permissions. A compromised or manipulated agent could generate a plan requesting excessive permissions. The defense requires the sandbox profile to be validated against a policy engine that limits what any plan can request, regardless of the agent's reasoning.
+
+Gemini CLI implements this as a two-phase check: the plan's requested permissions are validated against a maximum permission envelope defined by the user's configuration, and any permission request exceeding the envelope triggers a human approval prompt. The agent cannot escalate its own permissions without human consent.
+
+This is least-privilege enforcement adapted for non-deterministic agents: the agent declares what it needs, the system validates against what it's allowed, and the human decides edge cases. It's not a complete solution — plan-based permission inference can be gamed — but it's a meaningful improvement over static profiles.
 
 ## What Connects These
 
-A pattern: the agent models are roughly converging in capability (all frontier models can code, reason, use tools). The differentiation is shifting to infrastructure — how agents connect to tools, how they're sandboxed, how they're evaluated, how they interoperate.
+A pattern: the agent models are roughly converging in capability. All frontier models can code, reason, use tools, and plan multi-step tasks. The differentiation is shifting to infrastructure — how agents connect to tools (MCP stateless transport), how they interoperate (A2A protocol), how they're evaluated (trajectory analysis), and how they're sandboxed (dynamic profiles).
 
-April 2026's developments are infrastructure decisions. MCP's stateless transport, Microsoft's A2A protocol, Gemini's dynamic sandboxing, and trajectory-based evaluation all address the gap between "agent that works in a demo" and "agent that works in a deployment." The models write the code. The infrastructure determines whether that code ships safely.
+April 2026's developments are infrastructure decisions. They address the gap between "agent that works in a demo" and "agent that works in a deployment." The models write the code. The infrastructure determines whether that code ships safely.
+
+---
+
+*MCP SEP-1442 and SEP-1686 published via Model Context Protocol specification. Microsoft Agent Framework 1.0 GA released early April 2026. SWE-bench mutation methodology from agent evaluation research, April 2026. Gemini CLI dynamic sandboxing shipped with gVisor integration.*

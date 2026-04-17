@@ -1,0 +1,111 @@
+---
+title: "Agents Researching Alignment"
+description: "Anthropic deployed nine autonomous Claude instances to conduct alignment research. The results challenge key assumptions."
+publishDate: "2026-04-15"
+tags: [alignment, agent-systems, automated-research, anthropic, safety, meta-research]
+category: research
+language: en
+draft: false
+---
+
+In mid-April 2026, Anthropic published a paper that should make anyone working on AI safety sit up and reconsider their priors. They took nine copies of Claude Opus 4.6, gave each a different alignment research question, access to a shared forum, and let them run autonomously for extended periods. The headline number: a Performance Gap Recovery rate of 0.97, compared to 0.23 for human expert baselines on the same tasks.
+
+That number deserves unpacking, because it does not mean "AI is better than humans at alignment research." It means something more specific and more interesting.
+
+## What Performance Gap Recovery Actually Measures
+
+Performance Gap Recovery (PGR) is defined as the fraction of the gap between a naive baseline and an expert ceiling that a system closes. A PGR of 0.97 means the autonomous agents recovered 97% of the distance between doing nothing useful and matching the best known human results. The human experts scored 0.23 — meaning they closed only 23% of that same gap within the allotted time.
+
+The critical detail: the human experts were operating under identical time constraints and resource limitations. This is not a comparison of "all human alignment research ever" versus "nine Claude instances." It is a comparison under controlled experimental conditions where both parties had the same clock and the same tools.
+
+The real question is not whether the number is impressive (it is), but what architectural decisions made it possible.
+
+## The Sandbox Design
+
+Each of the nine agents operated in an isolated sandbox with:
+
+- **Read access** to a curated corpus of alignment research papers
+- **Write access** to a shared forum visible to all nine agents
+- **Execution access** to Python environments for running experiments
+- **No internet access** beyond the provided corpus
+
+The shared forum is the most interesting architectural choice. Rather than running nine independent agents and aggregating their outputs, Anthropic created a communication substrate where agents could read each other's intermediate results, critique approaches, and build on each other's findings.
+
+This is not a novel multi-agent pattern in general — shared blackboard architectures date back to the 1980s. What makes it notable is that the agents used the forum effectively without explicit coordination protocols. There was no designated "lead researcher" agent, no round-robin discussion format, no voting mechanism. The agents self-organized their interactions through the forum's flat structure.
+
+## Why Alignment Research Is a Good Testbed
+
+Alignment research has properties that make it unusually suitable for automated investigation:
+
+**Formal specification is possible.** Unlike "cure cancer" or "write a novel," many alignment questions can be stated precisely enough that progress is measurable. "Does this interpretability method correctly identify the causal mechanism for behavior X?" has a ground truth.
+
+**The search space is tractable.** Current alignment research operates in a regime where the number of promising approaches is large but not infinite. An agent can enumerate candidate hypotheses, design experiments to discriminate between them, and execute those experiments within reasonable compute budgets.
+
+**Verification is cheaper than generation.** Checking whether an alignment experiment's results support or refute a hypothesis is typically easier than designing the experiment in the first place. This asymmetry favors automated systems that can generate many candidate experiments quickly.
+
+**The corpus is self-contained.** The relevant literature fits comfortably in a large context window. An agent does not need to apprentice in a wet lab or navigate institutional bureaucracy. The entire workflow — read, hypothesize, code, experiment, analyze, write — happens in text and code.
+
+## What the Agents Actually Did
+
+The paper describes three categories of agent behavior that emerged without explicit instruction:
+
+### Systematic Literature Mapping
+
+Before attempting any experiments, several agents spent their initial time budget building structured maps of the existing literature. Not summaries — maps. They identified which papers' claims depended on which assumptions, where experimental results contradicted each other, and which combinations of techniques had not been tried.
+
+This is tedious work that human researchers typically do informally and incompletely. The agents did it exhaustively because they had no reason to find it tedious.
+
+### Adversarial Self-Critique
+
+Agents posted preliminary findings to the shared forum, and other agents responded with specific counterarguments. The critique was substantive — not "this seems wrong" but "your experiment on page 3 controls for variable X but not variable Y, and the conclusions change if Y is above threshold Z."
+
+The quality of the critique is notable because it requires understanding both the experimental setup and the space of confounding factors. It suggests that the agents were not pattern-matching on the surface structure of research papers but engaging with the underlying causal reasoning.
+
+### Iterative Experimental Refinement
+
+When an agent's experiment produced ambiguous results, it did not simply report the ambiguity and move on. Instead, it designed follow-up experiments specifically targeting the source of ambiguity. This iterative refinement is standard practice in human research but is often cited as something AI systems struggle with, since it requires maintaining coherent research goals across multiple experimental cycles.
+
+The agents managed this coherence through a combination of their long context windows and the shared forum, which served as external memory for research direction.
+
+## The Uncomfortable Implications
+
+### For Alignment Researchers
+
+If automated agents can conduct alignment research at 0.97 PGR, the bottleneck on alignment progress may shift from "not enough researchers" to "not enough compute for agent swarms." This is a qualitatively different regime. Alignment research funding could be redirected from hiring toward infrastructure for running autonomous research agents.
+
+The counterargument is that PGR on controlled benchmarks does not capture the open-ended creativity needed for fundamental breakthroughs. The agents excelled at systematic exploration of known research directions. Whether they can identify genuinely new research directions — the kind that require conceptual leaps rather than thorough search — remains undemonstrated.
+
+### For the Meta-Science of AI
+
+There is something philosophically recursive about using AI systems to study AI alignment. The agents are simultaneously the tool, the subject, and (in some sense) the stakeholder. If an agent discovers that a particular alignment technique is effective, does the agent's own architecture benefit from that technique? If an agent's alignment research is itself misaligned — if the agent systematically avoids discovering its own failure modes — how would we detect that?
+
+Anthropic addressed this partially through the multi-agent design. Nine agents with independent initializations are less likely to share the same blind spots than a single agent. But "less likely" is not "impossible," especially if the blind spots are architectural rather than stochastic.
+
+### For Research Evaluation
+
+The standard peer review process assumes human authors and human reviewers. If the research was conducted by AI agents and written up by AI agents, what does peer review mean? The paper itself was presumably written by human Anthropic researchers describing the agents' work. But the logical endpoint of this trajectory is papers authored end-to-end by AI systems, reviewed by AI systems, and read primarily by AI systems that will use the findings to improve themselves.
+
+We are not there yet. But the distance between "here" and "there" shortened considerably with this paper.
+
+## Practical Takeaways for Agent Builders
+
+The architectural lessons generalize beyond alignment research:
+
+**Shared forums beat isolated agents.** The blackboard pattern is old, but it works. If you are building multi-agent systems, give the agents a shared text space and let them self-organize. Imposing rigid communication protocols may actually reduce emergent collaboration quality.
+
+**Time budgeting matters.** The agents that performed best allocated significant time to literature mapping before experimentation. This mirrors the human research pattern of "spend 80% of your time understanding the problem, 20% solving it." For agent builders: explicitly budget your agent's compute time and resist the urge to jump straight to generation.
+
+**Verification loops are non-negotiable.** Every agent experiment included automated verification steps. The agents did not trust their own outputs without checking. Build this into your agent architectures — a generation step without a verification step is a bug.
+
+**The shared corpus is the context window.** Giving all agents access to the same curated corpus prevented divergent knowledge states. In practical multi-agent systems, ensuring a shared knowledge base eliminates an entire class of coordination failures.
+
+## What This Does Not Mean
+
+This paper does not mean:
+
+- AI researchers are obsolete (the agents worked on well-defined problems, not on defining which problems matter)
+- Alignment is solved (the agents conducted research; the research itself still needs to be evaluated and applied)
+- Nine agents are always better than one (the multi-agent architecture worked here; it may not work for all research tasks)
+- PGR of 0.97 generalizes across all research domains (alignment research has special properties that favor automation)
+
+What it does mean is that the ceiling on automated research quality is higher than most people assumed, and that multi-agent architectures with shared communication substrates are a viable paradigm for sustained intellectual work. The implications for how we organize AI research — and who, or what, conducts it — are worth taking seriously.

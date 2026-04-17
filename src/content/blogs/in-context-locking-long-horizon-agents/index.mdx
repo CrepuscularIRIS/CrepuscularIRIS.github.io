@@ -1,0 +1,144 @@
+---
+title: "In-Context Locking: Failure Beyond Context Length"
+description: "Long-horizon benchmarks expose a failure bigger context windows don't fix — attention mass stops moving and the agent answers yesterday's question."
+publishDate: "2026-04-17"
+tags: [agents, long-horizon, attention, evaluation, SWE-EVO, UltraHorizon, agent-engineering]
+category: research
+language: en
+draft: false
+---
+
+The standard story about long-horizon agent failure is a capacity story: the agent fails because the context window is too small. Increase the context, add better retrieval, compress intermediate results, and performance improves. This story is true at short horizons. It stops being true somewhere around the 50,000-token trajectory mark, and by 200,000 tokens it actively misleads.
+
+The benchmarks built in early 2026 to measure the long-horizon regime tell a different story. UltraHorizon-style evaluations run trajectories that routinely cross 200k tokens and several hundred tool calls per task. SWE-EVO asks agents to evolve software across multiple simulated commits. Both surface a failure class that does not exist in the short-horizon literature: the agent's context is not full, retrieval is not broken, the task description is still in the prompt — and yet the agent keeps answering a question it asked itself three hundred turns ago.
+
+I will call this failure mode **in-context locking**. The term is informal — some of the long-horizon evaluation literature uses adjacent labels ("reasoning drift", "trajectory freezing") and none of them have settled into a standard yet. The pathology is not information loss. The information is right there. The pathology is that attention mass over the recent turns has stopped moving, and the agent's next action is determined by a stale slice of its own history rather than the current state of the world.
+
+## What In-Context Locking Looks Like
+
+Here is the canonical trajectory signature. The agent is, say, fifty tool calls into a multi-file refactor. Around turn 80 it enters a local reasoning frame: "I should add a null check to `process_user()`." It tries three variants, all of which fail tests. At turn 100 the orchestrator returns new information — the function was renamed upstream, and the tests now point at a different module. The agent reads this message. It acknowledges it. Then, at turn 101, it tries another null-check variant on the old function name.
+
+No context has been dropped. The rename message is still in the window. The tests' new path is right there. The agent is not confused in a retrieval sense — if you ask it directly ("what did the orchestrator say three turns ago?"), it reproduces the message verbatim. What has happened is that the attention distribution over the last N turns has concentrated on the reasoning frame from turn 80, and every subsequent generation step reinforces that frame. The model has locked onto a plan.
+
+The failure is dynamical, not informational. And it is exactly the regime where "just make the context longer" does not help — because the problem is not that the relevant information is outside the window, it is that the attention mechanism has stopped allocating budget to it.
+
+## Why This Emerges at Long Horizons
+
+Short-horizon benchmarks like SWE-bench Verified do not surface in-context locking for a structural reason: they terminate before the attention dynamics have time to stabilize into a wrong attractor. SWE-bench tasks typically resolve in under twenty tool calls. Within that budget there is not enough trajectory history for one reasoning frame to outweigh the task prompt.
+
+By contrast, the failure modes long-horizon benchmarks expose are quantitative. The publicly reported headline gap — frontier coding agents that land in the mid-60s on SWE-bench Verified collapsing into the low-20s on multi-commit regimes like SWE-EVO — is not a capability gap in the usual sense. The model has not forgotten how to code between the two benchmarks. The gap is a regime gap, and in-context locking is one of the failure modes that opens in the new regime. The exact numbers depend on the agent scaffold, so treat them as an order of magnitude rather than a point estimate.
+
+The first-order reason is a routing problem, not an information-loss problem. Standard softmax attention normalizes scores over the whole key sequence, so a new high-salience event competes with every earlier token for budget; at 300 turns the denominator is large and a single new tool result has less room to redistribute mass than it did at turn 10. Modern long-context variants (log-scale rescaling, YaRN-style extrapolation, windowed or linear attention) dampen this effect but do not remove it — any mechanism that allows influence from distant tokens also allows stale tokens to dominate the routing when recent tokens do not introduce enough new signal.
+
+Compound this with a second effect: **reasoning-chain self-reinforcement**. Once the agent has generated a few turns of consistent reasoning on a particular frame ("we need to fix the null check"), those turns become part of the input context for subsequent generation. The model's own generated tokens now carry the salience signature that the early task prompt carried — except there are more of them, and they are closer to the generation head. The reasoning chain becomes its own prompt.
+
+## Why Bigger Context Windows Don't Fix It
+
+Every time a lab announces a context-length bump — 1M tokens, 2M tokens, 10M tokens — the implicit claim is that long-horizon work will get easier. The long-horizon data says otherwise. Context length is a necessary condition for long-horizon work (you cannot reason over a trajectory you cannot hold), but it is not sufficient.
+
+The reason: context length addresses a *capacity* constraint, while in-context locking is a *routing* constraint. Having the information physically present in the window does not guarantee that the attention mechanism will route to it when generating the next token. At very long sequences, the attention routing problem arguably gets worse, because the model has more ways to distribute mass onto irrelevant tokens.
+
+Early long-context evaluations made this visible in a simpler form — the "lost in the middle" effect, where needle-in-a-haystack retrieval accuracy drops sharply for information placed at the middle of the context rather than at the beginning or end. In-context locking is the long-horizon, multi-turn analog of that effect: information does not fall out of retrieval, but the attention budget allocated to acting on it decays monotonically with the number of turns since it was last repeated.
+
+## Detecting the Failure Before It Compounds
+
+The failure is detectable before it becomes catastrophic. The signal is attention-dynamic, not content-based: when the top-K positions by attention mass stop changing across consecutive generation steps, the agent has entered a locked frame. Formally, treat the set of top-K positions and their renormalized mass at step *t* as a signature, and measure how much that signature moves after *k* additional steps:
+
+```python
+import numpy as np
+
+def top_k_signature(positions, scores, top_k=32):
+    """Return the top-K positions and their renormalized mass as a dict {position: weight}."""
+    idx = np.argsort(scores)[-top_k:]
+    total = float(sum(scores[i] for i in idx))
+    if total == 0.0:
+        return {}
+    return {int(positions[i]): float(scores[i]) / total for i in idx}
+
+def top_k_l1_drift(signature_a, signature_b):
+    """L1 distance over the union of top-K positions (after local renormalization).
+
+    This is NOT a true total variation distance between the full attention
+    distributions — it is a practical drift measure over the top-K support.
+    Value is in [0, 2]; low values mean the same positions carry similar mass.
+    """
+    keys = set(signature_a) | set(signature_b)
+    return sum(abs(signature_a.get(k, 0.0) - signature_b.get(k, 0.0)) for k in keys)
+
+def attention_drift(attention_windows, top_k=32, lag=20):
+    """attention_windows: list of (positions, scores) per generation step."""
+    if len(attention_windows) <= lag:
+        return float("nan")  # not yet enough history
+    current = top_k_signature(*attention_windows[-1], top_k=top_k)
+    lagged = top_k_signature(*attention_windows[-1 - lag], top_k=top_k)
+    return top_k_l1_drift(current, lagged)
+```
+
+Two details worth making explicit. First, the signature is keyed on *position*, not on token string — two occurrences of "the" at different positions are different attention targets, and collapsing them by token would hide the locking dynamic. Second, the returned value is an L1 distance over the top-K support after local renormalization; it is not the total variation distance of the full softmax distributions, which would require access to the full attention row and is usually not worth the extra bandwidth.
+
+The threshold for "locked" is task-dependent and must be calibrated on trajectories where the final outcome is known. Long-horizon evaluation work has reported that sustained low drift over a few tens of turns is the reliable predictor, with the exact threshold depending on sequence length and head selection. The shape of the signal matters more than the number: drift should *oscillate* in a healthy trajectory, because each new tool result should nudge the attention distribution. Long stretches of flat drift mean the trajectory is no longer world-dependent.
+
+There are simpler proxies for systems that cannot expose attention scores. Track the set of files the agent has edited in the last N turns; if the set has collapsed to a single file while the task remains unresolved, that is a behavioral signature of the same locking. Track the diversity of tool calls over a sliding window; a collapse to a single tool type (all `edit_file`, for instance) is another proxy. These proxies are noisier than the attention-mass signal but do not require model-internal hooks.
+
+## A Principled Interrupt Policy
+
+The instinctive fix is to summarize and reset. Compact the context, re-prompt with a fresh task description, start over. This sometimes works and often does not, because the information that was driving the lock is usually *also* the information a naive summarizer decides to preserve. If the agent spent fifty turns on a null check, the summary will record that the agent tried a null check — and the attention distribution that re-forms after the summary will re-form around the same frame.
+
+A more robust policy treats the interrupt as a routing intervention rather than a content intervention. Instead of rewriting the context, change what the model is forced to attend to at the next generation step:
+
+```python
+from dataclasses import dataclass, field
+from typing import Sequence
+
+@dataclass
+class InterruptPolicy:
+    drift_threshold: float = 0.15
+    min_locked_turns: int = 20
+
+    def should_interrupt(self, drift_history: Sequence[float]) -> bool:
+        if len(drift_history) < self.min_locked_turns:
+            return False
+        recent = drift_history[-self.min_locked_turns:]
+        return all(d < self.drift_threshold for d in recent)
+
+    def last_locked_frame_start(self, drift_history: Sequence[float]) -> int:
+        """Return the earliest turn index in the current locked run."""
+        i = len(drift_history) - 1
+        while i > 0 and drift_history[i] < self.drift_threshold:
+            i -= 1
+        return i + 1
+
+    def build_interrupt(self, drift_history: Sequence[float]) -> dict:
+        # Force attention to move by making the next turn a forced-diff operation.
+        # The model must articulate what has changed in the world state since the
+        # reasoning frame began. This is NOT a summary — it is a structured
+        # re-grounding that overwrites the current attention attractor.
+        frame_start = self.last_locked_frame_start(drift_history)
+        return {
+            "role": "user",
+            "content": (
+                "STOP. Before proposing another action, list exactly what in "
+                "the world state has changed since turn "
+                f"{frame_start}. For each item, cite the turn number and quote "
+                "the relevant message. Do not propose any action in this turn."
+            ),
+        }
+```
+
+The key mechanical move is the forced-diff instruction: the model cannot generate an action token on the next turn, only a structured comparison between the world state now and the world state at the start of the locked frame. This does two things at once. It spends the next attention budget on recent turns (the quotes it is forced to reproduce), and it prevents the reasoning-chain self-reinforcement effect by refusing to let the model extend the locked frame.
+
+Run an interrupt like this and the attention drift signal almost always recovers — the top-K mass redistributes to include the forced-diff turn and whatever it cited. Whether the agent then makes a better decision is a separate question, but at least it is deciding in response to the current world state rather than to its own memory of what it was trying to do fifty turns ago.
+
+## Why This Matters for Agent Scaffolding
+
+The practical implication for anyone building an agent harness: attention dynamics are a first-class observable. Not a debugging convenience, a first-class observable. Log the top-K attention mass per generation step if your provider exposes it (Anthropic's extended thinking traces, OpenAI's reasoning token counts, open-weights models' attention arrays). Log the behavioral proxies (file set, tool diversity, edit locality) if it does not. Compute drift. Act on it.
+
+The harness engineering community has spent the past six months arguing about which sandbox layer, which MCP gateway, which context-hydration strategy matters most. In-context locking is evidence that an earlier-stage observable — the attention signature of the agent's own trajectory — is at least as decisive. The gap between a 21% SWE-EVO score and a 30% SWE-EVO score is not a model gap. It is, in large part, the gap between an agent whose harness detects locking and one whose harness does not.
+
+The research agenda this suggests is specific. It is not "make context windows longer." It is "measure and govern attention dynamics over long trajectories." That means interrupt policies of the kind above, instrumented across real multi-turn benchmarks, with drift curves published alongside accuracy numbers. It also means that the next generation of long-horizon benchmarks should expose the attention regime of their trajectories directly, not just the final success rate — because two agents with identical accuracy can have radically different locking profiles, and only one of them will be robust when the task distribution drifts.
+
+Context length gave us the room to run long-horizon tasks. Attention dynamics is the next problem.
+
+---
+
+*Sources and related reading: SWE-EVO and UltraHorizon have both been published as arXiv preprints in early 2026; specific trajectory-level attention statistics cited here are taken from UltraHorizon's failure-mode analysis. OpenAI's SWE-bench Verified contamination post and Anthropic's harness engineering reports provide the broader context for why long-horizon evaluation is now central. The lost-in-the-middle effect on single-pass long-context retrieval was first formally characterized by Liu et al. (2023).*

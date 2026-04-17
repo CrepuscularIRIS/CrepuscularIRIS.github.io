@@ -1,0 +1,193 @@
+---
+title: "SWE-rebench: Why Static Benchmarks Can't Measure Code Agents"
+description: "SWE-bench is contaminated. SWE-rebench generates 32K fresh tasks from live repos. The methodology shift matters more than the leaderboard."
+publishDate: "2026-04-16"
+tags: [benchmarks, code-generation, evaluation, swe-bench, agent-engineering, contamination]
+category: engineering
+language: en
+draft: false
+---
+
+SWE-bench Verified has a contamination problem. Models trained on GitHub data after December 2024 have seen the test set — not the exact patches, but the repositories, issues, and surrounding code that make the tasks solvable. When Nebius published SWE-rebench in April 2026, they didn't just propose a new benchmark. They demonstrated that the entire methodology of static code evaluation benchmarks is broken and proposed a structural fix: continuous task generation from live, post-training-cutoff repositories.
+
+The result is 32,000 multilingual tasks across Python, JavaScript, TypeScript, Java, Go, Rust, C++, and C#, drawn from repositories modified after January 2025. Every task is guaranteed to postdate the training data of current frontier models. This is the first code benchmark designed to be disposable by construction — built to regenerate, not to persist.
+
+## The Contamination Mechanism
+
+SWE-bench contamination isn't a simple case of memorized answers. The mechanism is subtler and harder to detect.
+
+A model trained on GitHub data through 2024 has seen the repositories in SWE-bench's test set. It hasn't necessarily seen the specific bug-fix commits used as gold patches. But it has seen the codebase structure, the coding patterns, the test infrastructure, and often the discussions in issues and PRs that describe the bugs. When the model encounters a SWE-bench task, it's working in a familiar environment rather than a novel one.
+
+This creates an information asymmetry that inflates benchmark scores without corresponding improvement in real-world capability. A model that "solves" a SWE-bench task might be doing any of the following:
+
+1. **Genuine problem-solving**: Understanding the bug, reasoning about the codebase, generating a correct fix. This is what the benchmark intends to measure.
+2. **Pattern matching on familiar code**: Recognizing the repository and applying learned patterns from its training data about how bugs in that codebase typically get fixed.
+3. **Implicit retrieval**: Having seen similar issues or discussions in training data that describe the fix approach, even if the exact commit wasn't in the training set.
+
+The problem is that (2) and (3) are indistinguishable from (1) when you only measure pass/fail on the test suite. A model that "knows" the Django codebase intimately from training will solve Django-related SWE-bench tasks at a higher rate than its actual bug-fixing capability would predict in an unfamiliar codebase.
+
+The evidence: several models show statistically significant performance differences between SWE-bench tasks from repositories that appear frequently in common training corpora versus tasks from less-common repositories. The gap ranges from 8-15 percentage points — large enough to change leaderboard rankings.
+
+## SWE-rebench's Design
+
+SWE-rebench addresses contamination through four structural decisions:
+
+### 1. Post-Cutoff Task Generation
+
+Every task is derived from commits made after January 1, 2025. Since no current frontier model has training data past this date, the tasks are guaranteed uncontaminated at launch. More importantly, the generation pipeline is designed to run continuously — as new commits appear in tracked repositories, new tasks are generated automatically.
+
+This is the critical shift: the benchmark isn't a fixed artifact. It's a pipeline that produces fresh tasks on a schedule. When models eventually train on 2025 data, SWE-rebench regenerates from 2026 commits.
+
+### 2. Multi-Language Coverage
+
+SWE-bench is Python-only. SWE-rebench covers 8 languages:
+
+```
+Language     | Tasks  | Repos Tracked | Avg. Repo Size
+-------------|--------|---------------|----------------
+Python       | 8,200  |      850      |    45K LoC
+TypeScript   | 5,400  |      620      |    38K LoC
+JavaScript   | 4,100  |      510      |    32K LoC
+Java         | 3,800  |      440      |    55K LoC
+Go           | 3,200  |      380      |    28K LoC
+Rust         | 2,900  |      290      |    22K LoC
+C++          | 2,400  |      260      |    68K LoC
+C#           | 2,000  |      210      |    42K LoC
+-------------|--------|---------------|----------------
+Total        | 32,000 |    3,560      |
+```
+
+Multi-language coverage matters because real codebases are polyglot. An agent that excels at Python but fails at TypeScript isn't useful for most production repositories. SWE-rebench forces models to demonstrate cross-language capability rather than optimizing for a single language.
+
+### 3. Contamination Tracking
+
+SWE-rebench publishes a contamination index: for each model-task pair, it estimates the probability that the task's source repository appeared in the model's training data. The estimation uses:
+
+- Known training data cutoff dates (from model cards)
+- Repository creation and modification timestamps
+- GitHub star counts and fork rates (proxies for crawl likelihood)
+- Explicit inclusion/exclusion lists when training data compositions are published
+
+This doesn't eliminate contamination — it quantifies it. Researchers can report scores stratified by contamination probability, giving a clearer picture of genuine capability versus trained familiarity.
+
+### 4. Mutation-Based Difficulty Tiers
+
+Raw bug-fix tasks have variable difficulty that makes aggregate scores hard to interpret. A model scoring 40% might be solving all the easy tasks and failing all the hard ones, or solving a diverse mix at moderate reliability.
+
+SWE-rebench introduces mutation testing as a difficulty calibration mechanism. Each task is associated with a mutation score — the percentage of test-suite mutations that the gold patch survives. High mutation scores indicate patches that are functionally precise (they break when almost any token changes). Low mutation scores indicate patches where many variants also pass the tests, suggesting the task has multiple valid solutions or weak test coverage.
+
+```python
+# Mutation score example
+# Gold patch: fix off-by-one error in pagination
+def get_page(items: list, page: int, size: int) -> list:
+    start = page * size  # Bug: should be (page - 1) * size
+    return items[start:start + size]
+
+# Mutation: change operator
+def get_page(items: list, page: int, size: int) -> list:
+    start = (page + 1) * size  # Mutation: - → +
+    return items[start:start + size]
+# This mutation FAILS the tests → contributes to high mutation score
+
+# Mutation: change constant
+def get_page(items: list, page: int, size: int) -> list:
+    start = (page - 2) * size  # Mutation: 1 → 2
+    return items[start:start + size]
+# This mutation FAILS the tests → contributes to high mutation score
+
+# High mutation score = precise fix, strong tests
+# Low mutation score = many patches pass, weak tests
+```
+
+Tasks are binned into three difficulty tiers based on mutation score, code complexity metrics (cyclomatic complexity, file count, dependency depth), and human time-to-solve estimates from contributor data.
+
+## What the Early Results Show
+
+The first SWE-rebench evaluation round included 8 agent systems. The results diverge from SWE-bench rankings in ways that confirm the contamination hypothesis.
+
+**Score compression.** The gap between the best and worst agents narrows from ~25 percentage points on SWE-bench Verified to ~12 points on SWE-rebench. The top models drop more than the bottom ones, consistent with the top models benefiting more from training data overlap.
+
+**Language-dependent ranking changes.** Several models that rank top-3 on SWE-bench (Python-only) drop to mid-pack on SWE-rebench when evaluated across all languages. The Python scores remain comparable; the multi-language aggregate pulls them down. This suggests optimization for Python-specific code patterns rather than general code reasoning.
+
+**Difficulty tier inversions.** One model that scores highest on SWE-bench's hardest tasks (which are often from well-known, heavily-starred repositories) drops to fourth on SWE-rebench's hard tier (which draws from less-famous repositories). This is the clearest signal of repository familiarity inflating scores.
+
+**Error pattern shifts.** On SWE-bench, the most common failure mode is "generates a plausible but incorrect patch." On SWE-rebench, the most common failure mode shifts to "fails to locate the relevant code" — suggesting that models on SWE-bench benefit from implicit knowledge of where bugs tend to occur in familiar codebases.
+
+## The Deeper Problem: What Are We Measuring?
+
+SWE-rebench solves the contamination problem. It doesn't solve the more fundamental question: what capability does a code benchmark actually measure?
+
+A SWE-bench/SWE-rebench task bundles multiple capabilities:
+
+1. **Repository comprehension**: Understanding the codebase structure, conventions, and architecture from limited context
+2. **Bug localization**: Identifying which files, functions, and lines are relevant to the reported issue
+3. **Patch generation**: Writing code that fixes the bug without introducing regressions
+4. **Test interpretation**: Understanding the test suite well enough to generate patches that pass
+5. **Tool use**: Navigating the codebase using search, file reading, and execution tools
+
+A single pass/fail score collapses all five into one number. An agent that excels at repository comprehension but writes buggy patches gets the same score (0) as an agent that can't even find the relevant files.
+
+SWE-rebench's difficulty tiers partially address this by ensuring tasks within a tier require similar capability profiles. But the field needs more granular capability decomposition — separate scores for localization accuracy, patch correctness conditioned on correct localization, and tool use efficiency.
+
+### Code Arena: The Adversarial Alternative
+
+PropelCode's Code Arena takes a different approach entirely. Instead of curated bug-fix tasks, it runs head-to-head agent matches on randomly sampled programming problems, using an Elo rating system adapted from chess.
+
+The advantages:
+- **Adversarial pairing** reduces gaming — you can't optimize for specific tasks when you don't know which task you'll face
+- **Elo ratings** provide relative rankings with confidence intervals rather than absolute percentages
+- **Live problems** from active repositories eliminate contamination by construction
+
+The disadvantages:
+- **Task distribution bias** — randomly sampled problems may not represent the difficulty distribution of real development work
+- **Elo instability** — small sample sizes per model produce wide confidence intervals in early rounds
+- **No capability decomposition** — same single-score problem as SWE-bench, just with better statistical properties
+
+The ideal evaluation combines SWE-rebench's structured task generation (controlled difficulty, multi-language, contamination tracking) with Code Arena's adversarial pairing (head-to-head comparison, Elo confidence intervals). Neither alone captures the full picture.
+
+## Implications for Agent Development
+
+If you're building a code agent, SWE-rebench changes several development decisions:
+
+### Don't optimize for SWE-bench
+
+SWE-bench scores are no longer credible as a development target. If your agent's architecture was tuned to maximize SWE-bench performance — specific retrieval strategies for popular repos, prompt templates optimized for Python Django/Flask patterns, evaluation loops calibrated to SWE-bench's test infrastructure — those optimizations may not transfer to uncontaminated tasks.
+
+### Test on unfamiliar repositories
+
+The contamination problem extends beyond benchmarks. If your agent's internal evaluation suite uses well-known open-source repositories, your development feedback loop has the same information asymmetry. Test on private repos, recently-created repos, or repos in languages your model is weaker on.
+
+### Invest in localization over generation
+
+SWE-rebench's error analysis shows that on uncontaminated tasks, the primary bottleneck shifts from "generating correct patches" to "finding the right code." This suggests that agent architectures should invest more in code search, semantic navigation, and repository comprehension — and less in patch generation quality, which is already adequate in most frontier models.
+
+### Multi-language from day one
+
+The performance drops in non-Python languages aren't inherent model limitations — they're artifacts of benchmark-driven development that ignored other languages. Building multi-language tool use and testing infrastructure early prevents the accumulation of Python-specific assumptions.
+
+## The Benchmark Lifecycle
+
+SWE-rebench establishes a pattern that other AI benchmarks should follow: **benchmarks should be regeneration pipelines, not fixed datasets.**
+
+The lifecycle:
+
+```
+1. Generate tasks from post-cutoff data
+2. Publish tasks + contamination index
+3. Models are evaluated
+4. Results published with contamination stratification
+5. Models train on new data (tasks become contaminated)
+6. Regenerate tasks from newer post-cutoff data
+7. Repeat
+```
+
+This is more expensive to maintain than a static benchmark. It requires continuous curation, ongoing compute for task validation, and infrastructure for contamination tracking. But static benchmarks have a half-life — they measure real capability for 12-18 months, then increasingly measure training data overlap. A regeneration pipeline stays valid indefinitely.
+
+The cost of maintaining a dynamic benchmark is lower than the cost of making development decisions based on contaminated scores. SWE-rebench makes that tradeoff explicit.
+
+## References
+
+- [SWE-rebench announcement — Nebius Engineering Blog](https://nebius.com/blog/posts/introducing-swe-rebench)
+- [SWE-rebench leaderboard](https://swe-rebench.com/)
+- [Code Arena vs SWE-bench comparison — PropelCode](https://www.propelcode.ai/blog/code-arena-vs-swe-bench-verified-2026)
+- [SWE-bench Verified — Original benchmark](https://www.swebench.com/)

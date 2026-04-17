@@ -1,0 +1,132 @@
+---
+title: "AutoResearch：一块 GPU 两天跑 700 个实验"
+description: "Karpathy 的自主研究循环用 630 行代码跑了 700 个 ML 实验。什么有效，什么会崩。"
+publishDate: "2026-04-15"
+tags: [autonomous-research, agents, karpathy, experiment-automation, agentic-engineering]
+category: engineering
+language: zh
+draft: false
+---
+
+2026 年 3 月，Andrej Karpathy 描述了一个叫 AutoResearch 的项目：一个 markdown 提示词文件，大约 630 行训练代码，一块 GPU，两天墙钟时间。系统自主运行了 700 个实验，发现了 20 个可度量改善训练的优化。运行期间无人干预。
+
+这个概念本身不新。自动化超参搜索、神经架构搜索、AutoML 已经存在了十年。AutoResearch 的不同之处不在于概念，而在于经济性：运行成本几乎为零，不需要专门的基础设施，产出可解释的结果，无需专职 ML 工程团队。
+
+核心变化是：当 coding agent 便宜到可以把实验当作一次性用品时，研究的工作方式就变了。
+
+## 架构：刻意极简
+
+AutoResearch 的设计极度简化，只有三个组件：
+
+**1. 提示词文档。** 一个 markdown 文件，描述研究问题、实验协议、以及什么算作"改进"。Karpathy 的版本针对训练效率 — 找到能减少每计算步损失的训练循环修改。
+
+**2. 训练框架。** ~630 行 Python，实现标准小模型训练循环。框架暴露固定的修改点：学习率调度、优化器配置、数据预处理、架构调整、正则化。每个实验修改一个或少量这些点。
+
+**3. Coding Agent。** 一个 LLM（本地或 API），读取提示词，提出修改，编写代码变更，运行实验，读取结果，决定下一步尝试什么。Agent 在循环中运行：提议 → 实现 → 训练 → 评估 → 记录 → 重复。
+
+```python
+# AutoResearch 循环伪代码
+class AutoResearchLoop:
+    def __init__(self, prompt_path: str, harness_path: str):
+        self.prompt = read_markdown(prompt_path)
+        self.harness = load_harness(harness_path)
+        self.results_log: list[ExperimentResult] = []
+
+    def run(self, n_experiments: int = 700):
+        for i in range(n_experiments):
+            # Agent 读取提示词 + 历史结果
+            context = self.prompt + summarize(self.results_log[-20:])
+
+            # Agent 提出并实现修改
+            modification = agent.propose(context)
+            patched = agent.implement(self.harness, modification)
+
+            # 运行实验
+            result = patched.train_and_evaluate()
+            self.results_log.append(result)
+
+            # 保留改进
+            if result.improvement > threshold:
+                self.harness = patched
+```
+
+关键设计选择：agent 能看到自己的历史。每次迭代，agent 接收最近实验的摘要。这创造了一个反馈循环 — agent 可以在成功修改的基础上构建，避免重复失败。
+
+## 为什么 700 个实验只花 50 美元
+
+经济性才是真正的故事。
+
+| 方式 | 实验数 | 时长 | 成本 | 人力投入 |
+|------|--------|------|------|----------|
+| 手动（研究生） | 20-50 | 2 周 | ~$200 | 40+ 小时 |
+| Grid search (W&B) | 100-200 | 3 天 | ~$500 | 8 小时（配置） |
+| AutoResearch | 700 | 2 天 | ~$50 | 0.5 小时（写提示词） |
+
+成本优势来自三点：(1) 小模型 = 快速实验，(2) 本地 agent = 无 API 成本，(3) 无人力迭代开销。
+
+## 20 个优化：Agent 发现了什么
+
+700 个实验中，20 个产生了改进。2.9% 命中率。
+
+**重新发现（预期内）。** Agent 独立发现了余弦退火 with warm restarts 优于线性衰减，特定阈值的梯度裁剪可以防止 loss 尖刺。不新颖，但验证了搜索过程有效。
+
+**组合发现（有意思）。** 若干改进来自非标准的技术组合。比如 batch size 调度与学习率预热之间的特定交互，比单独使用任一技术提升 3%。这类组合洞察对人类来说难以发现，因为搜索空间是指数级的。
+
+**意外发现（有价值）。** 少数修改产生了现有理论难以解释的改善。这些才是整个装置的价值所在 — 人类研究者可能要花几个月才能偶然发现。
+
+## AutoResearch 在哪里失效
+
+诚实评估比成功故事更重要。AutoResearch 在一个狭窄区间内有效。
+
+**需要可验证信号。** 整个循环依赖标量指标（训练 loss、验证精度）。没有清晰指标的研究问题 — "这个架构泛化更好吗？"或"这个表征更可解释吗？" — 无法用这种方式搜索。
+
+**只做局部搜索。** Agent 对现有框架做增量修改。它不能提出根本不同的架构，不能重新思考问题表述，不能决定整个研究方向是错的。AutoResearch 在范式内优化，不创造新范式。
+
+**没有新颖性检测。** Agent 无法判断一个发现是真正新的还是已知技术。它不能检索文献，不能评估相对于先前工作的新颖性。人类研究者仍然需要评估输出。
+
+**上下文窗口限制了积累。** Agent 只能看到最近 ~20 个实验。100 多个实验后，agent 可能重新尝试已经做过的想法。这是当前 LLM 架构在累积研究中的根本限制。
+
+## "Claws" 层：Agent 之上的编排
+
+Karpathy 还描述了一个叫 "Claws" 的概念 — 坐在 LLM Agent 之上的编排层，处理调度、持久化和跨 Agent 协调。
+
+```
+生产级 AutoResearch 系统架构：
+
+                    ┌──────────────┐
+                    │   Claws       │  编排、持久化、
+                    │   Layer       │  调度、停止准则
+                    └──────┬───────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+        ┌─────┴─────┐┌────┴────┐┌─────┴─────┐
+        │  Agent A   ││ Agent B ││  Agent C   │
+        │ (LR搜索)  ││(架构)   ││(数据增强)  │
+        └─────┬─────┘└────┬────┘└─────┬─────┘
+              │            │            │
+        ┌─────┴────────────┴────────────┴─────┐
+        │         Training Harness             │
+        │      (共享代码库, GPU 池)              │
+        └──────────────────────────────────────┘
+```
+
+这直接映射到当前生产 Agent 系统中的多 Agent 编排模式：MCP 处理工具集成，A2A 处理 Agent 间通信。
+
+## 对研究实践的意义
+
+AutoResearch 不替代研究者。它替代的是研究者做的一种特定活动：在现有配置上尝试变体并记录哪些有效的枯燥增量工作。
+
+**1. 基线优化自动化。** 正式研究前，先跑 500 个实验自动建立强基线。消除论文被审稿人用简单超参调整击败的常见失败模式。
+
+**2. 负面结果积累。** 700 个实验中 680 个没有帮助。这是传统上不被记录的有价值信息。
+
+**3. 研究瓶颈转移。** 如果实验执行变得廉价和自动，瓶颈就转移到实验设计（问什么问题）、新颖性评估（这个发现是新的吗？）、和叙事构建（如何解释结果）。这些是 LLM 目前无法复制的深层人类能力。
+
+最小可行的自主研究循环今天已经存在。它便宜，对约束优化问题有效，随模型改进会变得更好。更难的问题 — 自主系统能否进行开放式研究 — 仍然完全开放。
+
+## 参考文献
+
+- Karpathy, A. "AutoResearch: Autonomous ML Experimentation." 2026 年 3 月。博客文章和 GitHub gist。
+- Karpathy, A. "On Code Agents, AutoResearch, and the Self-Improvement Loopy Era of AI." 2026 年 3 月录制演讲。
+- Lu, C. et al. "The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery." arXiv:2408.06292, 2024.

@@ -1,0 +1,87 @@
+---
+title: "OpenAI Agents SDK 更新：harness 才是抽象层"
+description: "OpenAI 4 月中旬的 Agents SDK 更新，把 framework / SDK / managed-API 三分变成了一个 harness，再用 Manifest 让 sandbox 互相可换。"
+publishDate: "2026-04-17"
+tags: [openai, agents-sdk, agent-harness, manifest, sandbox, mcp, skills, agent-engineering]
+category: engineering
+language: zh
+draft: false
+---
+
+2026 年 4 月 15、16 日，OpenAI 给 Agents SDK 推了一次更新，行业新闻把它定性成"Codex 风格的 harness 装进了 SDK"。这个描述没错但低估了。这次发布同时做了三件结构性的事：把原本分开的原语（MCP 工具、Skills、AGENTS.md、shell、apply-patch）折叠进一个 SDK 自带的 harness；引入一份 **Manifest** 规范，让 Agent 的 workspace 和具体 sandbox provider 解耦；并在 harness 底下放了一个外部化的状态机，让丢一个 sandbox 容器不再等于丢一次 run。
+
+合起来看，这些动作把 Agent 工具行业一直假装是三个独立类别的东西——"框架"、"SDK"、"托管 Agent API"——折叠成了一个东西，叫 *harness*。要问的问题不再是"你选哪个框架"，而是**你的 harness 是什么形状，里面哪几块你已经外包给了厂商**。
+
+## harness 现在到底装了什么
+
+这次发布之前，OpenAI Agents SDK 是模型上面一层挺薄的胶水：你写工具定义，SDK 把它们粘到模型调用上，任何稍微复杂的行为——文件编辑、持久 workspace、自定义指令、工具的渐进披露——要么你自己实现，要么从更高层的框架里 import。4 月这次发布把这些原语都拉进了 SDK 自己：
+
+- **MCP 工具** 是一等公民。harness 原生说 MCP，意味着写给 Claude Code、Codex CLI 或任何 MCP host 的工具，在 SDK 里不需要 adapter 就能用。
+- **Skills** 作为渐进披露机制存在。一个 skill 是一个带 manifest 的目录，harness 按需加载，只在模型需要的时候暴露相关工具和指令。Anthropic 引入的这个模式现在跨厂商了。
+- **AGENTS.md** 是 harness 从 workspace 根目录读取的自定义指令文件。形状故意和 Codex CLI、Claude Code 用的一样。
+- **shell 工具 + apply-patch** 内置。harness 自带一个命令面受限的 shell，和一个用 unified diff 在 workspace 文件上做 patch 应用的原语。
+
+这四个加起来，你得到一个结构上和 Claude Code、Codex CLI、Cursor 的 agent 模式相同的东西。厂商专属面在收缩。十八个月前是护城河的"我们有 skills，他们没有"，现在是入门门槛。
+
+## Manifest 才是真正新的部分
+
+这次发布里我认为最经得起时间考验的标题，是 **Manifest** 抽象。在新 SDK 里，Agent 的 workspace 由一份 Manifest 描述——一个小型声明式规范，列出 Agent 需要的文件、依赖、环境、资源约束。harness 内置七个 sandbox provider 的适配器：Blaxel、Cloudflare、Daytona、E2B、Modal、Runloop、Vercel。同一份 Manifest，七种不同的运行时目标。
+
+这件事重要的原因不是为了可移植性本身。而是 Manifest **正式化**了每一个生产 Agent 栈一直在隐式而粗糙地做的事——把**控制层**（Agent 决定做什么）和**计算层**（工作物理上在哪里发生）分开。Manifest 之前，"换一个 sandbox provider"意味着重写把 Agent 的计划桥接到 provider API 的那段集成代码。Manifest 之后，换 provider 意味着改一行 config，因为集成代码住在 SDK 里。
+
+还有一个新闻报道大多漏掉的二阶效应。当 Manifest 充当契约时，**凭据不再需要进入模型可执行的环境**。harness 可以把 secrets 持有在控制面，铸造作用域受限的 token，并在 provision sandbox 时注入，全程不把它们放在模型读得到的位置。这是一项非平凡的安全属性。Prompt-injection-as-credential-exfiltration 是生产 Agent 系统里被持续利用最多的攻击面之一，而它的架构性防御——一开始就把 secrets 放在模型够不到的地方——在上周之前需要为每个 provider 写自定义 plumbing。
+
+Manifest 不是完美防御。一个需要调外部 API 的 Agent，仍然在 sandbox 边界需要**某种**凭据形式，如果模型能读环境变量，它就能尝试外泄。但新的形态把信任边界往下推一层成为可能：harness 为某次具体的出站调用铸造一个短寿命 token，sandbox 转发，模型从头到尾看不到长寿命 secret。是 defense in depth，不是 defense in name。
+
+## 持久性的故事
+
+第三项结构性变化是 harness 现在有了外部化的状态。OpenAI 对引擎细节相对低调——业内报道**推测**是 TemporalIO 或 TemporalIO 形状的引擎，配 snapshot-and-rehydrate 语义——但用户可见的行为才是关键：如果 sandbox 容器崩了、被驱逐或撞配额，run 会在新容器里从最近一个 checkpoint 恢复。Agent 已经做出的任何决策都不会丢。
+
+这值得和本月早些时候落地的 Cloudflare Fibers 模式对比——Fibers 是 Cloudflare 给那个"Agent 即 actor"运行时起的名字，把每个非确定性事件写进 journal，使 Agent 能被确定性地回放。Fibers 把每个非确定性事件都写进 journal，让 Agent 能从 journal 里被确定性地回放；有状态对象住在 Cloudflare 的运行时里。OpenAI 的 harness 在做同样的概念性工作，但反过来：状态住在控制面（SDK 的 durable orchestrator），sandbox 是可丢弃的那一侧，契约是"任何实现 Manifest 的 sandbox 都能 host 一个被恢复的 Agent"。
+
+Fibers 路线优化的是某个特定平台上的低延迟本地持久化。Manifest+harness 路线优化的是可移植性——你能把一个 paused 的 Agent 从 Modal 搬到 E2B 让它在那边继续。两个都是真的持久性故事。它们不是同一个形状，选哪个取决于你的瓶颈是单平台性能还是多平台 optionality。
+
+## 这对框架市场意味着什么
+
+如果你把 Agent 框架空间读作"Microsoft Agent Framework vs CrewAI vs LangGraph vs Anthropic Managed Agents vs OpenAI SDK"，那 4 月的更新是 OpenAI 的一次强势出招。但这个 framing 是错的。正确的 framing 是：**正在收敛的是 harness 层，框架始终只是它周围的一层临时脚手架**。
+
+三条证据：
+
+1. **五种编排模式**——sequential、concurrent、handoff、group chat、hierarchical——现在每个主要框架都用不同名字实现了。模式上的框架战争结束了。框架在比 DX，不在比 enable 了什么。
+2. **MCP** 已经被 Anthropic、OpenAI、Microsoft、Google 和长尾采用。不管框架是什么，Agent 调的工具都是 MCP 工具。
+3. **AGENTS.md 和 Skills** 原本是 Anthropic 形状的模式；OpenAI 现在两样都 ship。Anthropic 最近的 Managed Agents 工作也在朝 workspace 可移植性的方向走，只是确切规范还在变动。
+
+收敛的是 harness。商品化的是框架。一个 12 个月时间窗的合理押注是：可见的开发者表面——`from langgraph import StateGraph`、`from crewai import Crew`、`from agents_sdk import Agent`——会收敛成一层薄包装，底下的契约是 harness 的形状：Manifest + MCP + Skills + AGENTS.md + durable orchestrator。
+
+## 这对部署形态意味着什么
+
+如果 harness 是抽象层，那生产部署形态也跟着变。今天大多数团队选一个框架，锁死它的 sandbox 约定，写框架专属语言的集成代码。Manifest 中心的世界看起来更像 Kubernetes 商品化容器编排时的样子：部署 artifact 是 spec，runtime 可换，运维工具——可观测性、伸缩、密钥轮换——挪到一个**按设计**就 provider 无关的层。
+
+由此推出两件事。
+
+第一，七个 provider 的清单（Blaxel、Cloudflare、Daytona、E2B、Modal、Runloop、Vercel）是这个清单的**第一**版。有意思的问题是**第五**版长什么样。我的押注是 provider 会更少，不是更多。一旦 Manifest 规范被广泛采用，sandbox provider 在冷启动时间、snapshot-restore 延迟、网络出口、按秒计价上竞争。这正是把 Kubernetes 托管服务市场拍平的同一种竞争形态。两到三个 provider 会在 2027 年底前占走大部分体量。
+
+第二，**Manifest 注册表**会有空间——一个公共目录，收录针对常见 Agent 任务、经过验证的 sandbox 配置。今天每个团队都在为自己的具体用例重建 workspace 形状（哪个 Python 版本、哪些 apt 包、哪些语言服务器、哪些种子数据）。Manifest 给了你一个**共享单位**。第一个 ship 高质量、签名 Manifest 注册表的团队，将为 Agent workspace 做 Docker Hub 为容器镜像做过的事。
+
+## 我会真的拿它来 build 什么
+
+把这次发布作为一个工作中的 Agent 工程师来读，三件具体的事变得明显更容易：
+
+1. **跨 sandbox 的 A/B 测试**对 Agent runtime。同一份 Manifest，两个 provider，比冷启动延迟、p99 工具调用延迟、snapshot-restore 时间。原本一周的活，现在几个小时能跑完。
+2. **自带 sandbox** 给敏感数据。需要 on-prem sandbox 的政府、医疗、金融团队，可以实现一次 Manifest 契约，然后继续用 harness。harness 不在乎 sandbox 在 Cloudflare 的 edge 还是在你 VPN 后面。
+3. **抗故障的长跑**。要跑几个小时的规划 Agent，现在能在不写定制 checkpoint 的前提下扛住基础设施抖动。做一个跨日 Agent 的成本实质性下降。
+
+代价是你现在被绑在 OpenAI 的 harness 上，而不是你选的框架上。这是一个真实的耦合，标准的"vendor lock-in"批评适用。诚实的反驳是——替代品（Microsoft Agent Framework、Anthropic Managed Agents、Google Vertex AI Agents）都在向同一种 harness 形状收敛，绑定看起来比实际严重，因为 Manifest 本身是一份**可移植 artifact**。如果 Manifest 规范保持开放，换 harness 就成了一个有边界的工程项目，而不是一次重写。
+
+## 这一切底下的押注
+
+每一个 harness 收敛故事底下都有一个押注。Anthropic 的押注是**模型**才是护城河，harness 应该便宜并标准化。OpenAI 的 4 月发布是同一个押注，喊得更大声。Microsoft 在 Agent Framework 合并里也在做同样的押注。还在把框架当作差异化点的，是异议派。
+
+如果押注成立，未来 12 个月的 Agent 工具世界是**无聊的**——不是没事发生，而是有意思的事都发生在模型层和 workspace 层，不在开发者表面。有意思的研究问题是：什么是**好的** Manifest？怎么认证一个 sandbox provider 合规？harness 的 durable orchestrator 和 sandbox 生命周期之间的正确契约是什么？这些问题听起来像基础设施，因为它们就是。这才是重点。
+
+## 参考资料
+
+- [*OpenAI updates its Agents SDK to help enterprises build safer, more capable agents.*](https://techcrunch.com/2026/04/15/openai-updates-its-agents-sdk-to-help-enterprises-build-safer-more-capable-agents/) TechCrunch. 2026-04-15.
+- [*OpenAI Agents SDK harness and sandbox update.*](https://www.helpnetsecurity.com/2026/04/16/openai-agents-sdk-harness-and-sandbox-update/) Help Net Security. 2026-04-16.
+- Anthropic. *Managed Agents API*（对比 workspace 可移植性表面如何 ship）。
+- Cloudflare. *Durable Agents (Fibers).* 2026-04——用于 Fibers 持久性的对比。

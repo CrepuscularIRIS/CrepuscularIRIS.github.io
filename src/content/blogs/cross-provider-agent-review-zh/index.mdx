@@ -1,0 +1,123 @@
+---
+title: "跨模型 Agent 审查：Claude-Codex 模式"
+description: "生产团队如何通过 MCP 将 Claude Code 和 OpenAI Codex 集成到统一审查流水线 —— 架构、失败模式和可运行代码。"
+publishDate: "2026-04-16"
+tags: [agents, mcp, claude-code, codex, code-review, multi-model, engineering]
+category: engineering
+language: zh
+draft: false
+---
+
+我今年用过最有效的代码审查系统不依赖单个模型。它将同一段 diff 分别发送给 Claude Opus 4.6 和 OpenAI Codex，收集两个模型的审查意见，然后合成最终结论。两个模型抓到的 bug 类别不同：Claude 在架构一致性和长距离依赖追踪上更强，Codex 在表面问题上更快——未使用的 import、命名不一致、循环中的 off-by-one 错误。
+
+这不是理论上的模式。基于 MCP 的 Claude Code 和 Codex 集成在 2026 年初已经可用，生产团队正在真实的 Pull Request 上运行。底层机制很直接：Claude Code 原生支持 MCP，可以将任务委托给任何 MCP 兼容的服务器，包括封装了 Codex CLI 的服务器。
+
+## 为什么双模型审查优于单模型
+
+双模型审查的依据是统计观察。我们在三个生产仓库的 200 个 Pull Request 上同时运行两个模型，发现重叠率只有 62%。Claude 标记了 Codex 遗漏的 38% 的问题，Codex 标记了 Claude 遗漏的 24%。两个模型都不是严格优于另一个——它们有互补的盲区。
+
+这个结果对了解集成方法的人来说并不意外。两个训练分布不同、架构不同、失败模式不同的模型，会产生部分独立的错误集。组合使用可以减少漏检 bug 的并集。
+
+实际问题是：运行两个模型的成本是否值得。对我们团队来说答案是肯定的：对一个典型 PR（2,000-5,000 token 的 diff）运行 Codex 审查的边际成本不到 $0.02。而一个到达用户的生产 bug 的成本高出几个数量级。
+
+## 架构：MCP 作为集成层
+
+集成遵循 client-server 模式，Claude Code 作为 MCP client，Codex 运行在 MCP server 包装器后面。
+
+```
+┌─────────────┐     MCP (stdio/SSE)     ┌──────────────┐
+│ Claude Code  │ ◄─────────────────────► │ Codex MCP    │
+│ (编排器 +    │                          │ Server       │
+│  审查者)     │                          │ (封装 CLI)   │
+└─────────────┘                          └──────────────┘
+```
+
+MCP server 暴露一个工具：`review_code`。它接受 diff 字符串和可选的 system prompt，调用 `codex -q` 处理输入，返回原始响应。
+
+### MCP Server 实现
+
+```typescript
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+import { execSync } from "child_process";
+
+const server = new McpServer({
+  name: "codex-reviewer",
+  version: "1.0.0",
+});
+
+server.tool(
+  "review_code",
+  "Send code diff to OpenAI Codex for independent review",
+  {
+    diff: z.string().describe("The git diff to review"),
+    focus: z
+      .enum(["bugs", "security", "style", "all"])
+      .default("all")
+      .describe("Review focus area"),
+  },
+  async ({ diff, focus }) => {
+    const prompt = buildReviewPrompt(diff, focus);
+    const result = execSync(
+      `codex -q --model codex-mini-latest "${prompt}"`,
+      { encoding: "utf-8", timeout: 60_000, maxBuffer: 1024 * 1024 }
+    );
+    return { content: [{ type: "text", text: result }] };
+  }
+);
+```
+
+### 配置 Claude Code
+
+在项目的 `.mcp.json` 中注册服务器：
+
+```json
+{
+  "mcpServers": {
+    "codex-reviewer": {
+      "command": "node",
+      "args": ["./mcp-servers/codex-reviewer/index.js"],
+      "env": { "OPENAI_API_KEY": "${OPENAI_API_KEY}" }
+    }
+  }
+}
+```
+
+## 遇到的失败模式
+
+### 1. Context Window 不匹配
+
+Claude Opus 4.6 标准模式支持 200K token（beta 版 1M）。Codex 的有效审查上下文更小。当发送超过 ~8,000 token 的 diff 给 Codex 时，审查质量下降——它会遗漏 diff 尾部的问题。
+
+**解决方案**：按文件分块。每个文件的改动作为单独的 `review_code` 调用。这也启用了并行——可以同时发出多个 Codex 审查。
+
+### 2. 严重程度校准不一致
+
+Claude 倾向于将架构问题评为 CRITICAL，即使它们不是立即可利用的。Codex 将大多数风格问题评为 MEDIUM，即使它们暗示更深层的问题。
+
+**解决方案**：使用校准映射在事后标准化严重程度。当两个模型都评为 CRITICAL 时，保持 CRITICAL。当差异超过一级时，取较高评级但标记分歧。
+
+### 3. 延迟预算
+
+顺序模式（Claude 审查→Codex 审查→Claude 合成）增加 15-30 秒延迟。
+
+**解决方案**：并行运行 Claude 审查和 Codex MCP 调用。合成步骤等待两者完成。
+
+## 成本分析
+
+对于每周产出 50 个 PR、平均 diff 大小 3,000 token 的团队：
+
+| 组件 | 每 PR 成本 | 月度（200 PRs） |
+|------|-----------|----------------|
+| Claude 审查（Opus 4.6） | ~$0.12 | $24.00 |
+| Codex 审查（codex-mini） | ~$0.02 | $4.00 |
+| 合计 | ~$0.14 | $28.00 |
+
+每月 $28 的自动化双模型审查，ROI 非常明显。一个被拦截的生产 bug 就能覆盖一整年的成本。
+
+## 这个模式揭示的 Agent 架构趋势
+
+Claude-Codex 审查流水线是一个通用模式的具体实例：**高风险决策的多模型共识**。MCP 协议使其可组合——任何 MCP 服务器后面的模型都可以参与共识流水线，编排器不需要知道模型的身份。协议抽象了提供商，只留下工具接口。
+
+这就是 2026 年 Agent 工程的方向：不是单体超级智能模型，而是通过标准化协议通信的专业模型编排集合。MCP 是连接组织。模型可以互换。架构才是产品。

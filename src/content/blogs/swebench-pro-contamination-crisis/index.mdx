@@ -1,0 +1,164 @@
+---
+title: "SWE-bench Is Contaminated. Here's What the Data Shows."
+description: "OpenAI confirmed frontier models can reproduce SWE-bench gold patches verbatim. SWE-bench Pro's private split exposes the real performance gap."
+publishDate: "2026-04-15"
+tags: [benchmarks, SWE-bench, evaluation, ML-evaluation, agent-systems, coding-agents, contamination]
+category: research
+language: en
+draft: false
+---
+
+In April 2026, OpenAI's internal audit confirmed what several researchers had suspected: frontier models can reproduce verbatim gold patches for a subset of SWE-bench Verified tasks. The benchmark that the entire autonomous software engineering field has been using to measure progress since 2024 is contaminated.
+
+This matters for a specific reason. When Claude Opus 4.5 reports 80.9% on SWE-bench Verified, or GPT-5 reports a similar number, and those scores are used to argue that "AI can now do software engineering at a senior developer level" — that argument rests on the validity of the benchmark. If models have partially memorized the benchmark, the scores don't measure what people think they measure.
+
+The more important number comes from SWE-bench Pro, the contamination-resistant successor launched by Scale AI. On the private, held-out split of SWE-bench Pro: Claude Opus 4.1 drops from 22.7% to 17.8%. GPT-5 drops from 23.1% to 14.9%. The contamination effect — the gap between memorized benchmark performance and genuine generalization — is 4-8 percentage points on the harder Pro benchmark, extrapolating to substantially more on Verified.
+
+## What Benchmark Contamination Actually Means
+
+Contamination in this context doesn't mean models were directly trained on SWE-bench test cases. It's subtler. SWE-bench Verified draws from public GitHub repositories. The gold patches — the correct fixes for each benchmark task — were committed to those repositories before SWE-bench was published. When those repositories were later indexed and used in pretraining, the gold patches were included in the training data.
+
+The model wasn't trained to "answer SWE-bench questions." It learned, from exposure to the codebase history, which commits followed which issues — the same pattern that SWE-bench measures. At inference time, the model can partially match benchmark tasks to patterns seen during pretraining.
+
+This is not the same as complete memorization. The model isn't retrieving patches verbatim for every task. But it's also not purely generalizing from first principles. The true performance number sits somewhere between the contaminated benchmark score and zero — and the SWE-bench Pro private split is our best current estimate of where.
+
+```python
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class BenchmarkScore:
+    model: str
+    benchmark: str
+    public_score: float    # Reported on leaderboard
+    private_score: float   # On held-out, unseen test cases
+    contamination_gap: float  # public_score - private_score
+    
+    @property
+    def reliability(self) -> str:
+        """How much to trust this score as generalization evidence."""
+        gap = self.contamination_gap
+        if gap < 0.03:
+            return "HIGH — small gap, benchmark is largely clean"
+        elif gap < 0.08:
+            return "MODERATE — meaningful contamination, use with caution"
+        else:
+            return "LOW — substantial contamination, scores are misleading"
+
+# SWE-bench Pro results (April 2026 data)
+scores = [
+    BenchmarkScore("Claude Opus 4.1", "SWE-bench Pro", 0.227, 0.178, 0.049),
+    BenchmarkScore("GPT-5", "SWE-bench Pro", 0.231, 0.149, 0.082),
+    BenchmarkScore("Gemini 3.1 Pro", "SWE-bench Pro", 0.219, 0.161, 0.058),
+]
+
+for s in scores:
+    print(f"{s.model}: {s.public_score:.1%} public → {s.private_score:.1%} private "
+          f"(gap: {s.contamination_gap:.1%}, reliability: {s.reliability})")
+```
+
+The GPT-5 gap of 8.2 percentage points on the harder Pro benchmark is the most striking number. If we assume a proportional contamination effect on the easier Verified benchmark (where absolute scores are higher), the actual uncontaminated performance on SWE-bench Verified is meaningfully below the reported 80-90% range.
+
+## The SWE-bench Pro Design: What Makes It Harder to Contaminate
+
+Scale AI's SWE-bench Pro addresses contamination through four structural changes:
+
+**Private held-out test set.** Half the benchmark is never published. Public leaderboard scores are computed on the public half. Private half scores are evaluated by Scale AI independently. Models cannot be trained on test cases they never see.
+
+**Active repository sampling.** Tasks are drawn from repositories that are actively maintained and have commit activity after a cutoff date. Repository selection excludes the highest-traffic repositories that are most likely to be overrepresented in pretraining data.
+
+**Multilingual coverage.** SWE-bench Verified is heavily Python-weighted (Django, scikit-learn, matplotlib, numpy). SWE-bench Pro covers 123 programming languages, including many low-resource languages where pretraining coverage is sparse. Models that score well purely through memorized Python patterns perform worse when the distribution shifts.
+
+**Issue naturalness.** Tasks in SWE-bench Verified were filtered for properties that make them objectively verifiable — clear description, test coverage. SWE-bench Pro includes issues that require disambiguation, have partial test coverage, and match the actual distribution of issues filed on active repositories.
+
+The result is a benchmark where contamination is harder to exploit, held-out evaluation prevents direct optimization toward the public set, and the multilingual distribution prevents language-specific memorization from inflating scores.
+
+## Why the Performance Gap Is Structurally Predictable
+
+The contamination effect isn't unique to SWE-bench. It's a consequence of how large-scale pretraining works combined with how benchmarks are constructed.
+
+Every benchmark that tests performance on tasks drawn from public sources faces the same pressure. The test set is fixed. Training data expands over time and increasingly overlaps with the test distribution. Model developers have financial incentives to achieve high benchmark scores. Even without deliberate overfitting, the natural evolution of pretraining data accumulation drives benchmark scores upward in ways that outpace genuine capability improvements.
+
+This is a specific instance of Goodhart's Law applied to ML benchmarks: when a measure becomes a target, it ceases to be a good measure.
+
+```python
+def goodhart_degradation(
+    benchmark_age_months: int,
+    training_data_growth_rate: float = 0.15,  # 15% monthly training data growth
+    contamination_sensitivity: float = 0.8,    # benchmark's susceptibility to contamination
+) -> float:
+    """
+    Estimate the fraction of reported performance gains that may reflect
+    contamination rather than genuine capability improvement.
+
+    Simple proportional model: contamination fraction grows with cumulative
+    training data expansion (rate × age), scaled by benchmark sensitivity,
+    capped at the sensitivity ceiling.
+
+    At 15%/month × 18 months = 2.7 growth factor, with sensitivity 0.8:
+    → min(0.8 × 2.7 / 10, 0.8) ≈ 0.22  (22%)
+    """
+    cumulative_growth = training_data_growth_rate * benchmark_age_months
+    # Scale factor of 10 normalizes the growth factor to a [0, sensitivity] range
+    # over realistic benchmark lifetimes (12–36 months)
+    return min(contamination_sensitivity * cumulative_growth / 10.0, contamination_sensitivity)
+
+
+# SWE-bench Verified launched in late 2024
+# By April 2026, it's been public for ~18 months
+contamination_fraction = goodhart_degradation(benchmark_age_months=18)
+print(f"Estimated contamination fraction: {contamination_fraction:.1%}")
+# → 21.6%: rough estimate that 20-25% of reported gains may reflect contamination
+```
+
+The right response isn't to stop using benchmarks. It's to build benchmarks that are structurally resistant to this dynamic:
+
+- **Private evaluation**: Hold out test cases. Never publish them. Evaluate independently.
+- **Living benchmarks**: Regularly replace test cases with new ones drawn from recent sources.
+- **Distribution shift testing**: Evaluate on different distributions than the training distribution. If performance drops significantly, the original scores were inflated.
+- **Behavioral evaluation**: Measure what agents *do* rather than what they output — did the generated patch actually fix the reported behavior across a distribution of inputs, not just pass the specific test?
+
+## What 17-22% on SWE-bench Pro Actually Implies
+
+The performance numbers on SWE-bench Pro's harder tasks (17-22% on the private split) put the capability in context. These are frontier models, on a well-studied task type (repository-level bug fixing), with access to the entire repository, unlimited tool use, and multiple retry attempts.
+
+17-22% means roughly 1 in 5 to 1 in 6 tasks are solved correctly. The remaining 80% either produce incorrect patches or produce patches that pass some tests but miss the actual issue.
+
+On SWE-bench Verified (which is easier, more Python-heavy, and now contaminated), the reported 80-90% scores are overestimates. A more defensible estimate, accounting for contamination on the Pro benchmark, suggests actual generalization performance on Verified-difficulty tasks is closer to 40-60% for the best current systems — consistent with the scaffolded-agent results from systems that report honest evaluation methodology.
+
+This doesn't mean the capability isn't useful. 40-60% on well-specified, test-verifiable, single-repository bugs is genuinely valuable for developer tools. But it's a different claim than "AI can now perform software engineering at senior developer level" — which requires performance on the actual distribution of engineering tasks, not the curated, verifiable, well-specified subset.
+
+## The SWE-rebench Response: Live Mutation Testing
+
+A separate response to the contamination problem comes from SWE-rebench, a leaderboard that applies "benchmark mutation" — transforming the clean SWE-bench issues into noisier, underspecified queries that better match real-world bug reports.
+
+The mutation process introduces:
+- Ambiguous pronoun references ("it fails" instead of naming the specific function)
+- Missing context that's implied but not stated
+- Multi-issue descriptions where the relevant bug is embedded in unrelated content
+- Colloquial language that matches GitHub issue style rather than benchmark-cleaned descriptions
+
+Performance on mutated benchmarks drops further than the SWE-bench Pro private split suggests. In some configurations, reported performance overestimation exceeds 50%: a system reporting 60% on Verified might achieve only 25-30% on the mutated versions of the same tasks.
+
+The implication: benchmarks that test on cleaned, well-specified task descriptions systematically overestimate performance on the actual distribution of engineering tasks, independent of contamination effects. Contamination and specification cleaning are two separate sources of benchmark inflation, and SWE-bench Verified suffers from both.
+
+## Implications for Research and Practice
+
+**For academic ML researchers:** The contamination finding means that papers reporting state-of-the-art SWE-bench Verified performance from 2024-2026 need to be re-evaluated. Performance improvements during this period are a mixture of genuine capability gains and benchmark saturation. Distinguishing the two requires evaluation on the SWE-bench Pro private split or equivalent held-out evaluation. Reviewers should request evidence of performance on contamination-resistant benchmarks, not just leaderboard scores.
+
+**For practitioners deploying coding agents:** The private-split numbers (17-22% on Pro difficulty tasks) are more realistic priors for production agent performance than the reported 80-90% on Verified. Build deployment expectations around the conservative estimate. Agent architectures that include verification loops, human review gates, and regression test suites are not belt-and-suspenders conservatism — they're the appropriate response to a 78-83% failure rate on hard tasks.
+
+**For teams building agent evaluation infrastructure:** The structural requirements for trustworthy coding benchmarks are now clear: private held-out evaluation, active repository sampling with time-cutoff, multilingual coverage, and behavioral verification rather than test-suite-as-oracle. Evaluation infrastructure that doesn't meet these criteria should be treated as a development signal, not a production readiness gate.
+
+## The Part That Matters Most
+
+The contamination finding doesn't undermine the value of autonomous coding agents. The scaffolding-based systems that use careful context selection, verification loops, and fault localization genuinely solve a large fraction of well-specified, test-verifiable bugs. That's real capability. It's useful.
+
+What it undermines is the specific inference that "80-90% on SWE-bench Verified" proves the capability extends to the general software engineering distribution. That inference is wrong. The benchmark was measuring a combination of genuine capability and data overlap, and only the private-split evaluation separates them.
+
+The more useful frame: take the private-split numbers as the honest capability estimate, design agent systems for a world where failure rates are high and verification is mandatory, and use benchmark progress as a directional signal rather than an absolute capability claim.
+
+The benchmark is broken. The capability is real but different in shape from what the numbers suggested. Both of these things are true.
+
+---
+
+*Sources: [SWE-bench Pro — OpenReview](https://openreview.net/forum?id=9R2iUHhVfr); [SWE-rebench Leaderboard](https://swe-rebench.com/); [Epoch AI SWE-bench Verified analysis](https://epoch.ai/benchmarks/swe-bench-verified); OpenAI contamination audit (April 2026); Scale AI SWE-bench Pro methodology documentation.*

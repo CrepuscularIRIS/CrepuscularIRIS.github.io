@@ -1,0 +1,266 @@
+---
+title: "Beatless: A Personal AI Task Orchestration System"
+description: "A budgeted control plane with multi-agent routing, mailbox communication, and evidence-preserving context compression."
+publishDate: "2026-04-15"
+tags: [beatless, agent-system, task-queue, architecture, workflow, control-plane, mailbox-protocol, context-management]
+category: engineering
+language: en
+draft: false
+---
+
+Every AI assistant conversation has the same structural flaw: the session ends, and the state disappears. You can pick up where you left off by summarizing what happened, but summaries lose nuance — the decision that took 20 minutes of deliberation becomes a one-line bullet point, stripped of the reasoning that produced it and the alternatives that were rejected.
+
+For tasks that span multiple days, require specialized capabilities from different models, or need reliable error recovery, the single-session paradigm breaks. Beatless is a personal task orchestration system designed to fix this. It treats tasks — not conversations — as the fundamental unit of work, routes them to specialized agents, and manages the full lifecycle from creation through execution to independent review.
+
+Version 4, the current iteration, adds three capabilities that transform it from a task router into an autonomous control system: a budgeted proactive control plane, a lightweight inter-agent mailbox protocol, and evidence-preserving context compression.
+
+## Core Architecture: Tasks as Source of Truth
+
+The central design decision is storing all state in structured YAML rather than conversation history. A task file is the single source of truth:
+
+```yaml
+meta:
+  schema_version: 4
+  shift_id: SHIFT-20260407-1329
+
+tasks:
+  - id: BT-RESEARCH-20260407-001
+    title: "Deep dive: neural network architecture first principles"
+    status: in_progress
+    assigned_agent: gemini-researcher
+    phase: research
+    checkpoint_ref: CK-20260407-001
+```
+
+This means task state survives session boundaries, can be version-controlled with Git, and is human-readable. When an agent resumes work on a multi-day task, it reads the structured state rather than trying to reconstruct context from a conversation log.
+
+## Queue-Driven Scheduling
+
+Tasks move through a state machine:
+
+```
+Backlog -> Ready -> In Progress -> Review -> Done
+                        |              |
+                     Blocked     Dead Letter
+```
+
+Three constraints prevent overcommitment:
+
+| Budget | Limit | Rationale |
+|--------|-------|-----------|
+| Max tasks per shift | 18 | Human cognitive load for tracking |
+| Max parallel subtasks | 3 | API rate limits, quality control |
+| Max expert calls per shift | 6 | Cost control for frontier model calls |
+
+These aren't arbitrary — they emerged from months of running the system. Exceeding 3 parallel subtasks reliably degrades the quality of each; exceeding 18 tasks per shift means you're adding tasks faster than you're completing them.
+
+## Agent Specialization and Routing
+
+Different models have different strengths. The routing table encodes this:
+
+| Task Type | Primary Agent | Fallback | Timeout |
+|-----------|--------------|----------|---------|
+| Daily coding | Claude (generalist) | Codex | 600s |
+| Open-source reproduction | Codex | Gemini | 1800s |
+| Academic proofs | Gemini | Claude Opus | 900s |
+| Architecture decisions | Claude Opus | — | 600s |
+| Quality review | Satonus (review specialist) | — | 600s |
+
+The routing is not just capability-based. The **Compass Protocol** enforces phase separation: every complex task must pass through Research, Implement, and Review stages, with different agents handling each. The agent that researches a problem is never the agent that implements the solution, and neither is the agent that reviews it.
+
+This prevents a common failure mode in AI-assisted work: the model that proposed an approach evaluates its own output favorably because it's already committed to the reasoning that produced it. Separating builder from validator forces independent assessment.
+
+```python
+# Lacia's routing decision tree (v4, with control plane logic)
+def route_next_action(state: SystemState) -> Action:
+    if state.review_queue:
+        return dispatch_reviewer()           # Review has priority
+
+    if state.in_progress_has_artifacts:
+        if context_running_low() and state.assist_budget > 0:
+            return send_assist_signal()      # Proactive intervention
+        return push_to_review()
+
+    if state.ready_queue:
+        return route_and_dispatch()          # Execute next ready task
+
+    if state.blocked_with_retries:
+        if state.rollback_budget > 0 and checkpoint_available():
+            return rollback_to_checkpoint()  # Prefer rollback over retry
+        return retry_and_promote()
+
+    if state.escalation_pending:
+        return escalate()                    # Handle escalation queue
+
+    return check_mailbox_and_heartbeat()     # Idle: check comms
+```
+
+## The Control Plane: Budgeted Proactive Control
+
+Traditional schedulers are passive routers — they dispatch tasks and wait for results. Beatless v4's control plane actively monitors execution and intervenes when needed, subject to budget constraints.
+
+Four intervention types:
+
+| Action | Trigger | Effect |
+|--------|---------|--------|
+| **assist** | Agent output lacks evidence, context nearing exhaustion | Inject additional context, constraints, reference material |
+| **silent** | Execution proceeding normally | Log state, do not intervene |
+| **escalate** | Task blocked beyond threshold, error propagation risk | Raise priority, engage backup agent, or notify human |
+| **rollback** | Checkpoint deviation detected | Restore last stable state, re-dispatch |
+
+The budget mechanism prevents the control plane from becoming a bottleneck:
+
+```yaml
+control_plane:
+  budget:
+    max_assist_per_shift: 12
+    max_rollback_per_shift: 3
+    escalate_requires_approval: true  # Human must confirm
+  checkpoints:
+    interval_tasks: 3     # Save state every 3 tasks
+    interval_seconds: 1800  # Or every 30 minutes
+```
+
+Each checkpoint captures a full snapshot:
+
+```yaml
+checkpoint:
+  id: CK-20260407-001
+  timestamp: 2026-04-07T13:30:00+08:00
+  task_id: BT-IMPL-20260407-003
+  phase: implement
+  context_snapshot: ./.context-snapshots/CK-20260407-001.md
+  artifacts:
+    - path: ./output/partial-result.md
+      checksum: sha256:abc123
+  rollback_target: CK-20260407-000
+```
+
+On rollback, the system loads the snapshot, discards partial artifacts, returns the task to the Ready queue, and optionally assigns a different agent. This is critical for multi-day tasks where a wrong turn on day 2 shouldn't require restarting from day 1.
+
+## Agent Mailbox: Asynchronous Coordination
+
+Multi-agent systems need communication, but most designs create one of two problems: either a central message broker that becomes a bottleneck and token sink, or a shared chat context that explodes in size as agents accumulate messages.
+
+The Mailbox protocol takes a third path: per-workspace file-based inboxes with no central registry, no guaranteed delivery, and no push notifications.
+
+```
+~/.openclaw/
+├── workspace-lacia/
+│   └── .agent-mailbox/
+│       ├── inbox/      # Unread messages
+│       └── archive/    # Consumed messages
+```
+
+Messages follow a naming convention that encodes priority and sender:
+
+```
+20260407130000--methode--warn--task-overdue.md
+```
+
+Each agent checks its own inbox at session start, reads the 1-3 most recent messages, and decides independently whether to act on them:
+
+- **critical**: Read immediately, affects current behavior
+- **warn**: Read and incorporate if relevant to current work
+- **info**: Skim, retain only if useful
+
+```text
+Title: Context limit approaching on BT-IMPL-003
+From: methode
+Created-At: 2026-04-07T13:30:00+08:00
+Priority: warn
+TTL: 7200
+ACK: false
+Checkpoint-Ref: CK-20260407-002
+Tags: context,assist-request
+
+Suggest triggering assist signal after next checkpoint save
+to supplement Lacia's scheduling context.
+```
+
+The design is deliberately minimal. Messages have a TTL (time-to-live) and expire. ACK is optional and best-effort. No webhooks, no cloud sync, no automatic task execution from messages. The mailbox is advisory — agents have final judgment on whether to act on what they read.
+
+Why this works better than alternatives:
+
+- **No token storms**: Each agent reads only its own inbox, consuming 1-3 messages per session
+- **Decoupled**: Senders don't block waiting for responses
+- **Transparent**: Plain text files, Git-trackable, human-readable
+- **Failure-tolerant**: Missing a message is acceptable; the system doesn't depend on guaranteed delivery
+
+## Evidence-Preserving Context Compression
+
+When an agent's context window approaches capacity, the standard approach is sliding-window truncation: drop the oldest messages. This is destructive — it discards decisions and evidence that may be critical for maintaining coherent multi-step reasoning.
+
+Beatless v4 classifies context units by information type and compresses selectively:
+
+| Type | Example | Base Value |
+|------|---------|------------|
+| **Decision** | "Chose approach Y because of constraint X" | High (irreproducible) |
+| **Artifact** | Generated code, report section | High (expensive to regenerate) |
+| **Evidence** | Paper abstract, experimental data point | Medium (re-fetchable at cost) |
+| **Narrative** | Process description, transition text | Low (compressible) |
+
+```python
+def compress_context(
+    messages: list[Message],
+    token_budget: int,
+) -> list[Message]:
+    """Compress context while preserving decision-critical information."""
+    scored = [(classify(m), m) for m in messages]
+    
+    # P0: Always retain decisions and artifacts
+    p0 = [m for c, m in scored if c in ("decision", "artifact")]
+    
+    # P1: Retain evidence that can't be re-fetched
+    p1 = [m for c, m in scored if c == "evidence" and not is_refetchable(m)]
+    
+    # P2: Summarize narrative, discard detail
+    p2 = [summarize(m) for c, m in scored if c == "narrative"]
+    
+    kept = p0 + p1 + p2
+    
+    if count_tokens(kept) > token_budget:
+        # Last resort: prune oldest P1 items, keep all P0
+        kept = prune_to_budget(kept, token_budget, priority="decision_first")
+    
+    return kept
+```
+
+The key insight is that decisions are irreproducible — "we chose architecture X over Y because of constraint Z" cannot be reconstructed from the code alone. Evidence is partially reproducible — a paper citation can be re-fetched, but the specific insight extracted from it may not be. Narrative is fully compressible — process descriptions add no information beyond what the artifacts and decisions already encode.
+
+## Design Decisions and Their Rationale
+
+**Why YAML over a database?** Readability, Git compatibility, portability. A human can open TASKS.yaml and understand the full system state. A database would be faster for complex queries but introduces deployment dependencies and makes state opaque.
+
+**Why force phase separation (Compass)?** Confirmation bias. An agent that researches a problem develops priors. If the same agent implements the solution, those priors go unquestioned. Separating research, implementation, and review forces each phase to justify itself independently.
+
+**Why limit parallelism to 3?** Empirical. Above 3 parallel subtasks, per-task quality drops measurably. The human operator also can't effectively monitor more than 3 concurrent streams. This limit is a feature of the human-AI system, not just the AI system.
+
+**Why mailbox over shared chat?** Token efficiency. A shared chat context grows linearly with participants and messages. The mailbox grows linearly with the *recipient's* inbox size, which stays bounded by the 1-3 message read limit per session.
+
+**Why checkpoints over simple retry?** Context preservation. A retry without context restoration often leads the agent down the same failed path. Checkpoints restore the decision context, allowing a fresh approach from a known-good state — potentially with a different agent.
+
+## Limitations
+
+Four constraints worth acknowledging:
+
+1. **Human-in-the-loop**: Task creation and final acceptance still require human judgment. The system orchestrates execution, not intent.
+2. **Error diagnosis**: Rollback restores state but doesn't diagnose the failure. Complex errors still require human debugging.
+3. **Context is finite**: Evidence-preserving compression mitigates but doesn't solve the fundamental context window limit. Very long tasks still lose information.
+4. **Best-effort communication**: The mailbox doesn't guarantee delivery. Critical coordination should not depend on a message being read.
+
+## What's Next
+
+The gap between Beatless v4 and a fully autonomous research assistant is three capabilities:
+
+**Automatic task decomposition** — the system should break "investigate neural architecture X" into subtasks (literature search, code analysis, experiment design) without human specification.
+
+**Learned routing** — historical data on which agents succeed at which task types should feed back into routing decisions. Currently the routing table is static.
+
+**Checkpoint intelligence** — rather than saving checkpoints on a fixed schedule, the system should recognize when a critical decision has been made and checkpoint proactively.
+
+The broader trajectory: from tools you use, to workflows you configure, to systems that manage their own execution within constraints you set. Beatless v4 sits at the boundary between the second and third stages — it manages execution proactively, but within hard budgets that keep a human in control.
+
+---
+
+*Beatless is a personal project by [CrepuscularIRIS](https://github.com/CrepuscularIRIS). System protocols and templates are at `~/.openclaw/beatless/protocols/`. Current version: v4 (2026-04-07).*

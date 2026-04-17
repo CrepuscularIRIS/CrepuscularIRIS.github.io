@@ -1,0 +1,338 @@
+---
+title: "The Post-RLHF Alignment Stack"
+description: "RLHF dominated post-training for three years. In 2026, four methods — GRPO, DAPO, RLVR, and synthetic self-play — have replaced it. Here is how and why."
+publishDate: "2026-04-16"
+tags: [alignment, RLHF, GRPO, DAPO, RLVR, post-training, reinforcement-learning, research]
+category: research
+language: en
+draft: false
+---
+
+For three years, RLHF was the post-training method. You collected human preference data, trained a reward model, and ran PPO against it. The recipe worked well enough that every major lab used some variant of it from GPT-4 through Claude 3.5 Sonnet. It also had well-documented problems: reward model collapse, mode collapse under PPO, the cost of human annotation at scale, and a fundamental information bottleneck where the reward model could only express preferences the annotators could articulate.
+
+By early 2026, the dominant post-training stack looks different. Four methods have displaced RLHF as the primary alignment mechanism at frontier labs: GRPO (Group Relative Policy Optimization), DAPO (Decoupled Clip and Dynamic Sampling Policy Optimization), RLVR (Reinforcement Learning with Verifiable Rewards), and synthetic self-play. Each addresses a specific failure mode of RLHF. Together, they form a stack that is cheaper, more stable, and scales better.
+
+This post breaks down each method, explains why it works, and shows how they compose into a practical post-training pipeline.
+
+## What Went Wrong with RLHF
+
+RLHF's problems are structural, not incidental. Understanding them clarifies why the replacements look the way they do.
+
+**Problem 1: Reward model as bottleneck.** The reward model is trained on human comparisons. It learns to predict which of two outputs a human would prefer. But it cannot distinguish between outputs that are both good (or both bad) with high resolution. At the tails of quality — where alignment matters most — the reward model's signal degrades. This is not a data problem. It is an information-theoretic limit: binary comparisons carry at most 1 bit per annotation.
+
+**Problem 2: PPO instability.** PPO requires careful tuning of clipping ratios, learning rates, KL penalty coefficients, and mini-batch sizes. In practice, PPO training for language models is fragile. Small hyperparameter changes cause large behavioral shifts. The optimization landscape is non-convex and littered with local optima where the model satisfies the reward model without actually improving on the target behavior.
+
+**Problem 3: Cost scaling.** Human preference data costs $1-5 per comparison at production quality. Training a reward model that generalizes across domains requires 50K-200K comparisons. Refreshing the reward model as the policy improves (to avoid reward hacking) multiplies this cost further. At frontier scale, RLHF annotation budgets reached tens of millions of dollars per training run.
+
+**Problem 4: Reward hacking.** The policy learns to exploit patterns in the reward model rather than genuinely improving. Classic examples: producing longer outputs (length bias in reward models), using hedging language ("It's important to note that..."), and avoiding definitive claims. The reward model gives higher scores to these patterns because the training data reflects human preferences for cautious, thorough responses — but the model overshoots, producing verbose, equivocating text.
+
+## GRPO: Eliminating the Reward Model
+
+Group Relative Policy Optimization, introduced in the DeepSeek-Math paper (Shao et al., 2024) and subsequently scaled in DeepSeek-R1, makes a radical simplification: remove the reward model entirely.
+
+Instead of training a separate model to score outputs, GRPO generates a group of K outputs for each prompt, scores them using a verifiable objective (correctness on math problems, unit test passage for code, factual accuracy via retrieval), and updates the policy to increase the probability of the better outputs relative to the worse ones within each group.
+
+The key insight is relative ranking within a group. You do not need absolute quality scores. You only need to know which outputs in the group are better than others. This is a weaker signal than a reward model provides, but it is more reliable — there is no reward model to hack.
+
+### The GRPO Objective
+
+```python
+import torch
+import torch.nn.functional as F
+
+def grpo_loss(
+    policy_logprobs: torch.Tensor,    # [batch, group_size, seq_len]
+    ref_logprobs: torch.Tensor,       # [batch, group_size, seq_len]
+    rewards: torch.Tensor,            # [batch, group_size]
+    group_size: int = 8,
+    clip_ratio: float = 0.2,
+    kl_coeff: float = 0.01,
+) -> torch.Tensor:
+    """
+    GRPO loss function.
+
+    For each prompt, we generate `group_size` completions, score them,
+    then normalize rewards within the group (zero-mean, unit-variance).
+    The policy is updated to increase probability of above-mean completions
+    and decrease probability of below-mean completions.
+    """
+    # Normalize rewards within each group
+    mean_r = rewards.mean(dim=1, keepdim=True)
+    std_r = rewards.std(dim=1, keepdim=True).clamp(min=1e-8)
+    advantages = (rewards - mean_r) / std_r  # [batch, group_size]
+
+    # Compute probability ratios
+    # Sum log probs across sequence length for each completion
+    policy_seq = policy_logprobs.sum(dim=-1)  # [batch, group_size]
+    ref_seq = ref_logprobs.sum(dim=-1)         # [batch, group_size]
+    log_ratios = policy_seq - ref_seq
+    ratios = torch.exp(log_ratios)
+
+    # Clipped surrogate objective (PPO-style but without a critic)
+    surr1 = ratios * advantages
+    surr2 = torch.clamp(ratios, 1 - clip_ratio, 1 + clip_ratio) * advantages
+    policy_loss = -torch.min(surr1, surr2).mean()
+
+    # KL divergence: E[log(pi/pi_ref)] — positive when policy diverges from ref.
+    # Added to loss to penalize deviation, keeping the policy close to reference.
+    kl_divergence = log_ratios.mean()
+
+    return policy_loss + kl_coeff * kl_divergence
+```
+
+The critical difference from PPO: there is no value function (critic) and no reward model. The advantages come from within-group comparison. This eliminates two of the four neural networks in the standard RLHF pipeline (reward model and critic), cutting memory requirements roughly in half.
+
+### When GRPO Works (and When It Doesn't)
+
+GRPO excels on tasks with verifiable outcomes: mathematics, code generation, factual QA with known answers. The verifiable reward provides a ground-truth signal that no reward model can corrupt.
+
+GRPO struggles on tasks where quality is subjective: creative writing, open-ended advice, nuanced ethical reasoning. Without a reward model to encode human preferences, the method has no way to distinguish between outputs that are all "correct" but vary in helpfulness, tone, or depth. This is where DAPO enters.
+
+## DAPO: Fixing PPO's Clipping Problem
+
+DAPO (Decoupled Clip and Dynamic Sampling Policy Optimization) addresses two specific failure modes of PPO-style optimization that persist even in GRPO.
+
+**Problem 1: Entropy collapse.** During training, the policy's output distribution narrows. It learns a small set of "safe" responses and stops exploring. Standard clipping in PPO applies symmetrically — it limits how much the probability of any output can increase *or decrease*. But for alignment, we want asymmetric behavior: allow the model to broadly increase probability of good outputs (exploration) while sharply limiting probability of bad outputs.
+
+**Problem 2: Easy prompt domination.** Some prompts in the training set are easy. The model quickly learns perfect responses for them, and these prompts contribute zero gradient signal. But they still consume compute in each batch. Over time, easy prompts dominate the training mix, and the model stops improving on hard prompts.
+
+### DAPO's Two Innovations
+
+**Decoupled clipping**: Separate clip ratios for positive and negative advantages. For outputs with positive advantage (better than group mean), use a wider clip range to allow large probability increases. For outputs with negative advantage, use a tighter clip range to prevent catastrophic probability collapse.
+
+```python
+def dapo_clipped_ratio(
+    ratios: torch.Tensor,
+    advantages: torch.Tensor,
+    clip_upper: float = 0.28,   # wider: allow exploration
+    clip_lower: float = 0.18,   # tighter: limit regression
+) -> torch.Tensor:
+    """Decoupled clipping: asymmetric clip for positive vs negative advantages."""
+    positive_mask = advantages >= 0
+    negative_mask = ~positive_mask
+
+    clipped = torch.empty_like(ratios)
+    clipped[positive_mask] = torch.clamp(
+        ratios[positive_mask], 1 - clip_upper, 1 + clip_upper
+    )
+    clipped[negative_mask] = torch.clamp(
+        ratios[negative_mask], 1 - clip_lower, 1 + clip_lower
+    )
+
+    surr1 = ratios * advantages
+    surr2 = clipped * advantages
+
+    return torch.min(surr1, surr2)
+```
+
+**Dynamic sampling**: Remove prompts from the training batch when the model has converged on them. Convergence is detected by checking if all K outputs in a group receive the same reward (all correct or all incorrect). If the reward variance within a group drops below a threshold, the prompt is retired from the active training set and replaced with a harder one.
+
+This keeps the gradient signal informative throughout training, preventing the "easy prompt domination" failure mode.
+
+## RLVR: Verifiable Rewards at Scale
+
+Reinforcement Learning with Verifiable Rewards is less a single method and more a design principle: whenever possible, replace learned reward models with programmatic verification.
+
+The idea is simple. For code generation, run the code and check if tests pass. For math, check if the numerical answer matches. For factual claims, query a knowledge base. For format compliance, parse the output against a schema. These verification functions provide binary or continuous rewards that are:
+
+1. **Immune to reward hacking** — you cannot game a unit test suite by writing longer code
+2. **Free to evaluate** — no human annotators, no GPU cost for reward model inference
+3. **Perfectly calibrated** — a test either passes or it doesn't
+
+```python
+from typing import Callable
+
+# Registry of verifiable reward functions
+REWARD_FUNCTIONS: dict[str, Callable[[str, dict], float]] = {}
+
+def register_reward(task_type: str):
+    def decorator(fn: Callable[[str, dict], float]):
+        REWARD_FUNCTIONS[task_type] = fn
+        return fn
+    return decorator
+
+@register_reward("code")
+def code_reward(output: str, metadata: dict) -> float:
+    """Run generated code against test cases."""
+    import subprocess
+    test_file = metadata["test_file"]
+
+    # Write generated code to temp file
+    with open("/tmp/solution.py", "w") as f:
+        f.write(output)
+
+    result = subprocess.run(
+        ["python", "-m", "pytest", test_file, "--tb=no", "-q"],
+        capture_output=True, text=True, timeout=30
+    )
+    # Fraction of tests passed
+    if result.returncode == 0:
+        return 1.0
+
+    lines = result.stdout.strip().split("\n")
+    for line in lines:
+        if "passed" in line:
+            # Parse "3 passed, 1 failed" format
+            parts = line.split(",")
+            passed = int(parts[0].split()[0]) if "passed" in parts[0] else 0
+            total = sum(int(p.split()[0]) for p in parts)
+            return passed / max(total, 1)
+    return 0.0
+
+@register_reward("math")
+def math_reward(output: str, metadata: dict) -> float:
+    """Check numerical answer against ground truth."""
+    import re
+    expected = metadata["answer"]
+    # Extract last number from output
+    numbers = re.findall(r"-?\d+\.?\d*", output)
+    if not numbers:
+        return 0.0
+    predicted = float(numbers[-1])
+    return 1.0 if abs(predicted - expected) < 1e-6 else 0.0
+
+@register_reward("format")
+def format_reward(output: str, metadata: dict) -> float:
+    """Validate output against a JSON schema."""
+    import json
+    import jsonschema
+    schema = metadata["schema"]
+    try:
+        data = json.loads(output)
+        jsonschema.validate(data, schema)
+        return 1.0
+    except (json.JSONDecodeError, jsonschema.ValidationError):
+        return 0.0
+```
+
+The limitation is coverage. Not everything is verifiable. RLVR works for maybe 40-50% of the tasks in a typical post-training mixture. The rest — open-ended dialogue, creative tasks, ambiguous instructions — still need some form of preference signal.
+
+## Synthetic Self-Play: Generating Your Own Training Data
+
+The fourth piece of the stack addresses the cost problem directly: instead of collecting human preferences, generate synthetic training data through self-play.
+
+The mechanism is similar to AlphaGo's self-play but adapted for language. The model generates multiple responses to a prompt, a stronger model (or the same model with more compute) ranks them, and the ranked pairs become training data for the next iteration.
+
+The key innovation in 2026 implementations is *quality-filtered self-play*. Rather than using all generated pairs, the pipeline filters for pairs where the quality gap is large and the preferred response demonstrates a capability the model is currently weak at. This prevents the training signal from being diluted by easy distinctions.
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class SyntheticPair:
+    prompt: str
+    chosen: str
+    rejected: str
+    quality_gap: float
+    capability_tag: str
+
+def generate_self_play_data(
+    model,
+    prompts: list[str],
+    judge_model,
+    min_quality_gap: float = 0.3,
+    samples_per_prompt: int = 8,
+) -> list[SyntheticPair]:
+    """Generate synthetic preference pairs via self-play."""
+    pairs = []
+
+    for prompt in prompts:
+        # Generate multiple responses
+        responses = [
+            model.generate(prompt, temperature=0.8)
+            for _ in range(samples_per_prompt)
+        ]
+
+        # Judge ranks all responses
+        scores = judge_model.score_batch(prompt, responses)
+
+        # Sort by score descending
+        ranked = sorted(
+            zip(responses, scores), key=lambda x: x[1], reverse=True
+        )
+
+        # Create pairs from top and bottom quartile only
+        top_k = len(ranked) // 4
+        for chosen_resp, chosen_score in ranked[:top_k]:
+            for rejected_resp, rejected_score in ranked[-top_k:]:
+                gap = chosen_score - rejected_score
+                if gap >= min_quality_gap:
+                    pairs.append(SyntheticPair(
+                        prompt=prompt,
+                        chosen=chosen_resp,
+                        rejected=rejected_resp,
+                        quality_gap=gap,
+                        capability_tag=classify_capability(prompt),
+                    ))
+
+    return pairs
+```
+
+DeepSeek, Qwen, and several open-source labs have published results showing that three rounds of self-play, each using the previous round's model as the generator, produces quality improvements comparable to RLHF trained on 100K human annotations — at near-zero annotation cost.
+
+The risk is distributional collapse: the model trains on its own outputs and gradually loses diversity. The mitigation is mixing self-play data with fresh prompts from diverse sources and explicitly measuring output entropy across training rounds.
+
+## The Composed Pipeline
+
+In practice, frontier labs in 2026 use all four methods in sequence:
+
+```
+Base Model (post-pretraining)
+    │
+    ▼
+┌──────────────────────────────────────────┐
+│  Stage 1: Supervised Fine-Tuning (SFT)   │
+│  High-quality instruction-following data  │
+└──────────────────────────────────────────┘
+    │
+    ▼
+┌──────────────────────────────────────────┐
+│  Stage 2: RLVR                           │
+│  Verifiable tasks: code, math, format    │
+│  Binary rewards from test suites         │
+└──────────────────────────────────────────┘
+    │
+    ▼
+┌──────────────────────────────────────────┐
+│  Stage 3: GRPO + DAPO                    │
+│  Non-verifiable tasks: dialogue, writing │
+│  Group-relative optimization             │
+│  Decoupled clipping for stability        │
+└──────────────────────────────────────────┘
+    │
+    ▼
+┌──────────────────────────────────────────┐
+│  Stage 4: Synthetic Self-Play            │
+│  Iterative improvement on weak spots     │
+│  Quality-filtered pair generation        │
+└──────────────────────────────────────────┘
+    │
+    ▼
+  Aligned Model
+```
+
+Stage 2 handles everything with a verifiable ground truth. Stage 3 handles everything else. Stage 4 iteratively refines the model on its weakest capabilities. The ordering matters: RLVR first establishes a strong baseline on objective tasks, which improves the model's ability to self-evaluate in later stages.
+
+## What This Means for Practitioners
+
+If you are fine-tuning models or building alignment pipelines, the practical takeaways are:
+
+**Start with RLVR.** If your task has any verifiable component — test suites, schema validation, numerical answers — use it. The signal is free, reliable, and immune to gaming. Do not build a reward model for tasks you can verify programmatically.
+
+**Use GRPO over PPO.** GRPO is simpler to implement, uses less memory (no critic network), and produces comparable results on most tasks. The group size K is the main hyperparameter: K=8 works well across most settings. Larger K gives better gradient estimates but costs more compute per step.
+
+**Add DAPO's dynamic sampling.** Even if you stick with standard GRPO, the dynamic sampling trick — removing converged prompts from the training mix — consistently improves final performance by 2-5% on hard benchmarks. It is a free lunch.
+
+**Self-play is your scaling lever.** When you run out of human annotation budget, self-play extends the training signal indefinitely. Three rounds is the sweet spot — diminishing returns set in after that, and distributional collapse risk increases.
+
+**Monitor entropy.** Track the entropy of the model's output distribution across training. If entropy drops below a threshold (task-dependent, but typically below 60% of the SFT model's entropy), the model is collapsing. Increase temperature during generation, add diversity prompts, or stop training.
+
+The RLHF era taught us that post-training transforms base models into useful assistants. The post-RLHF stack teaches us that we can do it faster, cheaper, and with fewer failure modes — by replacing learned reward signals with verifiable ones wherever possible and generating our own training data where it is not.
+
+## References
+
+- Shao et al., "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models," arXiv:2402.03300 (introduces GRPO)
+- DeepSeek-AI, "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning," arXiv:2501.12948 (scales GRPO)
+- Yu et al., "DAPO: An Open-Source LLM Reinforcement Learning System," arXiv:2503.14476
+- Lambert et al., "Reward Model Training: Lessons from RLHF at Scale," Anthropic Technical Report, 2025
+- Bai et al., "Constitutional AI: Harmlessness from AI Feedback," arXiv:2212.08073

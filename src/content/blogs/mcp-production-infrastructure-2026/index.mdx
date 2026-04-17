@@ -1,0 +1,194 @@
+---
+title: "MCP in 2026: Protocol to Infrastructure"
+description: "Streamable HTTP, Server Cards, and the Tasks primitive turned MCP from a tool-calling spec into scalable agent infrastructure."
+publishDate: "2026-04-16"
+tags: [MCP, infrastructure, agent-systems, protocol, scalability, engineering]
+category: engineering
+language: en
+draft: false
+---
+
+The Model Context Protocol started as a way to connect LLMs to tools. JSON-RPC, a server manifest, stdio transport. In the 18 months since Anthropic open-sourced it, MCP has accumulated over 10,000 public servers and been adopted by every major agent CLI. But the protocol that worked for local tool calls hits hard limits when you deploy it as production infrastructure serving thousands of concurrent agents.
+
+The 2026 MCP roadmap, now governed by the Linux Foundation's Agentic AI Foundation, addresses three specific gaps: transport scalability, server discoverability, and long-running task management. Each gap produced a concrete spec change that reshapes how MCP servers are built and deployed.
+
+## Streamable HTTP: The Death of Sticky Sessions
+
+The original MCP transports — stdio for local processes, SSE for remote connections — assumed stateful, persistent connections. The client connects to the server, maintains a session, and sends messages over that session. This is fine when the MCP server is a local process talking to a single Claude Code instance.
+
+It breaks in production. SSE connections don't survive load balancer failovers. Horizontal scaling requires sticky sessions — routing every request from a given client to the same server instance. Sticky sessions are the enemy of auto-scaling, because they create hot spots: one server instance gets 80% of the traffic while the other 9 sit idle.
+
+Streamable HTTP replaces this with a stateless request model. Each request is independent. The server doesn't need to remember the client between requests. Session state, when needed, is carried in an `Mcp-Session-Id` header — but the server can reconstruct session context from this ID rather than holding it in memory.
+
+```
+Original MCP (stateful):
+  Client ──[persistent SSE connection]──→ Server Instance #3
+  (all requests routed to #3 via sticky session)
+
+Streamable HTTP (stateless):
+  Client ──[POST /mcp]──→ Load Balancer ──→ Any Server Instance
+  Client ──[POST /mcp]──→ Load Balancer ──→ Any Server Instance
+  (Mcp-Session-Id header carries context; any instance can serve)
+```
+
+The performance difference is measurable. Early MCP 2.1 benchmarks suggest significant latency reductions compared to SSE transport under load, with production deployments reporting 10,000+ concurrent connections at sub-50ms response times — though these numbers vary by workload and infrastructure.
+
+The practical migration: if you're running an MCP server that stores session state in memory, you have two options. Either externalize state to Redis/PostgreSQL so any instance can serve any request, or redesign the server to be truly stateless — encoding all necessary context in the request itself.
+
+```python
+from dataclasses import dataclass, field
+from typing import Any
+import hashlib
+import json
+
+
+@dataclass(frozen=True)
+class MCPRequest:
+    """A stateless MCP request — all context travels with the request."""
+    method: str
+    params: dict[str, Any]
+    session_id: str | None = None
+
+    def to_headers(self) -> dict[str, str]:
+        headers = {"Content-Type": "application/json"}
+        if self.session_id:
+            headers["Mcp-Session-Id"] = self.session_id
+        return headers
+
+
+@dataclass(frozen=True)
+class MCPServerConfig:
+    """Server configuration for stateless deployment."""
+    name: str
+    version: str
+    tools: tuple[str, ...]
+    state_backend: str = "redis"  # externalized state
+
+    @property
+    def server_id(self) -> str:
+        """Deterministic server identity for discovery."""
+        content = f"{self.name}:{self.version}:{':'.join(self.tools)}"
+        return hashlib.sha256(content.encode()).hexdigest()[:12]
+```
+
+SSE is now deprecated. The spec team explicitly chose not to add more transport types — keeping the set small (stdio for local, Streamable HTTP for remote) is a deliberate design decision.
+
+## Server Cards: Discoverability Without Connection
+
+The second gap: how does a client know what an MCP server can do without connecting to it first?
+
+In the original protocol, the only way to discover a server's capabilities was to establish a connection and call `initialize`. This works for a developer manually configuring their Claude Code setup. It doesn't work for automated systems that need to discover available servers from a registry, or for crawlers indexing the MCP ecosystem.
+
+Server Cards expose structured metadata via a `.well-known` URL:
+
+```
+GET https://my-mcp-server.example.com/.well-known/mcp-server-card
+```
+
+```json
+{
+  "name": "PostgreSQL Analytics Server",
+  "version": "2.1.0",
+  "description": "Query optimization and schema analysis for PostgreSQL databases",
+  "tools": [
+    {
+      "name": "explain_query",
+      "description": "Run EXPLAIN ANALYZE on a query and return optimization suggestions",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {"type": "string"},
+          "database": {"type": "string"}
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "suggest_indexes",
+      "description": "Analyze query patterns and suggest missing indexes"
+    }
+  ],
+  "auth": {
+    "type": "oauth2.1",
+    "pkce_required": true,
+    "authorization_url": "https://auth.example.com/authorize",
+    "token_url": "https://auth.example.com/token"
+  },
+  "transport": "streamable-http",
+  "endpoint": "https://my-mcp-server.example.com/mcp"
+}
+```
+
+The key properties: Server Cards are static. They can be cached, indexed by search engines, and aggregated by registries without executing any server code. A browser can display what the server does. A registry can rank servers by capability overlap with a query. An agent can select the right server for a task from a catalog of thousands — all before establishing a single connection.
+
+This changes the discovery model from "connect and ask" to "browse and connect." The analogy is apt: Server Cards function like HTML meta tags for MCP servers.
+
+## Tasks Primitive: Managing Long-Running Work
+
+MCP's original request model is synchronous: the client sends a tool call, the server responds with the result. This works for fast operations — reading a file, querying a database — but fails for tasks that take minutes or hours.
+
+The Tasks primitive (SEP-1686) introduces asynchronous task lifecycle management:
+
+```
+Client                          Server
+  │                               │
+  ├──[tool call + task hint]─────→│
+  │                               │ (status: "submitted")
+  │←──[task_id, status]──────────┤
+  │                               │
+  ├──[tasks/get]─────────────────→│
+  │                               │ (status: "working")
+  │←──[progress metadata]─────────┤
+  │                               │
+  │  ... time passes ...          │
+  │                               │
+  ├──[tasks/get]─────────────────→│
+  │                               │ (status: "input_required")
+  │←──[question: "Which index?"]──┤
+  │                               │
+  ├──[provide input via task]────→│
+  │                               │ (status: "working")
+  │                               │
+  │←──[tasks/result]──────────────┤
+  │                               │ (status: "completed")
+```
+
+The lifecycle states are: `submitted → working → input_required → completed` (or `failed`). The `input_required` state is the interesting one — it allows a server-side task to pause and ask the client for additional information, then resume. This enables multi-turn interactions within a single task, without the client needing to maintain a persistent connection.
+
+Early production use has surfaced gaps: retry semantics (what happens when a task fails mid-execution?) and expiry policies (how long should a completed task's result be retained?) are not yet fully specified. The spec team has acknowledged these as priorities for the next revision.
+
+## OAuth 2.1: The Trust Boundary
+
+MCP's original auth story was minimal — API keys or no auth at all. This was adequate for local stdio servers but insufficient for the remote, multi-tenant world that Streamable HTTP enables.
+
+The 2026 spec mandates OAuth 2.1 with PKCE (Proof Key for Code Exchange) as the standard auth mechanism for remote MCP servers. PKCE prevents authorization code interception — critical when the "client" is an AI agent that might be running in a shared environment.
+
+The practical impact: every remote MCP server now needs an OAuth provider. For small tool servers that previously accepted a static API key, this is significant new complexity. The ecosystem response has been MCP gateway services (Cloudflare, Vercel) that handle OAuth on behalf of simple servers, proxying authenticated requests to tools that still speak plain HTTP internally.
+
+## What This Means for Agent Architectures
+
+The cumulative effect of these changes: MCP servers can now be deployed as standard cloud-native microservices. They sit behind load balancers, scale horizontally, authenticate via OAuth, and are discoverable via static metadata. The protocol has reached the point where "deploy an MCP server" looks like "deploy an API" — with all the same tooling (Kubernetes, Terraform, monitoring stacks).
+
+For agent system architects, three patterns have emerged:
+
+**Gateway pattern.** A single MCP gateway aggregates multiple tool servers behind one endpoint. The agent connects to one gateway, which routes tool calls to the appropriate backend. This simplifies client configuration and centralizes auth.
+
+**Registry pattern.** Agents discover MCP servers from a searchable registry of Server Cards. At task time, the agent queries the registry for servers matching the required capabilities, connects to the best match, and delegates the tool call. This enables dynamic tool selection.
+
+**Sidecar pattern.** MCP servers run as sidecars alongside the agent process (in the same pod, VM, or container group). The agent uses stdio transport locally, avoiding the complexity of remote auth and network configuration. This trades discoverability for simplicity and latency.
+
+Most production systems use a combination: local sidecars for frequently-used tools (filesystem, git), remote servers via gateway for specialized capabilities (database analysis, security scanning), and registry discovery for ad-hoc tool selection.
+
+## The Unsolved Problem: Server Composition
+
+One thing the current spec doesn't address: composing multiple MCP servers into higher-level capabilities. If Server A provides `read_database` and Server B provides `generate_chart`, there's no standard way to create a composite "analyze and visualize" capability that chains them.
+
+Today, this composition happens in the agent's reasoning loop — the model decides to call Server A, processes the result, then calls Server B. This works but makes the composition logic invisible to the infrastructure layer. You can't cache composite operations, pre-validate tool chains, or optimize data transfer between servers.
+
+The A2A (Agent-to-Agent) extensions being developed by Google address a related problem — agent discovery and delegation — but server-to-server composition remains unspecified. It's likely the next major addition to the MCP roadmap, and the one that would most change how agent pipelines are built.
+
+For now, MCP's value is clear: it turned a fragmented ecosystem of custom tool integrations into a standard infrastructure layer. The 2026 changes made that layer production-grade. Whether it becomes the TCP/IP of agents depends on whether the composition problem gets solved before the ecosystem fragments again.
+
+---
+
+*References: [MCP 2026 Roadmap](https://blog.modelcontextprotocol.io/posts/2026-mcp-roadmap/), [MCP Transport Future](https://blog.modelcontextprotocol.io/posts/2025-12-19-mcp-transport-future/), [MCP Technical Deep Dive](https://dasroot.net/posts/2026/04/model-context-protocol-mcp-technical-deep-dive/), [Complete MCP Server Handbook 2026](https://use-apify.com/blog/mcp-server-handbook-2026).*

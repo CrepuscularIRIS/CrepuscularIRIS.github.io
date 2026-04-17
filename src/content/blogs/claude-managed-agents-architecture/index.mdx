@@ -1,0 +1,190 @@
+---
+title: "Claude Managed Agents: Session, Harness, Sandbox"
+description: "Anthropic's April 2026 managed agent infrastructure decouples three components that prior agent frameworks entangled — here is what that decomposition buys you."
+publishDate: "2026-04-15"
+tags: [agents, anthropic, infrastructure, agent-engineering, managed-agents, architecture, harness]
+category: engineering
+language: en
+draft: false
+---
+
+On April 8, 2026, Anthropic released Claude Managed Agents in public beta. The announcement got 39,000+ likes and 2 million views in two hours — numbers that reflect how long the agent infrastructure problem has been unsolved, not just how good the solution is.
+
+The marketing description is "hosted infrastructure for deploying autonomous AI agents." The architectural description is more precise: a decomposition of the three things that previous agent frameworks entangled into one process, making each one independently scalable, debuggable, and replaceable.
+
+The three things are: the **session** (the durable record of everything that happened), the **harness** (the loop that drives the agent), and the **sandbox** (the environment where code executes). Getting these right is the difference between an agent that works in a demo and one that works in production at 3 AM when something breaks.
+
+## Why the Entanglement Happens
+
+In most agent frameworks — including earlier iterations of the Claude Code agent, early LangGraph deployments, and most "starter kit" agent implementations — all three components run in the same process. The session is in memory (maybe a Python list, maybe a JSON file). The harness is the main loop. The sandbox is the same process, possibly with some subprocess calls.
+
+This works until it doesn't. The failure modes are predictable:
+
+**Session loss on crash.** When the container dies, the session goes with it. You lose the conversation history, the intermediate results, the state of partial work. The agent can't resume; it restarts from zero.
+
+**Debugging opacity.** The harness, the sandbox, and the session are all mixed in one blob of execution. When something goes wrong, you can't isolate which component introduced the failure. Is the model reasoning about the wrong state? Did the tool call produce bad output? Did the session get corrupted?
+
+**Scale coupling.** Scaling the agent means scaling everything together. If you have 50 concurrent agents, you need 50 containers running the full stack — including the model-serving harness — even if 40 of them are idle waiting for tool results. You pay for concurrency you're not using.
+
+Anthropic's design document puts it plainly: "A container crash meant lost session data, debugging was impossible, and scaling required dedicated containers per agent, wasting resources during idle time."
+
+## The Three-Component Model
+
+### The Session: An Append-Only Event Log
+
+The session is an externalized, durable, append-only log of everything that has happened in an agent's execution. Every user message, assistant response, tool call, and tool result is an event in the log. The log lives completely outside the harness — it persists across container restarts, network failures, and harness crashes.
+
+The interface that the harness uses to read session state is `getEvents()` — a positional slice of the event stream. This is a deliberate design choice that keeps the harness stateless with respect to the session: the harness doesn't maintain a cached view of the session; it reads from the durable log on demand.
+
+The practical consequence: standard approaches to long-horizon context management — compaction, summarization, trimming — make irreversible decisions about which tokens to keep. The session log defers those decisions entirely. The harness can implement any context management strategy by choosing how to slice the event stream, and the strategy can be changed without touching the underlying session data.
+
+```python
+from dataclasses import dataclass
+from typing import Literal
+
+
+@dataclass(frozen=True)
+class SessionEvent:
+    """An immutable event in the session log."""
+    event_id: str
+    timestamp: str
+    event_type: Literal["user_message", "assistant_response", "tool_call", "tool_result"]
+    content: str
+    metadata: dict  # tool name, error info, etc.
+
+
+def build_context(
+    events: list[SessionEvent],
+    strategy: Literal["full", "sliding_window", "summary_compressed"],
+    max_tokens: int = 100_000,
+) -> list[dict]:
+    """Assemble model context from the event log.
+    
+    The harness calls this; the session stores raw events.
+    Context assembly strategy can change without touching the log.
+    """
+    if strategy == "full":
+        return [{"role": _role(e), "content": e.content} for e in events]
+    elif strategy == "sliding_window":
+        # Keep last N tokens worth of events
+        return _sliding_window(events, max_tokens)
+    elif strategy == "summary_compressed":
+        # Summarize older events, keep recent ones verbatim
+        return _compress_with_summary(events, max_tokens)
+```
+
+### The Harness: A Stateless Execution Loop
+
+The harness is everything between the model and the real world. It drives the agent loop: read session state, call the model, route tool calls to the right infrastructure, write results back to the session.
+
+The critical design property is **statelessness**. Any harness instance can pick up any session and continue from where it left off. The harness holds no local state that isn't already in the session log.
+
+This is what makes horizontal scaling straightforward. When 50 agents are running and 40 are waiting for tool results, the harness containers handling those 40 agents can be released and reassigned. There's no sticky session, no in-memory state to preserve. When work arrives, any harness instance picks up the session log and continues.
+
+Anthropic published the structural design of the harness in March 2026 — before the managed platform launched. The "harness engineering" framing emerged from that publication and has since become standard vocabulary. The managed platform didn't invent the harness model; it operationalized it as infrastructure that any developer can use without building it themselves.
+
+```python
+import anthropic
+from typing import Iterator
+
+
+class AgentHarness:
+    """Stateless agent execution loop.
+    
+    Holds no session state — reads from and writes to the external session log.
+    Any instance can continue any session.
+    """
+
+    def __init__(self, client: anthropic.Anthropic, session_store: "SessionStore"):
+        self.client = client
+        self.sessions = session_store
+
+    def run_turn(self, session_id: str, user_message: str) -> str:
+        """Execute one agent turn. Fully stateless with respect to session."""
+        # Read current state from external log
+        events = self.sessions.get_events(session_id)
+        self.sessions.append(session_id, "user_message", user_message)
+
+        context = build_context(events, strategy="sliding_window")
+
+        # Run model until no more tool calls
+        while True:
+            response = self.client.messages.create(
+                model="claude-opus-4-6-20260801",
+                max_tokens=8096,
+                messages=context,
+                tools=self._get_tools(),
+            )
+
+            self.sessions.append(session_id, "assistant_response", response.content)
+
+            if response.stop_reason != "tool_use":
+                return response.content[-1].text
+
+            # Route tool calls — sandbox handles execution
+            for block in response.content:
+                if block.type == "tool_use":
+                    result = self._dispatch_tool(session_id, block.name, block.input)
+                    self.sessions.append(session_id, "tool_result", result)
+
+            # Refresh context with tool results
+            context = build_context(self.sessions.get_events(session_id))
+```
+
+### The Sandbox: Untrusted by Construction
+
+The sandbox is the execution environment where Claude's generated code runs. The key property in Managed Agents is that the sandbox is **structurally untrusted** — not just locked down through policy, but isolated by construction.
+
+Credentials never live in the sandbox. Git access tokens are injected during initialization but placed outside the agent's reach. OAuth tokens for MCP-connected services sit in a secure vault and are proxied through a credential layer that the sandbox code cannot directly access. The model that generates the code runs in the harness, not in the sandbox — so even if the generated code is adversarial, it cannot read the model's context or the session log.
+
+The Managed Agents documentation makes the security rationale explicit: "Narrow token scoping is not sufficient: it encodes an assumption about what Claude cannot do with a limited token, and Claude is getting increasingly smart. The structural fix makes the tokens unreachable by construction."
+
+This is a notable security property. Most agent sandboxing is permission-based — the agent can't access certain resources because it's been denied permission. Permission-based security degrades as the model gets more capable, because a sufficiently capable model might find unexpected paths to restricted resources. Structure-based security — the tokens are simply not present in the environment where the model operates — doesn't degrade with capability.
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   Managed Agent Stack                │
+│                                                     │
+│  ┌──────────────┐    ┌──────────────────────────┐   │
+│  │   Session    │    │       Harness             │   │
+│  │   (durable   │◄───│  (stateless, any instance │   │
+│  │   event log) │    │   can continue session)   │   │
+│  └──────────────┘    └──────────┬───────────────┘   │
+│                                 │ tool calls         │
+│                    ┌────────────▼───────────────┐   │
+│                    │          Sandbox            │   │
+│                    │  (untrusted by construction │   │
+│                    │   credentials never here)   │   │
+│                    └────────────────────────────┘   │
+└─────────────────────────────────────────────────────┘
+```
+
+## What the Decoupling Buys
+
+The three-component model is not just cleaner architecture. It directly addresses each of the failure modes from the entangled design:
+
+**Session survives harness crashes.** The session log lives in external storage. A harness container dying doesn't lose any conversation state. Any harness instance can pick up the session and continue. This makes long-running agents — ones that operate across hours or days — structurally reliable rather than fragile.
+
+**Debugging becomes tractable.** Session events are queryable after the fact. When something goes wrong, you can replay the session event by event, isolate which tool call produced unexpected output, and trace the model's reasoning relative to what context it actually received. The session log is an audit trail for the agent's execution.
+
+**Scale becomes straightforward.** Harness containers are stateless — the platform can allocate and deallocate them based on demand. Anthropic's pricing reflects this: $0.08 per session-hour, where idle time (waiting for tool results, waiting for user input) doesn't count. You pay for active execution, not container uptime.
+
+## MCP Integration and the Tool Layer
+
+Managed Agents integrates with MCP for external tool connectivity. The architecture is: the harness calls MCP tools through a dedicated proxy that handles credential injection. The MCP tool server never receives raw credentials — it receives a session-scoped token that's valid for the duration of the session and scoped to the specific resources the agent needs.
+
+For developers building MCP tool servers, this changes the security model: you don't need to handle credential management in your tool server. The proxy layer handles token exchange; your server receives authenticated, scoped requests.
+
+The broader MCP ecosystem fits cleanly into the session/harness/sandbox model. MCP servers are called from the harness, results are written to the session log, and the agent's code execution happens in the sandbox. The three-way separation is maintained even as the tool surface expands.
+
+## Implications for Agent System Design
+
+The Managed Agents launch makes an architectural argument: the reason agent systems are fragile is not primarily about model capability. It's about component entanglement. The same agent, run through infrastructure that correctly separates session, harness, and sandbox, exhibits significantly better reliability and debuggability than the same agent run through an entangled stack.
+
+The data Anthropic published supports this: in structured file generation tasks, Managed Agents improved task success rates by up to 10 percentage points over standard prompting loops, with the largest gains on the hardest problems. The hardest problems are where infrastructure failures are most likely to compound — which is exactly where structural reliability matters most.
+
+For teams building agent infrastructure, the session/harness/sandbox decomposition is worth applying even if you're not using Managed Agents specifically. The pattern is independent of the hosting layer. The gains from correct separation don't require Anthropic's runtime.
+
+---
+
+*Claude Managed Agents launched in public beta on April 8, 2026. Documentation at [docs.anthropic.com/managed-agents](https://docs.anthropic.com). Architecture details from the Anthropic engineering blog: ["Scaling Managed Agents: Decoupling the brain from the hands"](https://www.anthropic.com/engineering/managed-agents).*

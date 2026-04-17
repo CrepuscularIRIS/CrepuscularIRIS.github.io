@@ -1,0 +1,170 @@
+---
+title: "Durable Agents: Fibers and Crash-Proof Autonomy"
+description: "Cloudflare's Fibers make agents resumable by journaling every non-deterministic event. The same pattern works without Cloudflare once you see it."
+publishDate: "2026-04-17"
+tags: [agents, durable-execution, cloudflare, resilience, state-management, workflow-engines, orchestration]
+category: engineering
+language: en
+draft: false
+---
+
+An autonomous agent working on a three-hour task hits a 504 from the upstream LLM provider. The retry works, but the worker process dies during retry — oom kill, container eviction, a deploy rollout, a node reboot. The agent restarts. It has no memory of the last three hours. It runs the whole task again, re-issuing every LLM call, re-fetching every tool result, re-incurring every dollar. This is the agent amnesia problem, and it scales with the length of your tasks. An agent that checkpoints every ten minutes wastes only minutes. An agent that runs for hours and crashes near the end wastes hours.
+
+Durable execution is the operational answer. Borrowed from workflow engines — Temporal, Restate, AWS Step Functions, Azure Durable Functions — the idea is simple: record every non-deterministic event in a durable log, so that on restart, the engine can replay the log and reconstruct the program state without re-executing side effects. The agent writes the same code it would normally write. The runtime handles persistence.
+
+Cloudflare packaged this general idea for the agent use case under the name Fibers, exposed through its Agents SDK in early 2026. A Fiber is a durable execution unit — you start one with `runFiber(...)`, persist intermediate results with `stash(...)`, and restore them after a crash via `onFiberRecovered(...)`. Rather than Temporal-style automatic replay of every non-deterministic call, Fibers uses *checkpoint snapshots plus recovery hooks*: the agent writer decides which values to stash, and Fibers makes sure those values survive worker failure. Under the hood, Fibers are rows in the agent's Durable Object SQLite (e.g. `cf_agents_runs`), not a separate database per fiber.
+
+Cloudflare is not the only one with this general territory — Temporal has event-sourced replay with full determinism, Restate has similar semantics, DBOS has a Postgres-backed version, LlamaIndex added Workflow resilience in 2025. The approaches differ in how much of the durability contract they force on the user. Temporal gives you automatic replay at the cost of a strict deterministic-workflow discipline. Fibers gives you explicit checkpoints at the cost of making recovery logic the agent author's responsibility. Both are valid; the tradeoff is who owns the idempotency proof.
+
+## What "Durable" Actually Means
+
+The distinction between "persistent" and "durable" matters. Persistent agents save their state somewhere — a database, a file, a KV store — and reload it on restart. Durable agents guarantee that a crash at any instant is recoverable, up to and including crashes mid-function. Persistent agents lose the work between saves. Durable agents lose nothing.
+
+The mechanism depends on which camp you are in. The *event-sourced* camp (Temporal, Restate, DBOS) records every non-deterministic event — LLM call, HTTP request, timer, random number — in a durable log and replays the agent's code from the start on recovery. When execution hits a recorded event, the runtime returns the saved result instead of re-executing. Execution catches up to the crash point, then continues forward.
+
+The *checkpoint-and-recover* camp (Cloudflare Fibers, and most hand-rolled implementations) asks the author to stash salient intermediate values and define what recovery looks like. There is no automatic replay; there is a recovery hook that fires on resume and restores state from the stash. Less magic, more code, but no determinism constraints on the workflow body.
+
+Both camps converge on the same user-visible property: a crash loses no completed work. They just reach it through different invariants. The event-sourced camp's contract is "your workflow body must be deterministic"; the checkpoint camp's contract is "you decide what to persist and when." The general pattern — which this post mostly discusses — is the event-sourced version, because it generalizes most cleanly. Applied to agent code it means:
+
+```typescript
+async function researchTask(topic: string) {
+  const subtopics = await llm.generate(`Break down: ${topic}`)  // Journaled
+  const results = await Promise.all(
+    subtopics.map(async (st) => {
+      const searchHits = await web.search(st)                   // Journaled
+      const analysis = await llm.analyze(st, searchHits)        // Journaled
+      await store.put(`research/${st}`, analysis)               // Journaled
+      return analysis
+    })
+  )
+  return synthesize(results)
+}
+```
+
+If this function runs for an hour and crashes halfway, the next invocation replays the first half instantly — every `llm.generate`, `web.search`, and `store.put` call returns its recorded result from the journal. The agent then continues with the second half. The user sees a brief delay, not a three-hour redo.
+
+The runtime has to enforce this contract at the language level. In Temporal, this is done via a type distinction between "workflow code" (deterministic, replay-safe) and "activity code" (the things that get journaled). In DBOS, it's done via decorators on Postgres-backed functions. In Cloudflare Fibers, the contract is looser: you stash the values you want to survive, and write a recovery hook that handles resumption. The mechanism differs; the invariant — "no completed work is lost on crash" — is what all three deliver.
+
+## The Three Invariants (Event-Sourced Camp)
+
+Event-sourced durable execution rests on three invariants the runtime and the user must preserve. These apply to Temporal, Restate, DBOS, and any hand-rolled journal-and-replay setup. Fibers dodges the first invariant by not replaying — the author explicitly stashes state instead — but still has to deal with the other two.
+
+**Determinism.** The top-level workflow code must be deterministic. Given the same journaled inputs, it must produce the same sequence of decisions. If the code does `if (Math.random() > 0.5)`, replay breaks because the random value differs between runs. Temporal solves this with a sandboxed workflow context that replaces `Math.random`, `Date.now`, and `setTimeout` with journaled versions. DBOS handles it with explicit wrappers. In Fibers, determinism is a non-issue because there is no replay — but the recovery hook must be written to handle partial completion correctly.
+
+**Idempotency.** Side effects that the journal cannot capture — writing to an external system, sending an email — must be idempotent. The runtime journals the attempt; on success, it journals the result. If the side effect actually happened but the journal entry was never written (a crash in the window between the external call returning and the journal commit), replay will re-attempt. The external system has to tolerate a second attempt without duplicating the effect. Unique request IDs, upserts, and the transactional outbox pattern are the standard tools.
+
+**Bounded journal growth.** The journal grows with each non-deterministic event. For a long-running agent doing dozens of LLM calls per minute, the journal can reach large sizes in hours. The runtime has to snapshot periodically — compacting the journal to a single state blob and starting a new log. Most production workflow engines do this automatically; when you roll your own, it is the thing people forget.
+
+Every durable execution bug I've seen in production violated one of these three. An agent that logs the current timestamp into its reasoning ("it is now 3:04pm, so...") breaks determinism. An agent that sends a Slack message without an idempotency key double-posts on every replay or crash-resume. An agent that accumulates unbounded state without snapshots grinds to a halt as the journal grows.
+
+## What Fibers Adds
+
+The novelty in Fibers is not durable execution — that pattern is nearly twenty years old. The novelty is the integration with Cloudflare's Agents SDK and Durable Objects: Fibers are rows in a per-agent Durable Object SQLite table (such as `cf_agents_runs`), colocated with the compute that runs the agent. One agent can run many fibers; each fiber is a tracked execution with stashed state and a recovery hook.
+
+Storing fibers in the agent's own Durable Object SQLite is a sharper model than most workflow engines, which use a shared remote backend (Postgres, Cassandra, DynamoDB) serving all workflows. Sharing a backend means every workflow competes for write bandwidth and pays network hop costs for every persisted event. Durable Object SQLite is single-writer, in-process, and local to the worker, so writes are local file I/O rather than a network round-trip. The practical effect is that stashing intermediate state is cheap — cheap enough to do it aggressively — without the operational cost of running a separate workflow backend.
+
+The tradeoff is that a fiber lives where its Durable Object lives. For most agent workloads, this is fine — you want the agent to run near its state. For cross-region workloads, you need a different model. Temporal's global namespace and DBOS's Postgres backend both solve this differently. Fibers, at the current release, does not.
+
+The other Fibers-specific feature is how paused agents are handled. When a fiber is waiting for a long-running external event (a human approval, a 12-hour timer), Cloudflare can release the compute and only bill storage. When the event arrives, the agent is revived on a worker, the recovery hook runs, stashed state is restored, and execution continues. In Temporal, this is the native timer and signal model; in AWS Lambda, you'd handle it with EventBridge + DynamoDB, which is considerably more plumbing.
+
+## A Minimal Durable Agent Without Cloudflare
+
+You don't need Fibers to get durable agents. The pattern is adoptable without Cloudflare's SDK. The ingredients:
+
+1. An append-only log (SQLite, Postgres WAL, Kafka, or any log store).
+2. A wrapper around every non-deterministic call that checks the log before executing.
+3. A way to restart the agent function from scratch and replay.
+
+Here's a minimal sketch in Python, backed by SQLite. This is illustrative — treat the external calls (`llm_generate`, `web_search`, etc.) as placeholders.
+
+```python
+import sqlite3
+import json
+from typing import Callable, Any
+
+class Journal:
+    def __init__(self, path: str, fiber_id: str):
+        self.db = sqlite3.connect(path)
+        self.db.execute("""
+            CREATE TABLE IF NOT EXISTS events (
+                fiber_id TEXT,
+                step_key TEXT,
+                result TEXT,
+                PRIMARY KEY (fiber_id, step_key)
+            )
+        """)
+        self.fiber_id = fiber_id
+
+    def step(self, key: str, fn: Callable[[], Any]) -> Any:
+        """Journaled step: return cached result if present, otherwise execute and cache.
+
+        NOTE: there is a failure window between `fn()` returning and the INSERT
+        committing. A crash inside that window will cause `fn` to run again on
+        replay. If `fn` has external side effects, pass an idempotency key into
+        `fn` and make the external system deduplicate. Without that, this is
+        'resumable' but not 'crash-proof' in the strict sense.
+        """
+        row = self.db.execute(
+            "SELECT result FROM events WHERE fiber_id=? AND step_key=?",
+            (self.fiber_id, key)
+        ).fetchone()
+        if row is not None:
+            return json.loads(row[0])
+        result = fn()
+        self.db.execute(
+            "INSERT INTO events VALUES (?, ?, ?)",
+            (self.fiber_id, key, json.dumps(result))
+        )
+        self.db.commit()
+        return result
+
+# Usage (placeholder external calls)
+def research_agent(topic: str, journal: Journal):
+    outline = journal.step(
+        key="outline",
+        fn=lambda: llm_generate(f"Break down: {topic}", idempotency_key="outline")
+    )
+
+    sections = []
+    for i, section_title in enumerate(outline):
+        hits = journal.step(
+            key=f"search_{i}",
+            fn=lambda: web_search(section_title)
+        )
+        analysis = journal.step(
+            key=f"analyze_{i}",
+            fn=lambda: llm_analyze(section_title, hits, idempotency_key=f"analyze_{i}")
+        )
+        sections.append(analysis)
+
+    return journal.step(
+        key="synthesize",
+        fn=lambda: llm_synthesize(sections, idempotency_key="synthesize")
+    )
+```
+
+On first run, every `journal.step` executes and caches. On crash, the next call replays — `outline` returns from cache immediately, each `search_i` and `analyze_i` returns from cache, and execution catches up to the last incomplete step. The agent's code is unchanged; the `step` wrapper handles persistence.
+
+The missing pieces in this toy version are what real workflow engines handle for you. There is a failure window between `fn()` returning and the journal commit — the idempotency keys papered over this but you still need the external system to actually deduplicate. You still need compaction once the journal gets large, schema evolution for long-lived workflows, and recovery logic when the SQLite file itself gets corrupted. If you roll your own, you'll reimplement each of those under different names. The question is whether you do so knowingly, as a design choice, or accidentally, as a series of post-incident patches.
+
+## When Durability Isn't Worth It
+
+Durable execution is not free. It adds latency on every journaled call (the write), complexity in the runtime (determinism enforcement, replay), and cognitive load on the programmer (idempotency discipline). For short-lived agents — tasks that complete in under a minute — durability is overkill. A crash just restarts the task, and the wasted work is trivial.
+
+The break-even point is roughly where the expected cost of a crash exceeds the expected overhead of journaling. For LLM-heavy agents, the cost of a single call is usually dominated by the model provider's bill, not by the journal write, so the overhead is negligible as a percentage. For cheap, short agents, the overhead matters more.
+
+A useful heuristic: if your agent's expected wall-clock runtime exceeds the MTBF of your infrastructure — 30 minutes on commodity cloud nodes, a few hours on dedicated hardware — you need durability. If it runs in seconds, you don't. Most production agent workloads sit firmly in the "need it" range, which is why every serious agent platform is converging on some form of this pattern.
+
+## The Bigger Trend
+
+Fibers is one data point in a broader trend. The agent runtimes of 2025 — LangChain, AutoGen, CrewAI — treated durability as an afterthought. You could bolt on checkpointing if you cared, but the default was stateless function execution. The agent runtimes of 2026 — Fibers, LangGraph's built-in persistence, Claude Skills with session state, OpenAI's new Agents SDK with Manifest-based Sandboxing — treat durability as native. The default is "your agent survives crashes." Opt-out, not opt-in.
+
+This matches the maturation curve that web applications went through in the 2000s: from CGI scripts that died on every request, to stateful app servers with session management, to managed platforms that handle crash recovery for you. Agents are on the same trajectory, compressed. Expect every major agent framework to offer durable execution as a first-class primitive by the end of 2026. The production agents that survive the next wave of infrastructure churn will be the ones that treated crash-proofing as a design constraint, not a scaling concern.
+
+## References
+
+- Cloudflare Agents SDK, Fibers (`runFiber`, `stash`, `onFiberRecovered`): https://developers.cloudflare.com/agents/
+- Temporal documentation, "Workflow determinism": https://docs.temporal.io/workflows
+- Restate durable execution primer: https://restate.dev/
+- DBOS durable execution library: https://dbos.dev/
+- AWS Step Functions "express vs standard" model: https://docs.aws.amazon.com/step-functions/

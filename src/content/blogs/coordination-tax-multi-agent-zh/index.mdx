@@ -1,0 +1,183 @@
+---
+title: "多智能体系统的协调税"
+description: "多智能体编排有五种基准测试忽略的失败模式。故障分类与工程缓解方案。"
+publishDate: "2026-04-16"
+tags: [agents, multi-agent, orchestration, mcp, failure-modes, infrastructure]
+category: engineering
+language: zh
+draft: false
+---
+
+多智能体系统的宣传很诱人：把复杂任务分解为子任务，分配给专门的 Agent，然后协调它们。Demo 永远能跑通。生产环境很少能。Demo 和生产之间的差距，就是我所说的**协调税**——Agent 必须真正协作时出现的开销、故障模式和涌现性病理。
+
+本文对五种实践中重要的协调故障模式进行分类，结合 Claude Code 的 Coordinator Mode、Microsoft Agent Framework 1.0、以及 MCP/A2A 协议融合中的新兴模式，提出可直接实现的工程缓解方案。
+
+## 五种故障模式
+
+### 1. 级联幻觉
+
+Agent A 产生一个看似合理但错误的中间结果，Agent B 将其作为事实消费。Agent C 基于 B 的输出继续构建。当最终结果到达用户时，原始幻觉已经过多个"推理"步骤的清洗，每一步都增加了表面的可信度。
+
+这比单 Agent 幻觉更糟，因为多 Agent 系统创造了验证的假象。如果三个 Agent "一致同意"一个答案，操作者会假设它被交叉检查过了。
+
+**缓解模式：对抗性验证层。** 插入一个专门的验证 Agent，只能访问最终声明和原始素材，不能访问中间推理。关键约束：验证者必须使用与生成者不同的模型或提示结构。
+
+```python
+class AdversarialVerifier:
+    """仅基于原始素材验证声明的验证器。"""
+    
+    def __init__(self, verifier_model: str, generator_model: str):
+        assert verifier_model != generator_model  # 避免共享偏差
+        self.model = verifier_model
+    
+    def verify(self, claim: str, sources: list[str]) -> VerificationResult:
+        prompt = f"""仅根据以下来源材料，判断该声明是被支持、
+        被反驳还是无法验证。
+        
+        声明: {claim}
+        来源: {chr(10).join(sources)}
+        
+        如果声明包含任何来源未直接支持的断言，
+        分类为"无法验证"而非"被支持"。"""
+        return self._classify(prompt)
+```
+
+### 2. 上下文交接失败
+
+Agent A 处理 50,000 token 的上下文，为 Agent B 生成 500 token 的摘要。100 倍的压缩必然丢失信息。问题是是否丢失了*正确*的信息。实践中，摘要系统性地丢弃边缘情况、警告和否定结果——恰恰是下游 Agent 需要的信息。
+
+**缓解模式：带强制不确定性字段的结构化交接。**
+
+```typescript
+interface AgentHandoff {
+  conclusion: string;
+  confidence: number;          // 0-1
+  unresolved: string[];        // 明确无法确定的事项
+  assumptions: string[];       // 结论依赖的假设
+  supporting_evidence: string[];
+  contradicting_evidence: string[];  // 反面证据
+}
+```
+
+关键字段是 `unresolved`、`assumptions` 和 `contradicting_evidence`。它们迫使上游 Agent 显式表达其不知道的内容。
+
+### 3. 协调死锁
+
+Agent A 等待 Agent B 的输出。Agent B 需要 Agent A 的澄清。两者都不推进。更微妙的情况：Agent A 声称需要 Agent B 的输出，但实际上有足够信息用合理默认值继续。Agent 通过推迟给其他 Agent 来"保险"。
+
+**缓解模式：带回退启发式的超时。**
+
+```python
+async def coordinate_with_fallback(
+    agent: Agent,
+    dependency: Agent,
+    timeout_seconds: float = 30.0,
+    fallback_fn: Callable[[], Result] | None = None
+) -> Result:
+    try:
+        return await asyncio.wait_for(
+            dependency.execute(), timeout=timeout_seconds
+        )
+    except asyncio.TimeoutError:
+        if fallback_fn:
+            logger.warning(f"Agent {dependency.name} 超时，使用回退")
+            return fallback_fn()
+        raise CoordinationTimeout(f"无回退可用")
+```
+
+每个 Agent 间依赖都必须有超时和回退。如果无法定义合理回退，依赖太紧，应该合并 Agent。
+
+### 4. 目标错位
+
+每个 Agent 优化其局部目标。代码 Agent 优化测试通过率，审查 Agent 优化代码质量，安全 Agent 优化漏洞消除。局部最优导致全局次优：代码 Agent 写出绕过性的代码，审查 Agent 要求重写，安全 Agent 标记重写后的代码，系统进入振荡。
+
+**缓解模式：带明确优先级排序的层级权威。**
+
+```yaml
+agent_priority:
+  1: security    # 安全约束不可协商
+  2: correctness # 测试必须通过
+  3: quality     # 在安全和正确性约束内优化质量
+
+conflict_resolution:
+  strategy: priority_override  # 高优先级 Agent 胜出
+  log_conflicts: true          # 但记录冲突供人工审查
+  max_rounds: 3                # 封顶解决轮数
+```
+
+### 5. Token 成本爆炸
+
+多 Agent 系统以不直观的方式倍增 token 消耗。一个 3-Agent 系统的典型消耗：
+
+```
+系统提示词:        3 × 3,000  =   9,000 tokens
+任务分发:          3 × 10,000 =  30,000 tokens
+协调消息:          5 × 3 × 2,000 = 30,000 tokens
+Agent 响应:        5 × 3 × 1,500 = 22,500 tokens
+                                  ─────────
+总计:                              91,500 tokens
+```
+
+单 Agent 处理同一任务约 25,000 tokens。3.7 倍的乘数就是 token 形式的协调税。
+
+**缓解模式：KVComm（键值通信）。** 用结构化键值对代替自然语言消息进行 Agent 间通信。
+
+```python
+class KVMessage:
+    def __init__(self):
+        self.data: dict[str, Any] = {}
+    
+    def set(self, key: str, value: Any, confidence: float = 1.0):
+        self.data[key] = {"value": value, "confidence": confidence}
+    
+    def to_prompt_fragment(self) -> str:
+        lines = []
+        for key, entry in self.data.items():
+            conf = entry["confidence"]
+            val = entry["value"]
+            marker = " [uncertain]" if conf < 0.8 else ""
+            lines.append(f"- {key}: {val}{marker}")
+        return "\n".join(lines)
+```
+
+使用 KVComm 风格方法的团队报告 Agent 间 token 消耗减少高达 70%。
+
+## 框架融合
+
+2026 年 4 月有三个结构性变化：
+
+**Microsoft Agent Framework 1.0**（4 月初）将 Semantic Kernel 和 AutoGen 统一为单一 SDK，采用基于图的编排模型。Agent 是有向图中的节点而非对话参与者。这解决了会话式设计在复杂依赖结构上的天然劣势。
+
+**MCP 与 A2A 成为互补协议。** Model Context Protocol（工具/资源层）和 Agent-to-Agent Protocol（网络层）现在都是 Linux 基金会项目。分层清晰：MCP 处理 Agent 与工具的交互；A2A 处理 Agent 间的交互。
+
+**Claude Code 的 Coordinator Mode** 引入了共享内存和原子声明审批的层级 Agent 管理。"声明"机制：Agent 修改文件前必须声明，协调者必须批准。这是针对 LLM Agent 系统的分布式锁机制。
+
+## 什么时候用多 Agent
+
+**用单 Agent：**
+- 任务适合一个上下文窗口
+- 需要跨所有部分的连贯推理
+- 延迟优先于吞吐量
+- 协调错误的代价超过专业化的收益
+
+**用多 Agent：**
+- 任务自然分解为独立子任务
+- 不同子任务需要不同能力
+- 需要处理超出单窗口的信息量
+- 可以接受更高延迟换取并行执行
+
+**关键测试：** 能否提前定义 Agent 间通信 schema？如果可以精确指定每个 Agent 需要从其他 Agent 获取的信息，多 Agent 编排可行。如果 Agent 需要开放式"对话"来确定需要什么，你是在为单 Agent 加长上下文窗口就能处理的事情支付协调税。
+
+## 度量协调税
+
+```python
+coordination_metrics = {
+    "token_amplification_ratio": "总 token / 等效单 Agent token (> 4x 说明协调开销主导)",
+    "handoff_error_rate": "交接信息被误解的百分比",
+    "cascade_depth": "Agent 链最大深度 (目标: <= 3)",
+    "conflict_resolution_rounds": "解决分歧需要的往返次数 (> 2 说明优先级排序有误)",
+    "fallback_trigger_rate": "超时回退触发率 (> 20% 说明分解粒度过细)",
+}
+```
+
+多 Agent 系统是合理的架构模式——前提是任务确实可分解为松耦合子任务。它不是构建更好的单 Agent 的替代品。协调税是分解的代价，像所有工程取舍一样，只有在专业化收益超过协调成本时才值得支付。

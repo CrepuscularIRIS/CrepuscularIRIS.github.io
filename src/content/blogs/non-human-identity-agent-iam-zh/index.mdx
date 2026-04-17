@@ -1,0 +1,190 @@
+---
+title: "非人类身份：自主 Agent 的 IAM 架构"
+description: "Agent 需要凭证、权限和审计追踪。现有 IAM 系统假设键盘后面是人类。哪些会失效，如何修复。"
+publishDate: "2026-04-15"
+tags: [agent-security, IAM, MCP, multi-agent, identity, zero-trust, infrastructure]
+category: engineering
+language: zh
+draft: false
+---
+
+所有生产环境的 Agent 系统最终都会撞上同一堵墙：Agent 需要向外部服务进行身份认证，而整个身份基础设施的设计前提是——操作者是人。OAuth 流程依赖浏览器重定向，API key 被写死在环境变量里、没有轮换策略，Service Account 的权限范围配得过宽，因为从来没人为一个"会在运行时自行改变工具调用模式"的实体设计过权限边界。
+
+结果就是一个可预见的故障模式。一个持有 `repo` 范围 GitHub token 的编码 Agent，隐含了删除分支、修改 CI workflow、推送到 main 分支、读取 secrets 的权限——因为这个 token 是给需要所有这些权限的人类开发者创建的，而 Agent 原样继承了它。Agent 本身并不知道在某个具体任务中究竟需要哪些权限。创建 token 的人类也无法看到 Agent 实际行使了哪些权限。
+
+这就是 Non-Human Identity（NHI）问题。截至 2026 年 4 月，它是 Agent 基础设施中最大的、尚未被系统性解决的安全缺口。
+
+## 问题的规模
+
+根据 2026 年 4 月的行业调查，企业多 Agent 部署同比增长了 327%。典型的企业 Agent 系统涉及 3–7 个 Agent，跨 5–12 个外部服务运行（代码仓库、数据库、云 API、通讯平台、监控系统）。每一个 Agent 与服务之间的连接都需要认证，每一次认证决策都隐含着授权范围。
+
+以一个典型的编码 Agent 部署为例，NHI 凭证面大致如下：
+
+```
+Agent: coding-assistant
+├── GitHub (PAT) → repo, workflow, read:org
+├── Linear (API key) → read/write issues, read projects
+├── Slack (Bot token) → chat:write, channels:read, users:read
+├── AWS (IAM role) → s3:GetObject, s3:PutObject, logs:*
+├── Datadog (API key) → metrics:read, events:write
+└── PostgreSQL (connection string) → SELECT, INSERT, UPDATE on 4 tables
+```
+
+六个凭证，各自有不同的生命周期、轮换策略和权限模型。GitHub PAT 90 天过期（前提是开发者记得设置过期时间）。AWS IAM role 永不过期。PostgreSQL 连接字符串被写入一次环境变量后再无人问津。Slack bot token 之所以拥有 `users:read` 权限，是因为安装向导默认勾选了它，并非 Agent 真正需要枚举用户列表。
+
+把这个数字乘以 5 个 Agent，就是 30 个凭证面，每一个都可能在某个 Agent 被 prompt injection、tool confusion 或 CBSE 攻击攻破后，成为横向移动的跳板。
+
+## 人类 IAM 为什么不适用于 Agent
+
+人类 IAM 系统建立在几个核心假设之上，而这些假设在自主 Agent 面前全部失效：
+
+**假设一：身份是稳定的。** 一个员工拥有一个跨会话持久存在的身份。但 Agent 可能被多次实例化、携带不同上下文，多个并行实例执行不同的任务目标。权限系统应该绑定到哪个"身份"——Agent 的定义、具体的实例、它正在执行的任务、还是触发它的用户？
+
+**假设二：会话是交互式的。** OAuth 2.0 的 Authorization Code Flow 需要浏览器重定向和人类同意，SAML SSO 需要登录页面，MFA 需要手机。Agent 没有浏览器、没有登录页面、也没有手机。通常的绕过方式——使用 OAuth Client Credentials Grant 或长期有效的 API key——恰恰取消了授权框架中"人在回路中"的同意机制。
+
+**假设三：权限是预先确定的。** 人的角色（开发者、管理员、只读用户）映射到一组由 IT 部门定义的固定权限集。但 Agent 所需的权限取决于它正在执行的任务，而任务是在运行时由模型的规划步骤决定的。修复一个 CSS bug 的编码 Agent 只需要特定分支上的 `repo:read` 和 `repo:write`；同一个 Agent 执行生产部署时，则需要 `workflow:trigger` 和环境 secrets 访问权限。权限需求是动态的，但凭证却是静态签发的。
+
+**假设四：审计日志能映射到意图。** 人类访问日志记录的是"用户 X 在时间 Z 访问了资源 Y"。对人类而言，意图是隐含可理解的：开发者访问生产数据库是为了排查客户问题。对 Agent 而言，审计日志记录的是工具调用，但意图埋藏在模型的推理链条中——这条推理链可能没被记录、可能不可解释、也可能并不真实反映 Agent 的实际决策过程。
+
+## Agent IAM 的架构设计
+
+一个生产级的 Agent 身份系统需要四层架构：
+
+### 第一层：任务级凭证
+
+用短期、任务级的 token 替代静态 API key。当 Agent 开始一个任务时，凭证代理签发仅包含该任务所需权限的 token，TTL 匹配预期的任务时长。
+
+```python
+# Credential broker interface
+class AgentCredentialBroker:
+    def issue(
+        self,
+        agent_id: str,
+        task_id: str,
+        required_permissions: list[Permission],
+        ttl_seconds: int = 300,
+    ) -> TaskScopedCredential:
+        """Issue a short-lived credential for a specific task.
+
+        The credential is:
+        - Bound to (agent_id, task_id) pair
+        - Scoped to only the requested permissions
+        - Automatically revoked after ttl_seconds
+        - Logged with full provenance chain
+        """
+        validated = self.policy_engine.validate(
+            agent_id, required_permissions
+        )
+        if not validated.approved:
+            raise PermissionDenied(validated.reason)
+
+        return self.token_service.mint(
+            subject=f"agent:{agent_id}/task:{task_id}",
+            scopes=validated.approved_scopes,
+            expires_in=ttl_seconds,
+            metadata={"task_context": task_id},
+        )
+```
+
+这里的关键细节在于**谁来决定所需权限**。Agent 不能自行声明权限需求——这相当于让模型来执行自己的安全约束。权限必须来源于一个独立于模型推理之外的任务定义，通常由 harness 或编排层提供。
+
+### 第二层：工具级权限边界
+
+Agent 工具集中的每个工具都应声明其最大权限包络。MCP 协议的 tool schema 是放置这类声明的天然位置：
+
+```json
+{
+  "name": "github_create_pull_request",
+  "description": "Create a pull request on GitHub",
+  "inputSchema": { ... },
+  "permissions": {
+    "github": ["repo:read", "repo:write", "pull_request:write"],
+    "max_scope": "single_repository",
+    "requires_approval_above": "repo:admin"
+  }
+}
+```
+
+当 Agent 选择一个工具时，harness 检查 Agent 当前的任务级凭证是否覆盖了该工具声明的权限要求。如果工具所需权限超出了任务范围，harness 将请求升级到用户审批，而不是静默授权。
+
+这构成了一个双层权限模型：任务范围定义了权限上限，工具声明在上限之内定义了具体授权。
+
+### 第三层：行为审计链
+
+标准的访问日志（谁在什么时间访问了什么）是必要的，但远远不够。Agent 审计链需要捕获因果关系：**Agent 为什么访问了这个资源。**
+
+```json
+{
+  "event": "resource_access",
+  "agent_id": "coding-agent-v3",
+  "task_id": "fix-auth-bug-1234",
+  "tool": "github_read_file",
+  "resource": "repo:acme/api/src/auth/middleware.ts",
+  "timestamp": "2026-04-15T10:23:45Z",
+  "reasoning_hash": "sha256:a1b2c3...",
+  "parent_tool_call": "tc_001",
+  "permission_used": "repo:read",
+  "permission_ceiling": ["repo:read", "repo:write"],
+  "session_remaining_ttl": 245
+}
+```
+
+`reasoning_hash` 关联到工具调用时刻模型的推理链条。这并不能让推理过程变得可解释——但让它变得可审计。如果事后调查发现 Agent 访问了不该访问的资源，推理链条可以帮助判定这次访问究竟是合理的规划决策，还是对抗性攻击的结果。
+
+### 第四层：权限模式异常检测
+
+静态权限策略捕获的是已知的恶意访问模式，行为异常检测捕获的是未知模式。核心洞察在于：Agent 的工具调用模式比人类的访问模式更可预测，因为 Agent 遵循程序化的工作流，而非即兴探索。
+
+一个编码 Agent 通常按 `github_read_file` → `github_create_branch` → `github_push_commit` → `github_create_pull_request` 的顺序调用工具，形成稳定的行为特征。如果同一个 Agent 突然执行 `github_delete_branch` → `github_read_secrets` → `slack_send_message`，无论每个单独操作是否在其权限范围之内，与行为基线的偏离都是可检测的。
+
+这正是 Agent IAM 与人类 IAM 最显著的分野。人类行为不可预测，标记异常访问模式会产生大量误报。而 Agent 行为高度可预测，偏离既有模式本身就值得警惕和调查。
+
+## CBSE：新型攻击向量
+
+Configuration-Based Sandbox Escape（CBSE）是 2026 年 4 月安全研究中讨论最多的 Agent 攻击向量。它利用的是 Agent 执行沙箱与宿主系统配置处理之间的缝隙。
+
+攻击路径如下：Agent 被限制在一个容器或 microVM 中运行，文件系统和网络访问受到严格限制。但沙箱内的某些配置文件会被宿主系统处理——Docker socket 挂载、CI pipeline 定义、包管理器配置中的 post-install 脚本。如果 prompt injection 导致 Agent 写入了一个恶意的 `package.json` postinstall 脚本，这并不直接违反沙箱边界，但当 CI 系统处理它时，脚本会以宿主权限执行。
+
+CBSE 对编码 Agent 尤其危险，因为它们的核心功能——编写和修改代码文件——与攻击向量完全无法区分。你不可能通过禁止文件写入来防御，否则 Agent 就失去了存在的意义。防御必须是结构性的：确保 Agent 能写入的任何文件，都不会被宿主系统以提升后的权限处理。
+
+具体的缓解措施：
+
+1. **挂载隔离。** 永远不要将 Docker socket、CI 配置目录或包管理器缓存挂载到 Agent 容器中。Agent 应操作仓库的副本，而非活跃的文件系统。
+
+2. **构建步骤沙箱化。** 在嵌套沙箱（gVisor、Firecracker）中运行 `npm install`、`pip install` 及同类命令，而非在宿主机上执行。Post-install 脚本应与 Agent 本身受到同等限制。
+
+3. **配置文件白名单。** 维护一份 Agent 可修改的文件路径的显式列表。列表之外的文件修改触发审批流程。这种方式较为粗暴，但对高安全性环境行之有效。
+
+4. **CI 定义不可变。** 将 `.github/workflows/`、`Jenkinsfile` 及同类 CI 配置视为对 Agent 只读。这些文件的变更必须经过人工审查，不受 Agent 权限范围影响。
+
+## MCP 的机遇
+
+MCP 天然适合承担 Agent 身份标准化的角色，因为它已经在工具调用层充当中介。如果 MCP tool server 要求每次请求携带任务级凭证（以 bearer token 的形式通过无状态 HTTP transport 传递），身份层就能自然地集成进来，无需每个工具开发者各自构建认证逻辑。
+
+截至 2026 年 4 月，MCP 尚缺的部分：
+
+- **没有标准权限 schema。** 各 tool server 各自定义认证要求。一套标准的权限声明格式将实现自动化的 scope 校验。
+- **没有凭证委派机制。** 当 Agent A 通过 A2A 调用 Agent B 时，没有标准方式让 Agent A 将其凭证的子集委派给 Agent B。目前的绕过方式是给 Agent B 签发独立凭证，这打破了任务级权限的传递链。
+- **没有审计事件标准。** 各 tool server 的日志格式各异（有些甚至不记日志）。一套标准的审计事件格式将支撑跨工具的行为分析。
+
+这些都是协议层面可解决的问题。Agentic AI Foundation（Linux Foundation）已将其列入 2026 年路线图，但交付时间尚不确定。
+
+## 当下可以做什么
+
+如果你正在生产环境部署 Agent，又等不到协议层方案落地：
+
+**全面启用短期 token。** 将每一个长期 API key 替换为以分钟为单位过期的 token。用 GitHub Apps 的 installation token（1 小时 TTL）替代 PAT；用 AWS STS AssumeRole 的 15 分钟会话替代 IAM user key；用带有逐查询认证的数据库连接池替代持久连接字符串。
+
+**按任务签发凭证。** 不要在启动时一次性给 Agent 授权。在它开始具体任务时签发凭证，范围限定在该任务的需求之内。任务完成时立即撤销。
+
+**将 Agent 身份与开发者身份分离。** Agent 绝不应使用开发者的个人凭证。为每类 Agent 创建专用的 Service Account，其权限应从 Agent 的工具定义推导而来，而非照搬某个人类角色。
+
+**记录工具调用，而非仅记录 API 调用。** 你的安全团队需要看到"Agent X 调用了工具 Y，进而触发了 API 调用 Z"——而不仅是"发生了 API 调用 Z"。工具调用才是意图可读的层次。
+
+**按季度审查权限。** Agent 的权限蔓延速度快于人类，因为 Agent 的配置变更频率远高于人类角色的调整频率。按季度审计每个 Agent 实际使用了哪些权限（对比它拥有的权限），可以暴露 scope creep。
+
+NHI 问题并不新奇。它本质上就是企业安全领域几十年来在人类身份上执行的最小权限原则。区别在于，将最小权限应用于非人类实体的工具链、协议和组织习惯，目前都还不成熟。Agent 已经跑在了生产环境里，身份基础设施需要迎头赶上。
+
+---
+
+*企业 Agent 部署数据来自 2026 年 4 月行业调查。CBSE 攻击向量记载于 Cisco State of AI Security 2026 报告。MCP 治理于 2026 年初移交至 Agentic AI Foundation（Linux Foundation）。*

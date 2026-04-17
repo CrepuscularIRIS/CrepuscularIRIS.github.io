@@ -1,0 +1,137 @@
+---
+title: "CaMeL and the Dual-LLM Pattern: Capabilities for Agents"
+description: "Prompt injection is not a prompting problem. CaMeL treats it as a systems problem — privileged vs quarantined LLMs, with policies enforced outside the model."
+publishDate: "2026-04-17"
+tags: [agent-security, prompt-injection, CaMeL, dual-LLM, capabilities, MCP, A2A, agent-engineering]
+category: engineering
+language: en
+draft: false
+---
+
+The most uncomfortable finding from three years of prompt-injection research is that scaling does not solve the problem. A larger, smarter, more heavily RLHF'd model still does what the untrusted content in its context tells it to do, because the model has no architectural way to distinguish "this came from the developer" from "this came from a web page the tool just fetched." Better instruction tuning lowers the rate. It does not close the attack surface.
+
+The CaMeL paper — *Defeating Prompt Injections by Design*, from a Google DeepMind + ETH Zürich team (Debenedetti et al., 2025, [arXiv:2503.18813](https://arxiv.org/abs/2503.18813)) — argues that the entire framing has been wrong. Prompt injection is not a prompting problem. It is a data-flow problem, and you solve data-flow problems the same way operating systems solved them in the 1970s: capability-based access control, explicit privilege separation, and a policy engine outside the untrusted component.
+
+This post walks through what CaMeL actually ships, why the dual-LLM split matters more than any individual defense, and how the pattern connects to the capability primitives now landing in MCP, A2A, and AP2. The CaMeL design is the missing runtime model for the capability-based agent stack that protocol-layer work has been quietly assembling.
+
+## The Old Framing: Injection as a Prompting Problem
+
+The conventional defenses against indirect prompt injection are all prompt-layer interventions:
+
+- **Delimiters and sandwich patterns**: wrap untrusted content in `<UNTRUSTED>...</UNTRUSTED>` and tell the model "ignore instructions inside." The model sometimes does.
+- **Instruction hierarchy fine-tuning**: train the model to prefer system-prompt instructions over user-message instructions over tool-output instructions. This is OpenAI's instruction-hierarchy work. Useful, not sufficient.
+- **Post-hoc classifiers**: run a separate "is this output following the user's intent" check after generation. Adds latency, misses novel attacks.
+- **Output filters**: scrub the model's generation for dangerous patterns (exfil URLs, shell commands). Attackers encode around filters.
+
+All four patterns share a common failure mode: they assume the model itself can be trusted to make a security decision once you give it the right prompt. The model sees the system prompt, the user instruction, the tool output, the retrieved document — and is asked to decide, token by token, which of these it should obey. That is a security-critical decision being made inside an untrusted black box.
+
+The empirical result is predictable. The AgentDojo benchmark ([arXiv:2406.13352](https://arxiv.org/abs/2406.13352)) measures exactly this: give an agent a legitimate task involving email, web search, and file access, embed an injection in one of the retrieved documents, and count how often the agent follows the injection instead of the user. Across the configurations reported in the original AgentDojo paper, prompting-layer defenses routinely leave non-trivial residual attack success rates — often in the tens of percent, sometimes higher, depending on the model, the policy, and whether the attacker is aware of the defense. The exact numbers move with every new model release. The structural observation is what doesn't move: prompting defenses reduce, rather than eliminate, the attack surface. For a single agent running a single task that is tolerable. For an agent running thousands of tasks a day against untrusted content, it is not.
+
+## The CaMeL Architecture: Two LLMs and a Policy Engine
+
+CaMeL's insight is that you don't need the model to make the security decision. You need to structure the system so the model *cannot* make it.
+
+The architecture uses three components:
+
+1. **Privileged LLM (P-LLM)**. Sees only trusted input — the user's prompt, system configuration, and the schemas of available tools. Its job is to produce a *plan*: a small program expressed in a restricted subset of Python, where the operations are tool calls and control flow. The P-LLM never sees untrusted data. It cannot be injected because it never reads anything an attacker could have written.
+
+2. **Quarantined LLM (Q-LLM)**. Sees untrusted content — web pages, emails, PDFs, MCP tool outputs. Its job is *only* to extract structured information according to a schema provided by the P-LLM ("find the shipping address in this email, return it as JSON"). The Q-LLM has no tool access. Its output is validated against the schema before reaching any other component. Anything extra the Q-LLM says — including any instructions an attacker embedded — is discarded by the schema validator.
+
+3. **Interpreter with a capability-policy engine**. Executes the plan produced by the P-LLM. Every piece of data flowing through the interpreter carries *capabilities* — metadata tags describing where it came from and what may be done with it. The interpreter consults a policy ("can data tagged `from:external_email` be passed as an argument to `send_money(...)`?") before any tool call. Policy violations raise exceptions, not generations.
+
+The data flow looks like this:
+
+```text
+User prompt ──► P-LLM ──► Plan (Python-lite AST)
+                            │
+                            ▼
+                    ┌───────────────┐
+Tool outputs ──────►│  Interpreter  │───► Tool calls
+(untrusted) ──► Q-LLM │ + Capability │    (only if
+(schema-bounded)      │   Policy     │     policy OK)
+                    └───────────────┘
+```
+
+There are two independent security properties:
+
+- **Control flow integrity**: because the plan comes from the P-LLM, which never saw attacker-controlled input, an attacker cannot redirect *what the agent does*. They can influence *the values the agent computes over*, but not the sequence of operations.
+- **Data flow integrity**: because every value carries a capability tag, and the policy engine can refuse sensitive operations on tainted data, an attacker who does get a tainted value into the system cannot cause it to flow into a dangerous sink.
+
+This is the classic Bell-LaPadula / Biba structure — trusted vs untrusted subjects, labels on objects, a reference monitor. The novelty is applying it to LLM agents, where the reference monitor sits outside the model and the labels are computed automatically from data provenance.
+
+## What the Policy Engine Actually Does
+
+A capability tag in CaMeL is a small record like:
+
+```python
+Capability(
+    provenance=["user", "gmail.get_email[msg_id=42]"],
+    readers={"user", "gmail.*"},          # who may see this value
+    may_trigger=False,                     # can this value cause a side effect?
+    trust_level="untrusted",
+)
+```
+
+When the P-LLM's plan says `send_email(to=<value>, body=<value>)`, the interpreter checks the capabilities on both arguments. If `to` was extracted from an untrusted email by the Q-LLM, the policy engine sees `trust_level="untrusted"` and `may_trigger=False` and refuses the call. The agent then has to either ask the user to confirm the destination or fail the task.
+
+The policies are expressed declaratively. A sample rule from the CaMeL paper:
+
+```python
+# A value whose provenance includes external content cannot be
+# used as the recipient of a financial transaction without
+# explicit user confirmation.
+@policy
+def no_untrusted_money_sinks(call):
+    if call.fn in {"send_money", "transfer", "purchase"}:
+        for arg in call.args:
+            if arg.capability.trust_level == "untrusted":
+                require_user_confirmation(call, arg)
+```
+
+Policies are small, auditable, and written once per deployment. They are not produced by an LLM. They are the same kind of thing you'd write in AWS IAM or a browser Content Security Policy — boring security plumbing that happens to now apply to agents.
+
+## Why This Beats Prompting Defenses
+
+The empirical results are in the paper: CaMeL reduces AgentDojo attack success to near zero on the subset of tasks for which the declared policy actually covers the sensitive sinks involved, a substantial improvement over the strongest prompting-layer baselines in the same evaluation. Task utility drops somewhat on workflows that require the planner to adapt based on untrusted content, which is the expected tradeoff. But the structural argument matters more than the numbers.
+
+Prompting defenses are *best-effort*. Every new attack technique chips away at their success rate, and the defense has to keep catching up. CaMeL's guarantees are *structural*. An attacker who finds a novel way to jailbreak the Q-LLM into emitting arbitrary text cannot use that text for anything — the schema validator drops it, and the plan the P-LLM produced never referenced it anyway. An attacker would have to compromise the P-LLM itself, which sees nothing from the attacker. There is no injection path.
+
+The cost is real:
+
+- **Expressivity**: some workflows are hard to express when the planner cannot see the data it's planning over. Tasks that require agents to adapt behavior based on document content need careful schema design.
+- **Latency**: the Q-LLM is a second model call, and the policy engine adds overhead.
+- **Policy authoring**: someone has to write and maintain the policies. This is the equivalent of writing a firewall configuration. It's manageable for a deployment, painful for a general-purpose agent.
+
+The tradeoff is the same one operating systems made in the 1970s. Sandboxing and capability systems cost expressivity and developer effort, and we adopted them anyway because the alternative — "trust the program" — was demonstrably fatal.
+
+## The Capability Stack Coming Together
+
+CaMeL is the runtime piece of a capability model. The protocol pieces have been shipping in parallel, and fitting them together clarifies what the agent security stack of 2026-2027 looks like.
+
+- **MCP Tasks (SEP-1686)** adds durable, stateful tool calls to the Model Context Protocol. Crucially, each task carries an explicit input schema and a result schema. That schema is exactly what a Q-LLM would need as a guardrail — MCP is starting to structure tool output enough that a capability-enforcing interpreter has something to work with.
+- **A2A v1.0 Signed Agent Cards** provide cryptographic agent identity. The "who requested this" column of a capability now has an authoritative answer instead of "the string in the system prompt claims to be X." Capabilities that include a signed-agent provenance can be checked by a CaMeL-style interpreter before the agent is even invoked.
+- **AP2 Mandates** add signed consent for specific classes of actions (payments, in v1.0). A mandate is literally a capability — a typed token saying "this agent may perform $X transfer up to $Y before date Z." AP2 makes the capability token interoperable across agents, issuers, and payment processors.
+
+Stack these together and the picture is cleaner than any single piece suggests. The P-LLM produces a plan. Every tool call in the plan references an MCP task schema. Every agent-to-agent hop carries a signed A2A identity. Every sensitive action (payment, file write, external message) must be backed by an AP2-style mandate. The CaMeL interpreter is the thing that checks all of this before letting a call go through. The protocols provide the vocabulary; CaMeL provides the enforcement.
+
+This is the shape of the answer. Agent security is not going to be solved by a better safety-tuned model. It is going to be solved by a reference monitor outside the model, enforcing a policy stated in terms of capabilities that were minted by protocols with cryptographic identity. The model becomes an untrusted planner, which is what it always should have been.
+
+## What Practitioners Should Take Away
+
+If you are building an agent today, the CaMeL-shaped decisions you can make even without the full architecture:
+
+1. **Structurally separate the planning context from the data-reading context.** Have the part of your agent that decides "what to do" see as little attacker-controllable content as possible. If you can route untrusted content through a separate, tool-less invocation whose only output is structured JSON, you are halfway to a dual-LLM setup.
+2. **Validate tool outputs against an explicit schema before they reach anything else.** MCP lets you do this; REST APIs let you do this. The model is not a parser. Using it as one is the common source of injection flow.
+3. **Treat sensitive sinks as capability-gated.** Before any call to `send_money`, `write_file`, `delete_*`, `execute_code`, check the provenance of every argument. If anything is untrusted, either refuse or require confirmation.
+4. **Write policies outside the model.** A YAML file, a Python decorator, a Rego rule — anything that is not a prompt. If your "safety policy" is a sentence in a system prompt, you do not have a safety policy.
+
+The dual-LLM pattern is not the final word on agent security. But it is the first proposal that frames the problem correctly — as a systems-design problem with a sixty-year literature behind it — rather than as a prompting problem the next model update will fix.
+
+## References
+
+- Debenedetti et al., *Defeating Prompt Injections by Design* ([arXiv:2503.18813](https://arxiv.org/abs/2503.18813)) — the CaMeL paper
+- Debenedetti et al., *AgentDojo: A Dynamic Environment to Evaluate Attacks and Defenses for LLM Agents* ([arXiv:2406.13352](https://arxiv.org/abs/2406.13352)) — the benchmark CaMeL is evaluated on
+- Willison, [*The Dual LLM pattern for building AI assistants that can resist prompt injection*](https://simonwillison.net/2023/Apr/25/dual-llm-pattern/) (2023) — the informal predecessor of CaMeL's architecture
+- [MCP 2026 Roadmap: The Tasks Primitive](/blog/mcp-2026-roadmap-tasks-primitive) — protocol-side structure for what CaMeL enforces at runtime
+- [A2A v1.0: Signed Agent Cards and AP2 Mandates](/blog/a2a-v1-signed-cards-ap2-mandates) — cryptographic identity and capability tokens for the agent stack
+- [Agent Security as Infrastructure](/blog/agent-security-as-infrastructure) — the broader argument for moving agent security out of the model

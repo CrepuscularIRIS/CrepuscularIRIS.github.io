@@ -1,0 +1,94 @@
+---
+title: "Procedural Memory: The Missing Layer in Agent Architectures"
+description: "Episodic memory remembers what happened. Semantic memory remembers what is true. Procedural memory remembers how — most agents still don't have it."
+publishDate: "2026-04-17"
+tags: [agents, memory, procedural-memory, agent-workflow-memory, context-engineering, AWM, voyager, reflexion]
+category: engineering
+language: en
+draft: false
+---
+
+When people list the components of an agent memory system, they almost always stop at two: a short-term context buffer and a long-term store, usually implemented as vector-RAG. That taxonomy is the one borrowed from retrieval systems, and it is wrong for agents. Cognitive scientists have been using a three-way split for half a century — *episodic* (events you experienced), *semantic* (facts you know), and *procedural* (skills you have practiced) — because the three serve different functions and degrade independently. Apply that taxonomy to agents and the gap is obvious. Most production agents have something like episodic memory (chat history, session logs) and something like semantic memory (RAG over docs). Almost none have procedural memory. That is the next capability frontier, and the research literature has already shown what it looks like.
+
+This post walks through what procedural memory is, what the last three years of agent research have shown about how to build it, and what practitioners should take from that work into 2026-era agent systems.
+
+## The Three-Memory Split
+
+The canonical distinction comes from Endel Tulving's work in the 1970s and Lawrence Squire's refinement in the 1990s, but the agent-relevant version is simpler:
+
+| Memory type | Answers | Access pattern | Degradation |
+|-------------|---------|----------------|-------------|
+| Episodic | "What happened when I did X last Tuesday?" | Temporally indexed, often noisy | Oldest first |
+| Semantic | "What is true about topic Y?" | Content-indexed, consolidated | Stable when used, decays when not |
+| Procedural | "How do I accomplish task Z?" | Triggered by task similarity, automatic | Slow; survives sleep, head injury, aging |
+
+In humans the three are stored in different brain regions (hippocampus for episodic, cortical networks for semantic, basal ganglia and cerebellum for procedural) and have different forgetting curves. The reason this matters for agents is not that the brain analogy is literally correct — it isn't — but that the *functional* decomposition is load-bearing. A system that tries to store "what happened" and "how to do things" in the same substrate ends up doing both badly.
+
+The standard agent architecture collapses the three. Chat history plus a RAG index is roughly episodic plus semantic. There is no procedural slot. When you ask an agent that has successfully deployed to AWS fifty times to deploy the fifty-first, it starts from scratch reasoning about AWS semantics. The fact that it *knows how* — has executed a reliable sequence before — is not represented anywhere except implicitly in the next model's training data, assuming the conversations were even logged.
+
+## What Procedural Memory Looks Like in Practice
+
+The research literature has been converging on a concrete definition: procedural memory is a library of *workflows*, indexed by task type, where each workflow records the sequence of actions and decisions that previously succeeded on similar tasks. Four papers mark the trajectory.
+
+**Voyager** (Wang et al., [arXiv:2305.16291](https://arxiv.org/abs/2305.16291), 2023) was the earliest clean demonstration in an agent setting. Voyager runs in Minecraft and learns by writing code — every time it solves a new subgoal (build a crafting table, find diamonds), it stores the working code as a named skill in a skill library. Future tasks retrieve skills by text embedding similarity to the current goal. The performance curve is striking: Voyager's effectiveness scales with accumulated skill library size, not with the base model's capability. After hours of exploration, complex multi-step goals can be executed by composing previously-cached skills rather than re-reasoning from first principles — the paper reports Voyager obtains 3.3× more unique items and unlocks the tech tree up to 15.3× faster than prior LLM-based baselines.
+
+**Reflexion** (Shinn et al., [arXiv:2303.11366](https://arxiv.org/abs/2303.11366), 2023) took a different angle. Instead of storing what worked, Reflexion stores what went wrong and why. After each failed task attempt, the agent writes a short "reflection" — a natural-language note about the error — and prepends those reflections to its context on the next attempt. The failures library is a form of procedural memory focused on anti-patterns. Reflexion's contribution was showing that the memory does not need to be positive examples; negative examples, stored in compact form, produce similar gains on coding and reasoning benchmarks.
+
+**ExpeL** (Zhao et al., [arXiv:2308.10144](https://arxiv.org/abs/2308.10144), 2023) formalized the extraction step. Both Voyager and Reflexion store whatever the agent happens to produce. ExpeL adds a meta-step: after a batch of episodes, an LLM reviews the trajectories, extracts generalizable insights ("When asked to modify a file you haven't seen, always `cat` it first"), and writes them to a separate insight library. The key innovation is distinguishing *experiences* (raw trajectories) from *insights* (extracted rules). Both get stored, but the insights are what gets retrieved for planning.
+
+**Agent Workflow Memory (AWM)** (Wang et al., [arXiv:2409.07429](https://arxiv.org/abs/2409.07429), 2024) is the cleanest operationalization to date, and the one most directly applicable to 2026 production agents. AWM induces reusable *workflows* from agent trajectories — natural-language abstractions over step sequences, such as "To answer a question about a Reddit thread: (1) navigate to the URL, (2) expand replies, (3) extract the comment tree, (4) summarize." Each workflow is stored as a text description plus the abstracted step trajectory it generalizes. On new tasks, AWM retrieves relevant workflows and inserts them into the agent's context before planning. On the Mind2Web benchmark AWM reports a ~24.6% relative improvement in task success over a no-memory baseline, with comparable absolute gains on WebArena; the cross-domain generalization experiments show the larger qualitative story. The headline result: online workflow induction (building the library during evaluation) outperforms offline induction, which is counterintuitive — it means the agent gets better *during* the benchmark by learning from its own earlier attempts.
+
+The common thread across all four: procedural memory is not a blob of text you retrieve. It is a *structured artifact* — code, reflection, insight rule, or workflow template — that gets promoted from an episode after a success signal.
+
+## Why RAG Is Not Procedural Memory
+
+The temptation is to point at a vector DB and say "we have procedural memory, we retrieve past trajectories." This doesn't work, and the reasons are worth making explicit because the failure mode is common.
+
+**Granularity mismatch.** RAG retrieves passages. Procedural knowledge is a *plan* — a sequence of steps with dependencies. When you retrieve the top-k passages from prior trajectories, you get fragments of reasoning that are ungrounded in each other. Agents then splice these fragments into their own plans in ways that produce non-sequiturs. What you want to retrieve is the whole structured workflow, which means storing it as a whole structured workflow, not as chunks.
+
+**Success-bias missing.** A naive episodic RAG over trajectories retrieves the *most similar* past episode, regardless of whether that episode succeeded. Half of your retrievals will be failures, which is the opposite of what procedural memory is supposed to provide. All four of the papers above filter on success or explicitly extract insights from failures. The filter is load-bearing.
+
+**No consolidation.** Episodic memory is noisy. Procedural memory needs to be *distilled* — when you have done something fifty times, you don't want fifty trajectories in your library, you want one workflow. RAG stores everything and retrieves similar things. Procedural memory stores few things after aggressive compression. The difference is the same as between recording every commute and learning to drive.
+
+**Wrong retrieval key.** Vector similarity on trajectory text retrieves trajectories that *talk like* the current task. You want trajectories that *accomplished* the current task type. Task-type indexing — retrieval over the induced workflow abstractions rather than over raw trajectory text — is the natural key, and that is what AWM's retrieval path optimizes for.
+
+## The 2026 Production Shape
+
+Recent agent platforms have been converging on a concrete implementation pattern. You can see it in Claude Code's Skills, in Codex CLI's prompt recipes, in LangGraph's checkpointer-plus-tool-library pattern. The pattern is roughly this:
+
+1. **A skill library on disk.** Plaintext Markdown files, each describing one workflow. Filenames or YAML metadata provide the retrieval key. This is not a vector DB; it is a filesystem with a grep-compatible index.
+2. **A promotion step.** After an agent completes a task, a separate pass — sometimes the same model, sometimes a reviewer model — decides whether the trajectory should become a new skill or amend an existing one. The output is a diff against the skill library. This is the consolidation step RAG skipped.
+3. **A retrieval step at task start.** Before the agent plans, the system looks up relevant skills by task-type matching and injects them into the prompt. The skills are injected at a specific, documented context location so the planner can reference them explicitly.
+4. **An eviction policy.** Skills have usage counters and failure counters. Skills that haven't fired in N sessions or have produced K failures get demoted to a cold archive or removed. The library stays small.
+
+This is procedural memory as a filesystem, not as an embedding index. The choice is deliberate. Filesystem-backed skills are auditable (you can read them), editable (you can correct a bad skill before it gets re-applied), and diffable (you can see how the library evolved). An embedding index has none of those properties.
+
+The implementation cost is real: you need a promotion pipeline, a retrieval policy, an eviction policy, and naming conventions. But the capability-gain is substantial. Agents with procedural memory spend far less of their context budget re-deriving plans they've already derived. They get better at repetitive tasks without any model update. And the library itself is a transferable asset — a well-maintained skill library is, in practice, half the value of a mature agent deployment.
+
+## What's Missing
+
+The open problems are visible. Four are worth flagging.
+
+**Skill composition.** Voyager composes by having the LLM call skill-functions from its code. AWM composes by listing workflows in-context and letting the LLM interpolate. Neither has a real theory of *when* skills should compose vs. when a new skill should be induced. The current heuristics are empirical.
+
+**Cross-agent skill transfer.** If agent A discovers a useful workflow, should agent B inherit it? Intuitively yes, but the provenance questions are hard (did the workflow only succeed because of A's context?), and the security questions are harder (can a compromised skill propagate?). The A2A + AP2 capability-token work is relevant here: signed skills with provenance could travel safely between agents. No one is doing this yet.
+
+**Failure-triggered retraction.** When a skill starts failing, you want to automatically remove or flag it. All four papers handle this crudely. Reflexion stores failures but doesn't tie them to skill-library membership. AWM has no retraction mechanism in the published benchmarks. This is an obvious next step.
+
+**Evaluation.** Most memory-for-agents evaluations measure task success on a fixed benchmark. Procedural memory is about *improvement over time on similar tasks*, which is a different kind of measurement. AWM's online-induction result is suggestive but limited to one benchmark. What we don't have is a benchmark that specifically tests cumulative skill acquisition across a diverse task stream, which is what a real production agent faces.
+
+## Takeaway
+
+The three-memory split is a load-bearing abstraction, not just a neuroscience borrowing. Agents that conflate procedural with episodic retrieve the wrong things, fail to consolidate, and repeat work they've already learned to do. The papers from 2023-2024 established that procedural memory gives real gains when implemented with the right structure — explicit workflow representations, success-filtered promotion, task-type retrieval, active eviction. The 2026 production shape is converging on filesystem-backed skill libraries rather than vector DBs, for auditability and editability reasons.
+
+The practical next move for anyone running an agent in production: look at your memory architecture, ask what happens the fiftieth time the agent does the same task, and if the answer is "it starts over," you have a procedural-memory gap. The literature already has the answer for how to close it.
+
+## References
+
+- Wang et al., *Voyager: An Open-Ended Embodied Agent with Large Language Models* ([arXiv:2305.16291](https://arxiv.org/abs/2305.16291))
+- Shinn et al., *Reflexion: Language Agents with Verbal Reinforcement Learning* ([arXiv:2303.11366](https://arxiv.org/abs/2303.11366))
+- Zhao et al., *ExpeL: LLM Agents Are Experiential Learners* ([arXiv:2308.10144](https://arxiv.org/abs/2308.10144))
+- Wang et al., *Agent Workflow Memory* ([arXiv:2409.07429](https://arxiv.org/abs/2409.07429))
+- Tulving, *Episodic and Semantic Memory* (1972) — the original three-way split
+- [Memory Architecture for Persistent Agents](/blog/memory-architecture-persistent-agents) — the companion post on the broader memory problem
+- [Context Engineering Beyond Prompts](/blog/context-engineering-beyond-prompts) — how procedural memory fits into the context lifecycle

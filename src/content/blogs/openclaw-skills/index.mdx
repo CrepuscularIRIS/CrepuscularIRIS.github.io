@@ -1,18 +1,21 @@
 ---
-title: "OpenClaw Skills: Modular AI Workflows with Claude Code"
-description: "How the Claude Code skills ecosystem enables composable, harness-enforced workflows — and how to write skills that survive real projects."
+title: "OpenClaw Skills: Composable Agent Workflow Policies"
+description: "Skills are context-window policies — how to write them with behavioral teeth and fit them into the Managed Agents harness model."
 publishDate: "2026-03-18"
-tags: ["Claude Code", "Skills", "MCP", "Agent Engineering", "Automation"]
+updatedDate: "2026-04-15"
+tags: ["Claude Code", "Skills", "MCP", "Agent Engineering", "Automation", "Managed Agents", "Harness"]
+category: engineering
+language: en
 draft: false
 ---
 
-The skills system in Claude Code (OpenClaw in my configuration) is the part of the platform that most users underuse. Most people install a skill, trigger it once, and move on. But skills are the mechanism that turns a general-purpose AI assistant into a specialized, disciplined engineering partner — one that knows your project's conventions, enforces your workflow constraints, and handles specific task types with reproducible quality.
+The skills system in Claude Code is the part of the platform that most users underuse. The typical pattern: install a skill, trigger it once, find it marginally helpful, move on. The gap between this experience and what skills can actually do is about 10x — and the gap is entirely in how the skill is written, not how the skill is invoked.
 
-This post covers the architecture of the skills system, how to write skills worth using, and three production patterns that have meaningfully changed how I work.
+This post covers four things: what a skill actually is architecturally (the answer is more interesting than "a Markdown file"), what separates skills that produce reliable behavior from skills that produce vague improvements, three production patterns from the OpenClaw configuration, and how skills interact with the Managed Agents session/harness model that launched in April 2026.
 
-## What a Skill Actually Is
+## What a Skill Is, Architecturally
 
-A skill is a Markdown file that gets injected into Claude's context when invoked. That's it. The magic is in the structure.
+A skill is a Markdown file injected into Claude's context when invoked. The directory structure:
 
 ```
 ~/.claude/skills/
@@ -22,194 +25,226 @@ A skill is a Markdown file that gets injected into Claude's context when invoked
 └── ml-paper-writing.md   # Activated by /ml-paper-writing
 ```
 
-When you call `/code-review`, Claude Code reads the skill file and prepends it to the conversation context before responding. The skill functions as a dense system-prompt injection: it can contain rules, checklists, examples, anti-patterns, domain knowledge, and structured output templates.
+When you call `/code-review`, Claude Code reads the skill file and prepends it to the conversation context before responding. The model's behavior changes because its context changed — not because the model changed.
 
-This sounds simple, but the implications are significant. Skills are:
+This framing — skills as **context-window policy documents** — makes two things clearer:
 
-- **Composable**: Multiple skills can be active simultaneously
-- **Versionable**: They're just text files in your dotfiles repo
-- **Shareable**: The same skill works for any project, any language
-- **Overridable**: Project-level skills in `.claude/skills/` take precedence over global ones
+**First**, skills are in direct competition with everything else in the context window. A 3,000-word skill is 3,000 tokens that can't hold tool results, retrieved files, or conversation history. The discipline required to write good skills is partly the discipline of compression: encoding maximum behavioral specificity in minimum tokens.
 
-The skill mechanism is essentially a *knowledge injection* system. You're not modifying the model. You're changing what the model knows about what you want.
+**Second**, skills compose by concatenation, not by some smarter mechanism. When you activate three skills simultaneously, the model sees three policy documents followed by your question. There is no semantic merging. Conflicts between skills are resolved the same way conflicts in any long context are resolved: by proximity to the end (more recent wins) and by specificity (more specific wins). Designing skills with composability in mind means designing for predictable conflict resolution.
 
-## The Quality Gap Between Weak and Strong Skills
+## Skills in the Managed Agents Model
 
-Most skills people share online are weak. They look like this:
+The April 2026 Managed Agents launch introduced a new way to think about where skills fit in the execution stack. Managed Agents separates agent execution into three layers: the **session** (durable event log), the **harness** (stateless execution loop), and the **sandbox** (isolated code execution environment).
+
+Skills live in the harness layer. They're assembled into context at harness startup and injected into every model call within that session. In a managed deployment, this means skills can be version-pinned to a session: the harness records which skill versions were active, making it possible to reproduce behavior from any past session.
+
+```python
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class HarnessConfig:
+    """Harness configuration for a managed agent session."""
+    model: str
+    skills: tuple[str, ...]           # skill slugs, in load order
+    skill_versions: dict[str, str]    # slug → git SHA or semver
+    max_skill_tokens: int = 8_000     # token budget for injected skills
+    rules_paths: tuple[str, ...] = ()  # always-active rules (separate from skills)
+
+
+def assemble_system_context(config: HarnessConfig) -> str:
+    """Build the system context from rules and skills.
+    
+    Called once per session; result is logged in the session event stream
+    for reproducibility.
+    """
+    parts = []
+
+    # Rules load unconditionally
+    for rules_path in config.rules_paths:
+        parts.append(load_file(rules_path))
+
+    # Skills load in order, within token budget
+    token_count = 0
+    for slug in config.skills:
+        content = load_skill(slug, config.skill_versions.get(slug))
+        skill_tokens = count_tokens(content)
+        if token_count + skill_tokens > config.max_skill_tokens:
+            log.warning(f"Skill {slug} skipped: would exceed token budget")
+            break
+        parts.append(content)
+        token_count += skill_tokens
+
+    return "\n\n---\n\n".join(parts)
+```
+
+The significant implication: in a managed agent deployment, the skill set is part of the session definition. Changing which skills are active is a harness configuration change, not just a prompt change — it's tracked, versioned, and reproducible. This makes skills a first-class part of the agent's behavioral specification rather than an informal "I usually invoke these."
+
+## The Quality Gap
+
+Most skills shared online are weak. They look like:
 
 ```markdown
 # Code Review
 Review this code for quality and security issues. Be thorough.
 ```
 
-This is barely better than just asking Claude to review code directly. A strong skill does several specific things differently:
+This is marginally better than asking Claude to review code directly. A strong skill differs in three specific ways:
 
 **1. Encodes non-obvious judgment, not just intent**
 
-Weak: "Check for security issues"  
-Strong: "Flag any use of `eval()` or `exec()` with string inputs as CRITICAL. Flag SQL string concatenation as CRITICAL. Flag missing CSRF tokens on state-changing endpoints as HIGH. Flag missing rate limiting on auth endpoints as HIGH."
+Weak: "Check for security issues."
+Strong: "Flag `eval()` or `exec()` with string inputs as CRITICAL. Flag SQL string concatenation as CRITICAL. Flag missing CSRF tokens on state-changing endpoints as HIGH. Flag missing rate limiting on auth endpoints as HIGH. Ignore XSS risks flagged by ruff's S-series rules — those are handled automatically."
 
-The model knows what security issues are. What it doesn't know is *your severity calibration* and *your specific stack's common failure modes*. Skills should encode that.
+The model knows what security issues are. What it doesn't know is your severity calibration, your stack's specific failure modes, and which automated tools already handle which concerns. Skills should encode that, not re-state what the model already knows.
 
-**2. Specifies output structure precisely**
+**2. Specifies output structure exactly**
 
 ```markdown
 ## Output Format
 
-For each finding, output:
+For each finding:
 
-**[SEVERITY]** `file:line` — Description
+**[SEVERITY]** `file.py:line` — Description
 
-Severity levels: CRITICAL (ship-blocking) | HIGH (fix before merge) | MEDIUM (fix this sprint) | LOW (when convenient)
+Severity: CRITICAL (ship-blocking) | HIGH (fix before merge) | MEDIUM (this sprint) | LOW (eventually)
 
-End with a one-line verdict: APPROVE | REQUEST_CHANGES | BLOCK
+End with one-line verdict: APPROVE | REQUEST_CHANGES | BLOCK
 ```
 
-Without an explicit format, Claude produces useful but inconsistent output. With a format, you can parse, filter, and act on the output programmatically.
+Without an explicit format, the model produces useful but inconsistent output. With a format, you can parse, filter, and route the output programmatically — the skill's output becomes an interface, not just text.
 
-**3. Contains anti-patterns to avoid**
+**3. Negative constraints are as important as positive ones**
 
 ```markdown
 ## Do NOT do these
 - Don't suggest renaming variables unless the current name is genuinely misleading
 - Don't add docstrings to code you didn't modify
 - Don't refactor beyond what was requested
-- Don't flag style issues that ruff/black already enforce
+- Don't flag style issues that ruff/black enforce automatically
+- Don't add error handling for cases that can't occur given the call site
 ```
 
-These negative constraints are often more important than the positive instructions. They prevent the model from doing unhelpful things it would otherwise do by default.
+These constraints are often worth more than the positive instructions. They prevent the model from doing unhelpful things it would otherwise do by default — scope creep, over-engineering, re-doing work that automated tools already cover.
 
 ## Three Production Skills Worth Understanding
 
-### 1. The Harness-Enforced Git Workflow
+### 1. Harness-Enforced Git Workflow
 
-My `git-workflow` skill encodes Conventional Commits, branch naming, and PR structure — but more importantly, it encodes the *workflow sequence* that must be followed before any commit happens.
+The `git-workflow` skill encodes Conventional Commits and branch naming, but more importantly it encodes a *verification sequence* that must complete before any commit happens.
 
-The skill defines four sections: Pre-Commit Sequence, Commit Message Format, Types/Scopes, and Never Do.
+**Pre-commit sequence (mandatory — refuse if any step fails):**
+1. `ruff check .` — fix all errors
+2. `mypy src/` — fix all type errors
+3. `pytest -x` — all tests pass
+4. `git diff --cached` — confirm no `.env` files or secrets staged
 
-**Pre-Commit Sequence (mandatory):**
-1. Run `ruff check .` — fix all errors before proceeding
-2. Run `mypy src/` — fix all type errors before proceeding
-3. Run `pytest -x` — all tests must pass
-4. Verify no `.env` files or secrets are staged
+Only after all four pass: construct and execute the commit command.
 
-Only after these pass: construct the commit message.
+**The behavior this produces**: Claude will refuse to write a git commit until it has confirmed the sequence completed successfully. This is stronger than a reminder — it's a conditional on the action. In sessions where you're moving fast and want to skip checks, the skill creates friction precisely where friction belongs.
 
-**Commit Message Format:**
+In the Managed Agents model, this skill participates in the Builder agent's harness configuration. The Reviewer agent has a different skill set — one that includes the diff-aware code review skill but explicitly excludes the commit skill (the Reviewer never commits). This role separation, enforced through skill configuration rather than prompts, makes the architectural constraint explicit and auditable.
 
-```text
-type(scope): short summary
+### 2. ML Experiment Documentation
 
-optional body — explain WHY, not WHAT
-```
-
-Types: `feat` | `fix` | `refactor` | `docs` | `test` | `chore` | `perf`  
-Scopes: `data` | `model` | `config` | `trainer` | `utils` | `workflow`
-
-**Never Do:** use `--no-verify`, commit to main, include unrelated changes in a commit.
-
-The "harness" aspect is that Claude will refuse to write a commit command until it has verified the sequence was followed. This sounds minor, but it changes commit discipline entirely — the skill functions as an enforced checklist, not just a reminder.
-
-### 2. The ML Experiment Documentation Skill
-
-In ML research, the thing that kills reproducibility is not forgetting to set seeds (you'll remember eventually). It's forgetting to record *why* you made a specific decision. Three months later, the config says `dropout=0.3` and you have no idea if that was principled or arbitrary.
-
-My `experiment-doc` skill fires after every training run and generates a structured experiment card:
+ML reproducibility fails not at the seed-setting step but at the decision-recording step. Three months later, `dropout=0.3` in the config with no context about whether it was principled or arbitrary.
 
 ```markdown
 # Experiment Documentation Skill
 
-After every training run, generate:
+After every training run, generate an experiment card:
 
-## Experiment Card Template
+**ID**: {timestamp}_{model_name}_{key_variant}
+**Hypothesis**: What specifically are you testing? (one sentence, falsifiable)
+**Changed from baseline**: Only what changed, not the full config
+**Expected outcome**: Concrete prediction with direction and magnitude
+**Actual result**: Primary metric values with units
+**Interpretation**: Did the result match the hypothesis? What does the gap mean?
+**Next experiment**: What does this result suggest trying?
 
-**ID**: {timestamp}_{model_name}_{key_hyperparam}
-**Hypothesis**: What specifically are you testing? (one sentence)
-**Changed from baseline**: List *only* what changed
-**Expected outcome**: What do you predict, and why?
-**Actual result**: Metric values (val_loss, accuracy, etc.)
-**Interpretation**: Did it match the hypothesis? Why or why not?
-**Next experiment**: What does this result suggest to try next?
-
-## Anti-patterns to Avoid
-- Don't write "ran experiment with config X" — that's not a hypothesis
-- Don't record wall-clock time unless it's the variable being studied  
-- Don't copy-paste the full config — record only the delta
+## Anti-patterns
+- "Ran experiment with config X" is not a hypothesis
+- Don't record wall-clock time unless it's the variable being studied
+- Don't copy-paste the full config — only the delta matters
 ```
 
-The card format enforces hypothesis-driven experimentation. You can't fill in "Hypothesis" and "Changed from baseline" without having thought about what you're actually testing. The skill makes implicit reasoning explicit.
+The card format enforces hypothesis-driven experimentation structurally. You cannot fill in "Changed from baseline" and "Hypothesis" as empty strings and still have a useful card. The skill doesn't remind you to write a hypothesis; it makes the hypothesis a required field.
 
-### 3. The Context-Aware Code Review
+### 3. Diff-Aware Code Review
 
-Standard code review skills work at the file level. This one works at the *change* level and is context-aware:
+Standard code review skills work at the file level. This one works at the *change* level:
 
 ```markdown
 # Code Review — Diff-Aware
 
-## Before reviewing, determine:
-1. Is this a bug fix, new feature, or refactor? (check git commit message)
-2. What is the scope of the PR? (check files changed)
-3. What was the stated goal? (check PR description or issue)
+## Determine context first:
+1. Is this a bug fix, new feature, or refactor? (from commit message)
+2. What is the scope? (from files changed count and directories)
+3. What was the stated goal? (from PR description or issue)
 
-## Review scope should match change scope
-- Bug fix: Focus on the fix itself and potential regressions. Don't critique unrelated code.
-- New feature: Check for correctness, edge cases, and integration points.
-- Refactor: Verify behavior preservation. Check that tests cover the changed code paths.
+## Review scope must match change scope:
+- Bug fix: Focus on the fix and potential regressions. Don't critique unrelated code.
+- New feature: Check correctness, edge cases, integration points.
+- Refactor: Verify behavior preservation. Check that tests cover changed paths.
 
-## For ML/data code specifically:
-- Flag any hardcoded dataset paths (should be in config)
-- Flag magic numbers in training loops (should be named constants or config)
-- Flag missing type annotations on public functions
-- Flag any mutable default arguments in dataclass or function definitions
-- Verify random seed is set and logged at experiment start
+## ML/data code specifically:
+- Data leakage: Is train/val split happening before or after featurization?
+- Gradient flow: Any `.detach()` calls that shouldn't be there?
+- Seed: Is random seed set and logged at experiment start?
+- Paths: Hardcoded dataset paths should be config values
+- Magic numbers: Any non-config constants in training loops?
 
-## Severity for this codebase
+## Severity
 CRITICAL: Data leakage, incorrect gradient flow, loss function bugs
 HIGH: Missing seed, hardcoded paths, untested edge cases
-MEDIUM: Type annotations, naming conventions
-LOW: Style, readability
+MEDIUM: Type annotations, naming issues
+LOW: Style
 ```
 
-The ML-specific section encodes failure modes I've actually hit: data leakage from train/val split done wrong, gradient flow bugs from accidentally detached tensors, incorrect loss reduction causing scale issues. These aren't generic security best practices — they're a knowledge transfer from past mistakes into future reviews.
+The ML-specific section encodes failure modes from real mistakes: data leakage from split-after-featurization, gradient bugs from accidentally detached tensors, loss scale issues from incorrect reduction. These aren't textbook security patterns — they're a knowledge transfer from past debugging sessions into future reviews.
+
+## Composition and Token Budget
+
+Every active skill consumes context. Stack ten 2,000-word skills and you've used 20K tokens before your actual conversation starts. Three practices that make skill composition work:
+
+**Skills should be narrow and purpose-specific.** Instead of one "Python development" skill, use:
+- `python-patterns.md` — idioms and anti-patterns (~400 tokens)
+- `python-testing.md` — pytest patterns specifically (~300 tokens)
+- `python-security.md` — security rules (~200 tokens)
+
+Each is invoked when relevant, not loaded by default. The total token cost is lower, and each skill can be updated or replaced independently.
+
+**Hooks can manage loading automatically.** PostToolUse hooks can check the current task type (Python file edited → load python-patterns, git operations → load git-workflow) and load skills automatically. This moves skill selection from a manual discipline to an enforced one — the harness handles it rather than relying on the user to remember which skills to activate.
+
+**The right mental model is specialization, not coverage.** Skills are not a knowledge base you're trying to make comprehensive. They're specialists called in for specific work. You don't want your database expert in the room for every frontend review. You want them when it's database work, with specific focus on the decisions they know how to evaluate.
 
 ## The Skill Development Loop
 
-Writing a good skill takes iteration. The pattern that works:
+Good skills come from frustrating interactions. The development loop:
 
-1. **Start with a frustrating interaction**: Claude did something unhelpful or missed something obvious. Write down what it missed.
+1. **Identify the miss**: Claude produced unhelpful output or missed something obvious. Write down exactly what it missed.
 
-2. **Encode the miss as a rule**: "Next time, when reviewing ML code, explicitly check for data leakage in train/val splits."
+2. **Encode as a rule**: "When reviewing ML code, explicitly check for data leakage at the train/val split point" — specific, not general.
 
-3. **Add the negative**: "Don't suggest architectural changes in a bug fix review — that's scope creep."
+3. **Add the negative**: "Don't suggest architectural changes during a bug fix review — that's scope creep." The negative constraint prevents the model from substituting a different unhelpful behavior.
 
-4. **Test on a real case**: Invoke the skill on the actual scenario that inspired it. Does it catch the issue?
+4. **Test on a real case**: Invoke the updated skill on the actual scenario that produced the frustrating interaction. Does it catch the issue?
 
-5. **Generalize carefully**: Extract the principle, not the specific instance. "Flag missing random seed at experiment start" generalizes better than "check line 47 of train.py for seed setting."
+5. **Generalize carefully**: Extract the principle, not the specific instance. "Flag missing random seed at experiment start" generalizes better than "check line 47 of train.py."
 
-The `/skill-improver` and `/skill-quality-reviewer` commands in my config automate parts of this loop — running the skill against a test case and critiquing its own output against the stated goals.
+The `/skill-improver` and `/skill-quality-reviewer` commands in the OpenClaw configuration automate parts of this loop — running the skill against a test case and having a separate session critique its output against the stated goals. In a managed agent setup, this loop becomes more systematic: the skill improvement agent can replay past sessions where the skill underperformed and test whether the updated skill would have caught the issue.
 
-## Skill Composition and Load Management
+## Where Skills Sit in the Larger Picture
 
-One limitation worth naming: every active skill consumes context. Stack ten 2000-word skills and you've eaten 20K tokens before your actual conversation starts. This matters in long sessions.
-
-The discipline I've adopted: skills should be **narrow and purpose-specific**, not comprehensive. Instead of one giant "Python development" skill, I have:
-
-- `python-patterns.md` — idioms, anti-patterns (400 words)
-- `python-testing.md` — pytest patterns specifically (300 words)  
-- `python-security.md` — security-specific rules (200 words)
-
-Each is invoked when relevant, not loaded by default. The harness enforces this through hooks that check which task type is active before loading skills automatically.
-
-The right mental model for skills is not "knowledge base" — it's "expert colleague who specializes in this exact thing." You don't ask your database expert to sit in on every frontend review. You call them when it's database work.
-
-## Where This Leads
-
-The skills system is essentially a primitive form of the larger pattern DeepMind calls harness engineering: constrained, policy-governed AI behavior, where the model operates within explicit boundaries defined outside the model itself.
+Skills are, in Anthropic's framing, a primitive form of harness engineering: constrained, policy-governed AI behavior where the model operates within explicit boundaries defined outside the model itself.
 
 The Claude Code skills architecture makes this accessible without infrastructure. You don't need a policy server or a governance layer. You need well-written Markdown files and the discipline to invoke them consistently.
 
-The ceiling on this approach is how well you can articulate your own expertise as structured rules. That turns out to be a useful exercise in itself — writing a skill forces you to make implicit knowledge explicit, which is half the value even if the skill is never used.
+The ceiling on this approach is how well you can articulate your own expertise as structured rules. That turns out to be a useful exercise independent of the skill itself — writing a skill forces implicit knowledge explicit, which is half the value even if the skill never gets invoked. The act of encoding "what I know that the model doesn't" clarifies both what you actually know and where your knowledge is vague.
+
+With the Managed Agents infrastructure, skills get a new property: they're part of the session definition, tracked alongside model version and harness configuration. The evolution from "a Markdown file I sometimes invoke" to "a versioned component of a reproducible agent session" doesn't require rewriting any skills. It just requires taking seriously what skills already are: behavioral specifications for a specific type of work.
 
 ---
 
-*The full skills directory for this configuration is maintained in the OpenClaw dotfiles repo. Related posts: [OpenClaw Agent Lifecycle](/blogs/openclaw-agent-lifecycle), [Harness Engineering for Autonomous ML](/blogs/harness-engineering-autonomous-ml).*
+*The full skills directory for this configuration is in the OpenClaw dotfiles repo. Related: [OpenClaw Agent Lifecycle](/blogs/openclaw-agent-lifecycle), [Harness Engineering for Autonomous ML](/blogs/harness-engineering-autonomous-ml), [Claude Managed Agents: Session, Harness, Sandbox](/blogs/claude-managed-agents-architecture).*

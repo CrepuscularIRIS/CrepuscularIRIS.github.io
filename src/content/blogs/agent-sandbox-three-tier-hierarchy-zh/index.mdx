@@ -1,0 +1,108 @@
+---
+title: "Agent 沙箱的三级隔离"
+description: "MicroVM、gVisor 和加固容器——2026 年自主 AI Agent 的生产级隔离方案与各自的威胁模型。"
+publishDate: "2026-04-16"
+tags: [agent-security, sandboxing, firecracker, gvisor, microvm, infrastructure, autonomous-agents]
+category: engineering
+language: zh
+draft: false
+---
+
+当 AI Agent 执行 `pip install` 之后紧接着运行 `subprocess.run(user_generated_command)`，接下来会发生什么，完全取决于进程周围的隔离边界。2026 年 4 月，这个边界已经分化为三个明确的层级，每一级编码了对信任的不同假设。
+
+这种分层不是委员会设计的产物，而是从生产事故中自然涌现。2026 年 2 月的 MITRE ATLAS OpenClaw 调查记录了多阶段攻击链：在标准 Docker 容器中运行的 Agent，从配置注入逐步升级为主机文件系统访问。攻击面不在模型本身，而在运行时。
+
+## 第一级：Firecracker MicroVM——内核级隔离
+
+Firecracker 最初由 AWS 为 Lambda 和 Fargate 构建，它创建轻量级虚拟机，在 KVM 之上运行独立的 Linux 内核。每个 MicroVM 拥有专属内核实例，冷启动时间低于 100 毫秒，内存开销不到 5 MiB。
+
+安全模型很直接：Agent 无法触及宿主机内核。Firecracker 有意排除了 USB 控制器、显卡、声卡以及所有非必要设备。攻击面仅限于最小化的 VMM 接口——大约 5 万行 Rust 代码——而非 QEMU 等完整虚拟化管理器的数百万行代码。
+
+```
+┌─────────────────────────────────────────────┐
+│  宿主机 OS                                   │
+│  ┌───────────────────┐ ┌──────────────────┐ │
+│  │  Firecracker VMM  │ │  Firecracker VMM │ │
+│  │  ┌─────────────┐  │ │  ┌────────────┐  │ │
+│  │  │ 客户机内核   │  │ │  │客户机内核  │  │ │
+│  │  │  ┌────────┐  │  │ │  │ ┌────────┐ │  │ │
+│  │  │  │ Agent  │  │  │ │  │ │ Agent  │ │  │ │
+│  │  │  └────────┘  │  │ │  │ └────────┘ │  │ │
+│  │  └─────────────┘  │ │  └────────────┘  │ │
+│  └───────────────────┘ └──────────────────┘ │
+│  KVM（硬件虚拟化）                            │
+└─────────────────────────────────────────────┘
+```
+
+实际含义：即使 Agent 在 MicroVM 内部获得了任意代码执行能力——这对于编程 Agent 来说是常态而非异常——它仍然无法访问宿主机文件系统、其他 Agent 的工作空间或网络（除非被明确允许）。爆炸半径被限制在 VM 本身。
+
+E2B 是截至 2026 年 4 月部署最广泛的 Agent 沙箱平台，以 Firecracker MicroVM 为其隔离原语。每个沙箱都是一个全新的 VM，配有可配置的文件系统快照、网络策略和资源限制：
+
+```python
+from e2b_code_interpreter import Sandbox
+
+# 每个沙箱是一个独立的 Firecracker MicroVM
+with Sandbox() as sandbox:
+    execution = sandbox.run_code("""
+        import subprocess
+        # 在 MicroVM 内部执行，而非宿主机
+        result = subprocess.run(['ls', '/'], capture_output=True, text=True)
+        print(result.stdout)
+    """)
+    print(execution.logs.stdout)
+    # 退出时 MicroVM 被销毁——无状态泄漏
+```
+
+冷启动开销是真实存在的，但可控。E2B 报告预热快照的沙箱创建时间低于 200 毫秒。对于每个任务执行数十个代码块的 Agent，均摊开销相对于 LLM 推理时间可以忽略不计。
+
+## 第二级：gVisor——用户空间内核拦截
+
+gVisor 位于容器和 VM 之间。它不运行独立内核，而是在用户空间中放置一个内核代理（Sentry），在系统调用到达宿主机内核之前将其拦截。Agent 进程以为自己运行在正常的 Linux 系统上，但 Sentry 在用户空间中处理这些调用，大幅减少了宿主机内核的暴露面。
+
+Google 内部将 gVisor 用于 Cloud Run 和 GKE Sandbox。Gemini CLI 在 2026 年初采用了它来隔离 Agent 的 Shell 命令执行。
+
+gVisor 相对 Firecracker 的取舍：gVisor 不提供硬件级隔离。Sentry 进程本身运行在宿主机的用户空间中，理论上存在从 Sentry 逃逸到宿主机内核的可能性。实际上，gVisor 的攻击面比完整容器运行时小，但比 MicroVM 的 VMM 接口大。
+
+gVisor 的优势在于文件系统性能。由于不需要虚拟化块设备，文件 I/O 明显快于基于 MicroVM 的沙箱。对于每个任务需要读写数千个源文件的编程 Agent——这是典型的工作负载——这一点很重要。
+
+Northflank 每月使用 gVisor 和 Kata Containers 处理超过 200 万个隔离工作负载。其生产数据显示，gVisor 在计算密集型任务上相比原生容器增加约 5-15% 的开销，而 Firecracker MicroVM 增加 10-25%。
+
+## 第三级：加固容器——信任但验证
+
+标准 Docker 容器共享宿主机内核。容器逃逸漏洞——已经发生过多次——将赋予攻击者宿主机级别的访问权限。对于不受信任的 Agent 工作负载，这是不够的。
+
+加固容器增加了多层防护：seccomp 配置限制可用的系统调用，AppArmor 或 SELinux 强制访问控制，丢弃 Linux 能力，以及只读根文件系统。Agent 在容器内部看起来运行正常，但与宿主机交互的能力被大幅限制。
+
+这种方案适用于 Agent 执行你已审查并信任的代码。它不适用于任意代码生成——而这恰恰是编程 Agent 的核心功能。seccomp 配置可以阻止危险的系统调用，但足够巧妙的 Agent（或足够巧妙的提示注入）可能找到配置未预见的系统调用组合。
+
+Docker 自身的回应：2026 年初发布的 Docker Sandboxes 为每个沙箱提供了一个专用 MicroVM 和私有 Docker 守护进程。实际上，Docker 承认容器本身不足以应对，于是用 VM 将其包裹。
+
+## 选择合适的层级
+
+决策矩阵比技术实现简单：
+
+| 信任级别 | 隔离层级 | 适用场景 |
+|---|---|---|
+| **零信任**——Agent 运行任意生成的代码 | Firecracker MicroVM | 编程 Agent、代码解释器、不受信任的插件 |
+| **低信任**——Agent 运行受控输入的策展工具 | gVisor | 带工具白名单的 CLI Agent、托管 Agent 平台 |
+| **已验证信任**——Agent 执行已审查的确定性代码 | 加固容器 | CI/CD 流水线、预批准的自动化脚本 |
+
+2026 年 4 月的大多数生产 Agent 系统采用混合方案：编排器运行在加固容器中（只做 API 调用和文件读取），执行生成代码的子 Agent 运行在 MicroVM 中，调用预定义函数的工具 Agent 运行在 gVisor 之后。
+
+## 网络出口：被遗忘的攻击面
+
+没有网络控制的隔离是不完整的。一个处于完美隔离 MicroVM 中的 Agent，如果拥有不受限制的出站网络访问，仍然可以窃取数据。2026 年的标准做法：默认拒绝出站，显式白名单放行。Agent 只能访问 LLM API 端点和经过批准的工具端点，其余一律在网络策略层面封锁。
+
+这是 MITRE ATLAS 调查的教训：已记录的攻击链依赖网络出口来下载二级载荷。默认封锁出口可以在第一阶段就阻断攻击链。
+
+## 成本核算
+
+根据 2026 年初生产部署的数据，Agent 沙箱将安全事件减少了 90%。剩余 10% 来自错误配置的出站规则和过度宽松的文件系统挂载——而非沙箱逃逸。
+
+正确部署的成本以延迟衡量（MicroVM 低于 200 毫秒，gVisor 低于 50 毫秒）以及运维复杂度（管理 VM 镜像、seccomp 配置、网络策略）。对于任何在生产环境中执行生成代码的系统，这个成本不是可选项。
+
+层级已经清晰：MicroVM 用于不受信任的代码，gVisor 用于受控执行，加固容器用于受信任的自动化。2026 年的自主 Agent 不应裸跑在 Docker 中——威胁模型已经超越了它。
+
+---
+
+*参考资料：[Northflank Agent 沙箱指南](https://northflank.com/blog/how-to-sandbox-ai-agents)、[E2B Agent Cloud](https://e2b.dev/)、[MITRE ATLAS OpenClaw 调查](https://accuknox.com/blog/openclaw-security-ai-agent-sandboxing-aispm)。*

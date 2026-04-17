@@ -1,192 +1,607 @@
 ---
-title: "多智能体系统研究路线图：三条路径的核心判断与优先级建议"
-description: "基于控制平面、上下文管理与通信协议三个维度的系统性研究规划，面向2026年的多智能体系统研究方向选择"
-publishDate: '2026-04-07'
+title: "Three Research Routes for Multi-Agent Systems in 2026"
+description: "A research roadmap across control planes, context management, and communication protocols — with code, experiments, and risk analysis."
+publishDate: "2026-04-15"
+updatedDate: "2026-04-16"
+tags: [multi-agent, research-roadmap, control-plane, context-management, communication-protocol, agent-research]
 category: research
-tags: [control-plane, context-management, communication-protocol, agent-research]
-draft: true
+language: en
+draft: false
 ---
 
-## 概述：三条路线的核心判断
+When planning long-term research in multi-agent systems, the field presents an overwhelming number of possible directions. After reviewing two years of top-venue publications and industry deployment reports, I have narrowed the viable research routes to three, ordered by priority:
 
-在规划多智能体系统的长期研究方向时，我们确定了三条明确的技术路线，其**主轴优先级**为：
+> **Control Plane > Context Management > Communication / Rollback Protocols**
 
-> **控制平面 > 上下文管理 > 通信/回滚协议**
+This ordering reflects a consensus emerging from venues like NeurIPS, ICML, and ICLR in 2025-2026: reviewers reward research with real-environment evaluation, measurable system-level gains over fixed backbones, and hard metrics (cost, stability, safety). They penalize vague AGI narratives, single-LLM-as-judge evaluation, and concepts that cannot be operationalized.
 
-这一排序基于两份行业报告的共识：A会偏好**真实环境评测**、固定backbone系统增益、成本/稳定性/安全性指标；排斥空泛的AGI叙事、单一LLM judge、以及无法operationalize的概念。
+| Route | Core Theme | Priority | Key Characteristics |
+|-------|-----------|----------|-------------------|
+| Route 1 | Proactive Control Plane | Highest | Systems-oriented, multi-objective metrics, control-theory perspective |
+| Route 2 | Context Value Estimation | Second | Stable, low resource requirements, easy to explain |
+| Route 3 | Communication / Rollback Protocols | Third | Engineering-flavored, protocol-oriented, low compute requirements |
 
-| 路线 | 核心主题 | 优先级 | 关键特征 |
-|------|----------|--------|----------|
-| 路线1 | 主动控制平面 | 🥇 最高 | 系统性强、综合指标、控制理论视角 |
-| 路线2 | 上下文价值估计 | 🥈 次高 | 稳定性好、资源要求低、易理解 |
-| 路线3 | 通信/回滚协议 | 🥉 第三 | 工程味浓、协议感强、算力需求低 |
+## Route 1: Proactive Control Plane (Highest Priority)
 
----
+**Proposed Title:** *Budgeted Proactive Control for Persistent Agents*
 
-## 路线1详解：主动控制平面（最高优先级）
+### The Core Problem
 
-### 📋 题目
-**Budgeted Proactive Control for Persistent Agents**
+In continuous workflows, when should an agent intervene, stay silent, escalate to a human, or roll back a previous action — all under explicit cost constraints that maximize long-term success rate and cross-task consistency?
 
-### ❓ 核心问题
-在连续工作流中，agent应该在什么时机介入、保持沉默、升级、回滚，并在**明确成本约束下**最大化长期成功率与稳定性。
+This framing distinguishes the work from simple "intervention timing" classifiers. The control plane operates over a state space (compressed history + current environment) with a discrete action set: **assist**, **silent**, **escalate**, **rollback**. The optimization target is not single-task accuracy but a multi-objective cost function balancing:
 
-### ✨ 三点贡献
-1. **控制平面定义**: 状态 = 压缩后的历史 + 当前环境，动作 = assist / silent / escalate / rollback
-2. **成本函数**: 误报打扰、漏报风险、token消耗、延迟的多目标优化
-3. **一致性纳入主指标**: 不仅是单次成功率，强调跨任务一致性（consistency across tasks）
+- **False alarm cost**: Unnecessary interruptions that erode user trust
+- **Miss cost**: Failures to intervene when the agent should have
+- **Token cost**: Computational budget consumed per intervention
+- **Latency cost**: Time overhead of the control loop itself
 
-### 📊 Baselines（4类对比）
-| Baseline | 描述 | 特点 |
-|----------|------|------|
-| Always Intervene | 总介入 | 最高打扰，最低漏报 |
-| Fixed Threshold | 固定阈值介入 | 简单启发式 |
-| When-Only | 只做when，不做rollback | 单向控制 |
-| Rollback-Only | 只做rollback，不做主动控制 | 被动恢复 |
-| **Proposed** | **完整系统** | **四动作协同 + 成本优化** |
+The consistency dimension is what elevates this from classification to control theory. An agent that succeeds 90% of the time but fails unpredictably on random tasks is worse than an agent that succeeds 85% of the time with predictable failure modes. Reviewers at top venues have started explicitly asking for consistency metrics, not just aggregate success rates.
 
-### 🔬 实验设计
-**主表 1** (ProAgentBench): precision / recall / F1 / 干预次数 / token成本  
-**主表 2** (加入rollback后): 成功率、pass@k、一致性、平均恢复代价  
-**补充表**: 不同backbone下的迁移性（证明不是靠大模型）
+### Reference Implementation
 
-#### Benchmark组合
-- **主力**: ProAgentBench
-- **一致性补充**: τ-bench
-- **外部泛化**: OSWorld / WebArena
+The control plane can be modeled as a constrained Markov decision process. The state encodes compressed task history and environment signals. The action space is discrete. The cost function is multi-objective.
 
-### 📅 三个月推进计划
-- **第1月**: 控制平面跑通，assist/silent两动作，拿到基础曲线
-- **第2月**: 加rollback/escalate，补全成本函数与ablation实验
-- **第3月**: 多backbone迁移、错误分析、可视化案例
+```python
+from dataclasses import dataclass
+from enum import Enum
+import numpy as np
 
-### ⚠️ 风险点
-- ✅ **优势**: 问题硬、指标硬、系统味强
-- ⚠️ **风险**: 容易被说成"分类器+规则" → 必须强调这是**控制平面**（control plane），不是单点时机分类器
+class Action(Enum):
+    ASSIST = "assist"
+    SILENT = "silent"
+    ESCALATE = "escalate"
+    ROLLBACK = "rollback"
 
----
+@dataclass(frozen=True)
+class CostWeights:
+    """Multi-objective cost function weights."""
+    false_alarm: float = 1.0    # cost of unnecessary intervention
+    miss: float = 5.0           # cost of failing to intervene
+    token: float = 0.001        # cost per token consumed
+    latency: float = 0.1        # cost per second of delay
 
-## 路线2详解：上下文管理（次优先级，最稳）
+@dataclass
+class ControlState:
+    """Compressed representation of agent state."""
+    confidence: float           # model's self-reported confidence [0, 1]
+    steps_since_intervention: int
+    error_rate_window: float    # rolling error rate over last N steps
+    token_budget_remaining: float
+    task_complexity: float      # estimated from initial prompt
 
-### 📋 题目
-**Context Value Estimation for Long-Horizon Agents**
+class ProactiveControlPlane:
+    """
+    Decides when an agent should act, stay silent, escalate, or rollback.
 
-### ❓ 核心问题
-在长程agent任务中，如何估计每段上下文的**边际价值**，并在固定token预算下保留"最值得留下的历史"。
+    The policy is a simple threshold-based controller for the reference
+    implementation. In the research version, this would be replaced with
+    a learned policy (e.g., via constrained PPO or GRPO).
+    """
 
-> **命名注意**: 不用"Context Entropy"，改用context value / utility / folding
+    def __init__(self, cost_weights: CostWeights | None = None):
+        self.costs = cost_weights or CostWeights()
+        self.action_history: list[Action] = []
+        self.reward_history: list[float] = []
 
-### ✨ 核心贡献
-1. **value-per-token估计**: 量化每个token的保留价值
-2. **evidence-preserving compression**: 压缩后还能追溯关键证据
+    def select_action(self, state: ControlState) -> Action:
+        # Compute expected cost for each action
+        action_costs = {}
 
-### 📊 Baselines（4类对比）
-| Baseline | 描述 | 类别 |
-|----------|------|------|
-| 最近窗口截断 | Recent window truncation | 简单截断 |
-| LLMLingua-2 / Selective Context | 现有压缩方法 | 通用压缩 |
-| AgentFold / ReSum | 摘要折叠方法 | 摘要式压缩 |
-| **Proposed** | **value-aware manager** | **价值感知** |
+        for action in Action:
+            cost = self._expected_cost(state, action)
+            action_costs[action] = cost
 
-### 🔬 实验设计
-**主表 1** (固定token budget): 成功率、pass@k、平均上下文长度  
-**主表 2** (不同压缩率): 性能-成本帕累托曲线  
-**主表 3**: 是否保留证据索引对faithful compression的影响
+        # Select minimum-cost action
+        best_action = min(action_costs, key=action_costs.get)
+        self.action_history.append(best_action)
+        return best_action
 
-#### Benchmark选择
-- **主力**: WebArena / BrowseComp（长程环境）
-- **补充**: τ-bench（看一致性保持）
+    def _expected_cost(self, state: ControlState, action: Action) -> float:
+        """Estimate expected cost of taking an action in the current state."""
+        if action == Action.ASSIST:
+            # Cost = token cost + latency, but reduces miss probability
+            miss_prob = max(0, 1 - state.confidence) * 0.3
+            return (
+                self.costs.token * self._estimated_tokens(state)
+                + self.costs.latency * self._estimated_latency(state)
+                + self.costs.false_alarm * state.confidence  # high confidence = likely false alarm
+                - self.costs.miss * miss_prob  # benefit of preventing miss
+            )
 
-### 📅 三个月推进计划
-- **第1月**: heuristic value score，建立token budget曲线
-- **第2月**: 轻量学习式estimator，做evidence-preserving版本
-- **第3月**: 稳定性实验、反事实删段分析、错误归因
+        elif action == Action.SILENT:
+            # Cost = potential miss if error occurs
+            miss_prob = state.error_rate_window * (1 - state.confidence)
+            return self.costs.miss * miss_prob
 
-### ⚠️ 风险点
-- ✅ **优势**: reviewer易理解，资源要求低
-- ⚠️ **风险**: 被说成"压缩调参" → 必须写成**价值估计+决策耦合**，不是又一个summarizer
+        elif action == Action.ESCALATE:
+            # Fixed cost + latency (human response time)
+            return self.costs.latency * 10.0 + self.costs.false_alarm * 0.5
 
----
+        elif action == Action.ROLLBACK:
+            # Token cost of rollback + re-execution
+            return (
+                self.costs.token * self._estimated_tokens(state) * 2
+                + self.costs.latency * self._estimated_latency(state) * 1.5
+            )
 
-## 路线3详解：通信/回滚协议（第三优先级）
+        return float("inf")
 
-### 📋 题目
-**Asynchronous State Isolation for Multi-Agent Systems**
+    def _estimated_tokens(self, state: ControlState) -> float:
+        return state.task_complexity * 500
 
-### ❓ 核心问题
-多agent协作中，如何用**预算约束下的消息路由、状态隔离与异步回滚**，减少通信冗余、错误传播与攻击面。
+    def _estimated_latency(self, state: ControlState) -> float:
+        return state.task_complexity * 2.0
 
-> **关键点**: MailBox不能只写成消息队列，必须拔高成**protocol / state isolation / communication pruning**
+    def consistency_score(self) -> float:
+        """
+        Measure cross-task consistency.
+        Low variance in action distribution = high consistency.
+        """
+        if len(self.action_history) < 10:
+            return 0.0
+        action_counts = np.zeros(len(Action))
+        for a in self.action_history:
+            action_counts[list(Action).index(a)] += 1
+        probs = action_counts / action_counts.sum()
+        entropy = -np.sum(probs * np.log(probs + 1e-10))
+        # Normalize: max entropy = log(4) ≈ 1.386
+        return 1.0 - (entropy / np.log(len(Action)))
+```
 
-### ✨ 核心贡献（小而硬）
-1. **消息TTL/ACK/摘要路由**: 生命周期管理 + 确认机制 + 摘要化
-2. **checkpoint式状态隔离**: 快照式状态管理
-3. **沿消息日志的局部回滚**: 非全盘重跑，沿消息链恢复
+The threshold-based controller is the starting point. The research contribution replaces `select_action` with a learned policy trained via constrained RL, where the constraint is a minimum consistency score across task types.
 
-### 📊 Baselines（4类对比）
-| Baseline | 描述 | 类别 |
-|----------|------|------|
-| 全量广播 | Full broadcast | 无优化 |
-| 静态拓扑路由 | Static topology routing | 固定路由 |
-| AgentPrune / RCR-Router | 现有通信剪枝方法 | 通信剪枝 |
-| **Proposed** | **mailbox protocol** | **协议化设计** |
+### Experiment Design
 
-### 🔬 实验设计
-**主表 1**: 成功率、总token、平均消息数、延迟  
-**主表 2** (异常注入): 错误传播率、回滚恢复率  
-**主表 3** (不同TTL/路由): 通信保真-成本曲线
+**Primary evaluation (ProAgentBench):**
 
-#### 实验场景
-多agent coding、协作问答或自建3-5节点系统 → 重点不是规模，是**量化协议变量**
+| Metric | What It Measures |
+|--------|-----------------|
+| Precision / Recall / F1 | Intervention quality |
+| Intervention count | Frequency of agent actions |
+| Token cost | Computational efficiency |
+| Cross-task consistency | Stability across task types |
 
-### 📅 三个月推进计划
-- **第1月**: 最小mailbox runtime，跑通全量广播和静态路由
-- **第2月**: 加TTL、摘要、状态快照与局部回滚
-- **第3月**: 异常注入、安全性、collaboration gain分析
+**With rollback enabled:**
 
-### ⚠️ 风险点
-- ✅ **优势**: 工程味浓、算力要求低
-- ⚠️ **风险**: 被误解成"普通软件系统" → 题目/摘要必须强调**token budget、error propagation、state isolation、collaboration gain**
+| Metric | What It Measures |
+|--------|-----------------|
+| Recovery success rate | How often rollback fixes the problem |
+| Pass@k | Success within k attempts |
+| Mean recovery cost | Tokens spent on recovery |
 
----
+**Baselines (4 comparisons):**
 
-## 优先级建议与取舍
+1. **Always Intervene** — Maximum interruption, minimum missed errors. Upper bound on recall, lower bound on precision.
+2. **Fixed Threshold** — Simple heuristic: intervene when confidence drops below a static cutoff. Standard industry practice.
+3. **When-Only** — Only decide *when* to act, no rollback capability. Tests whether rollback adds value.
+4. **Rollback-Only** — Only reactive recovery, no proactive control. Tests whether proactive intervention adds value.
 
-### 🎯 第一优先：路线1（主动控制平面）
-> **最像A会主线，最综合，最像未来长期研究标签**
+The proposed system combines all four action types with cost-aware optimization. The ablation structure directly measures the marginal contribution of each capability.
 
-- 控制理论视角 + 多目标优化
-- 覆盖主动介入、沉默、升级、回滚完整闭环
-- 适合作为长期研究方向积累
+**Benchmark combination:** ProAgentBench (primary), tau-bench (consistency supplement), OSWorld / WebArena (external generalization).
 
-### 🎯 第二优先：路线2（上下文价值估计）
-> **最稳，三个月最容易出强结果**
+### Three-Month Timeline
 
-- reviewer易理解，复现门槛低
-- 价值估计 + 证据保留的叙事清晰
-- 适合快速产出高质量论文
+- **Month 1:** Core control plane with assist/silent actions. Establish baseline performance curves.
+- **Month 2:** Add rollback/escalate actions. Complete cost function and ablation experiments.
+- **Month 3:** Multi-backbone transfer experiments. Error analysis and visualization of decision boundaries.
 
-### 🎯 第三优先：路线3（通信/回滚协议）
-> **最工程，最系统，最有协议感**
+### Risk Assessment
 
-- 协议设计 + 状态隔离 + 异步回滚
-- 需要把叙事立住，避免被误认为普通软件工程
-- 适合系统型研究或工程导向团队
+The primary risk is reviewers dismissing this as "a classifier plus rules." The defense is architectural: a control plane makes continuous decisions over a state space with a cost function, not point predictions. The multi-objective optimization and consistency constraints are fundamentally different from binary classification. The writing must make this distinction sharp and early in the paper.
 
----
+**Strength:** Hard problem, hard metrics, strong systems flavor — exactly what top venues reward in 2026.
 
-## 📝 一句话取舍原则
+## Route 2: Context Value Estimation (Most Stable)
 
-- 要"**最像A会主线**" → 做**控制平面**（路线1）
-- 要"**最容易三个月出强结果**" → 做**context value / folding**（路线2）
-- 要"**最工程、最系统、最有协议感**" → 做**mailbox + rollback**（路线3）
+**Proposed Title:** *Context Value Estimation for Long-Horizon Agents*
 
----
+### The Core Problem
 
-## 🔜 下一步产出建议
+In long-horizon agent tasks, how do you estimate the marginal value of each context segment and, under a fixed token budget, retain the history that matters most?
 
-可将每条路线展开成一页**"开题书版本"**：
-- 摘要草稿（abstract draft）
-- 方法图（methodology diagram）
-- 实验章节目录（experiment structure）
-- 标题候选（title candidates）
+Every production agent system faces this problem. Context windows are large but finite. As tasks extend over dozens of steps, the agent's history exceeds its window. Something must be discarded. The question is what.
+
+Current approaches fall into crude categories: truncate the oldest content (loses early decisions that may still be relevant), compress everything uniformly (loses detail on critical moments), or let the model decide ad hoc (inconsistent and unauditable).
+
+### Core Contributions
+
+1. **Value-per-token estimation:** A lightweight scoring function that assigns a retention value to each token based on its predicted future utility. Not all history is equally valuable. A variable assignment from step 3 that is still referenced in step 47 has high value. A failed approach from step 12 that was already abandoned has near-zero value.
+
+2. **Evidence-preserving compression:** When context is compressed, the compression must preserve causal traceability. If the agent makes a decision in step 50 based on evidence gathered in step 8, the compressed context must retain enough of step 8 to reconstruct the reasoning chain. This is stronger than standard summarization, which preserves semantic content but often loses the evidential structure.
+
+### Reference Implementation
+
+```python
+from dataclasses import dataclass, field
+import numpy as np
+
+@dataclass
+class ContextSegment:
+    """A chunk of agent history with retention metadata."""
+    content: str
+    step_number: int
+    token_count: int
+    segment_type: str  # "action", "observation", "reasoning", "error"
+    references_to: list[int] = field(default_factory=list)  # steps this references
+    referenced_by: list[int] = field(default_factory=list)  # steps that reference this
+
+    @property
+    def is_referenced(self) -> bool:
+        return len(self.referenced_by) > 0
+
+
+class ContextValueEstimator:
+    """
+    Scores context segments by estimated future utility.
+
+    The heuristic version uses reference counting and recency.
+    The learned version replaces score_segment with a small
+    neural network trained on (segment, future_task_success) pairs.
+    """
+
+    def __init__(
+        self,
+        token_budget: int = 32_000,
+        recency_decay: float = 0.95,
+    ):
+        self.token_budget = token_budget
+        self.recency_decay = recency_decay
+
+    def score_segment(
+        self,
+        segment: ContextSegment,
+        current_step: int,
+        total_segments: int,
+    ) -> float:
+        """Compute retention value for a segment."""
+
+        # Component 1: Reference value
+        # Segments referenced by later steps are more valuable
+        ref_score = len(segment.referenced_by) * 0.3
+
+        # Component 2: Recency
+        # Recent segments are more likely to be relevant
+        age = current_step - segment.step_number
+        recency_score = self.recency_decay ** age
+
+        # Component 3: Type-based prior
+        # Errors and key decisions are more valuable than routine observations
+        type_weights = {
+            "action": 0.6,
+            "observation": 0.3,
+            "reasoning": 0.8,
+            "error": 0.9,
+        }
+        type_score = type_weights.get(segment.segment_type, 0.5)
+
+        # Component 4: Causal chain membership
+        # If this segment is part of a reasoning chain that led to
+        # a still-active decision, it gets a bonus
+        chain_bonus = 0.5 if segment.is_referenced else 0.0
+
+        return ref_score + recency_score + type_score + chain_bonus
+
+    def select_context(
+        self,
+        segments: list[ContextSegment],
+        current_step: int,
+    ) -> list[ContextSegment]:
+        """Select segments that fit within token budget, maximizing total value."""
+        scored = [
+            (seg, self.score_segment(seg, current_step, len(segments)))
+            for seg in segments
+        ]
+
+        # Sort by value density (value per token)
+        scored.sort(key=lambda x: x[1] / max(x[0].token_count, 1), reverse=True)
+
+        selected = []
+        remaining_budget = self.token_budget
+
+        for seg, score in scored:
+            if seg.token_count <= remaining_budget:
+                selected.append(seg)
+                remaining_budget -= seg.token_count
+
+        # Re-sort selected by step number for chronological coherence
+        selected.sort(key=lambda s: s.step_number)
+        return selected
+```
+
+### Baselines
+
+| Baseline | Category | Description |
+|----------|----------|-------------|
+| Recent window truncation | Simple cutoff | Keep the last N tokens, discard everything else |
+| LLMLingua-2 / Selective Context | General compression | Token-level compression without task awareness |
+| AgentFold / ReSum | Summary-based | Hierarchical summarization of agent history |
+| **Proposed** | **Value-aware** | **Retention decisions based on estimated future utility** |
+
+### Experiment Design
+
+**Table 1 (fixed token budget):** Success rate, pass@k, mean context length at each step. This measures how well each method retains useful information under identical resource constraints.
+
+**Table 2 (varying compression rates):** Performance-cost Pareto curves. At what compression rate does each method break? Value-aware methods should maintain performance at higher compression rates than uniform methods.
+
+**Table 3 (evidence preservation):** Does the compressed context preserve causal chains? Measured by faithful attribution: can the agent explain *why* it made a decision by pointing to specific evidence in the compressed history?
+
+**Benchmarks:** WebArena / BrowseComp (long-horizon environments with many decision steps), tau-bench (consistency measurement under compression).
+
+### Three-Month Timeline
+
+- **Month 1:** Heuristic value scoring. Establish token budget curves across benchmarks.
+- **Month 2:** Learned value estimator. Implement evidence-preserving compression variant.
+- **Month 3:** Stability experiments, counterfactual ablation (remove high-value segments, measure degradation), error attribution analysis.
+
+### Risk Assessment
+
+The risk is reviewers labeling this as "compression tuning." The defense is framing: this is not about compression ratios but about *decision-coupled value estimation*. The agent's context management is a decision problem, not an information-theoretic problem. The value of a context segment depends on the agent's future actions, not just its information content.
+
+**Strength:** Low resource requirements, clear evaluation methodology, high reviewer accessibility. This is the fastest route to a strong paper.
+
+## Route 3: Communication / Rollback Protocols (Most Engineering-Flavored)
+
+**Proposed Title:** *Asynchronous State Isolation for Multi-Agent Systems*
+
+### The Core Problem
+
+In multi-agent collaboration, how do you use budget-constrained message routing, state isolation, and asynchronous rollback to reduce communication redundancy, error propagation, and attack surface?
+
+The standard multi-agent pattern is full broadcast: every agent sees every message from every other agent. This is O(n^2) in communication cost and creates a maximally connected graph for error propagation. One agent's hallucinated output contaminates every other agent's context.
+
+### Core Contributions
+
+1. **Message lifecycle management:** TTL (time-to-live), ACK (acknowledgment), and summary routing. Messages expire after a configured period. Recipients acknowledge receipt. Long messages are automatically summarized before forwarding to agents that do not need the full detail.
+
+2. **Checkpoint-based state isolation:** Each agent maintains snapshots of its state at configurable intervals. State changes are isolated — one agent's state corruption does not automatically propagate to others.
+
+3. **Local rollback along message logs:** When an error is detected, rollback follows the message chain rather than resetting the entire system. Only agents that received and acted on the erroneous message need to revert. This is partial rollback, not global restart.
+
+### Reference Implementation
+
+```python
+import time
+import uuid
+from collections import deque
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
+
+class MessageStatus(Enum):
+    PENDING = "pending"
+    DELIVERED = "delivered"
+    ACKNOWLEDGED = "acknowledged"
+    EXPIRED = "expired"
+    ROLLED_BACK = "rolled_back"
+
+@dataclass
+class Message:
+    """A message in the multi-agent communication protocol."""
+    id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
+    sender: str = ""
+    recipient: str = ""
+    content: str = ""
+    ttl_seconds: float = 300.0  # 5 minutes default
+    created_at: float = field(default_factory=time.time)
+    status: MessageStatus = MessageStatus.PENDING
+    parent_id: str | None = None  # for threading
+    token_count: int = 0
+
+    @property
+    def is_expired(self) -> bool:
+        return (time.time() - self.created_at) > self.ttl_seconds
+
+@dataclass
+class AgentCheckpoint:
+    """Snapshot of an agent's state at a point in time."""
+    agent_id: str
+    step: int
+    state: dict[str, Any]
+    message_log: list[str]  # message IDs processed up to this point
+    timestamp: float = field(default_factory=time.time)
+
+
+class MessageRouter:
+    """
+    Budget-constrained message router with TTL and summary routing.
+
+    Full broadcast is O(n^2). This router maintains a routing table
+    that determines which agents need the full message, which get a
+    summary, and which get nothing.
+    """
+
+    def __init__(
+        self,
+        agents: list[str],
+        token_budget_per_step: int = 4000,
+        summary_threshold: int = 500,  # summarize messages longer than this
+    ):
+        self.agents = agents
+        self.token_budget = token_budget_per_step
+        self.summary_threshold = summary_threshold
+        self.messages: dict[str, Message] = {}
+        self.checkpoints: dict[str, list[AgentCheckpoint]] = {
+            a: [] for a in agents
+        }
+        # Routing table: (sender, recipient) -> "full" | "summary" | "none"
+        self.routing_table: dict[tuple[str, str], str] = {}
+        self._init_default_routing()
+
+    def _init_default_routing(self):
+        """Default: agents in the same team get full, others get summary."""
+        for sender in self.agents:
+            for recipient in self.agents:
+                if sender != recipient:
+                    self.routing_table[(sender, recipient)] = "full"
+
+    def send(self, message: Message) -> list[str]:
+        """Route a message to recipients based on routing table."""
+        self.messages[message.id] = message
+        delivered_to = []
+
+        for recipient in self.agents:
+            if recipient == message.sender:
+                continue
+
+            route = self.routing_table.get(
+                (message.sender, recipient), "none"
+            )
+
+            if route == "none":
+                continue
+            elif route == "summary" and message.token_count > self.summary_threshold:
+                # Create and store summarized version for this recipient
+                summary = self._summarize(message)
+                summary.recipient = recipient
+                self.messages[summary.id] = summary
+                delivered_to.append(recipient)
+            else:
+                delivered_to.append(recipient)
+
+        message.status = MessageStatus.DELIVERED
+        return delivered_to
+
+    def acknowledge(self, message_id: str) -> None:
+        """Mark a message as acknowledged by its recipient."""
+        if message_id in self.messages:
+            self.messages[message_id].status = MessageStatus.ACKNOWLEDGED
+
+    def rollback(self, error_message_id: str) -> list[str]:
+        """
+        Roll back only agents affected by an erroneous message.
+        Follows the message chain — partial rollback, not global reset.
+        """
+        affected_agents = self._trace_message_chain(error_message_id)
+        # Collect all message IDs in the error chain
+        chain_msg_ids = self._collect_chain_messages(error_message_id)
+        rolled_back = []
+
+        for agent_id in affected_agents:
+            checkpoints = self.checkpoints[agent_id]
+            valid_checkpoints = [
+                cp for cp in checkpoints
+                if error_message_id not in cp.message_log
+            ]
+            if valid_checkpoints:
+                restore_point = valid_checkpoints[-1]
+                # Only mark messages in the error chain as rolled back
+                for msg_id in chain_msg_ids:
+                    if msg_id in self.messages:
+                        self.messages[msg_id].status = MessageStatus.ROLLED_BACK
+                rolled_back.append(agent_id)
+
+        return rolled_back
+
+    def _collect_chain_messages(self, message_id: str) -> set[str]:
+        """Collect all message IDs downstream of an error message."""
+        chain = {message_id}
+        queue = deque([message_id])
+        while queue:
+            mid = queue.popleft()
+            for other_id, other_msg in self.messages.items():
+                if other_msg.parent_id == mid and other_id not in chain:
+                    chain.add(other_id)
+                    queue.append(other_id)
+        return chain
+
+    def _trace_message_chain(self, message_id: str) -> set[str]:
+        """Find all agents that received or were affected by a message."""
+        affected = set()
+        visited = {message_id}
+        queue = deque([message_id])
+
+        while queue:
+            mid = queue.popleft()
+            msg = self.messages.get(mid)
+            if not msg:
+                continue
+            affected.add(msg.recipient)
+            for other_id, other_msg in self.messages.items():
+                if other_msg.parent_id == mid and other_id not in visited:
+                    visited.add(other_id)
+                    queue.append(other_id)
+
+        return affected
+
+    def _summarize(self, message: Message) -> Message:
+        """Create a summarized version of a long message."""
+        # In production, this calls an LLM. For research, we truncate.
+        summary_content = message.content[:200] + "..."
+        return Message(
+            sender=message.sender,
+            recipient=message.recipient,
+            content=summary_content,
+            ttl_seconds=message.ttl_seconds,
+            parent_id=message.id,
+            token_count=min(message.token_count, self.summary_threshold),
+        )
+
+    def save_checkpoint(self, agent_id: str, step: int, state: dict):
+        """Save agent state for potential rollback."""
+        processed = [
+            mid for mid, msg in self.messages.items()
+            if msg.status in (MessageStatus.ACKNOWLEDGED, MessageStatus.DELIVERED)
+        ]
+        checkpoint = AgentCheckpoint(
+            agent_id=agent_id,
+            step=step,
+            state=state,
+            message_log=processed,
+        )
+        self.checkpoints[agent_id].append(checkpoint)
+
+    def gc_expired(self) -> int:
+        """Garbage-collect expired messages."""
+        expired = [
+            mid for mid, msg in self.messages.items()
+            if msg.is_expired and msg.status != MessageStatus.ROLLED_BACK
+        ]
+        for mid in expired:
+            self.messages[mid].status = MessageStatus.EXPIRED
+        return len(expired)
+```
+
+### Baselines
+
+| Baseline | Category | Description |
+|----------|----------|-------------|
+| Full broadcast | No optimization | Every agent sees everything |
+| Static topology | Fixed routing | Messages follow predefined paths |
+| AgentPrune / RCR-Router | Communication pruning | Learned routing that reduces message volume |
+| **Proposed** | **Protocol-based** | **TTL + ACK + summary + state isolation + local rollback** |
+
+### Experiment Design
+
+**Table 1:** Success rate, total tokens, mean messages per task, end-to-end latency.
+
+**Table 2 (fault injection):** Inject erroneous outputs from one agent. Measure error propagation rate and rollback recovery rate across baselines.
+
+**Table 3 (protocol parameter sweep):** Vary TTL values, summary thresholds, and checkpoint frequency. Map the communication-fidelity cost curve.
+
+**Scenarios:** Multi-agent coding tasks, collaborative QA, custom 3-5 node systems. The emphasis is not scale but quantifying protocol variables under controlled conditions.
+
+### Three-Month Timeline
+
+- **Month 1:** Minimal mailbox runtime. Benchmark full broadcast and static routing baselines.
+- **Month 2:** Add TTL, summary routing, state snapshots, and local rollback.
+- **Month 3:** Fault injection experiments, security analysis, collaboration gain measurement.
+
+### Risk Assessment
+
+The risk is reviewers seeing this as "ordinary distributed systems engineering." The defense requires careful framing: every design choice is grounded in token budgets, error propagation in language model outputs (not just network errors), and state isolation for stochastic agents (not deterministic processes). The title and abstract must foreground these LLM-specific aspects.
+
+**Strength:** Low compute requirements, strong engineering intuition, protocol-oriented design that stands out in a field dominated by scaling narratives.
+
+## Strategic Recommendations
+
+**If you want the strongest top-venue submission:** Route 1 (Control Plane). It has the hardest problem formulation, the most comprehensive metrics, and the clearest alignment with what NeurIPS/ICML reviewers have been rewarding in 2025-2026.
+
+**If you want the fastest path to a strong result:** Route 2 (Context Value). Low resource requirements, straightforward evaluation, and a problem that every agent builder recognizes immediately. Three months to a publishable result is realistic.
+
+**If you want the most differentiated contribution:** Route 3 (Communication Protocols). The engineering flavor sets it apart from the sea of "we made a bigger model" papers. It requires careful framing to land at a top venue, but if the framing is right, the novelty is undeniable.
+
+My recommendation: pursue Route 1 as the primary research direction, with Route 2 as a parallel fallback that can be accelerated if Route 1 encounters obstacles. Route 3 is a strong candidate for a second paper or for teams with distributed systems expertise.
+
+The key across all three routes is the same: operationalize everything. No metric without a measurement procedure. No contribution without an ablation. No claim without a baseline comparison. The 2026 review landscape rewards rigor over ambition.

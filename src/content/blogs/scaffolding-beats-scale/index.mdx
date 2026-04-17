@@ -1,0 +1,178 @@
+---
+title: "Scaffolding Beats Scale"
+description: "Why pipeline architecture matters more than model size for coding agents — evidence from SWE-bench, real deployments, and information theory."
+publishDate: "2026-04-15"
+tags: [coding-agents, scaffolding, SWE-bench, agent-systems, architecture, evaluation]
+category: engineering
+language: en
+draft: false
+---
+
+The SWE-bench leaderboard tells a story that most people read backwards. They look at which model tops the chart and conclude that model capability drives agent performance. The actual data says something different: the top-performing systems are not the ones using the most powerful base model. They're the ones with the best scaffolding around a good-enough model.
+
+As of April 2026, the gap between the best scaffolded system and a bare model API call on SWE-bench Verified is larger than the gap between the strongest and weakest frontier models. Put differently: wrapping a mid-tier model in excellent scaffolding outperforms giving a top-tier model raw access to the repository and asking it to fix the bug.
+
+This has practical consequences for anyone building coding agents. The marginal dollar spent on scaffolding engineering produces more performance than the marginal dollar spent on model upgrades.
+
+## What "Scaffolding" Means Concretely
+
+In the context of coding agents, scaffolding is everything between the user's intent and the model's API call that isn't the model itself. It includes:
+
+**Context assembly**: Which files, symbols, test outputs, and git history get loaded into the prompt. A naive agent dumps the entire repository into the context window. A well-scaffolded agent runs static analysis to identify the relevant dependency graph, loads only the files in the call chain of the failing test, and includes the specific error message with stack trace.
+
+**Action decomposition**: How a complex task gets broken into model-sized steps. A bare model receives "fix this failing test" and attempts the entire fix in one generation. A scaffolded agent first localizes the fault (which function, which branch), then proposes a fix, then verifies the fix compiles, then runs the test, then checks for regressions.
+
+**Verification loops**: What happens after the model generates code. Without scaffolding, the output goes directly to the user. With scaffolding, the output runs through type checkers, linters, test suites, and possibly a second model pass for review — before anything is presented as a solution.
+
+**Recovery strategies**: What happens when a step fails. Bare models retry with the same approach or give up. Scaffolded agents have explicit fallback strategies: if the initial fix doesn't compile, try a simpler change; if the test still fails after three attempts, re-localize the fault with more context; if the agent is stuck, escalate to a different agent or the user.
+
+## The SWE-bench Evidence
+
+SWE-bench tasks ask agents to resolve real GitHub issues by producing patches that pass the repository's test suite. The dataset is drawn from popular Python repositories (Django, scikit-learn, matplotlib, etc.), and each task has a ground-truth test that the patch must pass.
+
+The performance breakdown reveals the scaffolding effect:
+
+```
+System                    | Model           | SWE-bench Verified
+--------------------------|-----------------|-------------------
+Best scaffolded system    | Claude Sonnet   | ~62%
+Best scaffolded system    | GPT-5.4         | ~60%
+Bare model (no scaffold)  | Claude Opus 4.6 | ~38%
+Bare model (no scaffold)  | GPT-5.4         | ~35%
+```
+
+The best scaffolded system using a mid-tier model (Sonnet) outperforms the most powerful available model (Opus 4.6) running without scaffolding by 24 percentage points. The scaffolding contribution is roughly 2x the model contribution.
+
+This pattern holds across multiple benchmark variants and model generations. When SWE-bench Pro introduced harder tasks with multi-file edits and architectural changes, the scaffolding advantage persisted — better-scaffolded systems maintained higher solve rates even as absolute performance dropped.
+
+## Why Scaffolding Dominates: An Information-Theoretic Argument
+
+The model's capability can be thought of as its capacity to generate correct code given sufficient context. The scaffolding's job is to maximize the mutual information between the context presented and the information needed to solve the task.
+
+Consider a bug fix task. The total information needed includes: the failing test's assertion, the code path that leads to failure, the expected behavior, any related functions that might be affected by the fix, and the coding conventions of the repository. Call this $I_{\text{needed}}$.
+
+The model receives context $C$ and generates a fix. The fix quality is bounded by $I(C; I_{\text{needed}})$ — the mutual information between what the model sees and what it needs to know.
+
+A more capable model has higher capacity to exploit the information in $C$. But if $C$ contains mostly irrelevant files and misses the key dependency, even a perfect model generates a suboptimal fix. The scaffolding controls $C$. The model controls the exploitation of $C$.
+
+```python
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class ScaffoldingAnalysis:
+    """Decomposition of agent performance into components."""
+    context_relevance: float    # I(C; I_needed) / H(I_needed)
+    model_exploitation: float   # quality given perfect context
+    verification_recovery: float  # improvement from retry loops
+
+    @property
+    def effective_performance(self) -> float:
+        # Performance is multiplicative, not additive
+        # Bad context * great model = bad output
+        return (
+            self.context_relevance
+            * self.model_exploitation
+            * (1 + self.verification_recovery)
+        )
+```
+
+The multiplicative structure is key. If context relevance is 0.3 (most of the context is irrelevant), even a model with exploitation capacity of 0.95 produces effective performance of ~0.3. Improving context relevance from 0.3 to 0.8 more than doubles effective performance — regardless of the model.
+
+## Five Scaffolding Patterns That Matter Most
+
+### 1. Fault Localization Before Fix Generation
+
+The highest-leverage scaffolding investment is narrowing the search space before asking the model to generate code.
+
+```
+Naive pipeline:
+  User issue → [full repo in context] → Model → patch
+
+Scaffolded pipeline:
+  User issue → static analysis → [dependency graph] →
+  → failing test → [stack trace] → [relevant files only] →
+  → Model → patch → [verify] → patch (or retry)
+```
+
+The scaffolded pipeline's context is 10-50x smaller and 5-10x more relevant. On SWE-bench, systems that invest in fault localization consistently outperform those that rely on the model's ability to find the relevant code in a large context.
+
+### 2. Multi-Step Decomposition
+
+Complex fixes require multiple coordinated changes. Scaffolding that decomposes the task into steps — and verifies each step independently — prevents cascading errors.
+
+```python
+def scaffolded_fix(issue: str, repo_path: str) -> list[str]:
+    """Multi-step fix with per-step verification."""
+    # Step 1: Localize
+    relevant_files = fault_localize(issue, repo_path)
+
+    # Step 2: Understand
+    context = build_context(relevant_files, repo_path)
+    analysis = model_analyze(issue, context)
+
+    # Step 3: Plan
+    fix_plan = model_plan(analysis)
+
+    # Step 4: Execute each change with verification
+    patches = []
+    for step in fix_plan.steps:
+        patch = model_generate(step, context)
+        if not verify_compiles(patch, repo_path):
+            patch = model_retry(step, context, compile_error)
+        patches.append(patch)
+
+    # Step 5: Integration test
+    if not run_tests(patches, repo_path):
+        return fallback_strategy(issue, patches, repo_path)
+
+    return patches
+```
+
+### 3. Retrieval-Augmented Context
+
+Instead of stuffing the entire codebase into context, retrieve only what's relevant using a combination of static analysis and semantic search.
+
+The best-performing SWE-bench systems use a two-stage retrieval: first, static analysis identifies the call graph and import chain around the failing test. Second, semantic search over the repository finds conceptually related code that might not be in the direct dependency chain but contains relevant patterns.
+
+This hybrid approach consistently outperforms either approach alone. Static analysis catches structural dependencies. Semantic search catches conceptual ones. Together, they construct a context that's both complete and compact.
+
+### 4. Verification as a First-Class Step
+
+Every scaffolded system that performs well on benchmarks has explicit verification between generation and output. The minimum viable verification stack:
+
+```
+Generated code
+  → Syntax check (does it parse?)
+  → Type check (do types align?)
+  → Lint (does it follow conventions?)
+  → Unit test (does the failing test pass?)
+  → Regression (do other tests still pass?)
+```
+
+Each verification failure produces a structured error message that feeds back into the model for a retry attempt. The error message is part of the scaffolding — a well-formatted error with the specific line and expected type is worth more than a raw compiler dump.
+
+### 5. Recovery and Escalation
+
+The final scaffolding pattern is explicit recovery: what happens when the agent is stuck. Without recovery scaffolding, agents enter infinite retry loops or produce increasingly desperate patches.
+
+Effective recovery strategies:
+
+- **Backtrack**: If the current approach has failed 3 times, discard the last N steps and try a different decomposition
+- **Widen context**: Load additional files that weren't in the initial retrieval
+- **Simplify**: Try a minimal fix (single-line change) before attempting a complex one
+- **Escalate**: If all automated recovery fails, produce a structured report of what was tried and what failed, for human review
+
+## Implications for Agent System Design
+
+If scaffolding dominates model capability, the engineering priority shifts:
+
+**Invest in context assembly.** The highest ROI improvement to any coding agent is better context selection. Build or adopt tools for static analysis, dependency graphing, and semantic retrieval. A few hundred lines of scaffolding code that selects the right 20 files outperforms throwing 1,000 files at a larger model.
+
+**Build verification infrastructure.** Every coding agent should have a verification loop that catches failures before presenting results. The cost of running `tsc` or `pytest` after every generation is negligible compared to the cost of presenting broken code to a user.
+
+**Make recovery explicit.** Design the failure paths with the same care as the success paths. An agent that fails gracefully and produces useful diagnostic output is more valuable than one that succeeds 5% more often but produces garbage when it fails.
+
+**Use model upgrades as a bonus, not a strategy.** When a better model becomes available, the scaffolded system gets a free performance boost — the better model exploits the same well-constructed context more effectively. But don't wait for model upgrades to improve your agent. The scaffolding improvements you can make today are larger than the model improvements arriving next quarter.
+
+The counterintuitive conclusion: the best coding agent is not the one with the best model. It's the one with the best pipeline around a good-enough model. Scaffolding beats scale.

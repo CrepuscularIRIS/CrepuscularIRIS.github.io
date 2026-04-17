@@ -1,0 +1,129 @@
+---
+title: "Gemma 4 E2B：在树莓派上跑自主 Agent"
+description: "Google 的 23 亿参数模型在设备端以 7.6 tokens/s 的速度运行多步 Agent 工作流。哪些场景真正可用。"
+publishDate: "2026-04-16"
+tags: [gemma, on-device-ai, edge-computing, agent-engineering, google, open-weight]
+category: engineering
+language: zh
+draft: false
+---
+
+Google 在 2026 年 4 月 2 日以 Apache 2.0 许可证发布了 Gemma 4。其中 E2B 变体——23 亿参数、密集架构——可以在树莓派 5 上以 CPU 模式跑到 7.6 tokens/s。不需要云端，不需要 API 密钥，不需要网络连接。
+
+这件事重要在于它移动了一个能力门槛。此前，自主 Agent 行为（规划、工具使用、错误恢复、多步推理）需要 7B+ 参数的模型或云端 API 调用。Gemma 4 E2B 证明了当训练方法针对性设计时，Agent 能力可以压缩到 23 亿参数。问题不是小模型能否遵循指令，而是它们能否在工具调用失败时恢复、在中间结果与假设矛盾时重新规划、在 10 步工作流中维持一致状态。答案是——带着显著局限——可以。
+
+## 23 亿参数的"Agent 能力"到底意味着什么
+
+"Agentic"这个词在营销材料里被用到失去意义。本文对 Agent 模型的四项能力要求：
+
+1. **多步规划** — 将目标分解为有序子任务，不依赖外部脚手架
+2. **工具使用** — 生成参数正确的结构化函数调用
+3. **错误恢复** — 检测工具调用失败并调整计划
+4. **状态追踪** — 在多个步骤间维持上下文，不丢失原始目标
+
+Gemma 4 E2B 四项都能做到，但可靠性与云端模型差距明显。规划准确率在 5-6 步后显著下降。工具调用参数幻觉率大约 8-12%（Gemini 3.1 Pro 约 2-4%）。错误恢复能处理单次失败，但级联错误下会崩溃。状态追踪在累计上下文低于 2K tokens 时有效。
+
+这些不是致命缺陷，而是部署边界。
+
+## 实际硬件性能
+
+| 硬件 | 解码速度 (tok/s) | 首 Token 延迟 | 实际可用上下文 |
+|------|----------------|-------------|-------------|
+| 树莓派 5 (8GB) | 7.6 | ~1.2s | 4K tokens |
+| 高通骁龙 8 Gen 4 | 31.0 | ~0.3s | 16K tokens |
+| Apple M4 (MacBook Pro) | 85.0+ | ~0.1s | 32K tokens |
+| Intel N100 迷你主机 | 12.0 | ~0.8s | 8K tokens |
+| NVIDIA Jetson Orin Nano | 45.0 | ~0.2s | 16K tokens |
+
+树莓派上 7.6 tok/s 意味着一个 200 token 的 Agent 回复需要 26 秒。后台自动化任务（文件整理、传感器处理、智能家居决策）可以接受这个延迟，交互式对话不行。Jetson Orin Nano 的 45 tok/s 是机器人和嵌入式应用的甜点——大多数 Agent 动作在 5 秒内完成。
+
+上下文窗口值得关注。Gemma 4 E2B 技术上支持 128K tokens，但在内存受限设备上实际上下文小得多。树莓派 8GB 内存中模型本身占 ~4.6GB（量化后），KV-cache 的空间有限。8GB 设备上实际工作上下文约 4-8K tokens。
+
+## 使架构可行的三个设计决策
+
+### Per-Layer Embeddings (PLE)
+
+标准 Transformer 在所有层共享一个 embedding 表。Gemma 4 使用 Per-Layer Embeddings——每个 Transformer 层有独立的 embedding 投影。参数量略微增加，但模型在不同深度表征不同抽象层次的能力大幅提升。
+
+对 Agent 任务而言，PLE 重要是因为工具使用和规划在不同抽象层运作。底层处理语法和格式（生成有效的 JSON 函数调用），顶层处理语义和规划（决定调用哪个工具以及为什么）。共享 embedding 迫使这些表征争夺容量，PLE 让每个层级有自己的表征预算。
+
+### 原生多模态
+
+Gemma 4 E2B 原生处理文本和图像——没有训练后拼接的独立视觉编码器。对边缘 Agent 来说，这消除了此前调用云端 API 最常见的原因：理解截图、读取传感器仪表盘、解析摄像头画面。
+
+智能家居 Agent 以前需要把摄像头帧发到云端 API 做场景理解，现在可以在设备端完成整个感知-推理-行动循环。安全摄像头画面、医疗设备屏幕、工业传感器数据都不需要离开设备。
+
+### Agent Skills 框架
+
+Google 与 Gemma 4 一起发布了 Agent Skills——一个轻量框架，用于定义在设备端完全运行的多步 Agent 工作流：
+
+```python
+from gemma_agent import AgentSkill, ToolSpec
+
+file_organizer = AgentSkill(
+    name="organize_downloads",
+    description="Sort downloaded files into categorized directories",
+    tools=[
+        ToolSpec(name="list_files", params={"directory": "string"}, returns="list[FileInfo]"),
+        ToolSpec(name="classify_file", params={"filename": "string", "content_preview": "string"}, returns="Category"),
+        ToolSpec(name="move_file", params={"source": "string", "destination": "string"}, returns="bool"),
+    ],
+    max_steps=20,
+    retry_on_failure=True,
+)
+
+result = file_organizer.run(
+    goal="Organize all files in ~/Downloads by type",
+    model="gemma-4-e2b",
+)
+```
+
+框架刻意极简——没有向量数据库，没有 RAG 管线，没有复杂记忆架构。目标硬件没有这些抽象的内存预算。
+
+## 适用场景
+
+Gemma 4 E2B Agent 的部署甜点是满足以下条件的任务：
+
+- **容忍延迟**：后台处理，非交互对话
+- **隐私敏感**：数据不应离开设备
+- **不依赖网络**：云端 API 不可用或不可靠的环境
+- **重复但有变化**：足够相似以受益于学习策略，足够不同以至于硬编码规则无法覆盖
+
+**智能家居**：树莓派上的 Agent 监控传感器数据，推理模式（"温度下降 + 厨房检测到动作 + 时间是 18:00 = 有人做饭，调整通风"），触发执行器。26 秒响应时间对以分钟计量的家居决策无关紧要。
+
+**工业 IoT**：制造环境中的边缘设备通常运行在隔离网络上。Jetson Orin Nano 上的 Agent 可以监控设备遥测、检测规则系统遗漏的异常模式、生成维护建议——全程不向云端发送专有传感器数据。
+
+**个人设备助手**：在现代智能手机 SoC 上，Gemma 4 E2B 可以处理文件整理、邮件分类、日历冲突检测和笔记摘要。这些任务受益于设备端处理，因为它们涉及用户可能不想上传到云端 AI 服务的个人数据。
+
+## 不适用场景
+
+**超过 6 步的复杂推理**：6 步后规划准确率低于 70%。需要 10+ 协调动作的工作流应使用云端模型或拆分为 4-5 步的独立子工作流。
+
+**长文档分析**：受限硬件上 4-8K tokens 的实际上下文排除了超过 3 页的文档分析。
+
+**对抗性输入**：小模型比大模型更容易受 prompt 注入影响。处理不可信文本的边缘 Agent 需要额外的输入清洗。
+
+**实时交互**：树莓派上 7.6 tok/s 的对话体验太慢。需要亚秒响应的场景，硬件底线是骁龙或 Apple Silicon。
+
+## 成本梯度
+
+Gemma 4 E2B 最重要的意义不是模型本身，而是它在 Google 生态中创造的成本梯度：
+
+```
+模型             | 成本/百万tokens | Agent能力 | 部署方式
+-----------------|---------------|----------|----------
+Gemma 4 E2B      |    $0.00      |   有*     | 设备端
+Gemma 4 E4B      |    $0.00      |   有      | 设备端/边缘
+Gemma 4 26B MoE  |    $0.00      |   有      | 本地服务器
+Gemini 3.1 Flash |   ~$0.05      |   有      | 云端 API
+Gemini 3.1 Pro   |   ~$1.25      |   有      | 云端 API
+```
+
+没有其他模型家族提供这个跨度。Claude 没有开源变体，GPT 没有本地部署选项。开发者可以在从 $35 树莓派到云端 API 的范围内部署同一个 Agent 架构，按需求扩展成本。
+
+## 参考资料
+
+- [Gemma 4 发布公告 — Google Blog](https://blog.google/innovation-and-ai/technology/developers-tools/gemma-4/)
+- [Gemma 4 技术报告 — Google DeepMind](https://deepmind.google/models/gemma/gemma-4/)
+- [Gemma 4 设备端指南 — Android Developers Blog](https://android-developers.googleblog.com/2026/04/gemma-4-new-standard-for-local-agentic-intelligence.html)
+- [边缘 Agent Skills — Google Developers Blog](https://developers.googleblog.com/bring-state-of-the-art-agentic-skills-to-the-edge-with-gemma-4/)

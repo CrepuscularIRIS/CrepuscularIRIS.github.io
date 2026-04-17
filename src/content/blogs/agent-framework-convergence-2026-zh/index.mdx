@@ -1,105 +1,193 @@
 ---
-title: "Agent 框架大收敛：为什么 2026 是整合之年"
-description: "微软合并 Semantic Kernel 与 AutoGen。CrewAI 日均 1200 万次执行。框架抽象正在收敛。"
+title: "Agent 框架大收敛：2026 是抽象统一之年"
+description: "微软合并 Semantic Kernel 与 AutoGen，CrewAI 日均 1200 万次执行,框架抽象正在收敛——而真正的稳定接口已经移到协议层。"
 publishDate: "2026-04-16"
-tags: [agents, multi-agent, orchestration, microsoft, crewai, frameworks, agent-engineering, semantic-kernel, autogen]
+updatedDate: "2026-04-17"
+tags: [agents, multi-agent, orchestration, microsoft, crewai, langgraph, frameworks, agent-engineering, semantic-kernel, autogen, mcp, a2a]
 category: engineering
 language: zh
 draft: false
 ---
 
-2026 年 4 月的前两周，Agent 编排领域发生了三件事。单看每一件都只是脚注，但放在一起揭示了一个结构性变化。
+2026 年 4 月的前两周，Agent 编排领域发生了三件事。单看每一件都只是脚注，但放在一起揭示了一个结构性变化：微软发布了 Agent Framework v1.0，将 Semantic Kernel 和 AutoGen 合并为单一运行时；CrewAI 披露其平台日均处理 1200 万次 Agent 执行；新一批极简层级化框架——CEO/Manager/Worker，三百行 Python——持续在发布数天内拿下数千 GitHub stars。
 
-微软发布了 Agent Framework v1.0——将 Semantic Kernel 和 AutoGen 合并为单一运行时的产物。CrewAI 披露其平台日均处理 1200 万次 Agent 执行。新的层级化 Agent 框架持续涌现——最新一批 CEO-Manager-Worker 委派工具在发布数周内就斩获数千 GitHub stars。
+表面观察是 Agent 框架很火。深层观察是它们正在收敛到相同的抽象，尽管出发点对多 Agent 系统应该如何工作有截然不同的假设。一旦你注意到这种收敛，比"该选哪个框架"更紧迫的问题就出现了：栈里哪一层是真正稳定的接口，哪一层正在被商品化？
 
-表面观察：Agent 框架很火。深层观察：它们正在收敛到相同的抽象，尽管出发点对多 Agent 系统应该如何工作有截然不同的假设。
+答案对框架供应商不太友好。**稳定的接口是协议层——MCP、A2A、AP2、OpenTelemetry GenAI。框架本身正在迅速沦为实现细节。**
 
 ## 胜出的五种模式
 
-看看 2026 年 4 月在发布的每一个主流 Agent 框架——微软 Agent Framework、CrewAI、LangGraph、Anthropic Managed Agents——你会发现相同的五种编排模式以不同名字实现：
+看一下 2026 年 4 月在发布的每一个主流 Agent 框架——Microsoft Agent Framework、CrewAI、LangGraph、Anthropic Managed Agents、OpenAI Swarm 的继任者——你会发现相同的五种编排模式以不同名字实现：
 
-| 模式 | 微软 AF | CrewAI | LangGraph | 描述 |
-|------|---------|--------|-----------|------|
-| 顺序 | Pipeline | sequential | 线性图 | Agent 按固定顺序执行 |
-| 并发 | Parallel dispatch | parallel | Fan-out/fan-in | 独立 Agent 同时运行 |
-| 交接 | Agent handoff | Delegation | Edge routing | 一个 Agent 将控制权传递给另一个 |
-| 群聊 | Group chat mgr | consensual | Multi-node cycle | Agent 协商达成共识 |
-| 层级 | Orchestrator | Manager delegation | Supervisor | 顶层 Agent 分解并委派 |
+| 模式 | Microsoft AF | CrewAI | LangGraph | Managed Agents | 描述 |
+|------|-------------|--------|-----------|---------------|------|
+| 顺序 | Pipeline | Process: sequential | 线性图 | Task chain | Agent 按固定顺序执行 |
+| 并发 | Parallel dispatch | Process: parallel | Fan-out / fan-in | Parallel tasks | 独立 Agent 并行运行 |
+| 交接 | Agent handoff | Delegation | Edge routing | Agent transfer | 一个 Agent 把控制权传递给下一个 |
+| 群聊 | Group chat manager | Process: consensual | Multi-node cycle | Council | Agent 协商达成共识 |
+| 层级 | Orchestrator agent | Manager delegation | Supervisor node | Supervisor / worker | 顶层 Agent 分解并委派 |
 
-这不是表面上的相似。它们在结构上是等价的。微软 AF 的"顺序流水线"和 CrewAI 的"顺序流程"产生相同的执行图。差异在 API 表面，而非计算模型。
+这不是表面的相似，而是结构上的等价。Microsoft AF 的"sequential pipeline"和 CrewAI 的"sequential process"会产生相同的执行图——一条线性 DAG，节点是 Agent 调用，边是有类型的消息。差异只在 API 表面、文档风格、配套工具上。计算模型是一样的。
 
-这种收敛不是协调的结果。它的发生是因为 Agent 编排的设计空间比 2024-2025 年看起来更小——那时每个框架都试图通过新奇的执行模型来差异化。存活下来的模式是映射到真实生产工作负载的那些。
+这种收敛不是协调出来的。它发生是因为编排的设计空间比 2024-2025 年看起来要小得多——那时候每个框架都试图通过新颖的执行模型（投票、拍卖、blackboard 架构、动态团队组建）来差异化。结果大部分新模型只是研究产物。存活下来的是那些在分布式系统文献里有对应物的——和你在 Airflow、Temporal、Step Functions 里看到的同样的五种模式。
 
-## 微软的合并揭示了什么
+原因并不神秘：多 Agent 编排是一个"分布式工作流问题，节点上跑的恰好是 LLM"。LLM 这个新东西没有改变编排原语的设计空间。编排层看起来就像 Temporal-with-LLM-nodes，而 Temporal 已经吸收了三十年分布式系统研究告诉它哪些原语真正重要。
 
-Agent Framework v1.0 的合并在架构上最具信息量，因为它涉及合并两个哲学不同的框架：
+## 微软的合并到底揭示了什么
 
-**Semantic Kernel** 起步为企业 SDK——强类型、插件导向、设计用于与现有 .NET/Java/Python 应用集成。心智模型：LLM 是你从应用代码中调用的函数。
+Agent Framework v1.0 的合并是本季度架构上最具信息量的事件，因为它逼着微软公开承诺哪些抽象会活下来。合并 Semantic Kernel 和 AutoGen 需要在两个哲学相反的框架之间找到共同层：
 
-**AutoGen** 起步为研究框架——对话导向、设计用于多 Agent 交互实验。心智模型：Agent 是互相对话的自主实体。
+**Semantic Kernel** 起步是企业 SDK——强类型、插件导向、设计用于把 LLM 调用嵌入到 .NET / Java / Python 应用里。它的心智模型是：LLM 是你从应用代码里调用的函数。
 
-合并它们需要找到共同的抽象层。微软的答案是 **Agent 运行时**——一个管理 Agent 生命周期、消息路由和状态持久化的进程，与单个 Agent 的实现方式无关。
+**AutoGen** 起步是 Microsoft Research 项目——对话导向、设计用于多 Agent 交互实验。它的心智模型是：Agent 是互相发送消息的自主实体。
 
-关键设计决策：
+微软合并后的答案是 **Agent runtime**——一个进程，负责管理 Agent 生命周期、消息路由、状态持久化、重试语义，与单个 Agent 的具体实现方式无关。Agent 本身是 actor，runtime 是邮箱和调度器。
 
-1. **默认流式**。每个 Agent 交互都是流，而非请求-响应。这使得实时监控和提前终止成为可能。
-2. **内建 Checkpoint**。运行时定期快照 Agent 状态，崩溃的工作流从最后一个 checkpoint 恢复而非从头开始。
-3. **Human-in-the-loop 作为一等模式**。任何步骤都可以配置为暂停并等待人类批准后再继续。
-4. **MCP 管工具，A2A 管跨框架通信**。工具是 MCP server。不同框架中 Agent 之间的通信使用 A2A 协议。
+```python
+# 仅为示意，非可运行 API。真实框架使用 autogen_agentchat 的
+# AssistantAgent / GroupChat / RoutedAgent，本片段把多层压缩了一下。
+from agent_framework import AgentRuntime, Agent, Message
 
-## CrewAI 的规模数据及其含义
+class ResearchAgent(Agent):
+    async def handle(self, message: Message) -> Message:
+        results = await self.tools.search(message.content)
+        return Message(role="research", content=results)
 
-CrewAI 的 1200 万日执行量提供了关于 Agent 框架实际大规模使用方式的经验数据。
+class WriterAgent(Agent):
+    async def handle(self, message: Message) -> Message:
+        draft = await self.llm.generate(
+            f"Write based on this research: {message.content}"
+        )
+        return Message(role="writer", content=draft)
 
-生产环境中编排模式的分布（基于 CrewAI 公开案例和社区报告）大致为：
+runtime = AgentRuntime()
+runtime.register(ResearchAgent(), WriterAgent())
+runtime.set_pattern("sequential")  # 或 "handoff", "group_chat" 等
 
-- **顺序**：~60% 的工作流。最常见的模式是"Agent A 做调研，Agent B 写作，Agent C 审查。"简单、可预测、可调试。
-- **层级**：~25% 的工作流。管理者 Agent 分解复杂任务并委派给专家 Agent。
-- **并发**：~10% 的工作流。独立任务并行执行以降低延迟。
-- **群聊/共识**：~5% 的工作流。最不常用，因为出错时最难调试。
+result = await runtime.run("Analyze the latest MCP protocol changes")
+```
 
-结论：生产 Agent 系统压倒性地使用能用的最简单编排模式。复杂模式——共识、动态路由、自适应层级——是研究产物，很少能经受住生产需求（延迟预算、成本控制、可调试性）的考验。
+合并后的框架里有四个值得明确写下的设计决策，它们代表了对"生产 Agent 基础设施需要什么"的赌注：
 
-## 简单性信号
+1. **默认流式**。每个 Agent 交互都是流，而不是请求-响应。这让实时观测、提前终止、交互式 human-in-the-loop 成为可能。
+2. **内建 Checkpoint**。Runtime 周期性把 Agent 状态快照到持久化存储，崩溃的工作流从最后一个 checkpoint 恢复，而不是从头开始。这是 Temporal 用了多年的同一套模式——把 Agent 当作 durable function。
+3. **Human-in-the-loop 是一等模式**。任何步骤都可以配置成"暂停并等待人类批准"。暂停不是异常，而是 runtime 的一个一等状态，带有显式命名的 `approve` / `reject` / `modify` 边。
+4. **MCP 管工具，A2A 管跨框架通信**。工具是 MCP server。不同框架里 Agent 之间的通信走 A2A 协议。微软的框架是第一个把这两个协议都当作"承重基础设施"而非"可选集成"的主流 SDK。
 
-2026 年初极简层级框架的快速采用展示了框架构建者应该内化的市场信号：开发者不想要更多抽象层，他们想要更少。
+Runtime 中心的设计是关键一步。Semantic Kernel 的"functions"和 AutoGen 的"agents"塌缩成了同一种东西——runtime 上的 handler。这就是 actor 模型，在计算机历史上被重新发现的第三次。新意不在模型本身——Erlang 1986 年就这么干了——而在于 LLM Agent 几乎完美契合 actor 模型：每个 Agent 有私有状态、一次只处理一条消息、可以 spawn 其他 Agent、只通过显式消息通信。如果你从零设计 LLM 编排 runtime 又恰好不知道 actor，你会自己重新发现它。
 
-最受欢迎的新进入者共享一个三概念 API：
-- **Planner**：接收目标的顶层 Agent
-- **Manager**：将目标分解为任务的中层 Agent
-- **Worker**：执行单个任务的叶 Agent
+## CrewAI 的规模数据应该带怀疑地读
 
-没有插件系统，没有中间件，没有生命周期钩子。Planner-Manager-Worker 层级直接映射到人类思考委派的方式，开发者无需学习框架特有概念就能推理系统行为。
+CrewAI 公布的"日均 1200 万次执行"值得仔细看，因为这些执行的*分布*比头条数字更重要。基于 CrewAI 公开案例、社区讨论和会议演讲推断（不是精确的内部指标），分布大致是：
 
-代价是灵活性。这些极简框架无法表达循环工作流、动态 Agent 生成或条件路由。但对于 60% 的顺序委派链工作流，简单性是特性而非限制。
+- **顺序**：约 60% 的工作流。最常见的模式是"Agent A 调研，Agent B 写作，Agent C 审查"。简单、可预测、可调试。
+- **层级**：约 25% 的工作流。Manager Agent 分解复杂任务并委派给专家 Agent。客服和内容生成里最常见。
+- **并发**：约 10% 的工作流。独立任务并行执行以降低延迟。
+- **群聊 / 共识**：约 5% 的工作流。生产里最少用，因为出错时最难调试。
 
-## 协议收敛：MCP + A2A 成为基础设施
+结论：生产 Agent 系统压倒性地使用"能用的最简单编排模式"。复杂模式——共识、动态路由、自适应层级——是研究产物，很少能扛住生产需求（延迟预算、成本控制、可调试性）的考验。每个 Agent 工程师都经历过这个：群聊模式在 demo 里跑得很漂亮，上线两周后你在调"为什么三个 Agent 在一个礼貌的扯皮循环里烧着 40 美元/小时"。
 
-框架层之下，更重要的收敛发生在协议层。2026 年 4 月发布的每个主流框架都支持：
+一个互补的数据点：[多 Agent 扩展幻觉](/blog/multi-agent-scaling-illusion)那篇文章把"为什么这种分布不是偶然"形式化了。如果 Agent 之间没有独立的信息源，多 Agent 系统的期望效用上界等于单个最优 Agent 的上界。简单模式（顺序、层级）通过结构本身保留了信息不对称（每个 Agent 有不同角色和不同输入）。共识模式则常常通过"让所有 Agent 读同一份上下文然后投票"主动毁掉这种不对称。
 
-- **MCP（Model Context Protocol）** 用于工具访问——Agent 通过 MCP server 调用工具，无论哪个框架托管 Agent
-- **A2A（Agent-to-Agent Protocol）** 用于跨框架通信——CrewAI 中的 Agent 可以通过 A2A 的 Agent Card 发现机制与微软 Agent Framework 中的 Agent 通信
+## 为什么"简单性信号"不是噱头
 
-MCP v2.0 强制要求 OAuth 2.1 加动态客户端注册，意味着工具访问默认具有适当的认证。这是之前阻止 MCP 在生产多租户环境中可用的缺失部分。
+2026 年初极简层级框架的快速采用是框架构建者应该认真对待的市场信号：开发者要的不是更多抽象层，而是更少。最受欢迎的新进入者共享一个三概念 API：
 
-A2A v1.0 带着 gRPC transport 和签名 Agent Card 发布。Agent Card 是描述 Agent 能力、输入输出 schema 和认证要求的 JSON 文档。Agent 发现通过从已知注册中心或直接从 Agent endpoint 获取 Agent Card 实现。
+- **Planner**：接收目标的顶层 Agent。
+- **Manager**：把目标分解为任务的中层 Agent。
+- **Worker**：执行单个任务的叶 Agent。
 
-实际后果：你可以构建一个多 Agent 系统，其中一些 Agent 跑在 Anthropic 基础设施上、一些在 Azure 上、一些在你自己的服务器上，它们通过标准化协议通信。框架选择变成实现细节，而非架构承诺。
+没有插件系统、没有中间件、没有生命周期钩子。Planner-Manager-Worker 层级直接映射到人类思考"委派"的方式，开发者无需学习框架特有概念就能推理系统行为。代价是灵活性——这些极简框架无法表达循环工作流、动态 Agent 生成或多于一两层的条件路由。但对那 60% 的"顺序委派链"工作流，简单性是特性，不是限制。
 
-## 对 Agent 工程师的意义
+结构性教训和其他企业基础设施一样：胜出的抽象是那些"干净映射到一个时间已经很紧的用户的心智模型"的抽象。要求脑内重新装配概念的抽象，最终会输给那些贴合人们已有思维方式的抽象，哪怕前者技术上更优。
 
-**如果你今天在选框架**：编排模式在各框架间是等价的。根据你的现有基础设施选择（微软栈 → Agent Framework，Python 原生 → CrewAI，图导向工作流 → LangGraph，追求简单 → Paperclip）。
+## 协议收敛：MCP + A2A + AP2 成为基础设施
 
-**如果你在构建 Agent 基础设施**：投资 MCP 和 A2A 集成，而非框架特有的抽象。框架在收敛；协议是稳定接口。
+更关键的收敛发生在协议层——这才是框架构建者应该最紧张的地方。2026 年 4 月发布的所有主流框架——Microsoft Agent Framework、CrewAI、LangGraph、Anthropic Managed Agents——要么已经发布、要么在主动集成三个互操作协议：
 
-**如果你在设计 Agent 系统**：从顺序编排开始，只在有证据表明顺序不够用时才增加复杂度。生产部署的数据很清楚：大多数 Agent 工作流不需要复杂编排模式，简单模式在调试、监控和运维方面有数量级的优势。
+- **MCP（Model Context Protocol）** 用于工具访问。[MCP 2026 路线图](/blog/mcp-2026-roadmap-tasks-primitive) 加入了 Tasks 原语（SEP-1686），把无状态工具调用提升为有显式 input/output schema 的一等长任务。2025-03-26 的 spec 修订加入了 OAuth 2.1 加动态客户端注册，补上了多租户场景的最后一块缺口。
+- **A2A（Agent-to-Agent Protocol）** 用于跨框架通信。[A2A v1.0](/blog/a2a-v1-signed-cards-ap2-mandates) 发布了 Signed Agent Cards——基于 RFC 7515 的 JWS 签名覆盖一个 RFC 8785 JSON-canonicalized 的 Agent Card，描述每个 Agent 的能力、输入 schema 和认证要求。Discovery 现在是可被认证的。
+- **AP2（Agent Payments Protocol）** 用于金融动作。AP2 的 signed Mandate 结构给一个 Agent 一张可互操作的能力 token——"该 Agent 在 Y 日期之前可以执行不超过 $X"——任何对手方都可以独立验证。
 
-2026 年的收敛故事最终是关于成熟化。Agent 框架领域在 2024-2025 年探索设计空间。现在正在向共享的理解收敛——什么有用。有趣的研究问题已经从"如何编排 Agent"转向"如何让编排后的 Agent 可靠、可观测、成本可控"——框架收敛使这些问题更容易回答，因为评估标准正在标准化。
+一张 Agent Card 大致长这样：
 
-## 参考
+```json
+{
+  "name": "research-agent",
+  "version": "1.0.0",
+  "capabilities": ["web_search", "document_analysis"],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": { "type": "string" },
+      "depth": { "type": "integer", "default": 3 }
+    }
+  },
+  "auth": {
+    "type": "oauth2",
+    "token_endpoint": "https://auth.example.com/token"
+  },
+  "signature": {
+    "alg": "ES256",
+    "kid": "issuer-key-2026-q2",
+    "signature": "..."
+  }
+}
+```
+
+实际后果是：你可以构建一个多 Agent 系统，其中一些 Agent 跑在 Anthropic 基础设施上、一些跑在 Azure 上、一些跑在你自己的服务器上，它们通过标准化、签名的协议通信。*框架选择变成实现细节，而不是架构承诺*。这句话每一个框架供应商都在装作不存在。
+
+在这之上还叠了第四层收敛：**OpenTelemetry GenAI 语义约定**用于追踪。2026 年初稳定的 semantic-convention 草案定义了一组属性（`gen_ai.system`、`gen_ai.request.model`、`gen_ai.usage.input_tokens`、`gen_ai.agent.name`、`gen_ai.operation.name`），各框架都在采用这些属性给 span 打标。一旦跨框架的 trace 长得一样，可观测性栈也就成了框架无关的——Langfuse、Arize、Phoenix、Datadog 都在 ingest 同一份 schema。
+
+2026 年的栈是这样的：
+
+```text
+┌────────────────────────────────────────────────┐
+│  可观测性: OTel GenAI semantic conventions     │
+├────────────────────────────────────────────────┤
+│  信任 / 身份: A2A Signed Cards + AP2 Mandates  │
+├────────────────────────────────────────────────┤
+│  工具互操作: MCP (Tools, Tasks, Resources)     │
+├────────────────────────────────────────────────┤
+│  Agent runtime: Microsoft AF / CrewAI / …      │
+├────────────────────────────────────────────────┤
+│  模型: Claude / GPT / Gemini / 开源权重         │
+└────────────────────────────────────────────────┘
+```
+
+框架层被夹在模型层和厚厚的协议层之间。两边的夹层都已经标准化（模型多年来通过 OpenAI 兼容 API、协议现在通过 MCP / A2A）。被夹在两个标准化层之间，正是一个层走向商品化的位置。
+
+## 收敛的代价：每个框架放弃了什么
+
+收敛不是免费的。每个框架在采纳共同抽象时都放弃了某种特色，值得点名说一下：
+
+- **Semantic Kernel** 放弃了"LLM as function call"的隐喻。合并后的 Agent Framework 把 Agent 当作有身份和状态的长任务 actor。以前一行 `semantic_function.invoke()` 能搞定的集成，现在变成了带生命周期 hook 的 Agent 注册。
+- **AutoGen** 放弃了开放式对话模型。合并后的 runtime 强制使用类型化消息和显式模式。研究风格的"让 Agent 自己想办法"还能通过 `group_chat` 模式实现，但已经不是默认。
+- **CrewAI** 放弃了发明新型协调原语的选项。公开 API 现在锁在五种标准模式上。CrewAI 当年差异化的"process"抽象，现在只是同一张图的薄包装。
+- **LangGraph** 放弃了纯粹性。LangGraph 最初的卖点是"你的 Agent 是一台显式的状态机"。要在 60% 都是顺序的世界里活下去，LangGraph 不得不加上隐藏图的高层包装来照顾简单情况——同时也削弱了它当初让人买单的清晰度。
+
+每个收敛故事都是这样。活下来的框架是接受了"匹配共享心智模型"代价的那些。坚持差异化抽象的，会变成 niche。
+
+## 对 Agent 工程师的实际意义
+
+**如果你今天在选框架**：编排模式在各框架间是等价的。按你现有的基础设施和团队选——微软栈 → Agent Framework，Python 原生且高吞吐 → CrewAI，图导向且需要显式状态 → LangGraph，最少依赖 → 某个 planner/manager/worker 微框架。不要花几周做对比矩阵，这个决定是可逆的。
+
+**如果你在构建 Agent 基础设施**：投资 MCP、A2A、AP2 和 OpenTelemetry GenAI 集成，而不是某个框架特有的抽象。框架在收敛，协议才是稳定接口。你针对 MCP 写的代码换框架后还能跑，针对某个框架专属"workflow DSL"写的代码不能。
+
+**如果你在设计 Agent 系统**：从顺序编排开始，只在有证据表明顺序不够用时才加复杂度。生产数据很清楚：大多数工作流不需要复杂模式，简单模式在调试、监控和运维上有数量级优势。当单个 Agent 上下文不够用时再上层级；当延迟主导成本时再上并发；群聊基本永远不要碰——[多 Agent 扩展幻觉](/blog/multi-agent-scaling-illusion) 解释了为什么。
+
+**如果你在评估 Agent 能力**：测 Agent 的任务表现，不是测框架的功能列表。一个用了好 prompt、好工具和顺序流水线的简单 Agent，每次都会跑赢一个"复杂多 Agent 共识系统加平庸 prompt"的组合。框架层的差异在生产 eval 里会消失，prompt、工具、记忆层的差异会保留。
+
+**如果你在想两年之后**：有趣的研究问题已经从"如何编排 Agent"挪到了"如何让被编排的 Agent 可靠、可观测、安全、成本可控"。框架收敛让这些问题更容易回答，因为评估标准正在标准化。创新在向上迁移（评估、对齐、能力门控）和向下迁移（推理效率、调度、成本归属）。中间这一层——编排框架本身——正在被商品化。这正是任何成熟基础设施层的自然终点。
+
+## 参考资料
 
 - [Microsoft Agent Framework v1.0](https://devblogs.microsoft.com/agent-framework/microsoft-agent-framework-version-1-0/)
-- [MCP 授权规范: OAuth 2.1](https://spec.modelcontextprotocol.io/specification/2025-03-26/basic/authorization/)
-- [A2A 协议规范](https://google.github.io/A2A/)
-- [AI Agent 协议生态图 2026](https://www.digitalapplied.com/blog/ai-agent-protocol-ecosystem-map-2026-mcp-a2a-acp-ucp)
-- [CrewAI 多 Agent 框架](https://www.crewai.com/)
+- [Model Context Protocol Specification](https://modelcontextprotocol.io/specification)
+- [MCP 2026 Roadmap: The Tasks Primitive](/blog/mcp-2026-roadmap-tasks-primitive) — MCP 有状态协议转向的姊妹篇
+- [A2A v1.0 + AP2 Mandates](/blog/a2a-v1-signed-cards-ap2-mandates) — A2A 信任栈的姊妹篇
+- [A2A Protocol Specification](https://a2a-protocol.org/)
+- [OpenTelemetry GenAI Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
+- [CrewAI Multi-Agent Framework](https://www.crewai.com/)
+- [The Multi-Agent Scaling Illusion](/blog/multi-agent-scaling-illusion) — 为什么"更多 Agent"很少等于"更强能力"
+- 英文版本：[The Agent Framework Convergence of 2026](/blog/agent-framework-convergence-2026)

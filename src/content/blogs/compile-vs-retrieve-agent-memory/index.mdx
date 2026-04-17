@@ -1,0 +1,86 @@
+---
+title: "Compile vs Retrieve: The Memory Schism Returns"
+description: "Karpathy's LLM-Wiki and MemPalace give opposite answers to long-term agent memory — the symbolic-vs-vector split, recast."
+publishDate: "2026-04-17"
+tags: [agent-memory, llm-wiki, mempalace, karpathy, mcp, retrieval, long-term-memory, agent-engineering]
+category: engineering
+language: en
+draft: false
+---
+
+In early April 2026, two memory architectures for long-running agents landed within seventy-two hours of each other and pointed in opposite directions. Andrej Karpathy posted a gist describing what he calls an *LLM Wiki* — a workflow where the model is treated as a compiler that ingests raw sources (papers, transcripts, threads, slides) and emits an interlinked Markdown wiki, which is then loaded into context whenever the topic comes up again. Three days later a project called **MemPalace** shipped as an MCP server (around twenty tools, per the public write-ups) that hands the agent a spatial metaphor — wings, rooms, drawers, tunnels — and asks it to navigate the memory graph at query time.
+
+The two designs cannot both be right in the strong sense. They disagree about when work happens, where the structure lives, and what the model is asked to do at recall. Reading them side-by-side in the same week is the clearest illustration I've seen of a structural choice that the agent-memory literature has been quietly skating around: do you compile your memory ahead of time, or do you retrieve it on demand?
+
+This is not a new argument. NLP fought it before, between symbolic knowledge bases and vector stores, and the vector side won by enough that "memory" became a near-synonym for "retrieval." The agent setting changes the math enough that the question is open again.
+
+## The two architectures, side by side
+
+The Karpathy LLM Wiki is, mechanically, a *compile pipeline*. Sources go in. A model — used here as an offline transformer in the literal sense — reads each source and emits a small set of wiki pages with a common schema (claims, citations, related pages, open questions). Pages link to other pages. When you have a question later, you grep the wiki for relevant pages and load them into context as a unit, or you let the model navigate from one page to another via the link structure. The retrieval step is cheap and almost trivial: the wiki is already organized for the questions you'll ask, because it was *written* with those questions in mind.
+
+MemPalace is the dual. It does no offline compilation. Instead it ships an MCP surface — verbs like `memorize`, `enter_room`, `open_drawer`, `read_diary`, `dig_tunnel`, around twenty tools in total — that the agent calls during reasoning. Memorization is one tool call; recall is a *traversal* of the spatial structure the agent has been incrementally constructing. The schema is the spatial metaphor itself: a wing groups related rooms, a room groups related drawers, a drawer holds a small set of items, a tunnel is an explicit cross-link between two distant locations. Lookup is a sequence of MCP calls at inference time, and the model has to find what it needs by walking.
+
+The two systems both claim to implement "long-term agent memory" and both can quote Karpathy's older critique of in-context memory as proof that something more durable is required. But they answer the same question with opposite primitives. The wiki places the structure in the artifact and asks the runtime model to consume a finished page. MemPalace places the structure in the navigation API and asks the runtime model to discover the right node.
+
+## Why this is the symbolic-vs-vector split, recast
+
+The history makes the trade-off legible. Symbolic knowledge bases — Cyc, ConceptNet, Wikidata — encoded the *compile* discipline at the limit. Build the schema first, populate it carefully, and the query engine becomes a thin lookup layer. The cost was paid up front, in human (and later, semi-automatic) ontology engineering. The benefit was that retrieval was deterministic, auditable, and composable: you could chain queries because you knew what the slots meant.
+
+Vector stores moved the cost the other way. Embed everything, push it into a high-dimensional cloud, and use approximate nearest-neighbor search to pull back what looks similar. There is no schema to maintain, no curation to do. The cost is paid at query time, partly in retrieval ambiguity (the top-k neighbours are correlated, not necessarily aligned with the query) and partly in the downstream model's burden of stitching the retrieved chunks into something coherent.
+
+RAG, in its dominant form, is a vector-store memory with a thin re-ranker stapled on. It won the early agent-memory market for the same reason vector stores won the late-2010s knowledge-store market: it requires no offline schema work, scales to arbitrary corpora, and lets the model's flexibility absorb the retrieval noise. What changed in 2026 is that long-running agents started exposing a problem RAG was never designed for. Vector retrieval gives you *similarity*, not *role*. An agent that has been reasoning about a topic for six months does not need fifty similar paragraphs; it needs the *one* page it previously wrote about this topic, organized the way it organized it, with the explicit links it added.
+
+That is exactly what a wiki gives you. And it is exactly what MemPalace gives you, by another route — except MemPalace lets the agent build the structure incrementally as it works, instead of demanding an offline compile pass.
+
+## Where each one breaks
+
+The wiki pattern breaks on freshness and on topic drift. Compilation is, by construction, a snapshot. If your sources keep arriving, you need a recompile schedule, and any incremental compilation has to cope with the fact that a new source might *invalidate* a claim on an existing page. Karpathy's gist hand-waves at this with "regenerate the wiki periodically," which is honest about the cost. The harder problem is when a new source doesn't invalidate but *refines* an existing page — the compile pipeline has to decide whether to overwrite, version, or fork, and there is no clean local rule. Anyone who has maintained a real wiki knows this is the part the original Wikipedia editors spent most of their time fighting about.
+
+The wiki pattern also breaks on cross-page reasoning at scale. Loading a single page is fine; loading the dozen related pages a hard question actually requires can blow the context budget, especially when the model wants to verify a claim by following a citation chain three hops deep. The wiki gives you static link structure but not adaptive depth control.
+
+MemPalace breaks on the opposite axis. The spatial metaphor is great for the first few weeks: rooms and drawers and tunnels map cleanly to how a working researcher actually organizes ideas. But the metaphor stops scaling once the palace is large. At that point the agent is paying a non-trivial inference cost on each navigation step, because every `enter_room` is an MCP round-trip plus a model call to decide where to go next. If the agent needs to traverse five rooms to reach the right drawer, that is five inference passes before any *substantive* reasoning happens. The wiki, having paid the structuring cost up front, lets you skip those navigations.
+
+MemPalace also has a verification problem the wiki does not. When the agent writes to a drawer, there is no mechanism that says "this contradicts what's in the next drawer over." Spatial layout does not enforce semantic consistency. A wiki pipeline can run a consistency pass after each compile, because the artifact is small enough and structured enough to support one. A spatial memory grows by accretion, and accretion plus no global view is a recipe for the model accumulating contradictions it never sees in the same context window.
+
+## The six problems neither one solves
+
+Both architectures share a list of open problems that the gist-and-MCP excitement has not been loud about. Worth naming because they will determine which design wins:
+
+1. **Temporal tracking.** Neither pattern records *when* a fact was added or *when* it was last refined. A page or a drawer that was true six months ago and is now stale looks identical to a fresh one.
+2. **Decay.** Memory items are equally weighted regardless of access frequency or age. A working researcher's mental model of a topic decays nonlinearly, and neither wiki nor palace captures this.
+3. **Consolidation.** Repeated patterns across pages or drawers should collapse into a higher-level abstraction. There is no consolidation pass in either system.
+4. **Abstention.** Neither system has a clean way for the agent to say "I don't know, and my memory has nothing useful here." Both will return *something* — a near-match wiki page, a wrong drawer — and the model is left to detect the miss.
+5. **Verification.** Neither architecture forces the agent to cross-check a recalled item against the source. Karpathy's wiki carries citations but does not insist they be re-read.
+6. **Relationship.** Both systems handle pairwise links — page A cites page B, drawer A has a tunnel to drawer B — but neither captures *typed* relations like "A refines B" or "A contradicts B" without the agent inventing the convention itself.
+
+These are the same class of problems symbolic-KB projects kept hitting in the 1980s and 1990s, dressed in new vocabulary. The difference is that we now have a runtime that can in principle do consolidation, decay, and contradiction-detection on its own, if the memory system is designed to surface them. Both wiki and palace currently leave that work undone.
+
+## A working hypothesis: bifurcation, not victory
+
+The strong reading is that neither pattern wins outright. The weak reading — and the one that matches the empirical behavior I've seen this week from agents that ship both — is that long-term memory bifurcates by access shape:
+
+- **Compiled memory** (wiki-shaped) is for *deep, narrow* recall: the small set of topics the agent has explicit reason to maintain a coherent long-form view of. Personal research notes, the design rationale for an in-progress codebase, a model of a specific person or project.
+- **Navigated memory** (palace-shaped) is for *broad, relational* recall: the long tail of facts the agent might need but doesn't expect to maintain a coherent view of. Reference data, episodic logs of what was done when, the working state of a hundred unrelated tasks.
+
+The two are not interchangeable, but they are complementary, and the hard engineering problem is the *handoff*: when does the agent decide to promote a navigated drawer into a compiled wiki page? When does it demote a stale page back into a drawer? The honest answer is that we don't have a principled rule yet. The naive rule — "promote when accessed N times, demote when not accessed for M days" — is the same rule that web caches have used for thirty years and is just as fragile here.
+
+What I'd want from the next iteration of either system is an explicit promotion-demotion loop with the model in charge of it, the way a working researcher silently moves notes between a daily scratchpad and a long-term notebook. Karpathy gestures at this in the gist (the model is allowed to refactor pages); MemPalace gestures at it through the `dig_tunnel` primitive (the model is allowed to add new structural links). Neither yet treats the promotion-demotion loop as a first-class object that other tools can hook.
+
+## What changes for the harness
+
+If the bifurcation hypothesis is right, the harness changes shape. Today most production harnesses ship *one* memory subsystem — usually a vector store with an episodic-log shim. The bifurcated design would ship at least two:
+
+- A **compile pipeline** with a defined schema and a scheduled (or event-triggered) recompile. The agent writes raw notes; the pipeline turns them into pages.
+- A **navigation surface** with a small set of MCP tools (memorize, recall, link, traverse). The agent uses this directly during reasoning.
+- A **promotion controller** that watches both and moves items in either direction.
+
+The promotion controller is the part that doesn't exist yet in any open-source agent stack I've looked at this week. It is the part that will distinguish agents that get smarter over time from agents that just get larger. Compilation alone produces a beautiful but stale archive. Navigation alone produces a sprawling but unconsolidated palace. The controller is what closes the loop.
+
+Karpathy's wiki is one half of that loop. MemPalace is the other half. The interesting work in 2026 is the part neither one shipped.
+
+## References
+
+- Andrej Karpathy. *LLM Wiki* [gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f). 2026-04-03.
+- [*Beyond RAG: How Andrej Karpathy's LLM Wiki pattern builds knowledge that compounds.*](https://levelup.gitconnected.com/beyond-rag-how-andrej-karpathys-llm-wiki-pattern-builds-knowledge-that-actually-compounds-31a08528665e) Level Up. 2026-04.
+- [*MemPalace: an MCP-native spatial memory for agents.*](https://www.upnorth.ai/en/insights/mempalace-mcp-tools-meeting-builders) UpNorth analysis. 2026-04-06.
+- Doug Lenat. *Cyc: A Large-Scale Investment in Knowledge Infrastructure.* CACM, 1995 — for the reference compile-pipeline failure modes.

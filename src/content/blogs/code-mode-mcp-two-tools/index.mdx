@@ -1,0 +1,131 @@
+---
+title: "Code Mode: When Two MCP Tools Beat Two Thousand"
+description: "Cloudflare collapsed thousands of MCP tool definitions into search and execute. The pattern scales because models already know how to write code."
+publishDate: "2026-04-17"
+tags: [mcp, agents, cloudflare, tool-use, context-engineering, code-execution, agent-architecture]
+category: engineering
+language: en
+draft: false
+---
+
+The first wave of MCP (Model Context Protocol) adoption solved the discovery problem — how does an agent find out what tools exist, what their parameters are, and how to call them? The answer was simple: list them all in the context window. Every tool a server exposes becomes a JSON schema, injected into the system prompt. The model reads the schemas, picks a tool, emits a structured call. This worked when servers had five or ten tools. It stopped working when production deployments started exposing hundreds.
+
+By early 2026, a typical agent connecting to a company's internal MCP fleet would see 500 to 2,500 tool definitions in context before it had read a single user message. Cloudflare's own SDK, exposed as an MCP server, would blow past 2,500 functions if enumerated naively. The model pays for every one of those tokens at every turn. It also has to reason across all of them to pick the right five. The tool explosion had become the new context window crisis.
+
+Cloudflare's answer, published as Code Mode in early 2026, is structural. Instead of listing tools, expose two: `search` and `execute`. The first lets the agent inspect a typed API specification — an OpenAPI document, SDK surface, or schema registry — querying it with code rather than natural language. The second lets it run TypeScript code against that API directly. The agent's output is no longer a structured tool call — it's a program. The server runs the program in a sandbox and returns the result. The model, in effect, treats the SDK the way a human developer would: read the types you need, write code that uses them, submit the code.
+
+## The Context Cost of Tool Listings
+
+To see why Code Mode is not a style preference but an arithmetic necessity, count tokens. A minimal MCP tool definition includes the tool name, a description, and a JSON schema for parameters. Well-documented tools with realistic parameter schemas typically land in the several-hundred-token range each; rough estimates in the 400–800 token band are common in practice but will vary by verbosity. Even at the low end, 200 tools consume ~80K tokens of your context budget; at 2,000 tools, you're pushing a million. Frontier models with 1M+ context windows do not reason clearly over that scale — long-context precision on needle-in-haystack style benchmarks degrades well before the nominal context limit.
+
+The cost is not only per-turn rendering. Models have to attend over the tool catalog on every autoregressive step. Hallucinated tool calls — invented names, invented parameters, invented field types — become more frequent as the catalog grows, because the model has many similar-looking options to confuse. This is a folk-known failure mode at scale in tool-augmented agents, though the exact scaling relationship depends on the catalog's semantic overlap more than on its raw size.
+
+The naive fix is to dynamically load tools based on the user's query. This works, but it pushes complexity onto the router: a separate model or retrieval system must choose which tools to surface, and its failures compound with the agent's. The Code Mode approach inverts this. The agent does the routing, because the agent already knows how to express routing in code.
+
+## The Two-Tool Interface
+
+The surface area of a Code Mode server is trivially small. Below is a pseudocode sketch — it is illustrative of the shape, not a drop-in production server; the actual Cloudflare implementation exposes these tools through its Agents SDK rather than through a bespoke `FastMCP` wrapper.
+
+```typescript
+// Pseudocode — API shape, not a runnable server.
+const server = new McpServer('code-mode-server')
+
+server.tool('search', {
+  description: 'Inspect a typed API spec (e.g. an OpenAPI object or SDK surface) by running a small TypeScript expression against it. Returns the selected symbols, signatures, and docstrings.',
+  inputSchema: {
+    expression: {
+      type: 'string',
+      description: 'A TypeScript expression over the spec object — e.g. `api.paths.filter(p => p.tags.includes("cache"))`.'
+    }
+  }
+}, async ({ expression }) => {
+  return await querySpec(expression)   // evaluates against the preloaded spec
+})
+
+server.tool('execute', {
+  description: 'Execute TypeScript against the SDK. Return value of the last expression is returned to the caller.',
+  inputSchema: {
+    code: { type: 'string', description: 'TypeScript source. Top-level await is allowed.' },
+    timeoutMs: { type: 'number', default: 15000 }
+  }
+}, async ({ code, timeoutMs }) => {
+  return await runInSandbox(code, { timeoutMs })
+})
+```
+
+The `search` tool is a *code*-driven query over a typed spec object — not a natural-language vector search. The agent expresses the query the same way it would write application code: filter paths, look up types, follow references through the schema. The `execute` tool runs code in an isolated V8 context with the SDK preloaded. There is no schema for SDK methods in the agent's context. The agent discovers them at reasoning time by introspecting the spec.
+
+A typical interaction looks like this (again, pseudocode — the exact shape of `search` expressions depends on how the spec is exposed):
+
+```
+User: "Purge the cache for images.example.com but only for files modified in the last hour."
+
+Agent → search({ expression: `api.namespaces.cache.methods.filter(m => /purge|list/.test(m.name))` })
+Server → [
+  { name: "cache.purge", signature: "(zoneId: string, opts?: PurgeOpts) => Promise<...>", doc: "..." },
+  { name: "cache.list",  signature: "(zoneId: string, filter?: Filter) => Promise<Entry[]>", doc: "..." },
+  ...
+]
+
+Agent → execute({ code: `
+  const zone = await zones.findByName("images.example.com")
+  const oneHourAgo = Date.now() - 3600_000
+  const entries = await cache.list(zone.id, { modifiedAfter: oneHourAgo })
+  const urls = entries.map(e => e.url)
+  await cache.purge(zone.id, { urls })
+  return { purged: urls.length, sampleUrls: urls.slice(0, 5) }
+`, timeoutMs: 15000 })
+
+Server → { purged: 142, sampleUrls: ["https://...", ...] }
+```
+
+The agent never saw a tool definition for `zones.findByName`, `cache.list`, or `cache.purge` in its system prompt. It discovered them on demand by introspecting the spec, then composed them in a single program. The round-trip count is two: one spec query, one execute.
+
+## Why Models Are Good At This
+
+The counterintuitive claim behind Code Mode is that writing code is easier for the model than picking between 2,000 tools. This claim holds up empirically, and the reasons are worth spelling out.
+
+**Models have seen orders of magnitude more code than structured tool calls.** GPT-4, Claude Opus, and Gemini Pro have each ingested tens of terabytes of public source code during pretraining. Tool-call syntax appears only in post-training data, which is thin by comparison. When in doubt, models fall back to code patterns they have seen, which in Code Mode is exactly what you want.
+
+**Code composes.** A single tool call is a single leaf operation. Real tasks require composition — fetch a list, filter it, loop over the result, call another function on each. In tool-calling mode, this becomes a multi-turn conversation: the agent calls, gets a result, thinks, calls again. In Code Mode, it's one program. A loop that processes 50 records costs 50 tool calls in the old mode and one `execute` in the new one.
+
+**Error handling is native.** The model already knows try/catch. It knows how to `await Promise.all` for concurrency. It knows how to chain `.filter(...).map(...)`. These control structures don't need to be encoded in a tool's parameter schema — they're inherited from the language.
+
+**Discovery is cheap.** When the agent doesn't know a method name, it doesn't guess. It queries `search` against the spec object, gets back candidate signatures, and uses them. This is the same workflow a human developer uses with IntelliSense. Hallucinated method calls drop because the model has seen the real signature — read out of the spec — before emitting code that uses it.
+
+The cost is sandboxing. Running arbitrary agent-generated TypeScript against a production SDK is a security boundary that needs serious care. Cloudflare's implementation uses isolated Workers — each `execute` runs in its own V8 isolate with network and storage capabilities restricted by policy. An on-prem version of this pattern needs a tighter sandbox: gVisor, Firecracker microVMs, or WebAssembly with WASI. The sandbox is now the trust boundary of the entire agent, not the tool schema.
+
+## What Code Mode Replaces
+
+Code Mode does not replace all MCP tool servers. It replaces a specific class: servers that expose a large, composable SDK. For those, the two-tool pattern is strictly better on context cost, composition cost, and error handling. For servers that expose a small number of high-level capabilities — `query_database(sql)`, `send_email(to, subject, body)` — the traditional tool-call interface is still fine.
+
+The decision boundary is roughly: if your server exposes more than 30 tools, or if your tools are compositional building blocks rather than end-to-end capabilities, Code Mode wins. Below that, the simpler interface is worth keeping.
+
+One useful mental model: the tool-call interface is an RPC. Code Mode is an embedded scripting environment. RPC is the right choice when the calls are coarse-grained and few. Scripting is the right choice when the calls are fine-grained and many. Agent workloads are drifting toward the latter — as models get better at composition, they demand finer primitives to compose with.
+
+## Implications for Agent Architecture
+
+Code Mode has second-order effects on how you build agent systems.
+
+**The context window becomes code, not config.** Your agent's "skill library" is no longer a list of JSON schemas. It's a directory of TypeScript modules the agent can import and use. This maps directly onto how Claude Skills and Codex skills already work — the skill is a block of code, the agent learns it by reading source, not by consulting a schema.
+
+**Tool authorship becomes API design.** When tools were schemas, "good tool design" meant clear descriptions and simple parameters. Code Mode raises the bar: your SDK now has to be ergonomic for a language model. Consistent naming, predictable return shapes, composable primitives, good error messages — the same things that make an SDK pleasant for humans make it pleasant for agents.
+
+**Observability shifts to code execution.** Instead of logging every tool call with its parameters, you log programs with their stdout, stderr, and return values. Debug a broken agent run by re-running its program in a REPL. This is a better observability surface than the old one — programs are inspectable in ways that sequences of tool calls are not.
+
+**Multi-agent coordination simplifies.** If each agent speaks Code Mode, then one agent can hand another agent a program as a message. "Here, run this and tell me what happens." Coordination becomes code review: the orchestrator reads the worker's proposed program before authorizing execution. This is easier to reason about than a protocol of structured tool calls passed through a shared blackboard.
+
+## What Still Needs Work
+
+Code Mode, as released, has sharp edges. The spec object has to be well-structured — if the agent's query expression hits an awkward or under-documented corner of the API, it cannot find what it needs. Designing the spec surface so that code-driven queries return useful results is a real engineering task, not an afterthought; it is closer to API-documentation design than to search-index engineering. Versioning is also tricky: when the SDK changes, old agent programs may silently break. Traditional tool schemas at least surface breaking changes through their types; code has less forgiving guardrails once the API shape shifts.
+
+Cross-server composition is another gap. If agents want to run code that touches both Cloudflare's SDK and, say, Snowflake's SDK, the Code Mode server has to either host both or accept an import mechanism. Neither is trivial; both introduce supply chain concerns. The next year of MCP evolution will decide whether Code Mode servers federate or stay siloed.
+
+For the MCP ecosystem as a whole, Code Mode is a forcing function. It exposes the assumption — implicit in the original MCP spec — that tools are coarse, discoverable, and finite. None of those assumptions hold for large SDKs. The protocol now has to accommodate a world where "the tool" is a language runtime.
+
+## References
+
+- Cloudflare engineering blog, "Code Mode: the better way to use MCP" (2026-02-20): https://blog.cloudflare.com/code-mode/
+- Model Context Protocol specification: https://modelcontextprotocol.io/specification
+- Cloudflare Workers isolates documentation: https://developers.cloudflare.com/workers/runtime-apis/
+- Cloudflare Agents SDK: https://developers.cloudflare.com/agents/

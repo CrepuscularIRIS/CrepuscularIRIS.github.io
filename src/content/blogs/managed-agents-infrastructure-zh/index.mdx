@@ -1,0 +1,149 @@
+---
+title: "Agent 循环成为基础设施"
+description: "Anthropic Managed Agents 将 Agent 执行循环抽象为平台基础设施——与操作系统接管内存管理的架构转变如出一辙。这对 Agent 认知设计意味着什么。"
+publishDate: "2026-04-15"
+tags: [agent-systems, claude, managed-agents, infrastructure, autonomous-engineering, multi-agent]
+category: engineering
+language: zh
+draft: false
+---
+
+2026 年 4 月 8 日，Anthropic 推出 Managed Agents 公开测试版。官方将其定位为开发者便利工具：无需自己编写 Agent 循环，Anthropic 负责处理上下文压缩、工具执行和会话持久化。读完文档，它看起来只是一个运行时优化。
+
+这种定位低估了其架构意义。Managed Agents 不是便利功能，而是 Agent 执行循环被抽象为基础设施的第一个生产信号——与操作系统接管内存管理、进程调度和 I/O 协调的历史转变如出一辙。循环从应用代码迁移到平台，其上的一切随之改变。
+
+## Agent 循环是什么（谁在编写它）
+
+2026 年 4 月之前，每个生产 Agent 系统都包含某个版本的相同循环：
+
+```python
+def agent_loop(initial_prompt: str, tools: list[Tool]) -> str:
+    """每个生产 Agent 团队都在自己编写的循环。"""
+    messages = [{"role": "user", "content": initial_prompt}]
+    
+    while True:
+        response = llm.call(
+            messages=messages,
+            tools=[t.schema for t in tools],
+            max_tokens=4096,
+        )
+        
+        # 自我报告完成——信任模型
+        if response.stop_reason == "end_turn":
+            return extract_final_answer(response)
+        
+        # 执行工具调用
+        if response.stop_reason == "tool_use":
+            tool_results = []
+            for tool_call in response.content:
+                if tool_call.type == "tool_use":
+                    result = execute_tool(tool_call.name, tool_call.input, tools)
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": tool_call.id,
+                        "content": str(result),
+                    })
+            messages.append({"role": "assistant", "content": response.content})
+            messages.append({"role": "user", "content": tool_results})
+        
+        # 处理上下文溢出——每个团队的自定义方案
+        if estimate_tokens(messages) > CONTEXT_LIMIT * 0.8:
+            messages = compaction_strategy(messages)
+```
+
+这段代码存在于数百个生产部署中。每个构建 Agent 产品的团队都写过自己的版本。策略差异——用什么压缩策略、如何处理工具调用失败、何时上报而非重试、如何跨上下文边界保留推理——在每家公司的实现中各不相同，可靠程度参差不齐。
+
+Managed Agents 将这段代码从应用责任转移到基础设施责任。循环运行在 Anthropic 的基础设施上，压缩通过他们控制的会话管理实现，工具执行、重试逻辑和多 Agent 派生成为平台原语，而非应用代码。
+
+## Stripe 数据点
+
+Anthropic 公布了 Stripe 的部署数据：1370 名工程师，一个 10000 行的 Scala 到 Java 迁移任务，四天完成，估计相当于 10 个工程师周的手动工作量。
+
+原始数字本身不如其结构含义重要。10000 行跨大型代码库的迁移涉及数百个相互依存的决策：类型映射、null 处理约定、Scala 惯用模式对应的 Java 写法、跨语言边界保留行为语义。这些决策是叠加的——早期确立的约定会传播到后续选择中。
+
+这类任务需要能在长执行时间范围内保持连贯状态的 Agent。不是"这个 Scala Option monad 对应的 Java 写法是什么？"（单轮查询），而是"三小时前翻译第一个返回 Option 的函数时我确立了什么映射约定，它如何传播到依赖它的 200 个函数？"（多会话持久推理）。
+
+处理这类任务的 Agent 循环需要管理上下文压缩、决策来源追踪和会话间状态。在此之前，每个构建此能力的团队都自己编写会话管理。在 Managed Agents 时代，会话边界和压缩逻辑是平台关注点。
+
+## 操作系统类比的实质
+
+将其与操作系统抽象类比并非装饰性修辞。这种转变在结构上高度相似，类比能预测接下来会发生什么。
+
+1960 年代，程序员直接管理核心内存——分配、释放、追踪每块内容。内存管理是应用代码。后来操作系统将其吸收到平台中。结果不完全是应用变简单了——它在一个维度上变简单了，而复杂性转移到了另一个维度。你不再思考物理内存地址，开始思考堆分配模式和垃圾回收语义。
+
+同样的转变正在发生于 Agent 执行。你停止思考：
+- 如何在不丢失第 2 小时决策的情况下压缩 10 万 token 的对话历史
+- 何时派生子 Agent 而非扩展主 Agent 的上下文
+- 如何处理 80 步任务第 47 步的工具超时
+- 如何序列化 Agent 状态以实现跨会话可恢复性
+
+开始思考：
+- 如何为托管执行带来的延迟和成本模型设计 Agent 认知
+- 如何构建任务使子 Agent 边界与自然推理检查点对齐
+- 如何设计工具接口使其在上下文不完整的子 Agent 调用时仍正确工作
+- 当编排是分布式的，主 Agent 系统提示与子 Agent 提示各应放什么内容
+
+问题没有消失，只是转移了。
+
+## 多 Agent 派生作为原语
+
+改变设计空间的具体能力是内置的多 Agent 派生。在 Managed Agents 中，主 Agent 可以派生并行运行的子 Agent，每个子 Agent 有自己的工具访问权限和上下文窗口，主 Agent 获取每个子 Agent 的结构化结果并继续执行。
+
+这听起来是增量改进，实则不然。多 Agent 并行改变了 Agent 设计者可用的认知架构。
+
+之前实现并行 Agent 工作，你需要：显式编写派生逻辑（对自己的编排层发 HTTP 调用，或用 LangGraph 等框架）、处理 Agent 间通信协议、管理子 Agent 结果聚合到主 Agent 上下文、设计故障隔离使崩溃的子 Agent 不破坏主 Agent 状态。
+
+有了托管派生，这些成为平台关注点。设计问题从"如何实现并行 Agent 执行？"转变为"什么样的任务分解能最大化这个问题的并行执行价值？"
+
+Anthropic 文档中 2000 个会话的 C 编译器示例体现了这种规模：一个任务被分解到 2000 个并行会话中，每个处理编译器实现的一部分，由主编排 Agent 协调，最终确认生成的代码能编译 Linux 内核。没有托管基础设施，这个任务在写第一行编译器代码之前就需要大量编排工程。
+
+## 对 Agent 设计者意味着什么
+
+这种转变不消除工程判断——它重新规定了哪些判断重要。
+
+**任务分解成为首要设计决策。** 当派生子 Agent 代价低廉（或相对于替代方案成本较低）时，问题在于如何划分边界。子 Agent 边界应与工作产品可以独立评估的位置对齐——一个函数、一个模块、一个自包含的迁移步骤。在自然评估检查点的边界使主 Agent 能在集成子 Agent 输出之前验证它，在错误传播之前捕获它。
+
+```python
+# 好的分解：每个子 Agent 产出可独立验证的输出
+lead_agent_prompt = """
+你正在将 Scala 代码库迁移到 Java。代码库包含：
+- 47 个数据模型文件（src/main/scala/models/）
+- 23 个服务文件（src/main/scala/services/）
+- 12 个工具文件（src/main/scala/utils/）
+
+策略：为每个目录派生一个子 Agent。每个子 Agent 必须：
+1. 迁移其分配目录中的所有文件
+2. 生成迁移报告，列出：已修改文件、已确立的约定、
+   使用的类型映射、已解决的歧义
+3. 验证每个输出文件可独立编译
+
+收到子 Agent 报告后，验证跨边界一致性：
+- 所有 Option 映射使用相同的 Java 约定
+- 服务接口与其依赖的数据模型匹配
+"""
+
+# 差的分解：子 Agent 产出相互依赖的部分工作
+# 无法独立验证
+```
+
+**面向分布式认知的系统提示设计。** 当主 Agent 派生子 Agent 时，它分配了认知负载。主 Agent 持有策略；子 Agent 持有其切片的执行上下文。主 Agent 需要向子 Agent 传达工作的精确规范，以及确保跨切片一致性的约束和约定。
+
+**压缩透明度。** 当平台管理上下文压缩时，设计者失去了对压缩内容的直接控制。对于特定早期决策必须精确可访问（而非概括）的任务，这一点很重要。围绕托管压缩设计意味着以结构化形式明确重要决策（持续更新的决策日志、约定文件），而非依赖原始对话历史。
+
+## 基础设施转变的代价
+
+平台抽象以可靠性换取灵活性。当你的团队编写 Agent 循环时，你控制循环行为的每个决策。托管基础设施将这些决策标准化。压缩策略是 Anthropic 的，重试语义是平台的，日志数据是平台暴露的。
+
+操作系统类比在此依然成立。OS 内存管理几乎总是优于手写内存管理。但驱动程序、实时系统和性能关键应用有时仍需要绕过抽象。托管 Agent 基础设施将开发出类似的逃逸阀。
+
+## 更大的图景
+
+软件基础设施转变有其规律：困难的事物被标准化，标准化版本能很好地处理 80% 的情况，剩余 20% 发展出更专业的解决方案。TCP/IP 吸收了网络，HTTP 吸收了应用层通信，云函数吸收了服务器配置，Managed Agents 正在吸收 Agent 循环。
+
+当循环成为基础设施，Agent 认知的设计空间在某些方面收窄，在其他方面扩展。你停止设计执行机制，开始设计认知分解——如何跨上下文窗口划分问题、如何规范子 Agent 协调、如何表达跨会话边界持久的约束。这些问题比循环实现更难，但它们是正确的问题。
+
+Agent 循环成为基础设施不是终点，而是将困难问题上移一层的平台转变。
+
+---
+
+*参考资料：[Anthropic Managed Agents 文档](https://platform.claude.com/docs/en/managed-agents/overview)，2026 年 4 月 8 日；Anthropic，《定义 2026 年软件开发方式的八大趋势》；[Claude Code 案例研究](https://claude.com/blog/eight-trends-defining-how-software-gets-built-in-2026)。Stripe 和 Ramp 数据来源于 Anthropic 发布的部署报告。*

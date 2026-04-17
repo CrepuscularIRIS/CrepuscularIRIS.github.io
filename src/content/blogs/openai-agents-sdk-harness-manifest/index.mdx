@@ -1,0 +1,87 @@
+---
+title: "OpenAI Agents SDK: Harness as Abstraction Layer"
+description: "OpenAI's April Agents SDK release collapses framework/SDK/managed-API into one harness, with a Manifest spec that makes sandboxes interchangeable."
+publishDate: "2026-04-17"
+tags: [openai, agents-sdk, agent-harness, manifest, sandbox, mcp, skills, agent-engineering]
+category: engineering
+language: en
+draft: false
+---
+
+On April 15 and 16, 2026, OpenAI shipped an update to the Agents SDK that is being read in the press as "Codex-style harness, but for the SDK." That description is not wrong but it understates the thing. The release does three structural moves at once: it folds previously separate primitives (MCP tools, Skills, AGENTS.md, shell, apply-patch) into a single in-distribution harness; it introduces a *Manifest* spec that decouples the agent's workspace from any particular sandbox provider; and it puts an externalized state machine underneath the harness so that losing a sandbox container no longer kills a run.
+
+Read together, these moves collapse a trichotomy the agent-tooling industry has been pretending was three separate categories — "framework," "SDK," and "managed agent API" — into a single thing called *the harness*. The interesting question is no longer which framework you adopt. It is what shape your harness has, and which parts of it you have outsourced to a vendor.
+
+## What the harness actually contains now
+
+Before this release, an OpenAI Agents SDK setup was a relatively thin shim over the model: you wrote tool definitions, the SDK glued them to model calls, and any non-trivial behavior — file editing, persistent workspace, custom instructions, progressive tool disclosure — was something you implemented yourself or imported from a higher-level framework. The April release pulls those primitives down into the SDK itself:
+
+- **MCP tools** are first-class. The harness speaks MCP natively, which means tools written for Claude Code, Codex CLI, or any other MCP host work in the SDK without adapters.
+- **Skills** are present as a progressive-disclosure mechanism. A skill is a directory with a manifest that the harness loads on demand, surfacing only the relevant tools and instructions when the model needs them. The Anthropic-introduced pattern is now cross-vendor.
+- **AGENTS.md** is a custom-instructions file that the harness reads from the workspace root. Same shape as Codex CLI and Claude Code use, deliberately.
+- **Shell tool + apply-patch** are built in. The harness ships a shell with a constrained command surface and a patch-application primitive that operates on workspace files via unified diffs.
+
+If you put those four together, you have something that looks structurally identical to Claude Code, Codex CLI, and Cursor's agent mode. The vendor-specific surface area is shrinking. What was a competitive moat eighteen months ago — "we have skills, they don't" — is now table stakes.
+
+## The Manifest is the actually-new part
+
+The headline that I think will age best from this release is the **Manifest** abstraction. In the new SDK, an agent's workspace is described by a Manifest — a small declarative spec that names the files, dependencies, environment, and resource constraints the agent needs. The harness ships built-in adapters for seven sandbox providers: Blaxel, Cloudflare, Daytona, E2B, Modal, Runloop, Vercel. Same Manifest, seven different runtime targets.
+
+The reason this matters is not portability for portability's sake. It is that the Manifest formalizes something every production agent stack has been doing implicitly and badly: separating the *control* layer (what the agent decides to do) from the *compute* layer (where the work physically happens). Before the Manifest, "switching sandbox providers" meant rewriting the integration code that bridged your agent's plans to the provider's API. After the Manifest, switching providers means changing one line in a config file, because the integration code lives in the SDK.
+
+There is a second effect that the press coverage has mostly missed. With the Manifest acting as a contract, *credentials no longer have to enter the model-executable environment*. The harness can hold the secrets in the control plane, mint scoped tokens, and inject them into the sandbox at provision time without ever putting them in a place the model could read. That is a non-trivial security property. Prompt-injection-as-credential-exfiltration is one of the most consistently exploited attack surfaces in production agent systems, and the architectural defense — keep the secrets out of the model's reach in the first place — required custom plumbing per provider until last week.
+
+The Manifest is not a perfect defense. An agent that needs to call an external API still needs *some* form of credential at the sandbox boundary, and if the model can read environment variables, it can attempt to exfiltrate. But the new shape makes it possible to push the trust boundary down a layer: the harness mints a short-lived token for one specific outbound call, the sandbox forwards it, and the model never sees the long-lived secret. Defense in depth instead of defense in name.
+
+## The durability story
+
+The third structural change is that the harness now has externalized state. OpenAI has been quiet about exactly which state machine they're using under the hood — press coverage speculates that the engine is TemporalIO or something TemporalIO-shaped, with snapshot-and-rehydrate semantics — but the user-visible behavior is what matters: if the sandbox container crashes, gets evicted, or hits a quota, the run resumes in a new container from the last checkpoint. Nothing the agent had decided is lost.
+
+This is worth comparing to the Cloudflare Fibers pattern that landed earlier this month — Fibers being Cloudflare's name for an agent-as-actor runtime that journals every non-deterministic event so the agent can be deterministically replayed. Fibers journals every non-deterministic event so the agent can be replayed deterministically from the journal; the stateful object lives in Cloudflare's runtime. The OpenAI harness is doing the same conceptual work but inverted: the state lives in the control plane (the SDK's durable orchestrator), the sandbox is the disposable side, and the contract is "any sandbox that implements the Manifest can host a resumed agent."
+
+The Fibers approach optimizes for low-latency local persistence on a specific platform. The Manifest+harness approach optimizes for portability — you can move a paused agent from Modal to E2B and have it resume there. Both are real durability stories. They are not the same shape, and which one you pick depends on whether your bottleneck is single-platform performance or multi-platform optionality.
+
+## What this does to the framework market
+
+If you read the agent framework space as "Microsoft Agent Framework vs CrewAI vs LangGraph vs Anthropic Managed Agents vs OpenAI SDK," the April update is a strong move by OpenAI. But that frame is the wrong frame. The right frame is: *the harness layer is what's converging, and the framework was always a temporary scaffold around it*.
+
+Three pieces of evidence:
+
+1. **The five orchestration patterns** — sequential, concurrent, handoff, group chat, hierarchical — are now implemented under different names in every major framework. The framework war on patterns is over. Frameworks are competing on developer experience, not on what they enable.
+2. **MCP** has been adopted by Anthropic, OpenAI, Microsoft, Google, and the long tail. Whatever the framework, the tools the agent calls are MCP tools.
+3. **AGENTS.md and Skills** were Anthropic-shaped patterns; OpenAI now ships both. Anthropic's recent Managed Agents work has been moving in a similar direction on workspace portability, though the exact spec is still in flux.
+
+The harness is what's stable. The framework is what's commoditizing. A reasonable bet on a 12-month horizon is that the visible developer surface — `from langgraph import StateGraph`, `from crewai import Crew`, `from agents_sdk import Agent` — converges to a thin wrapper, and the underlying contract is the harness shape: Manifest + MCP + Skills + AGENTS.md + durable orchestrator.
+
+## What this does to the deployment shape
+
+If the harness is the abstraction layer, then the production deployment shape changes too. Today most teams pick one framework, lock in to its sandbox conventions, and write integrations in framework-specific terms. The Manifest-centric world looks more like Kubernetes did when it commoditized container orchestration: the deployment artifact is the spec, the runtime is interchangeable, and the operational tooling — observability, scaling, secret rotation — moves to a layer that is provider-agnostic by design.
+
+Two things follow from that.
+
+First, the seven-provider list (Blaxel, Cloudflare, Daytona, E2B, Modal, Runloop, Vercel) is the *first* version of the list. The interesting question is what the *fifth* version looks like. My bet is that it is fewer providers, not more. Once a Manifest spec is widely adopted, sandbox providers compete on cold-start time, snapshot-restore latency, network egress, and per-second pricing. That is the same competitive shape that flattened the Kubernetes-managed-service market. Two or three providers will own most of the volume by the end of 2027.
+
+Second, there is room for a *Manifest registry* — a public catalog of validated sandbox configurations for common agent tasks. Today every team rebuilds the workspace shape (which Python version, which apt packages, which language servers, which seed data) for their specific use case. The Manifest gives you a unit of sharing for this. The first team that ships a high-quality, signed Manifest registry will have done for agent workspaces what Docker Hub did for container images.
+
+## What I'd actually build with it
+
+Reading the release as a working agent engineer, three concrete things become obviously easier:
+
+1. **Cross-sandbox A/B testing** for agent runtimes. Same Manifest, two providers, compare cold-start latency, p99 tool-call latency, and snapshot-restore time. You can run this in a couple of hours instead of a week.
+2. **Bring-your-own-sandbox** for sensitive data. Government, healthcare, and finance teams that need on-prem sandboxes can implement the Manifest contract once and keep using the harness. The harness doesn't care whether the sandbox is in Cloudflare's edge or behind your VPN.
+3. **Resilient long-horizon runs.** A planning agent that takes hours can now survive infrastructure churn without bespoke checkpointing. The cost of building a multi-day agent went down materially.
+
+The cost of all three is that you are now coupled to OpenAI's harness instead of your framework of choice. That is a real coupling, and the standard "vendor lock-in" critique applies. The honest counterargument is that the alternatives — Microsoft Agent Framework, Anthropic Managed Agents, Google Vertex AI Agents — are converging on the same harness shape, and the lock-in is less than it looks because the Manifest itself is a portable artifact. If the Manifest spec stays open, switching harnesses becomes a bounded engineering project rather than a rewrite.
+
+## The bet underneath all of this
+
+Every harness convergence story has a bet underneath it. Anthropic bet that *the model* is the moat and the harness should be cheap and standardized. OpenAI's April release is the same bet, made louder. Microsoft is making it too with the Agent Framework merger. The dissenters are the ones still treating the framework as the differentiator.
+
+If the bet is right, the next twelve months in agent tooling are *boring* — not because nothing happens but because the interesting moves all happen at the model and the workspace layer, not at the developer surface. The interesting research questions are: what does a *good* Manifest look like? How do you certify a sandbox provider as compliant? What's the right contract between the harness's durable orchestrator and the sandbox's lifecycle? Those questions sound like infrastructure, because they are. That's the whole point.
+
+## References
+
+- [*OpenAI updates its Agents SDK to help enterprises build safer, more capable agents.*](https://techcrunch.com/2026/04/15/openai-updates-its-agents-sdk-to-help-enterprises-build-safer-more-capable-agents/) TechCrunch. 2026-04-15.
+- [*OpenAI Agents SDK harness and sandbox update.*](https://www.helpnetsecurity.com/2026/04/16/openai-agents-sdk-harness-and-sandbox-update/) Help Net Security. 2026-04-16.
+- Anthropic. *Managed Agents API* (compare workspace-portability surface as it ships).
+- Cloudflare. *Durable Agents (Fibers).* 2026-04 — for the Fibers durability comparison.

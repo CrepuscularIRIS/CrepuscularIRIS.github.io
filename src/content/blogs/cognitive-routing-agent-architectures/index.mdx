@@ -1,0 +1,167 @@
+---
+title: "The Cognitive Router"
+description: "Agent CLIs are shifting from single-model monoliths to skill-routed architectures. The pattern is the same one that killed monolithic web apps."
+publishDate: "2026-04-15"
+tags: [agent-systems, architecture, cognitive-routing, MCP, claude-code, coding-agents]
+category: engineering
+language: en
+draft: false
+---
+
+Every six months, the dominant architecture for coding agents changes. In early 2025, the winning pattern was "give the best model a big context window and let it figure things out." By late 2025, it was "chain-of-thought with tool use." Now, in April 2026, the pattern that actually works in production is something different: cognitive routing.
+
+The core idea is simple. Instead of loading an entire repository into one model's context and hoping it can handle everything — code review, test generation, refactoring, security analysis, documentation — you route each sub-task to a specialized agent with a clean context window and specific tools. A planning model evaluates the request, consults a manifest of available capabilities, and dispatches work to the right specialist.
+
+This is the microservices pattern applied to cognition. And just like microservices, it solves real problems at the cost of coordination complexity.
+
+## The Context Dilution Problem
+
+The motivation for cognitive routing is empirical, not theoretical. When you load 50,000 tokens of repository context into a model and ask it to perform a security review, the model's attention is split across thousands of irrelevant lines. The security-relevant patterns — hardcoded credentials, unsanitized inputs, missing authentication checks — compete for attention with type definitions, utility functions, and test fixtures.
+
+Measurements from production coding agents show a consistent pattern: task accuracy degrades as context size increases beyond what the task actually requires. A security review that scores 92% accuracy with 5,000 tokens of targeted context scores 74% with 50,000 tokens of repository dump. The model knows less when it sees more, because its attention budget is finite.
+
+Cognitive routing eliminates this problem by construction. The security reviewer agent receives only the files relevant to security analysis. The test generator receives only the module under test and its dependencies. Each specialist operates in a context window optimized for its specific task.
+
+## Anatomy of a Cognitive Router
+
+A production cognitive router has four components:
+
+### 1. The Skill Manifest
+
+A declarative registry of available agent capabilities. Each entry specifies what the agent can do, which files it needs access to, and what tools it can invoke.
+
+```yaml
+# .skills/security-auditor/manifest.yaml
+name: security-auditor
+description: "Analyze source files for OWASP Top 10 vulnerabilities"
+model: claude-haiku-4-5
+context_boundary:
+  - "src/api/**"
+  - "src/auth/**"
+  - "src/middleware/**"
+tools:
+  - grep
+  - read_file
+  - static_analysis
+output_format: structured_report
+max_tokens: 8192
+```
+
+The manifest is the contract. The router reads it to understand what the agent can handle. The agent reads it to understand its own boundaries. Neither needs to know about the other agents in the system.
+
+### 2. The Router Model
+
+A lightweight model (typically Haiku-class) that reads the user's request and the skill manifest, then produces a dispatch plan. The router does not execute the task. It only decides who should.
+
+```python
+def route(request: str, manifests: list[SkillManifest]) -> DispatchPlan:
+    """
+    Router produces a plan, not a result.
+    Each step maps to a skill with specific context boundaries.
+    """
+    plan = router_model.generate(
+        system="You are a task router. Given a request and available skills, "
+               "produce a dispatch plan. Each step specifies: skill_name, "
+               "files_needed, expected_output_type.",
+        messages=[
+            {"role": "user", "content": format_routing_prompt(request, manifests)}
+        ]
+    )
+    return parse_dispatch_plan(plan)
+```
+
+The routing decision is cheap — a few hundred tokens of generation. The expensive work happens in the specialist agents, where the tokens are spent on actual task execution rather than figuring out what to do.
+
+### 3. Context Boundaries
+
+Each specialist agent receives a filtered context window. The router determines which files are relevant (using the manifest's `context_boundary` patterns plus dynamic analysis of the specific request), loads only those files, and passes them to the specialist.
+
+This is where the architecture pays for itself. A repository with 200 files might have 10 relevant to a specific refactoring task. Loading all 200 into a single context wastes 95% of the context budget on noise. The context boundary ensures the specialist sees only signal.
+
+### 4. Result Aggregation
+
+Specialist agents return structured outputs. The router (or a dedicated aggregation step) combines these into a coherent response. When specialists disagree — a refactoring agent wants to change a function signature, but a backwards-compatibility agent flags the change as breaking — the router escalates the conflict to the user or to a higher-capability model for resolution.
+
+## Cross-Vendor Delegation
+
+The most interesting development in cognitive routing is cross-vendor delegation. Claude Code can dispatch tasks to Gemini CLI as a "companion runtime" for tasks where Gemini's architecture has advantages (long-context analysis of entire codebases, for instance). Codex CLI can be invoked for tasks where OpenAI's training data gives it an edge.
+
+This is possible because the skill manifest is vendor-neutral. A manifest describes what the agent does, not which model powers it. The router can dispatch to Claude, Gemini, Codex, or a local model based on the task requirements and the manifest's specifications.
+
+```yaml
+# Cross-vendor dispatch example
+skills:
+  - name: full-repo-analysis
+    model: gemini-2.5-pro  # 1M context window
+    reason: "Requires loading entire repository for dependency analysis"
+
+  - name: targeted-refactor
+    model: claude-opus-4-6
+    reason: "Requires precise code generation with strict type constraints"
+
+  - name: test-generation
+    model: claude-haiku-4-5
+    reason: "High volume, lower complexity, cost-sensitive"
+```
+
+This is pragmatic polyglotism. No single model is best at everything, and pretending otherwise wastes money and quality. The routing layer makes the model selection explicit and auditable.
+
+## What This Looks Like in Practice
+
+Consider a request: "Review the authentication module for security issues and add missing test coverage."
+
+**Monolithic approach (2025):** Load the entire `src/` directory into Claude Opus. Generate a response that attempts security review and test generation in a single pass. Hope the model doesn't lose track of the security context while generating tests.
+
+**Cognitive routing approach (2026):**
+
+1. Router reads request, identifies two sub-tasks: security review + test generation
+2. Router dispatches security review to `security-auditor` skill with `src/auth/**` context
+3. Router dispatches test generation to `test-writer` skill with `src/auth/**` + existing test files
+4. Security auditor returns structured findings (3 issues, severity-ranked)
+5. Test writer returns new test files (12 test cases covering untested branches)
+6. Aggregator combines: "Found 3 security issues (1 critical). Generated 12 tests. The critical issue in `validate_token()` is also covered by new test `test_expired_token_rejection`."
+
+The routed version produces better results because each specialist had a clean context window focused on its specific task. The security auditor did not waste attention on test patterns. The test writer did not waste attention on security heuristics.
+
+## The Coordination Tax
+
+Cognitive routing is not free. The coordination overhead includes:
+
+**Latency.** Sequential dispatch adds round-trip time. Parallel dispatch mitigates this but requires careful dependency analysis — you cannot generate tests for code that the refactoring agent has not yet rewritten.
+
+**Routing errors.** The router model can misclassify tasks, dispatch to the wrong specialist, or miss that a task requires multiple specialists. Routing accuracy is typically 85-92% in production, meaning 8-15% of requests get suboptimal dispatch.
+
+**Manifest maintenance.** The skill manifest must stay synchronized with actual agent capabilities. A manifest that claims the security auditor can analyze Rust code when it was only trained on Python will produce silent failures.
+
+**Context fragmentation.** Sometimes a task genuinely requires holistic understanding of the entire codebase. Cognitive routing can miss cross-cutting concerns that a monolithic agent would catch through brute-force context loading.
+
+The net calculation is still positive for most production workloads. The quality improvement from focused context windows outweighs the coordination tax for repositories beyond a few thousand lines.
+
+## Parallels to Software Architecture History
+
+The trajectory from monolithic agents to routed agents mirrors three decades of software architecture:
+
+| Era | Software | Agents |
+|-----|----------|--------|
+| Monolith | Single application, shared state | Single model, full context |
+| SOA | Service boundaries, message queues | Agent boundaries, skill manifests |
+| Microservices | Independent deployment, API contracts | Independent models, structured I/O |
+| Service mesh | Routing, observability, circuit breakers | Cognitive routing, dispatch tracing, fallback chains |
+
+The analogy is not perfect — agents have a shared substrate (the language model) that microservices do not — but the pattern of decomposing monolithic systems into specialized, independently-scalable components with explicit contracts is the same.
+
+## Implementation Guidance
+
+If you are building a coding agent system today:
+
+**Start monolithic, then decompose.** Build a working single-agent system first. Profile which tasks degrade with large context. Those are your first candidates for specialist extraction.
+
+**Keep manifests minimal.** A manifest should specify boundaries, not implementation details. `context_boundary: ["src/auth/**"]` is good. `prompt_template: "You are a security expert..."` belongs in the agent, not the manifest.
+
+**Use the cheapest model that works.** Routing decisions need a Haiku-class model. Specialist tasks should use the minimum capability level that produces acceptable quality. Reserve Opus-class models for tasks that demonstrably require them.
+
+**Trace everything.** When a routing decision leads to a bad outcome, you need to diagnose whether the router chose the wrong specialist, the specialist received bad context, or the specialist model failed. Without dispatch tracing, debugging multi-agent failures is guesswork.
+
+**Design for graceful degradation.** When the router is uncertain, fall back to the monolithic approach rather than dispatching to a potentially wrong specialist. A slightly degraded single-model response is better than a confidently wrong routed response.
+
+The cognitive routing pattern is not the final word on agent architecture. Something better will emerge in six months. But the principle it embodies — specialized agents with focused context beat generalist agents with diluted context — is durable. However the architecture evolves, that principle will remain true.

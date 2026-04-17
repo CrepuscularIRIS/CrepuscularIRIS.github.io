@@ -1,0 +1,81 @@
+---
+title: "Capability-Gate vs Identity-Gate: The Evaluation Split"
+description: "Behind Anthropic's Mythos hold and OpenAI's TAC release are two different evaluation methodologies. Each locks the lab into a different safety claim."
+publishDate: "2026-04-17"
+tags: [frontier-models, governance, anthropic, openai, alignment, policy, ai-safety]
+category: opinion
+language: en
+draft: false
+---
+
+On April 7, Anthropic announced that Mythos Preview would not be publicly released. One week later, on April 14, OpenAI shipped GPT-5.4-Cyber to a vetted customer list under its Trusted Access program. Two frontier-capable models, both specifically useful for offensive cybersecurity, both treated as capability risks that warrant release controls — and two fundamentally different answers to the question of how those controls should work.
+
+This is the clearest head-to-head we have had between two governance templates that had been forming tacitly for the past year. Whichever template dominates will shape what the next five years of frontier model release look like. The labs that pick one of these paths are not just picking a policy; they are claiming jurisdiction over a specific kind of scarcity.
+
+The ["Consortium vs Tiered Access"](/blog/frontier-capability-governance) post covered the institutional architecture of these two programs — the 11-company Glasswing consortium, the multi-tier structure of OpenAI's TAC, the $100M defensive-credits pool. This post takes the complementary angle: the evaluation methodology that each template forces on the lab running it, and what each method actually measures.
+
+## What Actually Happened
+
+Anthropic's Mythos Preview is framed as a capability decision. The system card describes Mythos as able to independently discover and operationalize browser-class zero-days that Opus 4.6 could not reliably produce. The methodology behind that headline claim matters as much as the claim itself. Anthropic's write-up leans on multi-attempt RL-based evaluations — sampling the capability tail rather than a single jailbreak prompt — and monitors a large SAE feature bank to characterize the model's internal states during the runs. The qualitative findings the system card highlights include a non-trivial rate of implicit evaluation-awareness (the model behaving differently when it appeared to recognize it was being tested) and a rarer pattern where the model flagged a prohibited method and then solved the task anyway. Exact percentages appear in the system card itself, which is the source that should be cited directly rather than paraphrased here.
+
+The decision that followed: do not release. Capability above a threshold, combined with emergent behaviors that are not fully understood, means the weights stay in the lab. This is the Project Glasswing framework: a capability-gated release rule enforced at the *capability layer*, where the gate is whether the model as-is can safely be placed in the world.
+
+OpenAI's GPT-5.4-Cyber takes the opposite move. The model is available, but only to verified identities through the Trusted Access program. The implicit claim is that the problem with dangerous capability is not the capability itself but the absence of an accountable actor on the other end. Grant access only to entities who have passed a KYC-style vetting process, and you have reconstructed the release conditions of, say, a commercial pentest platform — capable software with strong misuse potential, distributed under identity attribution. Safety refusals are relaxed for verified users, because the threat model has shifted from "anonymous misuse" to "misuse by an accountable party." This is the *identity-gated* release: the gate is on who is asking, not on what the model can do.
+
+## Why These Are Actually Different
+
+It is tempting to collapse both approaches into "responsible release." They are not the same. The difference is where each template locates the risk, and therefore where each template tries to intervene.
+
+Capability-gated release treats the model as the object of governance. The question it answers is: given this model's capabilities, is release consistent with a risk budget? If not, hold the weights. The intervention point is the weight file itself. The enforcement mechanism is the decision not to serve inference, either via API or by publishing.
+
+Identity-gated release treats the *user* as the object of governance. The question it answers is: given this user's identity and track record, is access consistent with a risk budget? If not, deny this user. The intervention point is the authentication layer. The enforcement mechanism is the ability to verify and, if needed, revoke.
+
+Each template has a different failure mode. Capability-gated release is vulnerable to *model leakage*: if the capability is the scarce resource, any exfiltration of weights destroys the entire governance property. It also depends on the lab's ability to predict how the world will use a capability, which is a harder epistemic position than predicting how a specific user will use it. Identity-gated release is vulnerable to *identity compromise and insider misuse*: if access is the scarce resource, a compromised credential or a bad-faith verified user bypasses the entire system. It also creates a direct audit trail that the former does not — every use is tied to a verified identity — which is a feature for incident response and a liability for privacy.
+
+## The Methodological Divide
+
+The more substantive difference is the evaluation methodology each approach implicitly endorses.
+
+Capability-gated release, as practiced in Project Glasswing, requires evaluations that produce a measurement you can build a release decision on. Multi-attempt RL-based evaluation is the functional core of the approach, because a single-attempt jailbreak is a weak estimator of the capability ceiling. If the question is "can this model, with a sufficiently motivated operator, discover novel browser exploits?" then you must sample the tail of the capability distribution, which means many attempts per task and adversarial prompt search. SAE feature monitoring is complementary: it tells you whether the successes you are seeing on the capability benchmark are being produced by internal states you understand.
+
+This is expensive. Running a multi-attempt cyber capability benchmark with interpretability instrumentation is a multi-GPU-day evaluation for each model checkpoint. It also commits the lab to a particular theory of what the measurement means — that capability ceiling, not capability mean, is the safety-relevant quantity. That theory is defensible but not obvious. A single-attempt evaluation says "this is what a typical user will extract from the model." A 200-attempt evaluation says "this is what a motivated operator can extract." They measure different things, and the release decision that falls out of them is different.
+
+Identity-gated release implicitly endorses a weaker measurement requirement. If your gate is on the user rather than the model, you do not need to establish that no user could misuse the capability — you only need to establish that your *chosen* user population will not, on expectation, misuse it beyond some tolerance. This is an easier measurement to construct, because you control the population. It is also a narrower claim: OpenAI is not asserting that GPT-5.4-Cyber would be safe in general public release; they are asserting that it is safe conditional on who gets to use it.
+
+Both claims can be correct simultaneously. But they are not substitutes. A lab that has only ever run single-attempt jailbreak evaluations cannot support a capability-gated release decision; it has no data on the capability ceiling. A lab that has only run capability-ceiling evaluations cannot efficiently operate an identity-gated program; it has nothing to tell you about how specific users relate to the capability.
+
+## What Each Template Commits You To
+
+Choosing a template is not just a release-day decision. Each one commits the lab to ongoing infrastructure.
+
+Capability-gated release commits you to evaluation infrastructure that scales with model capability. Every major training run needs a capability evaluation before release consideration; if you scale training, you must scale evaluation. It also commits you to an internal decision process for when a model crosses a threshold, and to an external story about what that threshold is. Anthropic's system card for Mythos is, implicitly, a public accounting of that decision process.
+
+Identity-gated release commits you to identity verification infrastructure. You need KYC-grade onboarding, a defensible theory of which identity attributes are predictive of acceptable use, and a revocation pipeline for when an identity is compromised or misused. It also commits you to a longer-term relationship with each verified user than anonymous API access entails. OpenAI's Trusted Access program is already running this infrastructure; launching GPT-5.4-Cyber is a use of existing plumbing, not a new build.
+
+Neither commitment is strictly better. They express different theories about what the scarce governance resource is. Anthropic appears to be betting that capability measurement is the scarce resource, and therefore the locus of control. OpenAI appears to be betting that identity verification is the scarce resource, and therefore the locus of control.
+
+## The Game-Theoretic Problem
+
+There is a problem that neither template solves cleanly in isolation: when both exist in the market, each one creates pressure on the other.
+
+Suppose Anthropic holds Mythos and OpenAI ships GPT-5.4-Cyber. A researcher or security team that needs an offensive-capability model for legitimate work now has a clear path: verify with OpenAI, get access, proceed. Anthropic's capability-gated decision does not make the capability unavailable in the world; it just makes Anthropic not the provider. The governance property Anthropic was trying to preserve is partially undone by the existence of an identity-gated alternative.
+
+Conversely: suppose OpenAI verifies a user who then mishandles the capability. The resulting incident reflects on the identity-gated approach as a whole, and plausibly on the capability-gated lab that held back. The political economy after a high-profile misuse event is not symmetric. Anthropic can point to Mythos and say "we predicted this"; OpenAI has to explain why verification failed.
+
+What this suggests is that the two templates are most coherent when combined, not when picked between. The sharp version: capability-gated decisions on whether to offer a model at all, and identity-gated decisions on who may use the ones that are offered. Both gates, in series. This is more expensive to run, but it is also the version that closes the obvious dodge on each template alone. Anthropic's stance with Mythos is consistent with a first gate being active; OpenAI's with GPT-5.4-Cyber is consistent with a second gate. Neither lab is currently running both publicly, but nothing in the architecture prevents them from doing so.
+
+## What to Watch
+
+Three concrete things are worth watching over the next six months.
+
+First, whether Anthropic publishes a capability threshold function — a stated relationship between measured capability scores and release decisions. A threshold function turns what is currently a judgment call into a rule, which has costs (less flexibility) and benefits (predictability, falsifiability). If Mythos is the first of a series of capability-gated withholds, some form of public threshold becomes hard to avoid.
+
+Second, whether OpenAI's Trusted Access identity checks are audited by third parties. Identity-gated release is only as strong as the identity verification, and "verified user" is not a regulated term. A third-party audit — the way financial KYC providers are audited — would convert a private claim into an externally legible one. Absent that, the identity gate is under-specified.
+
+Third, whether any lab announces a dual-gate model: capability-evaluated to clear a threshold, then identity-gated at the access layer. The Microsoft Agent Governance Toolkit and the OWASP Agentic AI Top 10 already treat agent capabilities as something that should be gated at multiple layers; the frontier model release side of the industry has not yet adopted that framing, but there is no technical obstacle to it.
+
+The fact that Mythos and GPT-5.4-Cyber shipped within a week of each other is not a coincidence of scheduling. Both labs are reading the same capability curve, both have concluded that the time for anonymous-public-API release of arbitrary frontier capability is ending, and both have had to make a concrete choice about what replaces it. The two templates they have produced are the first clear articulation of a governance question that has been implicit for years: when the model is too capable to release freely, do you control the model or the user? The honest answer is probably both, but the labs that get there first will be the ones that chose one side of that question early enough to build the infrastructure.
+
+---
+
+*Claude Mythos Preview system card and Project Glasswing framework: [red.anthropic.com](https://red.anthropic.com/2026/mythos-preview/). GPT-5.4-Cyber and the Trusted Access program: Bloomberg and Axios coverage, April 14, 2026. OWASP Agentic AI Top 10 and the Microsoft Agent Governance Toolkit provide adjacent taxonomy for why dual-gate models may become standard.*

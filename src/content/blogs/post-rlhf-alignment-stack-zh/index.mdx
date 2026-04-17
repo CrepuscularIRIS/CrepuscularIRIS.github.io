@@ -1,0 +1,130 @@
+---
+title: "后 RLHF 对齐技术栈"
+description: "RLHF 统治了后训练三年。2026 年，四种方法——GRPO、DAPO、RLVR 和合成自我博弈——已经取代了它。这篇文章解析原因和方法。"
+publishDate: "2026-04-16"
+tags: [alignment, RLHF, GRPO, DAPO, RLVR, post-training, reinforcement-learning, research]
+category: research
+language: zh
+draft: false
+---
+
+三年来，RLHF 一直是后训练的标准方法：收集人类偏好数据，训练奖励模型，然后对其运行 PPO。从 GPT-4 到 Claude 3.5 Sonnet，每个主要实验室都使用了某种变体。它也有充分记录的问题：奖励模型崩溃、PPO 下的模式崩溃、大规模人类标注的成本，以及一个根本性的信息瓶颈——奖励模型只能表达标注者能表达的偏好。
+
+到 2026 年初，主流后训练技术栈已经不同。四种方法取代了 RLHF：GRPO（组相对策略优化）、DAPO（解耦裁剪与动态采样策略优化）、RLVR（可验证奖励强化学习）和合成自我博弈。每种都针对 RLHF 的特定失败模式。组合起来，它们形成一个更便宜、更稳定、扩展性更好的技术栈。
+
+## RLHF 出了什么问题
+
+RLHF 的问题是结构性的：
+
+**问题 1：奖励模型是瓶颈。** 奖励模型在人类比较数据上训练，学习预测人类更偏好哪个输出。但它无法在高质量区间以高分辨率区分输出。在质量的尾部——对齐最关键的地方——奖励模型的信号退化。这是信息论极限：二元比较每次标注最多携带 1 bit 信息。
+
+**问题 2：PPO 不稳定。** PPO 需要仔细调整裁剪比率、学习率、KL 惩罚系数和 mini-batch 大小。实践中，语言模型的 PPO 训练很脆弱。
+
+**问题 3：成本扩展。** 生产质量的人类偏好数据每个比较成本 $1-5。训练一个跨领域泛化的奖励模型需要 50K-200K 个比较。前沿规模的 RLHF 标注预算达到每次训练数千万美元。
+
+**问题 4：奖励黑客。** 策略学会了利用奖励模型中的模式，而不是真正改进。
+
+## GRPO：消除奖励模型
+
+GRPO（组相对策略优化）由 DeepSeek 在 DeepSeek-R1 技术报告中提出，做了一个激进的简化：完全移除奖励模型。
+
+GRPO 为每个 prompt 生成 K 个输出，使用可验证目标评分（数学正确性、代码测试通过、事实准确性），然后更新策略以增加组内较好输出的概率。
+
+关键洞察是组内相对排序。你不需要绝对质量分数，只需知道组内哪些输出比其他的更好。
+
+```python
+def grpo_loss(
+    policy_logprobs: torch.Tensor,    # [batch, group_size, seq_len]
+    ref_logprobs: torch.Tensor,       # [batch, group_size, seq_len]
+    rewards: torch.Tensor,            # [batch, group_size]
+    group_size: int = 8,
+    clip_ratio: float = 0.2,
+    kl_coeff: float = 0.01,
+) -> torch.Tensor:
+    # 组内标准化奖励
+    mean_r = rewards.mean(dim=1, keepdim=True)
+    std_r = rewards.std(dim=1, keepdim=True).clamp(min=1e-8)
+    advantages = (rewards - mean_r) / std_r
+
+    # 计算概率比率
+    policy_seq = policy_logprobs.sum(dim=-1)
+    ref_seq = ref_logprobs.sum(dim=-1)
+    log_ratios = policy_seq - ref_seq
+    ratios = torch.exp(log_ratios)
+
+    # 裁剪替代目标（PPO 风格但没有 critic）
+    surr1 = ratios * advantages
+    surr2 = torch.clamp(ratios, 1 - clip_ratio, 1 + clip_ratio) * advantages
+    policy_loss = -torch.min(surr1, surr2).mean()
+
+    kl_penalty = kl_coeff * log_ratios.mean()
+    return policy_loss + kl_penalty
+```
+
+与 PPO 的关键区别：没有价值函数（critic），没有奖励模型。优势来自组内比较。这消除了标准 RLHF 流水线中四个神经网络中的两个，将内存需求大致减半。
+
+## DAPO：修复 PPO 的裁剪问题
+
+DAPO 解决两个具体的失败模式：
+
+**熵崩溃**：训练过程中策略的输出分布变窄。标准裁剪对称应用——限制概率的增加和减少。但对于对齐，我们需要非对称行为。
+
+**简单 prompt 主导**：训练集中的一些 prompt 很简单。模型很快学会完美回答，之后它们不再贡献梯度信号，但仍然消耗计算资源。
+
+```python
+def dapo_clipped_ratio(
+    ratios: torch.Tensor,
+    advantages: torch.Tensor,
+    clip_upper: float = 0.28,   # 更宽：允许探索
+    clip_lower: float = 0.18,   # 更紧：限制退化
+) -> torch.Tensor:
+    positive_mask = advantages >= 0
+    clipped = torch.empty_like(ratios)
+    clipped[positive_mask] = torch.clamp(
+        ratios[positive_mask], 1 - clip_upper, 1 + clip_upper
+    )
+    clipped[~positive_mask] = torch.clamp(
+        ratios[~positive_mask], 1 - clip_lower, 1 + clip_lower
+    )
+    return torch.min(ratios * advantages, clipped * advantages)
+```
+
+**动态采样**：当组内所有 K 个输出获得相同奖励时，从训练批次中移除该 prompt，替换为更难的。
+
+## RLVR：大规模可验证奖励
+
+RLVR 的设计原则：尽可能用程序化验证替换学习到的奖励模型。代码生成运行测试，数学检查答案，事实声明查询知识库。
+
+验证函数提供的奖励具有三个特性：免疫奖励黑客（不能通过写更长的代码来欺骗测试套件）、评估免费（不需要人类标注者）、完美校准（测试要么通过要么不通过）。
+
+局限是覆盖率。并非所有任务都可验证。RLVR 大约覆盖典型后训练混合的 40-50%。
+
+## 合成自我博弈
+
+第四个组件直接解决成本问题：用自我博弈生成合成训练数据。模型生成多个响应，更强的模型排序它们，排序的配对成为下一轮迭代的训练数据。
+
+2026 年的关键创新是质量过滤自我博弈：只保留质量差距大且首选响应展示模型当前弱项能力的配对。
+
+## 组合流水线
+
+前沿实验室的 2026 年实践：
+
+```
+Base Model → SFT → RLVR（可验证任务）→ GRPO+DAPO（不可验证任务）→ 合成自我博弈 → Aligned Model
+```
+
+顺序很重要：RLVR 首先在客观任务上建立强基线，提升模型在后续阶段自我评估的能力。
+
+## 实践要点
+
+- **从 RLVR 开始**：有可验证组件就用它。信号免费、可靠、免疫 gaming。
+- **用 GRPO 替代 PPO**：更简单、更省内存、效果相当。组大小 K=8 是通用选择。
+- **添加 DAPO 的动态采样**：移除已收敛 prompt 可以稳定提升 2-5%。
+- **自我博弈是扩展杠杆**：三轮是最佳平衡点。超过三轮后收益递减，分布崩溃风险增加。
+- **监控熵**：如果输出分布熵降到 SFT 模型的 60% 以下，模型正在崩溃。
+
+## 参考文献
+
+- Shao et al., "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning," arXiv:2501.12948
+- Yu et al., "DAPO: An Open-Source LLM Reinforcement Learning System," arXiv:2503.14476
+- Lambert et al., "Reward Model Training: Lessons from RLHF at Scale," Anthropic Technical Report, 2025

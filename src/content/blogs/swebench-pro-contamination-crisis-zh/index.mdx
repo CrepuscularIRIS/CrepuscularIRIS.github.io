@@ -1,0 +1,154 @@
+---
+title: "SWE-bench 数据污染了。数据说明了什么。"
+description: "OpenAI 确认前沿模型能逐字复现 SWE-bench Verified 的标准答案补丁。SWE-bench Pro 私有集揭示了真实性能差距。18 个月的报告进展意味着什么。"
+publishDate: "2026-04-15"
+tags: [benchmarks, SWE-bench, evaluation, ML-evaluation, agent-systems, coding-agents, contamination]
+category: research
+language: zh
+draft: false
+---
+
+2026 年 4 月，OpenAI 内部审计证实了多位研究者此前的怀疑：前沿模型能够逐字复现 SWE-bench Verified 部分任务的标准答案补丁。自主软件工程领域自 2024 年以来用于衡量进展的基准测试数据已被污染。
+
+这件事的重要性有其特定原因。当 Claude Opus 4.5 报告 SWE-bench Verified 达到 80.9%，或 GPT-5 报告类似数字，并以此论证"AI 现在能以高级工程师水平完成软件工程任务"——这个论证建立在基准测试有效性的基础上。如果模型部分记忆了基准测试，这些分数就无法衡量人们以为它们在衡量的东西。
+
+更重要的数字来自 Scale AI 推出的、对污染有抵抗力的后续版本 SWE-bench Pro。在其私有留存集上：Claude Opus 4.1 从 22.7% 跌至 17.8%，GPT-5 从 23.1% 跌至 14.9%。污染效应——记忆基准测试性能与真实泛化之间的差距——在更难的 Pro 基准上为 4-8 个百分点，在更简单的 Verified 上的外推幅度更大。
+
+## 基准污染的实际含义
+
+此处的污染并不意味着模型被直接训练在 SWE-bench 测试用例上，而是更微妙的过程。SWE-bench Verified 从公开的 GitHub 仓库中采样。每个基准任务的标准答案——正确的修复补丁——在 SWE-bench 发布之前就已经提交到这些仓库中。当这些仓库后来被索引并用于预训练时，这些标准答案补丁也包含在训练数据中。
+
+模型并非被训练来"回答 SWE-bench 问题"，而是从仓库历史记录的接触中学习了哪些提交跟随哪些 issue——这正是 SWE-bench 所测量的同一模式。在推理时，模型可以将基准任务部分匹配到预训练时见过的模式。
+
+这不等于完全记忆，模型并非对每个任务都逐字检索补丁。但也不是纯粹从第一性原理泛化。真实性能数字介于污染基准分数和零之间——SWE-bench Pro 私有集是我们目前对其位置的最佳估计。
+
+```python
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class BenchmarkScore:
+    model: str
+    benchmark: str
+    public_score: float    # 排行榜报告分数
+    private_score: float   # 在留存、未见测试用例上的分数
+    contamination_gap: float  # public_score - private_score
+
+    @property
+    def reliability(self) -> str:
+        """作为泛化证据，该分数的可信程度如何。"""
+        gap = self.contamination_gap
+        if gap < 0.03:
+            return "高——差距小，基准基本干净"
+        elif gap < 0.08:
+            return "中——存在显著污染，谨慎使用"
+        else:
+            return "低——严重污染，分数具有误导性"
+
+
+# SWE-bench Pro 结果（2026 年 4 月数据）
+scores = [
+    BenchmarkScore("Claude Opus 4.1", "SWE-bench Pro", 0.227, 0.178, 0.049),
+    BenchmarkScore("GPT-5", "SWE-bench Pro", 0.231, 0.149, 0.082),
+    BenchmarkScore("Gemini 3.1 Pro", "SWE-bench Pro", 0.219, 0.161, 0.058),
+]
+
+for s in scores:
+    print(f"{s.model}: 公开 {s.public_score:.1%} → 私有 {s.private_score:.1%} "
+          f"（差距: {s.contamination_gap:.1%}，可靠性: {s.reliability}）")
+```
+
+GPT-5 在更难的 Pro 基准上 8.2 个百分点的差距最为引人注目。如果我们假设在更简单的 Verified 基准上存在比例相当的污染效应（其中绝对分数更高），则 SWE-bench Verified 上真实的未污染性能实质上低于报告的 80-90% 区间。
+
+## SWE-bench Pro 的设计：为何更难被污染
+
+Scale AI 的 SWE-bench Pro 通过四项结构性变化解决污染问题：
+
+**私有留存测试集。** 一半基准测试从不公开发布。公开排行榜分数在公开半部分上计算，私有半部分由 Scale AI 独立评估。模型无法在它们从未见过的测试用例上被训练。
+
+**活跃仓库采样。** 任务从截止日期后仍有提交活动的活跃维护仓库中提取，排除了最可能在预训练数据中过度出现的高流量仓库。
+
+**多语言覆盖。** SWE-bench Verified 以 Python 为主（Django、scikit-learn、matplotlib、numpy）。SWE-bench Pro 覆盖 123 种编程语言，包括许多预训练覆盖稀疏的低资源语言。仅通过记忆 Python 模式获得高分的模型在分布转变时表现下降。
+
+**Issue 自然性。** SWE-bench Verified 的任务经过筛选以满足客观可验证性——描述清晰、测试覆盖充分。SWE-bench Pro 包含需要消歧义、测试覆盖不完整、且与活跃仓库中实际提交 issue 的分布相符的任务。
+
+## 性能差距为何在结构上是可预测的
+
+污染效应并非 SWE-bench 独有，而是大规模预训练工作方式与基准构建方式相结合的必然结果。
+
+每个测试来自公开来源的基准测试都面临同样的压力：测试集是固定的，训练数据随时间扩展并越来越多地与测试分布重叠，模型开发者有经济动机获得高基准分数。即使没有刻意过拟合，预训练数据积累的自然演进也会推高基准分数，而这种增长超出了真实能力改进的速度。
+
+这是 Goodhart 定律在 ML 基准测试中的具体体现：当一个度量成为目标时，它就不再是好的度量。
+
+```python
+def goodhart_degradation(
+    benchmark_age_months: int,
+    training_data_growth_rate: float = 0.15,  # 每月 15%
+    contamination_sensitivity: float = 0.8,    # 基准对污染的敏感度
+) -> float:
+    """
+    估计报告性能中有多少比例反映的是污染而非真实能力。
+    
+    基准年龄越大 → 与训练数据的重叠越多 → 污染比例越高。
+    """
+    overlap_fraction = 1 - (1 - contamination_sensitivity) ** (
+        training_data_growth_rate * benchmark_age_months
+    )
+    return overlap_fraction
+
+
+# SWE-bench Verified 于 2024 年底发布
+# 到 2026 年 4 月，已公开约 18 个月
+contamination_fraction = goodhart_degradation(benchmark_age_months=18)
+print(f"估计污染比例：{contamination_fraction:.1%}")
+# 粗略估计：报告增益的 20-35% 可能反映污染
+```
+
+正确的应对不是停止使用基准测试，而是构建在结构上对这种动态具有抵抗力的基准测试：
+
+- **私有评估**：留存测试用例，从不公开，独立评估
+- **动态基准**：定期用从近期来源提取的新测试用例替换旧用例
+- **分布转变测试**：在不同于训练分布的分布上评估，若性能大幅下降则说明原始分数虚高
+- **行为评估**：衡量 Agent 实际做了什么，而非输出了什么——生成的补丁是否真正修复了各种输入下的报告行为，而不仅仅通过了特定测试
+
+## SWE-bench Pro 的 17-22% 实际意味着什么
+
+SWE-bench Pro 更难任务上的性能数字（私有集 17-22%）将能力置于上下文中。这些是前沿模型，在研究充分的任务类型（仓库级别的错误修复）上，能够访问整个仓库，工具调用无限制，可以多次重试。
+
+17-22% 意味着大约每 5-6 个任务中有 1 个被正确解决。剩余 80% 要么生成了错误的补丁，要么生成的补丁通过了部分测试但遗漏了实际问题。
+
+在 SWE-bench Verified 上（更简单、Python 为主、现已被污染），报告的 80-90% 分数是高估。考虑到 Pro 基准上的污染因素，对 Verified 难度任务的真实泛化性能更合理的估计约为 40-60%——与那些报告诚实评估方法的基于 Scaffolding 的 Agent 系统结果一致。
+
+这不意味着这种能力没有价值。在精心指定的、测试可验证的单仓库 Bug 上达到 40-60%，对开发工具确实有价值。但这与"AI 现在能以高级工程师水平完成软件工程任务"是不同的主张——后者需要在工程任务实际分布上的性能，而非筛选过的、可验证的、精心指定的子集。
+
+## SWE-rebench：活体变异测试
+
+SWE-rebench 排行榜提供了对污染问题的独立应对：应用"基准变异"——将干净的 SWE-bench issue 转化为更嘈杂、规格不完整的查询，以更好地匹配真实的错误报告。
+
+变异过程引入：模糊的代词引用（"它失败了"而非具体命名函数）、隐含但未陈述的缺失上下文、在无关内容中嵌入相关 Bug 的多问题描述、匹配 GitHub issue 风格而非基准清理描述的口语化语言。
+
+在变异基准上的性能比 SWE-bench Pro 私有集所显示的下降更多。在某些配置中，报告的性能高估超过 50%：在 Verified 上报告 60% 的系统在同样任务的变异版本上可能只达到 25-30%。
+
+含义：在清洁、精心指定的任务描述上测试的基准系统性高估了在工程任务实际分布上的性能，这与污染效应无关。污染和规格清洁是基准膨胀的两个独立来源，SWE-bench Verified 两者兼而有之。
+
+## 对研究和实践的影响
+
+**对学术 ML 研究者：** 污染发现意味着 2024-2026 年期间报告 SWE-bench Verified 最先进性能的论文需要重新评估。这一时期的性能改进混合了真实的能力提升和基准饱和。区分两者需要在 SWE-bench Pro 私有集或同等留存评估上的结果。审稿人应要求对抗污染基准上的性能证据，而非仅仅是排行榜分数。
+
+**对部署 Coding Agent 的实践者：** 私有集数字（Pro 难度任务上的 17-22%）是生产 Agent 性能更现实的先验，而非 Verified 上报告的 80-90%。围绕保守估计构建部署期望。包含验证循环、人工审查门控和回归测试套件的 Agent 架构不是过度谨慎——而是对高失败率的适当应对。
+
+**对构建 Agent 评估基础设施的团队：** 可信赖的 Coding 基准的结构要求现已明确：私有留存评估、带时间截止的活跃仓库采样、多语言覆盖，以及行为验证而非测试套件作为神谕。不满足这些标准的评估基础设施应被视为开发信号，而非生产就绪门控。
+
+## 最重要的部分
+
+污染发现不否定自主 Coding Agent 的价值。使用精心上下文选择、验证循环和故障定位的基于 Scaffolding 的系统确实能解决大部分精心指定的、测试可验证的 Bug。这是真实的能力，也是有用的能力。
+
+它所否定的是特定推断："SWE-bench Verified 80-90%"证明这种能力延伸到一般软件工程分布。这个推断是错误的。基准测试衡量的是真实能力与数据重叠的组合，只有私有集评估才能将两者分离。
+
+更有用的框架：将私有集数字作为诚实的能力估计，为高失败率和强制验证的世界设计 Agent 系统，将基准进展用作方向性信号而非绝对能力主张。
+
+基准坏了。能力是真实的，但形态与数字所暗示的不同。这两件事同时成立。
+
+---
+
+*参考资料：[SWE-bench Pro — OpenReview](https://openreview.net/forum?id=9R2iUHhVfr)；[SWE-rebench 排行榜](https://swe-rebench.com/)；[Epoch AI SWE-bench Verified 分析](https://epoch.ai/benchmarks/swe-bench-verified)；OpenAI 污染审计（2026 年 4 月）；Scale AI SWE-bench Pro 方法论文档。*

@@ -1,0 +1,211 @@
+---
+title: "Four-Layer Agent Architecture"
+description: "Rules, Skills, Agents, Hooks — a production pattern for structuring AI coding assistants that separates policy from capability from execution."
+publishDate: "2026-04-15"
+tags: [agent-systems, architecture, claude-code, engineering, design-patterns]
+category: engineering
+language: en
+draft: false
+---
+
+After six months of building and iterating on AI coding agent configurations, a pattern has emerged that I haven't seen documented elsewhere. Every mature agent setup I've encountered — my own Claude Code configuration, comparable Codex CLI setups, Gemini CLI workspaces — converges on four distinct layers, each handling a different concern. The layers are: Rules, Skills, Agents, and Hooks.
+
+This isn't a framework proposal. It's a description of what happens when you take agent-assisted development seriously enough to need structure. The four layers emerge because they solve four different problems, and conflating any two of them creates maintenance headaches that compound over weeks of use.
+
+## The Four Layers
+
+### Layer 1: Rules — Policy That's Always Active
+
+Rules are global constraints that apply to every interaction. They don't teach the agent how to do something — they define what "acceptable" looks like across all tasks.
+
+```
+~/.claude/rules/
+  common/
+    coding-style.md    # immutability, file size limits, error handling
+    security.md        # no hardcoded secrets, input validation, OWASP
+    testing.md         # 80% coverage minimum, TDD workflow
+    git-workflow.md    # conventional commits, branch strategy
+  python/
+    coding-style.md    # PEP 8, type hints, ruff/black
+    testing.md         # pytest, coverage config
+  golang/
+    coding-style.md    # gofmt, accept interfaces return structs
+    testing.md         # table-driven tests, race detector
+```
+
+The key design decision: rules are **layered by specificity**. Common rules establish universal principles (immutability, error handling). Language-specific rules extend them with concrete tools and patterns. A Python rule file references its common counterpart and adds `ruff check .` and `mypy src/` as verification commands.
+
+Rules answer: "What standards must all work meet?" They're loaded into every conversation context, consuming a fixed token budget. A well-designed rule set is under 2,000 tokens total — enough to set constraints without crowding out working memory.
+
+The anti-pattern is putting procedural instructions in rules. "Always run tests after editing" is a rule. "Here's how to write a pytest fixture for database connections" is not — that belongs in Skills.
+
+### Layer 2: Skills — Deep Knowledge, On Demand
+
+Skills are detailed reference material activated when a specific task type is detected. Unlike rules (always loaded), skills are loaded selectively to preserve context window space.
+
+A production configuration might have 30+ skills covering:
+
+```
+Research:     research-ideation, citation-verification, results-analysis
+Writing:      ml-paper-writing, review-response, writing-anti-ai
+Development:  git-workflow, bug-detective, architecture-design, tdd-workflow
+Design:       frontend-design, ui-ux-pro-max, web-design-reviewer
+```
+
+Each skill is a self-contained document with frontmatter declaring when it should activate:
+
+```yaml
+---
+name: bug-detective
+description: >
+  Debugging and error investigation. Use when the user reports
+  errors, exceptions, unexpected behavior, or asks to investigate.
+---
+```
+
+The agent evaluates incoming requests against skill descriptions and loads matching skills before responding. This is the critical difference from rules: skills are **demand-loaded**, not always-present. A 3,000-token TDD workflow skill only occupies context when writing tests. A 5,000-token paper-writing skill only loads when drafting academic content.
+
+Skills answer: "How should I approach this specific type of task?" They're the equivalent of pulling a reference manual off the shelf — you don't carry every manual at all times.
+
+The skill activation pattern looks like this in practice:
+
+```
+User: "Fix this authentication bug"
+
+Agent thinks:
+  - bug-detective skill matches → load it
+  - security-review skill matches → load it
+  - tdd-workflow might apply → load it
+
+Context now contains:
+  [Rules: ~2K tokens] + [3 Skills: ~8K tokens] + [Code: variable]
+```
+
+### Layer 3: Agents — Specialized Execution Contexts
+
+Agents are isolated subprocesses with their own context windows, tool access, and behavioral constraints. They handle tasks that benefit from separation of concerns — either because the task is large enough to warrant its own context, or because the task requires a different perspective than the orchestrator.
+
+```python
+# Conceptual agent registry
+AGENTS = {
+    "code-reviewer":       {"focus": "quality, security, maintainability"},
+    "build-error-resolver": {"focus": "minimal diffs to fix build failures"},
+    "tdd-guide":           {"focus": "test-first methodology, coverage"},
+    "architect":           {"focus": "system design, module boundaries"},
+    "refactor-cleaner":    {"focus": "dead code removal, consolidation"},
+    "bug-analyzer":        {"focus": "execution flow tracing, root cause"},
+}
+```
+
+The defining property of agents versus skills: agents run in **isolated contexts**. When the orchestrator spawns a code-reviewer agent, that agent gets its own conversation with its own loaded rules and skills, operates on the codebase independently, and returns a structured result. The orchestrator's context isn't polluted with the reviewer's intermediate reasoning.
+
+This matters at scale. A code review that examines 15 files generates thousands of tokens of analysis. If that analysis happened in the main context, it would push out working memory for the next task. Agent isolation keeps the orchestrator's context clean.
+
+The practical trigger rules:
+
+| Event | Agent | Why Separate Context |
+|-------|-------|---------------------|
+| Code written | code-reviewer | Review findings shouldn't clutter implementation context |
+| Build fails | build-error-resolver | Error diagnosis is a different reasoning mode |
+| New feature | tdd-guide | Test scaffolding benefits from fresh context |
+| Complex request | architect | Design decisions need space for alternatives |
+
+Agents can also run in **parallel** when their tasks are independent:
+
+```
+# Three independent reviews, launched simultaneously
+Agent 1: security-reviewer on auth module
+Agent 2: code-reviewer on API endpoints
+Agent 3: refactor-cleaner scanning for dead code
+
+# Results aggregated by orchestrator
+```
+
+### Layer 4: Hooks — Event-Driven Automation
+
+Hooks are shell commands triggered by system events. They bridge the gap between the agent's conversational mode and the deterministic automation that production workflows require.
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "command": "node security-guard.js",
+        "description": "Block writes containing secrets or dangerous patterns"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "command": "ruff check --fix $FILE && black $FILE",
+        "description": "Auto-format Python files after modification"
+      }
+    ],
+    "Stop": [
+      {
+        "command": "node session-summary.js",
+        "description": "Generate work log on session end"
+      }
+    ]
+  }
+}
+```
+
+Hooks answer: "What should happen automatically, without the agent deciding?" This is the crucial distinction from the other three layers. Rules tell the agent what's acceptable. Skills tell it how to approach tasks. Agents execute specialized work. Hooks execute **regardless of what the agent decides to do**.
+
+A security-guard hook that blocks secret writes doesn't depend on the agent remembering to check for secrets. A formatter hook that runs after every file edit doesn't depend on the agent remembering to format. The automation is structural, not cognitive.
+
+The three hook types map to a lifecycle:
+
+- **PreToolUse**: Validation before action (security checks, parameter sanitization)
+- **PostToolUse**: Cleanup after action (formatting, linting, type checking)
+- **Stop**: Session finalization (work summaries, stale file detection)
+
+## Why Four Layers, Not Three or Five
+
+Each layer addresses a different failure mode:
+
+| Without This Layer | Failure Mode |
+|---|---|
+| Rules | Agent drifts from standards across conversations |
+| Skills | Agent gives shallow advice on specialized tasks |
+| Agents | Main context overflows on complex multi-step work |
+| Hooks | Deterministic checks depend on agent memory |
+
+Collapsing Rules into Skills means standards aren't always active — the agent might forget to check for secrets if the security skill isn't loaded. Collapsing Agents into the main context means every sub-task's reasoning competes for the same token budget. Collapsing Hooks into Rules means automation depends on the agent interpreting and following instructions rather than executing deterministically.
+
+You could argue for a fifth layer — something like "Memory" for cross-session persistence. In practice, memory is an orthogonal concern that cuts across all four layers rather than sitting alongside them. Rules persist in files. Skills persist in files. Agent configurations persist in files. Hooks persist in configuration. Conversation-level memory (what happened last session) is a different mechanism entirely.
+
+## Token Budget Architecture
+
+The practical constraint driving this design is the context window. Even with 1M tokens available, context is not free — every token of configuration is a token not available for code, reasoning, or tool output.
+
+```
+Layer       | Loaded When        | Typical Budget  | Persistence
+------------|--------------------|-----------------|-----------
+Rules       | Always             | 1,500-2,500     | File-based
+Skills      | On demand          | 2,000-5,000 ea. | File-based
+Agents      | On spawn           | Own context      | Subprocess
+Hooks       | On event           | 0 (external)     | Config JSON
+```
+
+Rules occupy a fixed budget — they're the "tax" on every conversation. Skills are variable — the system loads 0-4 skills depending on the task, adding 0-20K tokens. Agents get their own context windows entirely. Hooks consume zero tokens in the agent's context because they execute externally.
+
+This layered loading means a simple task ("rename this variable") uses ~2K tokens of configuration overhead. A complex task ("implement this feature with TDD, review it, and verify the build") might use ~15K tokens of configuration across rules + skills, plus spawn 2-3 agents with their own contexts.
+
+## Building Your Own Four-Layer Stack
+
+If you're setting up an agent-assisted development workflow from scratch:
+
+**Start with Rules.** Write the 5-10 constraints that apply to all work in your project. Keep them under 2,000 tokens total. Common starting points: coding style, git workflow, security basics, testing requirements.
+
+**Add Skills as you hit depth limits.** When you notice the agent giving shallow advice on a topic you care about (testing strategy, debugging methodology, paper writing), create a skill for it. Each skill should be self-contained and activatable by description matching.
+
+**Introduce Agents when context overflows.** The signal is when multi-step tasks start losing coherence — the agent forgets earlier decisions, contradicts itself, or produces lower-quality output on step 5 than step 1. Spawn specialized agents for the steps that benefit from isolation.
+
+**Add Hooks last.** Hooks are for automating what you've caught yourself forgetting — or what you've caught the agent forgetting. Every time you think "I should have formatted that file" or "I should have checked for secrets," that's a hook waiting to be written.
+
+The four-layer pattern isn't prescriptive about tooling. It works with Claude Code's `.claude/` directory structure, with Codex CLI's configuration, with Gemini CLI's setup, or with any agent framework that separates policy from execution. The layers are architectural, not implementation-specific.
+
+What matters is the separation: policy (Rules) from knowledge (Skills) from execution (Agents) from automation (Hooks). Collapse any two and you'll feel the pain within a week of daily use.

@@ -1,0 +1,145 @@
+---
+title: "AutoResearch: 700 Experiments on One GPU in Two Days"
+description: "Karpathy's autonomous research loop ran 700 ML experiments with 630 lines of code. Here's what worked and what breaks."
+publishDate: "2026-04-15"
+tags: [autonomous-research, agents, Karpathy, experiment-automation, agentic-engineering]
+category: engineering
+language: en
+draft: false
+---
+
+In March 2026, Andrej Karpathy described a project called AutoResearch: a single markdown prompt, approximately 630 lines of training code, one GPU, and two days of wall-clock time. The system ran 700 experiments autonomously and surfaced 20 optimizations that measurably improved training. No human intervened during the run.
+
+This is not a new idea in principle. Automated hyperparameter search, neural architecture search, and AutoML have existed for a decade. What makes AutoResearch different is not the concept but the economics: it costs almost nothing to run, requires minimal infrastructure, and produces interpretable results without a dedicated ML engineering team.
+
+The shift is about what happens when coding agents become cheap enough to treat experiments as disposable.
+
+## The Architecture: Deliberately Minimal
+
+AutoResearch's design is aggressively simple. The system has three components:
+
+**1. A prompt document.** A single markdown file describing the research question, the experimental protocol, and the criteria for what counts as an improvement. Karpathy's version targeted training efficiency — finding modifications to a standard training loop that reduce loss per compute step.
+
+**2. A training harness.** ~630 lines of Python implementing a standard small-model training loop. The harness exposes a fixed set of modification points: learning rate schedule, optimizer configuration, data preprocessing, architecture tweaks, regularization. Each experiment modifies one or a small number of these points.
+
+**3. A coding agent.** An LLM (running locally or via API) that reads the prompt, proposes a modification, writes the code change, runs the experiment, reads the results, and decides what to try next. The agent operates in a loop: propose → implement → train → evaluate → log → repeat.
+
+```python
+# Pseudocode for the AutoResearch loop
+class AutoResearchLoop:
+    def __init__(self, prompt_path: str, harness_path: str):
+        self.prompt = read_markdown(prompt_path)
+        self.harness = load_harness(harness_path)
+        self.results_log: list[ExperimentResult] = []
+
+    def run(self, n_experiments: int = 700):
+        for i in range(n_experiments):
+            # Agent reads prompt + past results
+            context = self.prompt + summarize(self.results_log[-20:])
+
+            # Agent proposes and implements a modification
+            modification = agent.propose(context)
+            patched_harness = agent.implement(self.harness, modification)
+
+            # Run the experiment
+            result = patched_harness.train_and_evaluate()
+
+            # Log results for future context
+            self.results_log.append(result)
+
+            # Agent decides: explore new direction or refine current one
+            if result.improvement > threshold:
+                self.harness = patched_harness  # Keep the improvement
+```
+
+The critical design choice: the agent sees its own history. Each iteration, the agent receives a summary of recent experiments (not all 700 — that would overflow context). This creates a feedback loop where the agent can build on successful modifications and avoid repeating failures.
+
+## Why 700 Experiments for $50
+
+The economics are the real story. Running 700 small-model training experiments on a single GPU costs roughly $50 in electricity (or less if you're using a consumer GPU you already own). Each experiment trains for a few minutes. The total wall-clock time of ~48 hours comes from running experiments sequentially with agent inference overhead between them.
+
+Compare this to the traditional approach:
+
+| Approach | Experiments | Duration | Cost | Human Hours |
+|----------|------------|----------|------|-------------|
+| Manual grad student | 20-50 | 2 weeks | ~$200 | 40+ |
+| Grid search (Weights & Biases) | 100-200 | 3 days | ~$500 | 8 (setup) |
+| AutoResearch | 700 | 2 days | ~$50 | 0.5 (prompt writing) |
+
+The cost advantage comes from three factors: (1) small model = fast experiments, (2) local agent = no API costs for the search process, (3) no human iteration overhead. A grad student doesn't just run experiments — they read papers, attend meetings, write up results, debug infrastructure. The agent does none of that, which is both its advantage and its limitation.
+
+## The 20 Optimizations: What the Agent Found
+
+Karpathy reported that AutoResearch surfaced 20 modifications that improved training, out of 700 attempted. That's a 2.9% hit rate. The improvements ranged from well-known techniques (the agent independently rediscovered learning rate warmup variants) to genuinely novel combinations.
+
+Categories of discoveries:
+
+**Rediscoveries (expected).** The agent found that cosine annealing with warm restarts outperforms linear decay. It found that gradient clipping at specific thresholds prevents loss spikes. These aren't novel, but the agent found them without being told about them — verifying that the search process works.
+
+**Combinations (interesting).** Several improvements came from combining techniques in ways that aren't standard. For example, a specific interaction between batch size scheduling and learning rate warmup that produced a 3% improvement over either technique alone. These combinatorial insights are hard for humans to find because the search space is exponential.
+
+**Surprising findings (valuable).** A small number of modifications produced improvements that weren't easily explained by existing theory. These are the discoveries that justify the entire apparatus — the ones a human researcher might have taken months to stumble upon, or might never have tried.
+
+## Where AutoResearch Breaks Down
+
+The honest assessment matters more than the success story. AutoResearch works in a narrow regime, and understanding the boundaries is more valuable than celebrating the results.
+
+**It requires a verifiable signal.** The entire loop depends on having a scalar metric (training loss, validation accuracy) that the agent can evaluate automatically. Research questions without clear metrics — "does this architecture generalize better?" or "is this representation more interpretable?" — can't be searched this way. Most interesting research questions don't reduce to a single number.
+
+**It searches locally.** The agent makes incremental modifications to an existing harness. It can't propose a fundamentally different architecture, rethink the problem formulation, or decide that the entire research direction is wrong. AutoResearch optimizes within a paradigm; it doesn't create new paradigms.
+
+**Novelty detection is absent.** The agent has no mechanism for recognizing when it has found something genuinely new versus when it has found a well-known technique. It can't search the literature, can't assess novelty relative to prior work, and can't determine whether a finding is publishable. A human researcher still needs to evaluate the output.
+
+**Context window limits compounding.** The agent only sees the last ~20 experiments in its context window. This means it can't build on long chains of incremental improvements effectively. After 100+ experiments, the agent may revisit ideas it already tried because it has forgotten the early results. This is a fundamental limitation of current LLM architectures for cumulative research.
+
+## The "Claws" Layer: Orchestration Above Agents
+
+Karpathy also described a concept he called "Claws" — an orchestration layer that sits above individual LLM agents and handles scheduling, persistence, and cross-agent coordination. In the AutoResearch context, Claws would:
+
+- Maintain a persistent knowledge base of all experiment results (solving the context window problem)
+- Schedule experiments across multiple GPUs or machines
+- Coordinate multiple research agents exploring different directions in parallel
+- Apply stopping criteria based on diminishing returns
+
+This maps directly to the multi-agent orchestration patterns emerging in production agent systems. The parallel to MCP (for tool integration) and A2A (for agent-to-agent communication) is clear: AutoResearch needs both a way to invoke tools (run training, read logs) and a way to coordinate multiple agents (share findings, avoid duplicate work).
+
+```
+Architecture of a production AutoResearch system:
+
+                    ┌──────────────┐
+                    │   Claws       │  Orchestration, persistence,
+                    │   Layer       │  scheduling, stopping criteria
+                    └──────┬───────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+        ┌─────┴─────┐┌────┴────┐┌─────┴─────┐
+        │  Agent A   ││ Agent B ││  Agent C   │
+        │ (LR search)││(arch)   ││(data aug)  │
+        └─────┬─────┘└────┬────┘└─────┬─────┘
+              │            │            │
+        ┌─────┴────────────┴────────────┴─────┐
+        │         Training Harness             │
+        │    (shared codebase, GPU pool)        │
+        └──────────────────────────────────────┘
+```
+
+## What This Means for Research Practice
+
+AutoResearch doesn't replace researchers. It replaces a specific activity that researchers do: the tedious, incremental, low-creativity work of trying variations on an existing setup and recording which ones help. This is the research equivalent of boilerplate code — necessary but not where insight comes from.
+
+The implications for research workflows:
+
+**1. Baseline optimization becomes automated.** Before starting "real" research, you can now run 500 experiments to establish a strong baseline automatically. This eliminates the common failure mode where a paper's novelty is undermined by a weak baseline that a reviewer improves with a simple hyperparameter change.
+
+**2. Negative results accumulate.** Of the 700 experiments, 680 didn't help. That's valuable information that traditionally goes unrecorded. An automated system logs every failure, creating a searchable database of "things that don't work" for a given task.
+
+**3. The research bottleneck shifts.** If experiment execution is cheap and automated, the bottleneck moves to experiment design (what questions to ask), novelty assessment (is this finding new?), and narrative construction (how to explain the result). These are deeply human capabilities that LLMs currently cannot replicate.
+
+The minimum viable autonomous research loop exists today. It's cheap, it works for constrained optimization problems, and it will get better as models improve. The harder question — whether autonomous systems can do open-ended research — remains firmly open.
+
+## References
+
+- Karpathy, A. "AutoResearch: Autonomous ML Experimentation." March 2026. Blog post and GitHub gist.
+- Karpathy, A. "On Code Agents, AutoResearch, and the Self-Improvement Loopy Era of AI." Recorded talk, March 2026.
+- Lu, C. et al. "The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery." arXiv:2408.06292, 2024.

@@ -1,0 +1,140 @@
+---
+title: "The EEG-to-Text Reality Check: Decoding or Memorizing?"
+description: "A Nature paper shows many EEG-to-text models perform equally well on noise inputs. The field needs harder controls before claiming brain decoding."
+publishDate: "2026-04-16"
+tags: [BCI, EEG, neural-decoding, NLP, brain-computer-interface, evaluation]
+category: research
+language: en
+draft: false
+---
+
+The premise is seductive: record someone's brain activity with a non-invasive EEG cap while they read or listen to sentences, then decode the neural signals back into text. If this works, it would transform brain-computer interfaces — no surgery, no implants, just a wearable device that reads your thoughts.
+
+Over the past two years, a wave of papers has reported increasingly impressive EEG-to-text results. BLEU scores climbing. Semantic similarity metrics looking reasonable. Architecture diagrams showing EEG encoders feeding into pretrained language model decoders. The narrative has been one of steady progress.
+
+A paper in *Scientific Reports* (2026) disrupts that narrative with a simple experiment: feed noise into the EEG encoder and check whether the decoder's output quality actually degrades. For several prominent models, it doesn't. The decoder produces plausible text regardless of whether the input is genuine brain activity or random noise — which means the model isn't decoding neural signals. It's memorizing the training set.
+
+## The Noise Test
+
+The evaluation methodology from Jo et al. is straightforward. Take a trained EEG-to-text model. Replace the EEG input with Gaussian noise of matching dimensionality. Run inference. Compare the output quality metrics (BLEU, ROUGE, BERTScore) against the model's performance on real EEG data.
+
+If the model is genuinely extracting linguistic information from neural signals, noise inputs should produce garbage outputs — random word sequences with no semantic coherence. If the model has memorized the mapping between training examples and their text labels, noise inputs will still produce plausible text because the decoder has learned to generate likely sentences from the training distribution regardless of the encoder's input.
+
+The results are sobering. Several models showed minimal performance degradation when switching from real EEG to noise. Some metrics actually *improved* on noise inputs, suggesting the EEG signal was adding noise to the decoder's already-memorized outputs rather than providing useful information.
+
+```
+Hypothetical example (numbers simplified to illustrate the pattern):
+
+Model           | Real EEG BLEU | Noise BLEU | Delta
+----------------|---------------|------------|-------
+Model A         |    42         |    39      |  -3
+Model B         |    36         |    34      |  -2
+No-encoder base |     —         |    34      |   —
+
+When noise performance ≈ real performance,
+the EEG input is not contributing meaningful signal.
+See the original paper for actual experimental numbers.
+```
+
+## Why This Happens: The Decoder Dominance Problem
+
+The architectural pattern in most EEG-to-text systems follows a template: EEG encoder (CNN, transformer, or hybrid) maps neural signals to an embedding space, which then conditions a pretrained language model decoder (typically BART or GPT-2) to generate text.
+
+The problem is that pretrained language decoders are extremely powerful sequence generators on their own. GPT-2 can produce fluent, grammatical English without any conditioning signal at all. When you fine-tune such a decoder on a small EEG-text paired dataset (typically a few hundred sentences), the decoder quickly learns the distribution of target sentences. The conditioning signal from the EEG encoder becomes a minor perturbation on the decoder's already-strong prior.
+
+This is the decoder dominance problem: the language model component is so much more capable than the EEG encoder that the system's output quality is almost entirely determined by the decoder, not the encoder. The EEG signal gets effectively ignored during inference because the decoder can produce the expected outputs without it.
+
+The problem is amplified by standard evaluation metrics. BLEU and ROUGE measure n-gram overlap with reference sentences. If the training set is small and the decoder has memorized it, the model can achieve high BLEU scores by producing memorized sentences that happen to match the references — regardless of what the EEG input contains.
+
+## The Scale Counterargument
+
+A separate line of work pushes back on this pessimism — but with a critical difference in methodology. A 2025-2026 study in Nature Communications by Défossez et al. demonstrates genuine word-level decoding from non-invasive brain recordings, but with dramatically different experimental design:
+
+- **723 participants** (vs. the typical 10-20 in most EEG-to-text papers)
+- **5 million words** of recording data
+- **3 languages** (English, French, Dutch)
+- **MEG and EEG** compared directly
+- **Proper held-out evaluation** with participants never seen during training
+
+The key findings: MEG significantly outperforms EEG for word-level decoding. Reading is easier to decode than listening. And crucially, performance degrades appropriately when control conditions are applied — the decoder does not produce plausible text from noise inputs.
+
+The difference is instructive. The large-scale study succeeds because it has enough data to train the encoder to extract genuine neural signal, enough participants to prevent memorization of individual brain patterns, and proper controls to verify that the encoder contributes meaningful information.
+
+## What Makes a Credible EEG-to-Text System
+
+The noise test exposes a set of minimum requirements that any EEG-to-text claim should satisfy:
+
+**Noise baseline is mandatory.** Every EEG-to-text paper should report performance with noise inputs replacing EEG. If the delta is small, the model isn't decoding — it's memorizing. This should be a table-stakes requirement for reviewers.
+
+**Encoder contribution must be quantified.** Beyond the noise test, ablation studies should measure how much the encoder's output influences the decoder's generations. Information-theoretic metrics (mutual information between encoder output and decoder hidden states) can quantify whether the conditioning signal is being used.
+
+**Subject generalization must be tested.** Training and testing on the same participants allows the model to memorize individual neural patterns. Leave-one-subject-out evaluation is the minimum standard. Ideally, the test subjects should never appear in training data.
+
+**Dataset scale matters.** Small datasets (< 1000 sentence pairs) with powerful pretrained decoders will almost always produce memorization rather than genuine decoding. The field needs larger datasets with more participants, more diverse stimuli, and longer recording sessions.
+
+**Metric selection beyond BLEU.** BLEU measures surface-level n-gram overlap and can be gamed by memorization. Semantic metrics (BERTScore), information-theoretic measures, and task-specific evaluations (can the decoded text be used to perform a downstream task?) provide more meaningful assessment.
+
+```python
+# Minimum evaluation protocol for EEG-to-text claims
+evaluation_protocol = {
+    "noise_baseline": {
+        "method": "Replace EEG with Gaussian noise, same dimensionality",
+        "requirement": "Real EEG must significantly outperform noise (p < 0.01)",
+    },
+    "subject_generalization": {
+        "method": "Leave-one-subject-out cross-validation",
+        "requirement": "Performance on held-out subjects within 80% of seen subjects",
+    },
+    "encoder_ablation": {
+        "method": "Freeze decoder, measure MI between encoder output and decoder states",
+        "requirement": "MI significantly above zero",
+    },
+    "scale_threshold": {
+        "minimum_subjects": 30,
+        "minimum_sentences_per_subject": 200,
+        "minimum_unique_sentences": 1000,
+    },
+}
+```
+
+## The Modality Gap: Why EEG Is Hard
+
+The fundamental challenge is signal quality. Scalp EEG measures the summed electrical activity of millions of neurons, filtered through skull and tissue, at centimeter-scale spatial resolution. The speech-relevant neural signals are buried in noise — muscle artifacts, eye movements, line noise, volume conduction effects.
+
+Compare this to the modalities where brain decoding actually works well:
+
+**Invasive recordings (ECoG, Utah arrays):** Millimeter-scale resolution, direct cortical access. Neuropixels probes record from thousands of individual neurons. The signal-to-noise ratio is orders of magnitude higher. This is why Neuralink's BCI participants can control cursors and type — the signals are clean enough to decode reliably.
+
+**fMRI:** Millimeter-scale spatial resolution through the entire brain volume. The BOLD signal is slow (seconds), limiting temporal resolution, but spatial patterns are rich enough for semantic decoding. Recent work on brain-informed LLM training (using fMRI data as a training signal alongside text) suggests that brain supervision can capture perceptual and associative properties that text-only training misses (see OpenReview:07S1CPoQYP for one such approach).
+
+**MEG:** Millisecond temporal resolution like EEG, but with better spatial resolution and less volume conduction distortion. The Défossez et al. study found MEG consistently outperforms EEG for word-level decoding, confirming that the spatial signal quality is the bottleneck.
+
+EEG sits at the worst point in this tradeoff space: poor spatial resolution, high noise, and no direct cortical access. This doesn't mean EEG-based decoding is impossible — the large-scale studies show it can work — but it means the bar for claiming success must be proportionally higher. The signal is weak, so the evidence must be strong.
+
+## Cross-Modal Transfer: A More Promising Direction
+
+A separate line of research suggests a different path forward for EEG foundation models. Rather than training EEG encoders from scratch on small paired datasets, recent work explores cross-modal knowledge distillation — using foundation models from data-rich modalities (vision, time series) to bootstrap EEG representations.
+
+A March 2026 paper by Li et al. (arxiv:2603.04478) demonstrates Multi-Teacher Distillation Pretraining (MTDP), where vision and time-series foundation models serve as teachers for an EEG student model. The distilled EEG model consistently outperforms models pretrained with standard masked reconstruction objectives.
+
+The logic is compelling: if your modality has low SNR and limited data (EEG), borrowing learned representations from modalities with high SNR and abundant data (vision, general time series) can provide a stronger initialization. The distilled model starts with a richer feature space than it could learn from EEG data alone.
+
+This doesn't solve the decoding problem directly, but it addresses a prerequisite: getting a strong enough encoder that its output actually influences the decoder. If the encoder produces richer, more discriminative representations, the decoder is more likely to use them rather than falling back on its own memorized priors.
+
+## Where This Leaves the Field
+
+The EEG-to-text reality check is uncomfortable but necessary. The field has been publishing results that look impressive on standard metrics but don't survive basic sanity checks. The noise test should become a standard evaluation requirement — it's cheap to run and immediately reveals whether a model is decoding or memorizing.
+
+The path forward likely involves three shifts:
+
+**Larger datasets with more participants.** The era of 10-subject, 500-sentence EEG-text datasets needs to end. Genuine decoding requires enough data that memorization is impractical. The 723-participant study from Défossez et al. sets a new benchmark for scale.
+
+**Better encoders through transfer learning.** Cross-modal distillation, self-supervised pretraining on large unlabeled EEG datasets, and multi-task training across EEG paradigms can all produce stronger encoders that contribute meaningful signal to the decoder.
+
+**Honest evaluation culture.** The community needs to adopt adversarial evaluation practices — noise baselines, subject generalization tests, encoder contribution metrics — as standard requirements, not optional supplements. Reviewers at NeurIPS, ICML, and specialized BCI venues should flag papers that omit these controls.
+
+Non-invasive brain decoding remains one of the most exciting long-term goals in neuroscience and AI. But the path to getting there runs through rigorous evaluation, not through BLEU scores on memorized datasets. The models that survive the noise test are the ones worth building on.
+
+---
+
+*References: Jo, H. et al. "Evaluating EEG-to-text models through noise-based performance analysis." Scientific Reports 16, 350 (2026). Défossez, A. et al. "Decoding individual words from non-invasive brain recordings." Nature Communications, 2025. Li, C. et al. "Standing on the Shoulders of Giants: Rethinking EEG Foundation Model Pretraining via Multi-Teacher Distillation." arXiv:2603.04478, March 2026.*

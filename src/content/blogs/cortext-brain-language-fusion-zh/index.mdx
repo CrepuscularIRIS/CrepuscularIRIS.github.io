@@ -1,0 +1,135 @@
+---
+title: "CorText：当你可以和脑扫描对话"
+description: "将 fMRI 脑活动投影到 LLM 隐空间，通过自然语言查询实现 zero-shot 神经解码——无需任务特定的 decoder。"
+publishDate: "2026-04-15"
+tags: [BCI, fMRI, LLM, foundation-models, neural-decoding, neuroscience, cross-modal]
+category: research
+language: zh
+draft: false
+---
+
+传统神经解码的标准流程遵循一套固定模式：在受控实验范式下采集脑数据，训练一个任务特定的 decoder（图像分类、语音识别、情绪检测），然后将这个 decoder 部署在它被训练的那个任务上。换个任务？重新训练。换个成像协议？重新训练。换一批被试？还是重新训练。
+
+CorText 彻底打破了这个范式——它直接取消了任务特定 decoder 的存在。它不再学习从脑活动到预定义输出空间的映射，而是将 fMRI 激活模式直接投影到大语言模型的隐空间中。投影完成后，你可以用自然语言查询脑状态——"被试正在看什么？"、"这个模式对应什么情绪效价？"、"这是否与听觉处理一致？"——LLM 会基于投影后的神经表征给出回答。
+
+最终效果是：模型能够 zero-shot 泛化到训练阶段从未见过的语义类别。这是核心结论。而实现这一切的架构设计，才是更值得深入探讨的部分。
+
+## 为什么直接投影能行（以及为什么它本不该行）
+
+将 fMRI 投影到 LLM 隐空间，最直觉的质疑是维度失配。一个 fMRI volume 包含约 100,000 个 voxel，时间分辨率约 2 秒。而 LLM 的 embedding 空间通常是约 4,096 维，在 token 级别更新。二者测量的对象根本不同：一个是反映神经群体活动总和的代谢信号代理，另一个是从文本语料中学到的统计规律。
+
+尽管存在这种失配，投影之所以可行，根本原因在于：两种表征都编码了语义结构——只不过到达语义结构的路径不同。大脑通过感官基础和具身经验组织语义知识，LLM 则通过语言上的分布式统计来组织。推动这一研究方向的关键实证发现是：这两种语义组织方式并非彼此独立，它们共享几何结构。
+
+这一点已被早期的对齐工作（Schrimpf et al.、Mitchell et al.）定量证实。他们发现，从大脑对概念的响应中计算出的表征相似性矩阵（representational similarity matrix），与从语言模型 embedding 中计算出的相似性矩阵之间存在显著相关。"Dog" 和 "cat" 在神经响应空间和 LLM embedding 空间中都彼此接近，"Dog" 和 "democracy" 在两个空间中都相距甚远。
+
+CorText 正是利用了这种共享的几何结构。投影过程学习一个从 fMRI 空间到 LLM embedding 空间的线性映射，核心目标是保持概念之间的相对距离。它并不试图重建原始信号——而是将脑状态放置到 LLM 语义流形上正确的邻域中。
+
+```python
+import torch
+import torch.nn as nn
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class ProjectionConfig:
+    fmri_dim: int = 100000       # masking 后的 voxel 数
+    llm_dim: int = 4096          # 目标 embedding 维度
+    hidden_dim: int = 2048       # bottleneck
+    num_subjects: int = 8
+    dropout: float = 0.1
+
+
+class BrainToLanguageProjector(nn.Module):
+    """将 fMRI 激活向量投影到 LLM embedding 空间。
+    
+    架构：被试特定输入层 -> 共享 bottleneck -> 
+    LLM 对齐输出层。被试特定层处理解剖差异；
+    共享层学习跨被试的语义结构。
+    """
+    
+    def __init__(self, cfg: ProjectionConfig):
+        super().__init__()
+        self.subject_encoders = nn.ModuleDict({
+            f"sub_{i}": nn.Linear(cfg.fmri_dim, cfg.hidden_dim)
+            for i in range(cfg.num_subjects)
+        })
+        
+        self.shared_projection = nn.Sequential(
+            nn.LayerNorm(cfg.hidden_dim),
+            nn.GELU(),
+            nn.Dropout(cfg.dropout),
+            nn.Linear(cfg.hidden_dim, cfg.llm_dim),
+            nn.LayerNorm(cfg.llm_dim),
+        )
+    
+    def forward(
+        self, fmri_volume: torch.Tensor, subject_id: int
+    ) -> torch.Tensor:
+        h = self.subject_encoders[f"sub_{subject_id}"](fmri_volume)
+        return self.shared_projection(h)
+```
+
+被试特定输入层在架构上至关重要。跨被试的解剖差异意味着相同的 voxel 索引在不同被试中对应不同的脑区。与其要求解剖归一化（这会引入空间平滑，破坏精细纹理模式），不如让每个被试的 encoder 自行学习从原始 voxel 空间到共享语义表征的映射。
+
+## 训练目标：Contrastive Alignment
+
+投影模块使用 contrastive 目标函数进行训练：在共享 embedding 空间中，拉近匹配的 brain-language 对，推远不匹配的对。
+
+训练阶段，被试在接受扫描的同时观看图像或阅读文本。每个 fMRI volume 与被试当时体验内容的语言描述配对。投影后的 fMRI embedding 应该与对应描述的 LLM embedding 距离接近，而与无关描述的 embedding 距离较远。
+
+```python
+def contrastive_alignment_loss(
+    brain_embeddings: torch.Tensor,   # (batch, llm_dim)
+    text_embeddings: torch.Tensor,    # (batch, llm_dim)
+    temperature: float = 0.07,
+) -> torch.Tensor:
+    """对称 contrastive loss，对齐 brain 和 language 空间。"""
+    brain_norm = nn.functional.normalize(brain_embeddings, dim=-1)
+    text_norm = nn.functional.normalize(text_embeddings, dim=-1)
+    
+    logits = brain_norm @ text_norm.T / temperature
+    
+    labels = torch.arange(logits.size(0), device=logits.device)
+    loss_b2t = nn.functional.cross_entropy(logits, labels)
+    loss_t2b = nn.functional.cross_entropy(logits.T, labels)
+    
+    return (loss_b2t + loss_t2b) / 2
+```
+
+## Zero-Shot 查询：真正的收益
+
+投影器训练完成后，交互模式发生了根本性的转变。你不再需要通过任务特定的分类器做前向传播，而是将脑状态投影到 embedding 空间，然后通过 LLM 的语言接口进行查询。
+
+Zero-shot 能力来自 LLM 预有的语义知识。当投影后的脑 embedding 落在"有水有山的视觉场景"的邻域时，LLM 能够将其描述为湖景——即使训练集中没有任何湖泊图像。投影器学会了将脑活动映射到语义空间的正确区域；LLM 的语言生成能力负责其余部分。
+
+这与一个输出 N 个预定义标签之一的分类器有本质区别。输出词表是无界的，查询可以是任何内容，响应中包含了从未在神经解码训练数据中出现过的世界知识。
+
+## 架构设计的亮点
+
+三个关键设计决策使 CorText 区别于此前的 brain-to-language 工作：
+
+**冻结 LLM 权重。** 语言模型从不在脑数据上微调。只训练投影器。这保留了 LLM 完整的生成能力和世界知识。此前对语言模型在脑数据上微调的方法提高了解码精度，但丧失了泛化能力——模型变得只对训练范式有效。
+
+**Soft prompt 注入。** 脑 embedding 以 soft prompt token 的形式进入 LLM，而非文本描述。这保留了投影中的连续几何信息，而不是通过文本瓶颈将其离散化。
+
+**跨被试训练 + 被试特定 adapter。** 使用共享投影层进行跨被试训练，迫使模型学习被试不变的语义结构。被试特定的输入层处理解剖差异，而共享层捕获大脑表征意义的普遍方式。
+
+## 不可忽视的局限性
+
+时间分辨率的限制是根本性的。fMRI 的采样频率仅约 0.5 Hz（每 2 秒一个 volume）。这意味着 CorText 能描述持续的感知状态——被试在看什么、体验的大致情绪基调——但无法追踪快速的认知动态。刺激后 300ms 峰值的 P300 成分是不可见的。以音节速率展开的语音产生也是不可见的。
+
+这不是架构的局限，而是成像模态的局限。将同样的投影方法扩展到 EEG（毫秒级时间分辨率，但空间分辨率低得多）是显而易见的下一步。
+
+第二个局限是数据规模。Contrastive alignment 需要配对的 brain-language 数据：被试在执行任务的同时接受扫描，并为每个任务条件配上语言描述。获取这类数据的成本极高（fMRI 扫描时间约 $500-1000/小时），速度也很慢。
+
+## 对 BCI 系统的启示
+
+CorText 的架构指向了脑机接口的一条不同发展路径。传统 BCI 流水线要求：(1) 定义目标应用，(2) 设计能引出可区分脑状态的实验范式，(3) 为这些状态训练分类器，(4) 部署。每个新应用都从第 1 步重新开始。
+
+基于 CorText 投影策略的 foundation model 方法则是：(1) 在多种范式下采集多样化的脑数据，(2) 训练一个通用的 brain-to-semantic 投影器，(3) 用任何下游查询部署。新应用只需要新的查询，而不需要新的数据采集或模型训练。
+
+这正是 NLP 领域发生过的转变——从任务特定模型（分别用于情感分析、NER、翻译的独立模型）到通过 prompting 处理所有任务的通用语言模型。这种转变在神经解码中是否可行，取决于共享的 brain-language 几何结构是否足够丰富以支撑多样化的下游查询。
+
+---
+
+*References: CorText 框架建立在 Schrimpf et al. (2021)、Mitchell et al. (2008) 的 brain-language alignment 工作以及 CLIP (Radford et al., 2021) 的 cross-modal contrastive 方法之上。本文综合了截至 2026 年 4 月的 brain-language fusion 最新预印本。*
