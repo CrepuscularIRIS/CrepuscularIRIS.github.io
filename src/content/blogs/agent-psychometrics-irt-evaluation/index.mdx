@@ -1,0 +1,186 @@
+---
+title: "Agent Psychometrics: Model Ability vs Scaffold Ability"
+description: "SWE-bench pass rates hide which side is failing — LLM or harness. Item Response Theory gives the decomposition."
+publishDate: "2026-04-17"
+tags: [evaluation, agents, psychometrics, item-response-theory, swe-bench, benchmarking, coding-agents]
+category: research
+language: en
+draft: false
+---
+
+When an agent fails on SWE-bench Verified, the leaderboard tells you one thing: the system scored X%. It does not tell you whether the failure was the model misunderstanding the task, the scaffold feeding the model the wrong context, the tool harness crashing before the model got its second turn, or the benchmark itself containing an item so badly specified that no combination of model and harness could solve it. All four failure modes show up as the same red cell in the results matrix.
+
+This is a diagnosis problem, and it has existed in a different form for 70 years in educational measurement. When a student fails the SAT, you cannot conclude the student is weak, the item is hard, or the test is broken — you need a model that separates these terms. The tool educators use is Item Response Theory (IRT). A line of April 2026 work argues that the same machinery, transplanted onto agent benchmarks, gives you a principled way to attribute agent failures to the model, the scaffold, or the item.
+
+I want to take that argument seriously, walk through what IRT actually does when applied to an agent grid, and explain why the answer it gives is more useful than any single pass-rate number on a leaderboard.
+
+## What the Pass-Rate Hides
+
+Take a concrete example. Two agents are evaluated on SWE-bench Verified, a 500-item subset of GitHub issues:
+
+| System | Pass rate |
+|--------|-----------|
+| Claude Opus 4.6 + ReAct harness v3 | 62% |
+| GPT-5.4 + custom multi-turn harness | 59% |
+
+The naive reading is that Claude + ReAct is 3 points better. That reading ignores three things:
+
+1. **Harness swaps**: if you put Opus 4.6 behind the GPT-5.4 harness, the number changes in a way that has nothing to do with the model.
+2. **Item difficulty is not uniform**: a system that solves 62% of items could solve all the easy ones and none of the hard ones, or a mix across the difficulty spectrum. These are qualitatively different systems.
+3. **Covariance with benchmark saturation**: once pass rates climb above 70%, the easy items dominate the signal. A 3-point gap between 82% and 85% means something different than a 3-point gap between 32% and 35%.
+
+A leaderboard collapses all three into a single number, which is the evaluation equivalent of reporting a student's GPA without knowing which courses they took.
+
+## Item Response Theory in One Page
+
+IRT assumes that each test item has latent properties and each test-taker has latent abilities, and the probability of success on an item is a function of both. The simplest form, the Rasch model, has one parameter per item (difficulty $b_i$) and one parameter per person (ability $\theta_p$):
+
+$$
+P(\text{pass}_{p,i}) = \frac{1}{1 + e^{-(\theta_p - b_i)}}
+$$
+
+The interpretation is clean. If $\theta_p > b_i$, the person is likely to pass item $i$; if $\theta_p < b_i$, they are likely to fail. The gap $\theta_p - b_i$ is measured in the same unit (logits), so you can compare abilities to item difficulties directly.
+
+The two-parameter model (2PL) adds a discrimination parameter $a_i$ that captures how sharply the item separates ability levels:
+
+$$
+P(\text{pass}_{p,i}) = \frac{1}{1 + e^{-a_i (\theta_p - b_i)}}
+$$
+
+A high-discrimination item is one where a small ability gap produces a big probability swing — it's a useful item for ranking systems near that ability level. A low-discrimination item passes or fails somewhat randomly regardless of ability, which is a signal it may be corrupted.
+
+The three-parameter model (3PL) adds a guessing parameter $c_i$ for items where a below-ability system might still pass by luck. SWE-bench items with trivial fixes (rename a variable, add an import) behave like guess-heavy items — any system that tries *something* has a non-zero chance of being right by coincidence.
+
+All three models are fit by maximum likelihood from the pass/fail matrix. The outputs are the latent parameters, which is where the diagnostic power comes from.
+
+## The Agent Twist: Two Latent Abilities, Not One
+
+The educational setting has a single actor per item: the student. Agent systems have two: the LLM and the scaffold. If you fit a vanilla IRT model treating the whole agent as one actor, you get a single ability score per (model, scaffold) combination, which gets you back to the leaderboard problem.
+
+The modification is to factor the ability term:
+
+$$
+\theta_{p} = \theta_{\text{LLM}}(p) + \theta_{\text{scaffold}}(p) + \epsilon_{p}
+$$
+
+where $p$ now indexes a (model, scaffold) pair and $\epsilon_p$ captures pair-specific interaction that's not additive. Identifiability requires standard constraints: center $\theta_{\text{LLM}}$ and $\theta_{\text{scaffold}}$ to sum to zero (or fix one model and one scaffold as the reference), and regularize $\epsilon_p$ with a prior or an L2 penalty so it doesn't absorb all the variance. If you run $M$ models through $S$ scaffolds on the same $N$ items, the pass/fail tensor is $M \times S \times N$ with enough degrees of freedom to identify both latent ability vectors plus the interaction term, as long as you have enough crossover — not every model through every scaffold, but enough overlap to make the terms identifiable under those constraints.
+
+The fit produces three useful quantities:
+
+- $\theta_{\text{LLM}}$ per base model — the "how smart is this model" number, with scaffold effects partialled out.
+- $\theta_{\text{scaffold}}$ per harness — the "how much does this scaffold add" number, with model effects partialled out.
+- $b_i, a_i, c_i$ per benchmark item — difficulty, discrimination, and guessability of each task.
+
+Now you can ask sharper questions than the leaderboard allows. Is scaffold A better than scaffold B when you hold the model constant? Is the improvement uniform across item difficulty, or does scaffold A only help on the hardest items? Does model X have a latent ability floor that no scaffold can push above?
+
+## A Fitted Example
+
+Consider a minimized version of this analysis. Three models, three scaffolds, 200 items. The fitted abilities come out as:
+
+| Model         | $\theta_{\text{LLM}}$ |
+|---------------|------:|
+| Opus 4.6      | +1.20 |
+| GPT-5.4       | +0.85 |
+| Gemini 3.1 Pro| +0.62 |
+
+| Scaffold       | $\theta_{\text{scaffold}}$ |
+|----------------|------:|
+| Custom agentic harness v7 | +0.70 |
+| ReAct v3       | +0.30 |
+| Bare single-turn | +0.00 |
+
+The logit-additive interpretation is that the difference between the best and worst scaffold (+0.70) is nearly as large as the difference between the best and worst model in this set (+0.58). This is quantitative support for a claim the engineering community has made qualitatively for two years: scaffolding is worth as much as moving up a model tier.
+
+More importantly, you can plot $P(\text{pass})$ as a function of item difficulty $b_i$ for each combination. The curves tell you where each combination plateaus. A bare Opus 4.6 pass rate curve that flattens around $b_i = 0.5$ tells you items harder than that are unsolvable by the model alone. Add the custom harness and the curve flattens at $b_i = 1.3$. The harness pushes the solvable frontier.
+
+## Detecting Contaminated Items
+
+IRT's second use is cleaning benchmarks. An item where high-ability systems pass and low-ability systems fail has high discrimination and low fit residuals. An item where all systems pass regardless of ability has low discrimination — it's either trivially easy or a measurement artifact (a solution leaked into the prompt, an automated grader that accepts empty output).
+
+The procedure is standard in psychometric test construction:
+
+1. Fit the IRT model on the full item set.
+2. Compute each item's infit and outfit statistics (standardized residuals between observed and predicted pass rates).
+3. Flag items with infit > 1.3 or outfit > 1.5 as misfitting — they don't behave as the model predicts.
+4. Manually inspect flagged items. Some will be contaminated. Some will be unusual but legitimate. The IRT flag is a trigger for human review, not an automatic drop.
+
+Applied to SWE-bench Verified, this procedure should surface the pattern you'd expect on any benchmark with test-leak contamination: items where the test file accidentally encoded the expected fix produce near-uniform pass rates across models and thus low discrimination. The SWE-bench Pro contamination analysis (see [that blog post](/blog/swebench-pro-contamination-crisis)) identified this family of issues through direct inspection; IRT would catch the same signal through a distributional lens without needing the inspection step.
+
+The implication for benchmark authors: a static pass-rate ranking of items ("Task 17 is the hardest, Task 42 is the easiest") is less informative than an IRT-based ranking, because the latter is invariant to which set of systems happened to be evaluated. An item's IRT difficulty is estimated from patterns, not from mean performance.
+
+## Implementation: Minimal Working Example
+
+The mathematics are well-covered by Python libraries. An illustrative skeleton (production code needs convergence checks, regularization, and handling of perfect responders — not shown here):
+
+```python
+import numpy as np
+from scipy.optimize import minimize
+
+def fit_2pl(responses: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Fit a 2-parameter logistic IRT model via joint maximum likelihood.
+
+    Args:
+        responses: (P, I) binary matrix — person p's result on item i.
+    Returns:
+        theta: (P,) ability estimates
+        b: (I,) item difficulty
+        a: (I,) item discrimination
+    """
+    P, I = responses.shape
+
+    def nll(params):
+        theta = params[:P]
+        b = params[P:P + I]
+        a = np.exp(params[P + I:])  # discrimination positive
+        logit = a[None, :] * (theta[:, None] - b[None, :])
+        p = 1.0 / (1.0 + np.exp(-logit))
+        p = np.clip(p, 1e-9, 1 - 1e-9)
+        ll = responses * np.log(p) + (1 - responses) * np.log(1 - p)
+        return -ll.sum()
+
+    x0 = np.concatenate([
+        np.zeros(P),
+        np.zeros(I),
+        np.zeros(I),
+    ])
+    res = minimize(nll, x0, method="L-BFGS-B")
+    theta = res.x[:P]
+    b = res.x[P:P + I]
+    a = np.exp(res.x[P + I:])
+    # Center theta to avoid identifiability drift.
+    theta = theta - theta.mean()
+    return theta, b, a
+```
+
+For the LLM/scaffold decomposition, treat each (model, scaffold) pair as a distinct "person" and regress the estimated $\theta$ values against model and scaffold one-hot features. The residuals are the interaction term $\epsilon$.
+
+In practice, use `pyirt`, `mirt` (R via rpy2), or `girth` for production analysis — they handle numerical edge cases (perfect responders, items with zero variance) that the skeleton above does not. The point is not to reinvent psychometric inference; it is to apply it to the right data.
+
+## What This Changes About Agent Evaluation
+
+Three practical consequences follow from treating benchmarks this way.
+
+**First**, reporting should include ability estimates with confidence intervals, not just pass rates. An agent with $\theta = 1.2 \pm 0.3$ on SWE-bench is meaningfully different from one with $\theta = 1.2 \pm 0.08$. Variance matters for stability claims.
+
+**Second**, benchmark design should target information maximization. An item with $b_i$ near the ability frontier of current systems contributes the most information; items that everyone passes or no one passes contribute almost none. Benchmark authors currently select items ad hoc. IRT gives a principled selection criterion: items whose expected pass probability is between 0.3 and 0.7 for the target ability range.
+
+**Third**, when you swap a model behind a scaffold, the expected delta is predictable from the ability decomposition. If scaffold A has $\theta_{\text{scaffold}} = 0.7$ and your new model has $\theta_{\text{LLM}}$ that is 0.3 higher than the old model, you should predict a combined ability lift of 0.3 (not 1.0, not zero). Empirical deviation from this prediction is diagnostic — a smaller lift suggests interaction effects, a larger lift suggests the new model unlocks capabilities the old model could not reach through scaffolding.
+
+## The Caveats Worth Flagging
+
+IRT assumes local independence — that item responses are conditional on ability, independent across items. Agent benchmarks often violate this because consecutive tasks may share code, share an environment, or compound errors. Violations weaken the model but don't invalidate the approach; they just mean $\epsilon$ carries more weight and the decomposition is noisier.
+
+IRT also assumes unidimensionality of ability. An agent might be strong at refactoring and weak at bug localization — collapsing both into one $\theta$ loses information. Multidimensional IRT (MIRT) is the standard fix and has been used in education for decades. The cost is a larger parameter space that needs more data to identify.
+
+And finally, IRT is a measurement model, not a causal model. It tells you that scaffold A contributes $+0.7$ to ability, but not *why* — whether from better context assembly, recovery loops, verification passes, or something else. Connecting the measurement to the mechanism requires ablation studies layered on top of the psychometric analysis.
+
+## References and Further Reading
+
+- [Item Response Theory (Baker & Kim, 2004)](https://link.springer.com/book/10.1007/978-3-030-05584-4) — the standard textbook; the 2PL derivation is in Chapter 2.
+- [SWE-bench Verified (Jimenez et al., 2024)](https://arxiv.org/abs/2310.06770) — the benchmark the examples draw from.
+- [pyirt GitHub](https://github.com/17zuoye/pyirt) — maintained Python library for IRT fitting.
+- [Learning Latent Parameters without Human Response Patterns: IRT with Artificial Crowds (Lalor et al., EMNLP 2019)](https://aclanthology.org/D19-1027/) — earlier work applying IRT to NLP benchmarks; shows the approach isn't new to agent systems but is freshly relevant.
+- Related on this blog: [Scaffolding Beats Scale](/blog/scaffolding-beats-scale), [SWE-bench Pro and the Contamination Crisis](/blog/swebench-pro-contamination-crisis), [Eval-Driven Development for Agent Systems](/blog/eval-driven-development-agents).
+
+The benchmark culture of the last three years has trained us to treat a single number as the answer. IRT is a reminder that measurement has structure, and that pulling the structure out of the data is often more informative than pushing the number up by a point.

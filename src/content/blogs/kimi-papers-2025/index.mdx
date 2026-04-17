@@ -2,7 +2,7 @@
 title: "MoBA: Why Block-Sparse Attention Won the Long-Context Race"
 description: "MoBA treats attention blocks like MoE experts — zero learned parameters, 40x speedup, production-deployed at 200K tokens."
 publishDate: "2025-12-31"
-updatedDate: "2026-04-16"
+updatedDate: "2026-04-17"
 category: research
 tags:
   - kimi
@@ -118,6 +118,32 @@ MoBA sits at an interesting point in the design space. It's not the most theoret
 The lesson from MoBA's success is that production adoption of attention mechanisms is gated not by theoretical efficiency but by integration cost. A mechanism that is 80% as efficient as the theoretical optimum but requires zero changes to the training pipeline will beat a mechanism that is 100% efficient but requires retraining the model.
 
 This has implications for the current wave of attention mechanism research. Methods that require training-time modifications — structured state space models, linear attention variants, hybrid architectures — face a higher adoption barrier than methods that modify only the inference path. The models that matter most (the largest, most expensive frontier models) are the ones where retraining is most costly, which means post-training inference optimizations like MoBA have a structural advantage in deployment.
+
+## The Design-Space Taxonomy MoBA Opened
+
+More useful than naming specific 2026 variants — many of which are moving targets or not yet public — is mapping the design axes MoBA crystallized. Anyone evaluating a block-sparse method today is implicitly picking a position on each of these axes:
+
+**Block boundary**: fixed sequence-position blocks (MoBA's original choice) vs. content-adaptive blocks (clustering KV pairs by similarity at prefill time). Fixed boundaries are cheaper and parallelize cleanly; content-adaptive boundaries align with the correlation structure of the input but require a prefill-time clustering pass.
+
+**Score function**: mean-key dot product (MoBA) vs. learned router (MoE-style) vs. hash-based bucketing. Mean-key is the MoBA default and has zero parameters. Learned routers add expressiveness at training cost. Hash-based is cheapest and works for memory-constrained settings where even the mean-key scoring pass is painful.
+
+**Top-k policy**: global top-k (same k for all queries) vs. threshold-based (variable k based on score magnitude) vs. adaptive (k responds to the layer depth or the input length). Global top-k is the simplest and what the MoBA paper uses; adaptive policies can improve quality on heterogeneous inputs but complicate benchmarking.
+
+**Sparsity training**: inference-only sparsification (MoBA's original pitch — train dense, deploy sparse) vs. sparsity-aware pre-training (the model is trained with the sparse pattern active from the start, as in the "native sparse attention" line of work). The inference-only path has zero training risk and is the reason MoBA reached production fast. The sparsity-aware path can yield better peak quality at the cost of training complexity that only vertically integrated labs can absorb.
+
+**Block-attention mixing**: pure block-sparse attention on every layer (MoBA) vs. alternating dense + block-sparse layers vs. hybrid state-space + attention stacks. The hybrid approach — mix a linear-time state-space mechanism (Mamba, S6, RWKV) with occasional attention layers that do the retrieval work — is an active research direction for 1M+ token contexts.
+
+These axes are not orthogonal — choices interact. A learned router with content-adaptive blocks and sparsity-aware pre-training is a very different system from a mean-key scorer with fixed blocks and inference-only sparsification, even though both would be called "block-sparse attention" on a benchmark. When a paper reports a block-sparse result, the first question worth asking is which point in this design space the method occupies, because that determines what the tradeoffs are and which axis the authors were optimizing along.
+
+## What MoBA Tells You About Infrastructure-Led Research
+
+The meta-lesson is about how attention research gets selected for production. Before MoBA, the dominant attention-efficiency narrative in academic publications was linear attention: mechanisms with theoretically subquadratic asymptotic complexity. The problem was that linear attention required training the model with the new mechanism, and no frontier lab was willing to absorb that training risk on a bet that the resulting quality would hold. So linear-attention papers stayed in the literature and did not reach deployed models at frontier scale.
+
+MoBA inverted this. It is theoretically less elegant than linear attention (still quadratic in the active blocks, just with a smaller $n$), but it requires zero training changes. The deployment story is "swap the inference kernel, keep the weights." That story is compatible with the reality of how large-scale ML infrastructure actually works: model weights are the most expensive and risk-sensitive artifact in the system, and anything that can be retrofitted without touching them has a structural cost advantage over anything that cannot.
+
+The selection pressure on attention mechanisms in 2026 is therefore not "most efficient in isolation" but "most efficient conditional on not retraining the model." That's a narrower design space than the one the 2019–2023 attention-efficiency literature explored, and it explains why the methods finding traction now are overwhelmingly inference-time sparsity variants. The sparsity-aware pre-training variants exist and some teams ship them, but only when the lab controls both the training recipe and the deployment stack — a much shorter list of organizations than the set of teams running large open-weight models.
+
+Long-context inference economics will keep pushing this way. Frontier context windows are plausibly headed toward 10M tokens over the next 12–24 months. The computational cost of 10M-token dense attention is untenable regardless of hardware generation. Block-sparse methods that admit post-training deployment paths are the only mechanism that scales with this economics without forcing a multi-billion-dollar retraining event every time someone publishes a new sparsity pattern. That, not theoretical asymptotic complexity, is the property that selects which attention mechanisms survive the transition from arXiv to production.
 
 ## References
 
