@@ -1,6 +1,24 @@
 ---
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import PageLayout from '@/layouts/CommonPage.astro'
-import activity from '../data/github-activity.json'
+import placeholder from '../data/github-activity.placeholder.json'
+
+// Prefer live fetched data; fall back to the committed placeholder so CI builds
+// (where src/data/github-activity.json is gitignored) still succeed. Using fs
+// here (rather than import) avoids Astro's static resolution of the optional file.
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const realPath = path.resolve(__dirname, '../data/github-activity.json')
+let activity: typeof placeholder = placeholder
+try {
+  if (fs.existsSync(realPath)) {
+    activity = JSON.parse(fs.readFileSync(realPath, 'utf8'))
+  }
+} catch {
+  // keep placeholder
+}
 
 const headings = [
   { depth: 2, slug: 'highlights', text: 'Highlights' },
