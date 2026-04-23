@@ -1,0 +1,118 @@
+---
+title: "GitHub 成为编码 Agent 的中立控制平面"
+description: "GitHub 4 月 14 日为 Claude 和 Codex Agent 开放模型选择，标志着 Agent 重力正在向集成界面收敛，而非 IDE。"
+publishDate: "2026-04-17"
+tags: [github, claude-code, codex, agents, platform, multi-model, agent-engineering]
+category: engineering
+language: zh
+draft: false
+---
+
+2026 年 4 月 14 日，GitHub 推出了一项在更新日志里看起来不起眼、实际上影响深远的变化。用户现在可以直接在 github.com 上选择哪个模型运行在 Claude 和 Codex 第三方编码 Agent 背后。以前，从仓库启动这些 Agent 意味着接受服务商那周决定的默认模型。现在下拉框归你：Codex Agent 可以选 GPT-5.2-Codex、GPT-5.3-Codex、GPT-5.4；Claude Agent 可以选各版本的 Claude Opus 和 Sonnet。Agent 本身仍然是第三方的。*选择界面*是 GitHub 的。
+
+这不是个无关紧要的产品细节。它重塑了 Agent 编排重力的所在，并暂时性地回答了一个业界自 2025 年底一直回避的问题：*用户会标准化到某家厂商的 Agent 栈，还是按任务选择？*
+
+## Agent 重力的过去
+
+2025 年大部分时间和 2026 年初，主流模式是垂直整合：每家厂商都希望用户端到端地活在自己的 Agent 栈里。Anthropic 出了 Claude Code、Claude Managed Agents、Claude Desktop 应用和 Claude 平台。OpenAI 出了 Codex CLI、Codex IDE 集成、Codex Cloud Agent，并在整个 2026 年持续向更统一的 ChatGPT/Codex/浏览器界面推进。Cursor 重建了编排并行 Agent 的界面。这些在本质上都是垂直整合的打法：模型、运行时、工具界面、UI，以及最关键的仓库集成，都是一家厂商的事。
+
+这种整合叙事在 2026 年 4 月初开始松动。十天内发生了两件事：
+
+1. Cursor 的 4 月更新把 Claude Code 和 Codex 视为可一流编排的 Agent，而非独立竞争者——界面层开始承认用户已经在混用多个栈。
+2. GitHub 的 4 月 14 日变化把这个模式推得更远：在 github.com 上，Claude 和 Codex Agent 并排出现，支持模型选择，运行在同一个仓库上下文上。
+
+实际情况是：越来越多的从业者在并排运行多家厂商的产品。Cursor 作为界面层，Claude Code 作为推理引擎，Codex 做代码生成。2025 年中期"我用 Claude Code"和"我用 Codex"的部落主义，已经演变成"我用能解决这个子任务的那个"。中立集成界面——这些异构 Agent 与用户真实代码相遇的地方——不再是任何单家厂商的 IDE 插件。而是 GitHub。
+
+## GitHub 为何是自然的控制平面
+
+这不是巧合，也不是品牌运作。它来自代码、身份和 CI 的底层分布：
+
+- **代码已经在 GitHub 上。** 大约 1.5 亿开发者，4.2 亿+ 仓库。任何编辑代码的 Agent 都得要么镜像这些状态要么借用它。镜像很痛苦——SSH 密钥、克隆耗时、LFS 怪癖、放不进单个 VM 的大型 Monorepo。借用意味着在 GitHub 的集成界面内运行。
+- **身份已经在 GitHub 上。** OAuth、SSO、组织成员身份、SAML。Agent 需要身份才能做 PR 审查、评论或推送。把企业 IdP 重新接入非 GitHub 集成，每次都要经历数月的安全审查。
+- **CI 已经在 GitHub Actions 上。** Agent 的写入操作，只有在最终产生一个能跑过测试的 PR 时才有意义。测试运行器在 GitHub 基础设施上。任何替代方案都面临协调税。
+- **PR 是事务单元。** 代码审查是 Agent 的输出契约。PR 页面是人类验证 Agent 工作的地方。在审查界面已经存在的地方托管 Agent，比重新建一个新的成本更低。
+
+这四个事实意味着，任何厂商中立的 Agent 控制平面都会向 GitHub 收敛，不管 GitHub 是否愿意——除非 GitHub 主动抵制，而它没有。4 月 14 日的推出是 GitHub 在顺势而为。
+
+## 用户可见的架构
+
+GitHub 正在推出的模式，用伪代码勾勒如下：
+
+```ts
+// 伪代码——说明形态，非真实协议。
+interface AgentTaskRequest {
+  repository: RepoRef
+  branch: string
+  issue_or_prompt: string
+  agent: 'codex' | 'claude' | 'copilot'
+  model?: ModelRef  // 用户可选，按任务
+}
+
+async function dispatch(req: AgentTaskRequest) {
+  const agent = await AgentRegistry.load(req.agent)
+  const session = await GitHubSessionBroker.create({
+    repo: req.repository,
+    branch: req.branch,
+    identity: currentUser,
+  })
+  // Agent 在厂商自己的基础设施上运行，但
+  // 会话凭证、仓库访问和 PR 界面由 GitHub 代理。
+  return agent.run({
+    session,
+    model: req.model ?? agent.defaultModel,
+    prompt: req.issue_or_prompt,
+  })
+}
+```
+
+关键设计决策是：Agent 的*计算*在厂商那边运行（Anthropic 或 OpenAI 基础设施），但*会话凭证、仓库访问和 PR 界面*由 GitHub 代理。这段关系很像 GitHub Apps 对 bot 的现有处理方式：按安装铸造的限定范围令牌，受用户授权约束，可从中央设置页面撤销。GitHub 最终对第三方 Agent 使用的精确代理模型是否与 App 模型匹配或更窄，还在演化中，但方向清晰——GitHub 来设定第三方 Agent 在仓库内能做什么的影响半径，不依赖于厂商的运行时。厂商最终在模型质量和运行时行为上竞争，而非集成深度。
+
+## 为何模型选择有意义
+
+表面上，模型选择是个简单功能。下拉框，选模型，开干。不简单的部分是：用一个控制，GitHub 解耦了过去捆绑在一起的三件事：
+
+1. **模型**（GPT-5.4、Claude Opus 4.6、Haiku 4.5……）
+2. **Agent 运行时**（Codex 的循环、Claude Code 的循环）
+3. **集成界面**（github.com 的 PR、Issue、Actions）
+
+以前选择 Claude Code 意味着接受 Anthropic 当前默认的 Claude 模型，跑在 Anthropic 的 Agent 循环里，通过 Anthropic 的 GitHub App 暴露的接口集成。选择 Codex 意味着端到端的 OpenAI 栈。模型-运行时-集成三件套作为一个整体移动。
+
+解耦让用户能利用一个厂商营销暗示中不存在的事实：运行时质量和模型质量*并不*相关。Codex 的运行时有其独特优势——激进的并行任务执行、apply-patch 工具、2026 年 3 月发布的实时进度流。Claude Opus 有其独特的模型优势——长程推理、架构权衡分析。在旧机制下你必须选一个捆绑包。现在你可以在需要速度时用 Codex 运行时跑 GPT-5.4，做大型重构时换到 Claude，安全审查时通过调好的 Opus 模型路由到 Claude Agent——都在同一个 PR 里。
+
+实际含义是：*厂商发布的基准测评*失去了大量信息量。"Claude Code 在 SWE-bench 上胜过 Codex"可能只是说"Claude Opus 4.6 在 SWE-bench 上胜过 GPT-5.2-Codex"；换掉底层模型，排名就翻转了。值得关注的信号是运行时层面的：给定相同模型，哪个运行时更好？这个问题难得多，厂商们也远没那么热心发布相关研究。
+
+## 对 Agent 开发者的影响
+
+如果你今天在构建 Agent，GitHub 控制平面模式改变了一些设计方式。
+
+**把 PR 当作输出契约。** 你的 Agent 的成功在 GitHub 的原生单元里被衡量——PR 合并率、CI 通过率、审查者接受率。它做的任何没有呈现为绿色 PR 的事，对大多数度量来说都是不可见的。从 PR 页面往回设计你的循环。
+
+**假设身份是短暂的和有范围的。** "把你的 PAT 粘贴进 Agent 配置"的时代正在终结。GitHub 代理会话是常态，而且会过期。你的运行时必须在任务中途处理凭证轮换，而不丢失状态。这天然契合持久执行模式（每次工具调用后检查点，用新凭证恢复），与早期 Agent Demo 中主流的"单个长期进程把一切装在内存里"模式相冲突。
+
+**假设模型可以换。** 这是最重要的一条。过度拟合于一个模型的工具调用怪癖的运行时，会输给能在前三个模型间优雅降级的运行时。设计你的提示词、解析器和重试机制时，面向模型*接口*而非特定模型的行为。当用户可以在任务中途从 Claude Opus 换到 GPT-5.4 时，你的运行时必须能撑过这次切换。
+
+**假设集成界面是 GitHub 的。** 如果你要求用户同时安装你的 IDE 插件、一个 GitHub App，还有一个仪表盘，你已经输了。成功的模式是以单个 GitHub App 发布，附带一个查看日志的轻量 Web 界面。其他一切都住在 GitHub 现有的视图里。
+
+## 未解问题：治理
+
+更深层的问题是：当 Agent 是厂商异构的，但集成界面是统一的，谁来设定 Agent 策略？今天每家厂商有自己的安全立场：Anthropic 依靠基于宪法的运行时，OpenAI 发布模型层面的拒绝机制。如果两个安全立场不同的第三方 Agent 都在同一个仓库里运行，它们意见不一时谁的策略优先？最合理的答案是 GitHub 成为策略执行点——它已经是分支保护、必要审查和 Dependabot 的执行点了。把这扩展到 Agent 发出的 diff，是自然的一步，也是几位业内人士正在预测的。
+
+这不是遥远的长期猜测。这是几个月到几个季度内的近期问题。谁能在 PR 页面上拦截 Agent 的提交，有真实的产品影响。如果 GitHub 来构建，Agent 受 Git 语义治理。如果厂商试图把它留在自己的运行时内，我们会得到碎片化的策略和审计师的噩梦。
+
+## 下一步看什么
+
+三件具体的事会告诉你这个控制平面模式是否成立或倒退：
+
+1. **GitHub 是否发布 Agent *运行时* API**——具体来说，是否有方法让第三方 Agent 在 GitHub 的计算上运行，针对数据驻留要求禁止向外发送代码的场景？如果是，控制平面模式固化。如果不是，我们会看到碎片化的厂商专属企业层。
+2. **模型选择下拉框是否获得路由语义**——"审查用 Claude，测试生成用 Codex"？那会把运行时无关的按任务选模型模式正式化，让基准测评更加失去意义。
+3. **GitHub 是否发布 Agent 输出 SLO**——每个 Agent 的 PR 通过率承诺下限？那会把 Agent 选择从感觉变成采购，而这正是企业实际需要的。
+
+2026 年 4 月 17 日的格局毫不含糊：Agent 正在向 GitHub 作为中立集成界面收敛，模型选择下拉框是第一个用户可见的信号。更有趣的问题是厂商们会不会抵抗这种收敛，还是任其落定。
+
+## 参考资料
+
+- GitHub Changelog，"Model selection for Claude and Codex agents on github.com"（2026 年 4 月 14 日）— https://github.blog/changelog/2026-04-14-model-selection-for-claude-and-codex-agents-on-github-com/
+- Anthropic，Claude Managed Agents 公测公告（2026 年 4 月 8 日）— https://www.anthropic.com/news
+- OpenAI Codex 产品页及发布说明索引 — https://openai.com/index/（本文中 Codex 相关具体功能声明来自 https://releasebot.io/updates/openai/codex 汇总的公开发布说明）
+- The New Stack，"Anthropic wants to run your AI agents for you" — https://thenewstack.io/with-claude-managed-agents-anthropic-wants-to-run-your-ai-agents-for-you/
+- GitHub Apps 权限模型（今日有范围令牌代理工作方式的类比）— https://docs.github.com/en/apps
