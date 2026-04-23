@@ -14,12 +14,16 @@ export const getStaticPaths = (async ({ paginate }) => {
   const categoryMap: Record<string, string> = {
     'tech': 'Technical',
     'daily': 'Daily Life',
-    'research': '科研圈子',
+    'research': 'Research',
     'journal': 'Month Journal',
-    'engineering': '工程圈子'
+    'engineering': 'Engineering',
+    'interpretation': 'Interpretation',
+    'technical': 'Technical',
+    'updates': 'Updates',
+    'opinion': 'Opinion'
   }
-  
-  const categoryOrder = ['engineering', 'research', 'tech', 'daily', 'journal']
+
+  const categoryOrder = ['engineering', 'research', 'interpretation', 'tech', 'technical', 'opinion', 'updates', 'daily', 'journal']
   
   const allCollections = await getBlogCollection()
   const allUniqueCategories = getUniqueCategories(allCollections)

@@ -42,9 +42,9 @@ export const theme: ThemeUserConfig = {
   /** Configure the header of your site. */
   header: {
     menu: [
-      { title: '工程圈子', link: '/blog/engineering' },
-      { title: '科研圈子', link: '/blog/research' },
-      { title: '深度解读', link: '/blog/interpretation' },
+      { title: 'Engineering', link: '/blog/engineering' },
+      { title: 'Research', link: '/blog/research' },
+      { title: 'Interpretation', link: '/blog/interpretation' },
       { title: 'Activity', link: '/activity' },
       { title: 'Projects', link: '/projects' },
       { title: 'Links', link: '/links' },
