@@ -1,0 +1,72 @@
+---
+title: "Kimi 注意力：Moonshot 长上下文栈究竟在做什么"
+description: "MoBA、Kimi Linear、KDA——三层叠加如何把 KV Cache 砍掉 75%，让 1M token 级别的 agent 会话真正跑得起。"
+publishDate: "2026-04-23"
+category: interpretation
+tags:
+  - 注意力机制
+  - kimi
+  - moonshot
+  - 长上下文
+  - 架构
+  - 解读
+language: zh-CN
+draft: false
+---
+
+"Kimi 注意力"不是一个单独的机制。到 2026 年 4 月 Kimi K2.6 发布时（1T 总参、262K 上下文），Moonshot 已经在注意力层叠了三代创新：MoBA（2025 年 2 月）、Kimi Linear 加 Kimi Delta Attention（2025 年 10 月），以及 K2.6 自身围绕 MLA 的一整套工程优化。每一层针对的瓶颈不同，孤立看任何一篇都会漏掉它们组合起来的意义。
+
+这篇文章把这个栈拆开重新拼起来：每一块解决的是什么问题、怎么实现、为什么三层叠加之后才让 K2.6 能跑 12 小时、4000+ tool call 的编码会话，而 KV Cache 不会吃光整个服务预算。
+
+## 问题本身
+
+Attention 的二次方问题早就不新鲜了。真正被忽视的点是：绝大多数"长上下文方案"其实是在用召回率换算力。Sliding window 把窗外全丢掉。Longformer、BigBird 人手设计稀疏模式——在作者测过的 benchmark 上还行，但当关键 token 在 20 万 token 之外时就看不到。线性注意力（Performer、Linformer、RetNet）把 KV 压进定长递归状态，算力变成 O(N)，但状态有限，长距离检索的召回必然掉。
+
+对 agentic 工作负载而言，这个权衡就是全部。K2.6 对外的宣传就是协调最多 300 个子 agent、4000+ 步。意思是模型要反复从不断累积的工具输出、文件内容、中间推理里精准检索具体事实。如果 attention 默默丢掉 5 万 token 的文件中唯一相关的一行，agent 轨迹就偏了，整个会话就崩了。一个只在短上下文召回正确的栈，撑不起 12 小时的 agent。
+
+第三层压力是 KV Cache 的经济学。1T 参数、262K 上下文，每解一个 token 都要读一份巨大的 KV Cache，直接吃满显存带宽。标准 MHA 加全注意力的长上下文服务，在 Moonshot 的定价下根本跑不平账。Kimi 的注意力栈既是在做模型质量，也是在做单位经济学。
+
+## 工作机制
+
+**MoBA（Mixture of Block Attention，arXiv:2502.13189）** 把 MoE 的路由思想搬到 attention 本身。上下文切成 block，对每个 query token，一个无参数的 top-k 门控决定去哪几个 block 上算注意力，打分用 query 与 block 平均 key 的点积：
+
+```python
+# 每个 query 的 block 选择（无参数）
+block_keys = K.reshape(num_blocks, block_size, d).mean(dim=1)
+scores = q @ block_keys.T
+top_blocks = scores.topk(k).indices           # k 远小于 num_blocks
+attended = full_attention(q, K[top_blocks], V[top_blocks])
+```
+
+没有额外训练的路由参数，没有预设的稀疏模式。因为 softmax 的梯度能传回去，模型会自然学出哪些 block 重要。MoBA 还能在需要时退回到稠密 attention，所以 Moonshot 可以不从头重训就把它替换进现有模型。这套方案在论文发表当天就跑在 Kimi 的生产长文本服务上，32K 序列下相对稠密 attention 加速约 40 倍。
+
+**Kimi Linear（arXiv:2510.26692，2025 年 10 月）** 动作更大。论文提出 Kimi Delta Attention（KDA），一个基于对角加低秩（DPLR）转移矩阵、带 channel 级细粒度门控的线性注意力模块，扩展自 Gated DeltaNet。递推大致是：
+
+```
+S_t = G_t ⊙ S_{t-1} + v_t ⊗ k_t      # 门控状态更新
+o_t = S_t @ q_t                       # 输出
+```
+
+`G_t` 是每通道门控，由当前输入算出。"Delta"部分借自 DeltaNet：不是覆盖递归状态，而是学着什么时候擦掉旧关联、写入新关联——这是线性注意力保住长距离召回的关键。架构上的真正巧思在于 Kimi Linear 不是纯 KDA，而是每 3 层 KDA 穿插 1 层完整的 Multi-Head Latent Attention (MLA)，3:1 比例。线性层便宜地扛主力，周期性的 MLA 层在需要时刷新全局注意力。结果：KV Cache 降低 75%、解码吞吐最高 6.3×，在 48B 总参/3B 活跃规模上，MMLU-Pro、RULER 128K、AIME 2025、LiveCodeBench 等质量指标反而超过纯全注意力基线。
+
+**Kimi K2.6（2026 年 4 月）** 继承了 MLA 主干，再叠一层工程优化：MLA 本身把 KV 压到低秩潜在表示，每 token 的 Cache 只有标准 MHA 的一小部分；SwiGLU 替换 FFN 激活函数，训练更硬件友好；MoE 配置 384 专家、每 token 激活 8 个，另有 1 个常驻共享专家。原生 262K 上下文窗口是这一切的外在表现——栈本身每 token 足够便宜，才撑得起一个约是 DeepSeek V3 四倍的上下文窗口。
+
+组合的意义大于任何一块。MoBA 证明稀疏注意力可以用原地学习的路由信号替代人工设计模式。KDA 证明线性注意力在表达力上可以追上全注意力。MLA 证明每 token Cache 可以显著压缩而不掉精度。三者叠加之后，1T 参数 + 262K 窗口从研究玩具变成了可以卖的产品。
+
+## 意义
+
+最直接的影响是 1M+ token 级别的 agentic 会话在经济上真正能跑。Anthropic 的 Claude 3.5/4 系列把上下文窗口卡在 200K，部分原因是更长窗口的服务成本对实际工作负载分布而言不划算。Kimi 这一套把这个算盘整个拨动——KV Cache 小 75%、长上下文解码快 6 倍，长上下文 agent 产生商业意义的临界点就大幅前移。这也是为什么 K2.6 对外卖的是"300 子 agent、4000+ 协作步"，而不是一个 benchmark 分数：长时程 agency 是这整个注意力栈本来就为它设计的工作负载。
+
+第二个影响是对西方实验室的架构压力。Llama 3/4 用的是 GQA 加 RoPE。GPT-4 级模型从外部看大致是带压缩的标准 MHA 变体。Claude 的 attention 细节没公开，但公开 benchmark 没看出对应 KDA 这类线性+全注意力混合的部件。当一个开源权重、架构公开的模型在多项 benchmark 上打平 GPT-5.4 和 Opus 4.6——据报 K2.6 确实做到了——压力不仅在质量分数上，更在支撑单位经济学的那些 attention 设计决定上。未来 12 个月内至少会有一家前沿实验室发布线性注意力混合架构。
+
+还有一块推测的——明确标注为推测——就是把 MoBA 的学习式路由与 KDA 的门控递归直接组合在**同一层** attention 里，而不是现在这种按层交替。Moonshot 还没公布这种设计，但这是个显而易见的下一步：单个 attention 层既压缩进递归状态、又在块结构化 Cache 上稀疏读取。如果这条路跑通，Kimi Linear 里 3:1 的 KDA:MLA 比例就合并成统一机制，KV Cache 节省与稀疏读取节省直接叠乘。盯紧 Moonshot 的 GitHub——如果哪天出一篇把 FlashKDA 和 MoBA block 路由合起来的论文，那就是信号。
+
+---
+
+## 参考资料
+
+- Lu 等，"MoBA: Mixture of Block Attention for Long-Context LLMs"，2025。[arXiv:2502.13189](https://arxiv.org/abs/2502.13189)
+- Kimi Team，"Kimi Linear: An Expressive, Efficient Attention Architecture"，Moonshot AI，2025。[arXiv:2510.26692](https://arxiv.org/abs/2510.26692)
+- Moonshot AI，[Kimi-K2.6 模型卡](https://huggingface.co/moonshotai/Kimi-K2.6)，2026 年 4 月。
+- MoonshotAI，[FlashKDA: high-performance Kimi Delta Attention kernels](https://github.com/MoonshotAI/FlashKDA)，GitHub。
+- MoonshotAI，[MoBA 参考实现](https://github.com/MoonshotAI/MoBA)，GitHub。

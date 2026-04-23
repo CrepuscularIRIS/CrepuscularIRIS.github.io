@@ -1,0 +1,60 @@
+---
+title: "Claude Mythos：解读 Anthropic 的下一步棋"
+description: "Anthropic 首个 Opus 之上的新等级不是产品，而是一个封闭的网络安全预览。这个选择比 benchmark 更能说明前沿战略。"
+publishDate: "2026-04-23"
+category: interpretation
+tags:
+  - claude
+  - anthropic
+  - mythos
+  - frontier-model
+  - interpretation
+language: zh-CN
+draft: false
+---
+
+Anthropic 把新的顶级模型命名为 **Mythos**，然后拒绝卖给你。这两个动作叠加——开辟一个新的能力等级，再刻意把它锁起来——是 2026 年到目前为止最值得解读的前沿实验室动作，远比"SWE-bench 93.9%"这行标题更耐看。
+
+## 1. 已知事实
+
+事实层面异常干净，因为模型在发布前先泄露了。2026 年 3 月 26 日，Anthropic 的 CMS 配置错误短暂暴露了一篇草稿博客，Fortune 当天报道，引用 Anthropic 自己的措辞，说 Mythos 相较于现有 Opus 系列是"阶跃式变化"（[Fortune, 2026-03-26](https://fortune.com/2026/03/26/anthropic-says-testing-mythos-powerful-new-ai-model-after-data-leak-reveals-its-existence-step-change-in-capabilities/)）。Anthropic 随即在 4 月 7 日正式发布 **Claude Mythos Preview**，并同步启动伞形计划 **Project Glasswing**（[red.anthropic.com](https://red.anthropic.com/2026/mythos-preview/)、[anthropic.com/glasswing](https://www.anthropic.com/glasswing)）。
+
+名字本身是信号。Mythos 不是 `Opus 5`，也不是 `Claude 5`。Anthropic 明确把它定位成 Opus 4.6 与 Sonnet 4.6 之上的**新等级**。公开的基准支持这一叙述：SWE-bench Verified 93.9%、SWE-bench Pro 77.8%、USAMO 97.6%、GPQA Diamond 94.5%、Terminal-Bench 2.0 达到 82.0%（打上 2.1 补丁并给 4 小时预算可达 92.1%），上下文窗口输入 1M token、输出 128K token（[llm-stats Mythos card](https://llm-stats.com/models/claude-mythos-preview)）。第三方整合的对比表中，Mythos 在 SWE-bench Pro 上领先 GPT-5.4 与 Gemini 3.1 Pro（77.8 vs. 57.7 vs. 54.2），在长上下文 GraphWalks BFS 上领先更悬殊（80 vs. 21.4 vs. Opus 的 38.7，[officechai](https://officechai.com/ai/claude-mythos-benchmarks-vs-gemini-3-1-pro-gpt-5-4/)）。
+
+真正反常的是这些数字的外包装。Mythos Preview **不对外公开发售**。访问通过 Project Glasswing 分发：12 个创始伙伴（AWS、Apple、Broadcom、Cisco、CrowdStrike、Google、JPMorgan、Linux Foundation、Microsoft、NVIDIA、Palo Alto Networks，以及 Anthropic 本身），外加约 40 个关键基础设施组织和开源维护者。Anthropic 为该计划配套了一亿美元的模型使用额度和四百万美元对开源安全组织的直接捐赠（[anthropic.com/glasswing](https://www.anthropic.com/glasswing)）。对付费伙伴，预览定价为输入 25 美元 / 输出 125 美元每百万 token，约为 Opus 的 1.7 倍。不公开发布的理由很具体：内部测试中，Mythos 发现了数千个此前未知的漏洞，包括 OpenBSD 中一个 27 年历史的 TCP SACK bug，以及 FFmpeg 中一个 16 年历史、自动化模糊测试估计遗漏了 500 万次的缺陷。英国 AISI 也独立评估了其网络能力跃升（[aisi.gov.uk](https://www.aisi.gov.uk/blog/our-evaluation-of-claude-mythos-previews-cyber-capabilities)）。Anthropic 判断 Mythos 相对公开前沿的进攻性网络能力差距足够大，广泛放开会对软件安全造成净负面影响。
+
+## 2. 它为何可能是里程碑
+
+Benchmark 很容易灌水，也容易被误读。更有用的问题是：Mythos 延伸了 Claude 4.x 的哪条轨迹，又打破了哪条？
+
+**代码与 Agent 轨迹被显著延伸**。Opus 4.6 已经是你需要长工具循环的 Agent 时首选的模型。Mythos 在 Terminal-Bench 2.0 上从 65.4% 跳到 82.0%，在 4 小时预算下达到 92.1%，这是一个**真正**为多小时自主性训练过的模型，而不是单轮推理略有提升。若 Mythos 在生产环境中表现与 OSS-Fuzz 数据一致（1000 个仓库上 595 个一/二级 crash、10 个完整控制流劫持，而 Opus 4.6 只有约 150-175 个一级 crash），实际影响是：一个自主编码 Agent 可以在极少人工脚手架的情况下将 2-4 个原语链成可工作的利用或修复。这不是 benchmark 差值，而是能力级别的变化。
+
+**长上下文与推理轨迹被延伸，但边界更模糊**。1M token 输入窗口 Gemini 早已提供，关键是模型是否真的会用。GraphWalks BFS 上 80% vs. GPT-5.4 的 21.4% 给了些暗示——多跳结构化长上下文推理正是大多数前沿模型崩溃的地方——但这是单家厂商的单项基准。**合理推测**，Mythos 把更宽的上下文与改进的**服务端压缩**结合用于长 Agent 运行，而这恰恰是大多数生产团队在触碰原始 token 上限之前就先撞上的瓶颈。**基于 4.x 的轨迹**，我会预期真正的改进是 10 小时以上会话的记忆与一致性，而不是上下文长度的绝对值。
+
+**安全轨迹才是 Mythos 真正反模板的地方**。此前每一次 Claude 发布都遵循同一模板：发布模型卡、发布 RSP 评估、开放 API。Mythos 反转了这个流程。模型卡发了（[Bedrock Mythos model card](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-mythos-preview.html)），评估发了，然后对联盟之外所有人关闭 API。这是前沿实验室第一次得出结论：一个通用模型对**即便是带合同的企业付费客户**也不该发售。至于这是原则还是表演，取决于你的先验，但作为先例，它是新的。
+
+**若基准在独立复现下仍然成立，Mythos 真正的历史意义**在于三者叠加：一个在多小时自主工作、长上下文推理上都显著更强，*同时*被判定为不能广泛发布的模型。若只有前两条，Mythos 就是挂了别的名字的 Opus 5。第三条——刻意按下不发——才让它成为另一种发布。
+
+## 3. 读市场
+
+Anthropic 的定位信号值得仔细拆。三个动作，对应三个不同的对手。
+
+**对 OpenAI，信号是"我不跟你比谁先 GA"**。GPT-5.4 走的是常规的 ChatGPT / API 渠道，Mythos 不走。Anthropic 押注企业买家——尤其是受监管行业和政府——会把封闭发布读作"严谨"而不是"拿不到"。NSA 的接入以及白宫办公厅主任关于 Mythos 的会议（[SC Media](https://www.scworld.com/brief/anthropic-ceo-white-house-chief-of-staff-convene-on-claude-mythos)）表明这个赌注部分奏效了。这是 Stratechery 式的战略替代：以消费端的广度换政策层面的纵深。
+
+**对 Google，信号是"按部署算能力，不按 API 调用算"**。Gemini 3.1 Pro 覆盖 Google 所有产品面，但在若干公开基准上落后于 Mythos。Google 的护城河是分发，Anthropic 无法正面争夺。Anthropic 选择把 Mythos 做成关键基础设施安全工作的**参考模型**，让这层光环把企业 Opus/Sonnet 流量拉向 Claude Code 和 Anthropic API。**合理推测**，Glasswing 部分是一次分发巧劲：那四十多家伙伴组织，正是 Anthropic 长期最想锁住的账户。
+
+**对中国前沿（Moonshot Kimi 系列、DeepSeek、Qwen），信号是"前沿能力现在附带一套你难以复制的信任机制"**。开源权重实验室无法在发布后撤回模型，也无法可信地承诺协调 90 天的披露窗口。若 Mythos 级别的网络能力成为前沿模型的常规特性，开源权重生态将面临一个光靠更好底座模型解决不了的结构性问题。
+
+Anthropic 这步棋的风险是显然的：一个把最强模型锁在市场外的前沿实验室，终究会被绕开。若 GPT-5.5 或 Gemini 4 以接近 Mythos 的能力**不走 Glasswing 式门禁**直接发布，Anthropic 的动作看起来就不像领导力，而更像自我设限。**基于 4.7 的轨迹**以及 Anthropic 公开的 RSP 承诺，我预期 Mythos 的后继版本——Glasswing 页面提到的带额外网络安全保护的"Mythos 1.x"——会在 6-9 个月内更广泛地释出。Mythos 真正在问业界其他人的是：这段能力差距是可以守住的，还是仅仅预告了所有人终将被迫采纳的新常态。
+
+---
+
+## 参考文献
+
+- Anthropic Red, "Claude Mythos Preview," 2026-04-07. [red.anthropic.com/2026/mythos-preview](https://red.anthropic.com/2026/mythos-preview/)
+- Anthropic, "Project Glasswing." [anthropic.com/glasswing](https://www.anthropic.com/glasswing)
+- AWS Bedrock, "Anthropic Claude Mythos Preview model card." [docs.aws.amazon.com](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-mythos-preview.html)
+- UK AI Security Institute, "Our evaluation of Claude Mythos Preview's cyber capabilities." [aisi.gov.uk](https://www.aisi.gov.uk/blog/our-evaluation-of-claude-mythos-previews-cyber-capabilities)
+- Fortune, "Exclusive: Anthropic 'Mythos' AI model revealed in data leak," 2026-03-26. [fortune.com](https://fortune.com/2026/03/26/anthropic-says-testing-mythos-powerful-new-ai-model-after-data-leak-reveals-its-existence-step-change-in-capabilities/)
+- TechCrunch, "Anthropic debuts preview of powerful new AI model Mythos," 2026-04-07. [techcrunch.com](https://techcrunch.com/2026/04/07/anthropic-mythos-ai-model-preview-security/)
+- 第三方基准：[llm-stats Mythos card](https://llm-stats.com/models/claude-mythos-preview) 与 [officechai 对比](https://officechai.com/ai/claude-mythos-benchmarks-vs-gemini-3-1-pro-gpt-5-4/)

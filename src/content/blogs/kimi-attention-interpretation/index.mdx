@@ -1,0 +1,72 @@
+---
+title: "Kimi Attention: What Moonshot's Long-Context Stack Does"
+description: "MoBA, Kimi Linear, and KDA — how Moonshot's attention stack cuts KV cache 75% and makes 1M-token agentic sessions economically viable."
+publishDate: "2026-04-23"
+category: interpretation
+tags:
+  - attention
+  - kimi
+  - moonshot
+  - long-context
+  - architecture
+  - interpretation
+language: en
+draft: false
+---
+
+"Kimi attention" is not one mechanism. By the time Kimi K2.6 shipped in April 2026 with 1T total parameters and a 262K context window, Moonshot had stacked three distinct attention innovations on top of each other: MoBA (Feb 2025), Kimi Linear with Kimi Delta Attention (Oct 2025), and the MLA-centric attention optimizations baked into K2.6 itself. Each one addresses a different bottleneck. Reading them in isolation misses how they compose.
+
+This post reconstructs that stack — what problem each piece solves, how it works, and why the combination is what lets K2.6 run 12-hour coding sessions with 4,000+ tool calls without the KV cache eating the entire serving budget.
+
+## The Problem
+
+The quadratic attention problem is well known. What's less appreciated is that most "fix long context" approaches trade away recall to get compute back. Sliding window attention loses anything outside the window. Longformer and BigBird hand-engineer sparsity patterns that work on the benchmarks their authors tested but miss the needle-in-a-haystack case where the relevant token is 200K positions away. Linear attention variants — Performer, Linformer, RetNet — compress the KV state into a fixed-size recurrent memory, which gives you O(N) compute but hurts long-range retrieval because the memory is finite.
+
+For an agentic workload, this tradeoff is the whole game. Kimi K2.6 is marketed on coordinating up to 300 sub-agents over 4,000+ steps. That means repeatedly retrieving specific facts from a context that accumulates tool outputs, file contents, and intermediate reasoning. If attention silently drops the one line of a 50K-token file that matters for the current query, the agent trajectory diverges and the whole session fails. You cannot ship a 12-hour agent on a stack that only gets recall right on short contexts.
+
+The third pressure is KV cache economics. At 1T parameters and 262K context, every decoded token reads a KV cache that dominates memory bandwidth. Full attention with standard MHA would make long-context serving uneconomical at Moonshot's price point. The Kimi attention stack is as much about making the unit economics work as it is about model quality.
+
+## How It Works
+
+**MoBA (Mixture of Block Attention, arXiv:2502.13189)** applies MoE routing logic to attention itself. The context is split into blocks. For each query token, a parameter-less top-k gate picks which blocks to attend to, scored by the query's dot product against block-averaged keys:
+
+```python
+# Per-query block selection (parameter-free)
+block_keys = K.reshape(num_blocks, block_size, d).mean(dim=1)  # [num_blocks, d]
+scores = q @ block_keys.T                                       # [num_blocks]
+top_blocks = scores.topk(k).indices                             # k << num_blocks
+attended = full_attention(q, K[top_blocks], V[top_blocks])
+```
+
+No trained router parameters, no fixed sparsity pattern. The model learns which blocks matter because the gate is differentiable through the softmax. MoBA can also fall back to dense attention for layers that need it, which is how Moonshot shipped it as a drop-in replacement without retraining from scratch. It was deployed in Kimi's production long-context service the day the paper dropped, and hits roughly 40× speedup over dense attention at 32K.
+
+**Kimi Linear (arXiv:2510.26692, Oct 2025)** is the more radical move. The paper introduces Kimi Delta Attention (KDA), a linear attention module that extends Gated DeltaNet with fine-grained, channel-wise gating over a Diagonal-Plus-Low-Rank transition matrix. The linear-attention recurrence looks roughly like:
+
+```
+S_t = G_t ⊙ S_{t-1} + v_t ⊗ k_t      # gated state update
+o_t = S_t @ q_t                       # output
+```
+
+where `G_t` is a per-channel gate computed from the current input. The "delta" piece borrows from DeltaNet: rather than overwriting the recurrent state, KDA learns when to erase old associations and write new ones, which is what keeps long-range recall alive in a finite-state RNN. The architectural trick is that Kimi Linear doesn't use KDA alone — it interleaves three KDA layers with one full Multi-Head Latent Attention (MLA) layer in a 3:1 ratio. The linear layers carry most of the work cheaply, and the periodic MLA layer refreshes global attention where it's needed. Result: 75% KV cache reduction and up to 6.3× decoding throughput, with quality that beats full-attention baselines on MMLU-Pro, RULER 128K, AIME 2025, and LiveCodeBench at the 48B-total / 3B-active scale.
+
+**Kimi K2.6 (April 2026)** inherits the MLA backbone and stacks its own efficiency work on top: MLA itself compresses KV into a low-rank latent so the per-token cache is a fraction of standard MHA, SwiGLU replaces the FFN activation for hardware-friendlier training, and the MoE uses 384 experts with 8 active per token plus one always-on shared expert. The 262K native context window is the operational face of all this: the stack is cheap enough per token that Moonshot can afford to expose a context roughly 4× what DeepSeek V3 shipped.
+
+The composition matters more than any single piece. MoBA proves you can do sparse attention with a learned-in-place routing signal instead of hand-designed patterns. KDA proves you can make linear attention expressive enough to compete with full attention on retrieval. MLA proves you can shrink the per-token cache without losing accuracy. Stack them, and a 1T-parameter model with a 262K window stops being a research curiosity and starts being a product.
+
+## Why It Matters
+
+The immediate downstream effect is that 1M+ agentic sessions become economically defensible. Anthropic's Claude 3.5/4 family kept their context windows at 200K partly because the serving cost of larger windows did not pencil out against the fraction of workloads that needed them. Kimi's stack tilts that calculus — if the KV cache is 75% smaller and decode is 6× faster at long context, the crossover point where long-context agents make business sense moves a lot closer. This is why K2.6's headline feature is "300 sub-agents, 4,000 coordinated steps" rather than a benchmark number. Long-horizon agency is the workload the attention stack was built for.
+
+The second effect is architectural pressure on Western labs. Llama 3/4 uses grouped-query attention with RoPE. GPT-4-class models use proprietary variants that, from the outside, look like standard MHA with some compression. Claude's attention details are private but the public benchmarks suggest no equivalent to KDA's linear+full hybrid. When an open-weight model with a published architecture hits GPT-5.4 and Opus 4.6 on several benchmarks — as K2.6 reportedly does — the pressure isn't just on quality scores, it's on the attention design choices that make the unit economics possible. Expect at least one frontier lab to ship a linear-attention hybrid in the next 12 months.
+
+The speculative piece — and I'm flagging it as speculation — is what happens when MoBA-style learned routing is composed with KDA-style gated recurrence directly, rather than alternated layer by layer. Moonshot hasn't published this, but it's the obvious next step: a single attention layer that both compresses into a recurrent state and sparsely reads from a block-structured cache. If that works, the 3:1 KDA:MLA ratio in Kimi Linear collapses into a single unified mechanism, and the KV cache savings stack on top of the sparse-read savings. Watch the Moonshot GitHub for a paper that merges FlashKDA with MoBA's block routing — that would be the tell.
+
+---
+
+## References
+
+- Lu et al., "MoBA: Mixture of Block Attention for Long-Context LLMs," 2025. [arXiv:2502.13189](https://arxiv.org/abs/2502.13189)
+- Kimi Team, "Kimi Linear: An Expressive, Efficient Attention Architecture," Moonshot AI, 2025. [arXiv:2510.26692](https://arxiv.org/abs/2510.26692)
+- Moonshot AI, ["Kimi-K2.6 model card"](https://huggingface.co/moonshotai/Kimi-K2.6), April 2026.
+- MoonshotAI, ["FlashKDA: high-performance Kimi Delta Attention kernels"](https://github.com/MoonshotAI/FlashKDA), GitHub.
+- MoonshotAI, ["MoBA reference implementation"](https://github.com/MoonshotAI/MoBA), GitHub.

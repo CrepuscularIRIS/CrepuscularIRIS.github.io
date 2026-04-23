@@ -1,0 +1,65 @@
+---
+title: "字节 LoopLM：用循环深度取代堆宽度"
+description: "字节 Seed 的 Ouro 把同一个 Loop Unit 在单次前向里跑四次，2.6B 参数打出 12B 级基准，参数效率 2-3 倍。"
+publishDate: "2026-04-23"
+category: interpretation
+tags:
+  - looplm
+  - 字节
+  - 循环
+  - 架构
+  - 解读
+language: zh-CN
+draft: false
+---
+
+字节 Seed 在 2025 年 10 月底放出了 Ouro——一族预训练的**循环语言模型（Looped Language Model，LoopLM）**，1.4B 和 2.6B 两个尺寸，在 7.7T tokens 上训练，在大多数基准上能追平 4B 和 8B 的标准 Transformer，在若干测评上据称与 12B SOTA 打平。论文是《Scaling Latent Reasoning via Looped Language Models》（[arXiv:2510.25741](https://arxiv.org/abs/2510.25741)），模型挂在 [Ouro 项目主页](https://ouro-llm.github.io/) 和 [Hugging Face](https://huggingface.co/ByteDance/Ouro-1.4B) 上。
+
+名字来自 Ouroboros——吞尾蛇——这对架构其实是相当直白的描述。Ouro 不堆层、不加宽、不做 MoE，而是把一块 Transformer 层当成一个**共享权重的 Loop Unit，在单次前向里跑四遍**。深度在推理时合成出来，参数预算不变。
+
+## 问题本身
+
+标准的 scaling 三档：**宽度**（hidden dim）、**深度**（层数）、**稀疏度**（MoE 专家）。三档都要花参数。12B 稠密模型就是 12B 权重实打实压在每张卡上，不管当前这条输入需不需要那么多容量。MoE 靠每 token 只激活一小部分专家把推理成本拉下来，但总参数量还在涨，路由本身又带来一堆新问题——负载不均、专家坍塌、通信开销。
+
+测试时推理（o1、o3、DeepSeek-R1、Gemini-Thinking）是另一条路。不把模型做大，而是让它和自己多聊几轮——长链思考、self-consistency、草稿 token 搜索。这条路能走通，但代价直接记在输出序列上。多一步推理就是多一次自回归解码、多一次 KV Cache 读、多一轮 latency。在真正在乎 TPS 的生产推理链路上，为了答一个 200 token 的问题先吐 8K 推理 token，账并不好算。
+
+LoopLM 攻击的是 scaling 和 CoT 共同的假设：**额外的计算要么花参数要么花输出 token**。如果同样一批权重可以在隐状态上**内部多跑几遍**，什么都不吐出来呢？这想法不新——Universal Transformer（2018）、各种 recursive transformer、ALBERT 的跨层权重共享——但以往的实现大多只拿参数效率说事，匹配的是更小的 baseline。Ouro 的贡献是把这条路做到了生产规模：从头预训练 7.7T tokens，在三到五倍参数的前沿稠密模型面前仍具竞争力。
+
+## 工作机制
+
+Ouro 骨架是标准 decoder-only Transformer——RoPE、SwiGLU、sandwich norm——只多了一个结构性改动。层栈被切出一个 **Loop Unit**：一段连续的 Transformer 层，权重在所有迭代间共享。单次前向中，隐状态要先在同一个 Loop Unit 里过 `R` 次，再交给后面的非循环部分。发布的 Ouro-1.4B 和 Ouro-2.6B 都用 `R = 4`。
+
+```
+标准 Transformer:          Ouro 循环 Transformer（R=4）:
+
+  x → L1 → L2 → L3            x → [ L1 → L2 → L3 ] → output
+        → L4 → L5 → L6              ↑___________|
+        → L7 → ... → out            （迭代 4 次）
+
+  depth = L, params = L·P     depth = L·R, params = L·P
+                              等效深度 ×4，参数不变
+```
+
+两件事让这远不是 trivial。第一，权重共享下从头预训练非常不稳——天真复用同一块，第 4 次迭代的梯度会污染第 1 次，模型要么坍缩到浅层恒等，要么进入振荡。Ouro 的训练配方把 7.7T tokens 分成多阶段（公开数字：约 3T 稳定预训练，约 1.4T CoT 退火，约 300B 定向 mid-training），并用**熵正则化的深度分配**目标，让模型自己学到每条输入到底该循环几次才划算。
+
+第二，Ouro 把这种自适应深度做成了**可学习的早退机制**。简单 token 跑一两次就退出，难 token 一路循环到上限。这在概念上跟测试时推理很像——难题给更多计算——但它发生在**单次前向之内**、在隐空间里，一个输出 token 都不多吐。论文还声称循环诱导出的"推理轨迹"与最终答案的对齐，比显式 CoT 更紧——如果能被独立复现，这是一个不小的断言：它在说**推理**到底发生在哪一层。
+
+参数效率数字（项目页和 Lisan al Gaib 的 Twitter 总结）：Ouro-1.4B 约等于 4B 标准 Transformer，Ouro-2.6B 约等于 8B 标准 Transformer，整族在更广的基准扫描上据称可追 12B SOTA。作者把收益归因于**知识操纵**而非**知识容量**——参数没变，但循环给了模型更多的串行算力去重排它已经知道的东西。
+
+## 为什么重要
+
+最直接的影响是推理经济学。2.6B 模型循环 4 次，单次前向的算力等价于约 10B 模型，但 KV Cache、权重显存、参数分片通信模式还停在 2.6B 规模。如果你服务的是长上下文、KV Cache 主导带宽的 agent 负载，这是跟堆宽度**结构上不同的成本曲线**。相比 MoE 也更干净：没有路由、没有专家不均衡、训练阶段没有 8 倍通信开销。
+
+不那么显而易见的是对**测试时推理**的影响。o1 / o3 那一路把额外推理成本记在输出流上：多解码 token、多 latency、多计费。LoopLM 把它记在**沉默的内部迭代**上。两条路并不互斥——完全可以堆一个先循环 4 次再吐 CoT 的栈——但推理预算的位置变了。对 latency 敏感的场景（流式写代码的 IDE、语音 agent），"先不吐 8K token 就能完成推理"不是小头，那是产品本身。
+
+有几点值得保持怀疑。最强的断言（12B-parity）是在作者自选的基准上。7.7T token 规模的独立复现成本不低，目前还没公开出现。循环次数与长上下文召回的交互——一个 4 次循环的 2.6B 模型在 128K 上下文上会优雅退化，还是会把注意力的失败模式循环放大？——现公开材料里没有完整刻画。**推测**：如果循环真的等价于隐空间里的测试时推理，那么 RLHF / RL-from-verifier 在循环次数（而非 CoT 轨迹）上训练就成了自然的下一步——这会把 Ouro 这条路与 o 系列推理模型在**训练目标层面**闭环。Ouro 论文还没走到这一步，但该有的原语已经齐了。
+
+---
+
+## 参考文献
+
+- Zhu et al., "Scaling Latent Reasoning via Looped Language Models," ByteDance Seed / UC Santa Cruz / Princeton, 2025 年 10 月. [arXiv:2510.25741](https://arxiv.org/abs/2510.25741)
+- Ouro 项目主页与模型发布. [ouro-llm.github.io](https://ouro-llm.github.io/)
+- Ouro-1.4B Hugging Face 卡. [huggingface.co/ByteDance/Ouro-1.4B](https://huggingface.co/ByteDance/Ouro-1.4B)
+- Dehghani et al., "Universal Transformers," ICLR 2019. [arXiv:1807.03819](https://arxiv.org/abs/1807.03819)
+- Lan et al., "ALBERT: A Lite BERT for Self-supervised Learning of Language Representations," ICLR 2020. [arXiv:1909.11942](https://arxiv.org/abs/1909.11942)
