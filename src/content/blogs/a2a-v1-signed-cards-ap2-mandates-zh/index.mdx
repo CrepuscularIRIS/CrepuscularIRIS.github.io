@@ -1,0 +1,155 @@
+---title: "A2A v1.0：签名式 Agent Card 与 AP2 支付授权协议"
+description: "A2A 协议在 v1.0 中引入了加密身份（签名式 Agent Card）与支付授权扩展（AP2），为智能体之间以及智能体与交易对手之间的信任建立了可验证的技术栈。"
+publishDate: "2026-04-17"
+tags: [A2A, AP2, agents, protocol, identity, payments, multi-agent, cryptography, governance]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+2026 年 4 月 9 日，Agent2Agent（A2A）协议发布了 v1.0 版本，距离 Google 在 Cloud Next 2025 上首次公布该协议恰好一年。一年的周期本身并不足以衡量协议的成熟度——真正值得关注的是从初版规范到 v1.0 之间发生了哪些变化。而答案几乎完全集中在**身份、信任与资金**三个维度。新特性包括**签名式 Agent Card**（加密智能体身份）、企业级多租户隔离，以及**Agent Payments Protocol（AP2）**扩展。这些都不是原型阶段会考虑的问题，而是当智能体开始与默认不信任它的交易对手进行交互时，必须解决的真问题。
+
+本文将系统梳理 v1.0 的实际交付内容，解释签名式 Agent Card 在 JWT 层面的工作机制，并展示 AP2 支付授权在实际中的运作方式。我想提出的核心观点是：**A2A 协议栈应被理解为 MCP 所缺失的信任层**。MCP 实现了智能体到工具的连接；A2A v1.0 实现了智能体到智能体的连接，并附带可验证的身份；AP2 则实现了智能体到交易对手的连接，并附带可验证的授权。三者共同构成了自 2025 年初以来每个监管机构都在追问的问题的首个非空泛回答：当智能体做错事时，谁该承担责任？
+
+---
+
+## A2A v1.0 交付了什么
+
+根据 4 月 9 日 Google Cloud 发布会与 A2A 协议官网（a2a-protocol.org/latest/）的公开信息：
+
+- **签名式 Agent Card** — 每个智能体现在发布一份经过加密签名的描述符。签名将智能体的身份（DID，去中心化标识符）与其宣称的能力绑定，使得能力声明具备不可抵赖性。
+- **多协议传输** — 支持 WebSocket、HTTPS/SSE 与 gRPC 三种传输绑定。同一份 Agent Card 可以指向一个或多个传输端点。
+- **企业级多租户** — 为企业部署引入正式的租户隔离机制，使单个 A2A 节点能够安全地托管属于多个客户组织的智能体。
+- **生产环境部署** — Azure AI Foundry 与 Amazon Bedrock AgentCore 宣布原生支持 A2A。该协议目前至少拥有三个独立的云运行时（Google、Microsoft、Amazon），尽管真正的跨云联邦互操作仍属于愿景而非已验证的现实。
+- **生态规模** — 150 余家组织参与，GitHub 星标超过 2.2 万，SDK 覆盖 Python / JS / Java / Go / .NET。这一规模已越过临界质量阈值：采用该协议的代价已低于忽视它的代价。
+
+所有这些都由 Linux Foundation 的 Agentic AI Foundation 托管——该基金会目前也负责 MCP 的治理。这一点至关重要：它意味着 A2A 与 MCP 由同一基金会管理，这是我们目前所能获得的最强保证，表明这两个协议将停止彼此偏离。
+
+---
+
+## 签名式 Agent Card 的 JWT 机制
+
+在 v1.0 之前，Agent Card 是一份普通的 JSON 文档。智能体将其发布在知名 URL 上，客户端获取后，基于「你从预期的域名获取了该文档」这一事实来信任其中的内容——能力、端点、元数据。经典的 TLS 信任模型。对于演示足够，但一旦你希望基于智能体宣称的能力来路由任务，这种模式就远远不够。
+
+v1.0 将普通 JSON Card 替换为由智能体私钥签名的 **JWT**。智能体的 DID 解析为一份 DID Document，其中包含公钥。验证 Card 的流程为：获取 Card（仍在知名 URL 上）、解析 DID、用公钥验证签名，然后——且仅在此之后——信任其中的声明。
+
+一份最小化的签名 Agent Card，以解码后的 JWT 载荷形式展示（线上形式为常见的 `header.payload.signature` base64url 三元组，算法通常为 `EdDSA`），大致如下：
+
+```json
+{
+  "iss": "did:web:agents.example.com:billing",
+  "sub": "agent://billing/invoice-processor",
+  "iat": 1713312000,
+  "exp": 1713398400,
+  "aud": "a2a",
+  "capabilities": [
+    { "id": "invoice.read",   "scope": "tenant:acme" },
+    { "id": "invoice.create", "scope": "tenant:acme", "constraints": { "max_amount_usd": 10000 } }
+  ],
+  "endpoints": [
+    { "transport": "grpc", "url": "grpc://agents.example.com:8443" },
+    { "transport": "sse",  "url": "https://agents.example.com/a2a/sse" }
+  ],
+  "extensions": {
+    "ap2": {
+      "payment_methods": ["stripe:usd", "ach"],
+      "mandate_formats": ["ap2/v1"]
+    }
+  }
+}
+```
+
+`capabilities` 字段是这一切超越「HTTPS 加点料」的关键所在。智能体宣称的每一项能力都是一个签名声明。一个只信任「`invoice.create` 上限为 1 万美元」的验证方，可以通过拒绝任何缺少该约束或约束更高的 Card 来强制执行这一策略。约束与身份同行——你无需依赖独立的授权服务器来告诉你智能体被允许做什么，因为智能体本身已经签署了一份关于自身权限的声明，而验证方只需将策略与签名声明进行比对即可。
+
+显而易见的反驳是：智能体可以签署任何它想签署的东西。没错——而这正是签名密钥与可解析、可发布的 DID 绑定的原因。如果智能体签署的声明超出了其控制组织授予的权限，该组织可以撤销 DID 的密钥绑定，从而使所有用该密钥签署的 Card 失效。签名不是良好行为的证明，而是**可归责性的证明**：该 Card 可归因于特定的密钥，该密钥由特定的组织控制，而该组织可以被起诉或制裁。
+
+这是可验证凭证（Verifiable Credentials）生态自 2020 年以来一直在精进的同一套「JWT-over-DID」模式。A2A 并未发明它，而是在智能体开始做需要可归责的事情的精确时刻，将其引入智能体生态。
+
+---
+
+## AP2：支付授权作为一等对象
+
+Agent Payments Protocol（AP2）是 A2A 的支付扩展。Google 于 2025 年首次公布 AP2；在 v1.0 时间窗口内，它从「已公布」成熟为在 Google 自身智能体栈中「宣传为生产就绪」，并且 Azure AI Foundry 的 A2A 集成中也已出现扩展点支持。
+
+AP2 中的 **mandate（授权书）** 是一种加密形式的同意收据。用户（或被委托的权威机构——雇主、银行、保险策略）签署一份声明，内容为：「该智能体被授权进行此类支付，在此限额之内，直至此到期日。」随后，智能体在执行任何支付操作时都会附上该授权书。希望执行智能体支付请求的交易对手需要同时验证授权书签名与智能体的签名 Card。任一验证失败，支付即被拒绝。
+
+一份典型的授权书结构如下：
+
+```json
+{
+  "mandate_id": "mnd_01JNZ3...",
+  "version": "ap2/v1",
+  "principal": "did:web:example.com:users:alice",
+  "agent":     "did:web:agents.example.com:shopping-assistant",
+  "purpose":   "grocery-autorefill",
+  "constraints": {
+    "currency": "USD",
+    "max_per_transaction":   200,
+    "max_per_period_usd":    800,
+    "period":                "P30D",
+    "allowed_counterparties": ["merchant:instacart", "merchant:costco"]
+  },
+  "expires_at": "2026-07-17T00:00:00Z",
+  "revocation_endpoint": "https://api.example.com/ap2/revocations"
+}
+```
+
+有趣之处在于，该对象的完整形式包含**四个签名**，而非一个：
+
+1. **Principal 签名** — 用户（或被委托权威机构）确认该智能体获得授权。
+2. **Agent 签名** — 智能体确认接受该授权书，并将自身身份与之绑定。
+3. **Counterparty 签名（执行时）** — 收款方对具体交易进行签名。
+4. **Settlement 签名（来自支付网络）** — 支付通道（Stripe、ACH、银行卡网络）确认清算完成。
+
+任何在授权书下执行的操作，最终都会形成一条从人类主体到支付通道的**不间断签名链**。这在支付领域并非新事物（芯片卡 PIN 授权、3DS2 流程、加密原生支付中的签名承诺都有类似的链条）。真正的新意在于，链条中间出现了一个非人类参与者，而协议强制该参与者在它的 Card 中、在它接受的授权书中、在它执行的每一笔支付中，明确声明它是在何种权限下运作的。
+
+撤销端点是另一个关键组件。如果用户检测到异常活动，可以调用撤销端点使授权书失效。交易对手方应对高于延迟敏感阈值的所有交易检查撤销状态；对于高价值交易，每次都应检查。这只是支付授权书的 OCSP，但同样的模式正是使系统在运营层面可行的原因——无法撤销的签名，是任何成熟的交易对手都不会接受的签名。
+
+---
+
+## 为什么重要：信任栈的组装
+
+将三层叠加起来：
+
+```
+┌───────────────────────────────────────────────┐
+│ AP2  — 签名式支付授权书                        │  同意 + 责任
+│ A2A  — 签名式 Agent Card、能力范围             │  身份 + 能力
+│ MCP  — 工具模式、流式 HTTP、任务               │  工具访问
+└───────────────────────────────────────────────┘
+         |              |              |
+       主体        委托智能体      交易对手
+```
+
+2026 年中期的一个真实生产流程可能是：购物智能体收到用户签署的授权书（AP2）。智能体通过签名 Agent Card（A2A）宣传其能力。当它需要下单时，连接到商户端的 A2A 端点，出示其 Card 与授权书，协商订单，然后使用 MCP 工具调用来调用商户端的实际支付与履约 API。每一层都有一个签名。每一层都可以独立撤销。每一层都留下审计追踪，供监管机构或事件响应团队在事后重建。
+
+2025 年初的生产流程则是：购物智能体的环境变量里放着一个 API 密钥，发出的请求商户无法区分是否来自人类，一旦出问题，没人能告诉这是谁的智能体、它被授权做了什么。对于任何需要回答合规问题的人来说，两者的差别是天壤之别。
+
+正确理解 v1.0 的方式，不是将其视为一次增量式的协议修订，而是将其视为 A2A 从「智能体之间礼貌的 RPC 方案」转变为「具备真正约束力的信任协议」的关键节点。
+
+---
+
+## 务实工程注意事项
+
+如果你正在基于这一技术栈构建系统，以下几点值得特别关注：
+
+- **DID 方法的选择很重要。** `did:web` 简单易用，但将身份与 DNS 绑定。`did:key` 自包含，但没有撤销机制。大多数生产级 A2A 部署目前选择 `did:web` 配合短 TTL 撤销列表，并计划在未来 12 个月内迁移到更健壮的方法（可能是 `did:ion` 或 LF 认可的 `did:agent` 方法）。
+
+- **授权书范围的膨胀是真正的风险。** 一份 `max_per_transaction: 200` 的授权书是安全的。一份 `max_per_transaction: 1_000_000` 的授权书，相当于把一张没有额度限制的公司信用卡交给了别人。可以预期，未来一年内的大部分 AP2 事件报告将来自过于宽松的授权书，而非签名伪造。
+
+- **A2A 运行时通常不是你的租户边界。** v1.0 提供了多租户支持，但协议层面的多租户不等于部署层面的多租户。应在操作系统/容器层面隔离租户，而非依赖协议来强制执行。一个被攻破的 A2A 运行时如果共享进程，仍然可以观察到跨租户流量。
+
+- **MCP ↔ A2A 的集成是 bug 的温床。** 两个协议由同一基金会管理，但尚未进行联合规范制定。可以预期，A2A 宣传的能力与 MCP 工具模式之间的映射会出现边缘情况——尤其是在异步 `tasks` 方面（MCP 的新生命周期原语，我们将另文讨论）。
+
+---
+
+## 参考
+
+- [A2A Protocol v1.0 site](https://a2a-protocol.org/latest/)
+- [Google Cloud — Agent2Agent protocol is getting an upgrade](https://cloud.google.com/blog/products/ai-machine-learning/agent2agent-protocol-is-getting-an-upgrade)
+- [Linux Foundation Agentic AI Foundation](https://www.linuxfoundation.org/projects)
+- [Verifiable Credentials Data Model 1.1 (W3C)](https://www.w3.org/TR/vc-data-model/)
+- [DID Core specification (W3C)](https://www.w3.org/TR/did-core/)
+- [Model Context Protocol](https://modelcontextprotocol.io)

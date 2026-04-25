@@ -1,0 +1,137 @@
+---title: "可编程推理预算：Opus 4.7 Effort API"
+description: "Opus 4.7 将推理时计算暴露为可调参数。一旦推理预算成为 API 旋钮，多智能体设计就变成了分配问题，而非选择问题。"
+publishDate: "2026-04-18"
+updatedDate: "2026-04-18"
+category: engineering
+tags:
+  - claude
+  - inference-time-compute
+  - agent-architecture
+  - cost-optimization
+  - multi-agent
+  - test-time-scaling
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+四月中旬发布的 Claude Opus 4.7 带来了 100 万 context window，还有一个安静但架构影响更深远的变更：`effort` 参数现在成了正式的 API 旋钮，`xhigh` 档位把推理时的深度推到了此前 `high` 上限之上。`low`、`medium`、`high`、`xhigh` 的差异不是固定模型的 UI 皮肤。它是单次调用的推理 trace 预算，被提升为可编程输入。
+
+这是一个小功能，但有大后果。一年来我们讨论推理时 scaling 都把它当学术趋势——OpenAI 的 o 系列、DeepSeek-R1、Gemini Deep Think。Opus 4.7 所做的是让 scaling 曲线本身可从应用代码寻址。你不再在路由时挑选"推理模型"，而是为每次调用选择投入多少推理。这把多智能体系统的设计问题从模型选择变成了预算分配。
+
+## `effort` 实际购买了什么
+
+各档位差异在于模型在发出用户可见响应之前分配给推理 trace 的内部预算。每个档位提升大致增加推理 token 使用量和端到端延迟；Anthropic 将该参数文档化为行为信号而非固定倍数，测量到的比例因任务而异。定价由总输出 token 驱动——推理 token 和表面响应 token 一样计入输出账单，所以更高档位成本更高主要是因为发出更多 token。简单任务上的 `low` 档位调用成本大约与小型模型调用相当；困难任务上的 `xhigh` 调用成本是单次 Opus 调用的数倍，但返回的错误答案也少得多。
+
+重要的是：这是单一模型加可调预算，不是四个不同权重的模型。该参数是纯粹的推理时计算。同一个 checkpoint，给更多预算，在提交前探索更多搜索分支。这有两个实际后果。
+
+第一，档位之间没有上下文切换。长的智能体轨迹可以针对单个困难步骤从 `medium` 升级到 `xhigh`，然后再回到 `medium`，无需承担跨不同模型路由时出现的 prompt-caching 惩罚。
+
+第二，失败模式是连续的。基于 `gpt-5.4-mini → gpt-5.4` 的单模型路由器在交接处存在不连续性：不同的 tokenization 怪癖、不同的拒绝画像、不同的校准。单模型 effort 路由器没有这些问题。模型的判断不变；变的只是那个判断背后的搜索量。
+
+## 架构转变：分配，而非选择
+
+在 `effort` 成为 API 旋钮之前，多智能体设计是这样的：
+
+```python
+def route(task):
+    if task.complexity == "low":
+        return call_model("claude-haiku-4-5", task)
+    elif task.complexity == "medium":
+        return call_model("claude-sonnet-4-6", task)
+    else:
+        return call_model("claude-opus-4-6", task)
+```
+
+路由器的工作是选模型。一旦模型被选中，就是固定的。升级困难任务意味着重新路由——不同的端点，某些栈里不同的 auth 头、不同的缓存前缀。延迟底线由处理任务的模型决定。
+
+在 `effort` 成为旋钮之后，同样的路由器变成：
+
+```python
+def route(task):
+    base_effort = complexity_to_effort(task)
+    return call_opus_4_7(task, effort=base_effort, budget_cap=task.budget)
+```
+
+现在路由器的工作是分配预算。任务留在同一端点内、同一缓存中、同一 auth 下。如果首次响应置信度低，下一次调用提升 `effort` 而无需重新规划工具调用脚手架。预算成为编排器拥有的变量，而非模型选择中固化的属性。
+
+这比看起来的变化更大。多智能体编排器一直背负着复杂性的重量，那些复杂性存在只是为了抹平模型差异：提供商特定的提示适配器、依赖活动分词器的 token 计数启发式方法、在哪个模型拒绝时分叉的拒绝恢复逻辑。同构模型加 effort 旋钮的架构移除了那些复杂性。编排器的唯一决策变成"这个步骤花多少"。
+
+## 成本纪律：xhigh 陷阱
+
+诱人的错误是默认设置 `effort=xhigh` 让模型"自己判断"。数字不支持这个。在简单工具选择决策上——"这三个函数我该调用哪个"——`xhigh` 和 `medium` 质量相当但 `xhigh` 成本大约高出 4 倍。在真正困难的推理上——新颖代码、跨模块重构、证明——`xhigh` 显著拉开与 `high` 的差距，但简单任务上的差距缩小到噪声级别。
+
+这与推理时 scaling 文献两年来记录的测试时 scaling 曲线一致：一旦任务在模型能力范围内，计算回报急剧下降。effort API 所做的是在调用点让这些回报可见，这样工程师就能在自己的 trace 上看到曲线趋平。
+
+合理的默认策略：
+
+```python
+EFFORT_POLICY = {
+    "tool_routing": "low",          # 选一个函数；无需推理
+    "information_extraction": "low",# 从文本抽取字段
+    "code_generation": "medium",    # 例行补丁
+    "code_review": "high",          # 发现微妙 bug
+    "architecture_decision": "high",# 权衡利弊
+    "novel_proof": "xhigh",         # 真正困难
+    "adversarial_debug": "xhigh",   # 模型一直答错
+}
+```
+
+真正的节省来自积极降低简单情况的档位，而非本能地提高困难情况的档位。`xhigh` 足够贵，花在错误的 case 上会摧毁智能体循环的经济性。
+
+## 置信度门控升级
+
+更有趣的模式是动态的。不是每任务选一次 effort，而是把首次调用当作探测，只在结果未通过廉价验证器时才升级：
+
+```python
+async def adaptive_call(task, max_effort="xhigh"):
+    tiers = ["low", "medium", "high", "xhigh"]
+    cap_idx = tiers.index(max_effort)
+    for tier in tiers[:cap_idx + 1]:
+        result = await call_opus_4_7(task, effort=tier)
+        if verify(task, result):
+            return result, tier
+    return result, tier  # 返回 xhigh 尽管没通过
+```
+
+这很便宜，因为 `verify` 通常是简单检查——测试通过、JSON 解析、类型检查。如果低档位响应通过，你就省下了钱。如果失败，你就升级而不丢失上下文。
+
+实际收益是平均成本大幅下降，最坏情况质量上升。在编码智能体 trace 上，大约 60-70% 的步骤足够简单，`low` 或 `medium` 即可；把 `xhigh` 留给真正需要的 10-20%，就能以一小部分成本获得始终-xhigh 循环的大部分质量。精确比例取决于任务组合，但我们测量的每个智能体循环方向都是一致的。
+
+这个模式也可组合：如果智能体在同一子任务上升级两次仍然失败，那是强烈信号，应该升级到智能体之外请求人工审查。最大预算下的粘性失败是诊断信号，不只是昂贵的失败。
+
+## 对 Eval 设计的启示
+
+可编程推理预算改变了"模型分数"的含义。报告"Opus 4.7 在 HumanEval 上得分 X"的基准表现在是不完整的；正确的行是"Opus 4.7 在 effort=X 下得分 Y"。相同权重根据测试时投入多少计算给你帕累托前沿上不同的点。
+
+这对 eval 基础设施很重要。公开排行榜历来每个模型报告一个数字。这已经无法捕获 RLHF 偏好差异、工具使用延迟或分词器效率。有 effort 旋钮的模型使这个问题不可避免：模型是一条曲线，不是一个点。
+
+内部 eval 工具现在应该像 ML 系统论文报告延迟-准确性曲线那样报告 effort-质量曲线。相关问题不是"Opus 4.7 是否比 Opus 4.6 更好"，而是"在什么 effort 级别 Opus 4.7 越过对这个工作负载重要的每美元准确性阈值"。
+
+公开基准中已经按内部思考预算将推理模型分成单独列的——Artificial Analysis 一直在这样做——比大多数排行榜仍在使用的单行格式更接近正确。
+
+## 多模型问题
+
+如果单一模型加 effort 旋钮可以从 Haiku 级延迟（`low`）跨越到 Deep Think 级推理（`xhigh`），你的栈里还需要多个模型吗？
+
+对于纯 Anthropic 部署，答案偏向不需要。Opus 4.7 在 `effort=low` 下的调用并不完全与 Haiku 4.5 一样便宜，但管理一个模型相对三个模型的 ergonomics 成本是真实的，effort 旋钮消解了跨档位路由的大部分理由。
+
+多模型栈仍有价值的地方：异构提供商组合以实现冗余、提供商特定能力（视觉模型、embedding 模型、代码专用模型）、跨提供商的 cost arbitrage。这些都不是 Opus 4.7 effort 参数能解决的。但"为任务挑选正确的 Claude"模式——在生产中占据令人惊讶的大量编排复杂性——在很大程度上折叠回单一端点加一个预算变量。
+
+## 值得关注的事项
+
+接下来两个季度有两个下游效应值得追踪。
+
+**其他实验室会跟进。** API 形态足够有吸引力，将推理预算作为参数暴露将成为标准。OpenAI 的 o 系列已经有了推理 effort；作为连续旋钮而非少量命名档位暴露是显而易见的下一步。一旦三个主要提供商都有了，该抽象就不再是提供商特定的，开始成为标准编排原语。
+
+**预算遥测成为一等公民。** 如果 effort 是旋钮，effort 使用量就是指标。预计 SDK 更新会与 `prompt_tokens_used` 和 `completion_tokens_used` 并列发出 `reasoning_tokens_used`，预计仪表板会绘制推理 token 花费与任务质量的对比图。把这个指标认真对待的生产团队——就像他们已经认真对待延迟 P99 一样——将是那些保持智能体成本可持续的团队。
+
+更大的教训是推理时计算正在成为被管理的资源，就像 GPU 内存在注意力机制使其成为瓶颈后成为被管理资源一样。`effort` 是那个管理的早期粗糙版本。更细粒度的版本——按工具的 effort 分配、跨智能体步骤的预算结转、跨调用的预算池——是自然的下一个特性。一旦你接受推理是可计费资源，你就会围绕它构建与内存、存储、出口带宽相同的基础设施。
+
+## 参考
+
+- Claude Opus 4.7 发布及 API 文档，Anthropic（2026 年 4 月）— [anthropic.com/claude](https://www.anthropic.com/claude)
+- 前期上下文：["可控制性悖论：不透明的思维链作为安全特性"](/blog/controllability-paradox-opaque-cot)
+- 相关工作：["推理时 Scaling：Deep Think 的故事"](/blog/inference-time-scaling-deep-think)
+- 相关工作：["多头潜在注意力：压缩 KV 的几何学"](/blog/multi-head-latent-attention-geometry)

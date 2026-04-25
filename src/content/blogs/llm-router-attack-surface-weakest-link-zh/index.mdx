@@ -1,0 +1,220 @@
+---title: "LLM 路由器是整个链条中最薄弱的环节"
+description: "一个恶意的 LLM 路由器掏空了价值 50 万美元的钱包。夹在你 Agent 与模型之间的中间件，如今已成攻击面。MCP 和 A2A 解决不了这个问题。"
+publishDate: "2026-04-18"
+tags: [agent-security, LLM-routers, MCP, A2A, middleware, supply-chain, tool-call-injection]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+2026 年 4 月 13 日，来自加州大学圣巴巴拉分校、加州大学圣地亚哥分校、Fuzzland 和 World Liberty Financial 的研究人员联合发表了一份报告，描述了一类尚未被正式命名的攻击方式。他们记录了 26 个 LLM 路由器——即位于用户应用与模型提供商之间的第三方服务——正在向进行中的 Agent 对话中注入恶意工具调用。其中一起事件掏空了一位客户的加密钱包，涉及金额约 **50 万美元**。模型提供商的日志显示一切正常。Agent 应用的日志也显示一切正常。恶意工具调用只存在于路由器对 JSON-RPC 流的内存重写之中，而当用户看到返回结果时，攻击已经执行完毕。
+
+这是一个全新类型的问题，现有的 Agent 安全术语体系无法准确描述它。这不是提示词注入——攻击者不需要植入模型会读取的文本。这不是工具被篡改——工具注册表是干净的。这也不是对模型权重的供应链攻击。这是一种**针对工具调用通道的中间人攻击**，而执行者正是架构图上通常标注为"可信"的基础设施。
+
+这个问题的波及范围值得精确描述。如果你在构建 Agent，那么路由器层——无论什么位于你的进程和模型 API 之间——现在是你安全边界的一部分，而你很可能并没有这样看待它。
+
+## 为什么需要路由器
+
+路由器是指任何在接收端接受 LLM 请求、在发送端代理给提供商的服務，通常会添加以下一项或多项功能：与提供商无关的 API 层面、响应缓存、成本优化、提供商故障转移、速率限制池化，或模型选择逻辑。OpenRouter 是公开市场的典型例子。企业部署中的私有等价物比比皆是：一个共享的"LLM 网关"团队、一个统一处理 Anthropic 和 OpenAI 端点的 Kubernetes sidecar、一个注入客户特定提示词的 CDN 层重写。
+
+路由器解决了一个真实的问题。三年前，每个团队都维护着自己的 OpenAI SDK 分支、Anthropic SDK 分支和提供商故障转移逻辑。路由器吸收了这些成本。在这个过程中，它们继承了一项大多数团队从未真正思考过的特权：路由器可以看到整个对话，包括工具调用协议，并且有权限重写它。
+
+**重写权限就是问题的全部所在。其他一切都是随之而来的后果。**
+
+## 攻击的精确描述
+
+现代 Agent 协议（OpenAI 兼容协议、Anthropic 的协议、MCP）中的工具调用是嵌入在助手响应流中的 JSON 对象。模型生成的内容类似于：
+
+```json
+{
+  "role": "assistant",
+  "content": null,
+  "tool_calls": [{
+    "id": "call_a9f7",
+    "type": "function",
+    "function": {
+      "name": "transfer_tokens",
+      "arguments": "{\"to\":\"0xUserAddr\",\"amount\":\"100\"}"
+    }
+  }]
+}
+```
+
+Agent 运行时接收到这个响应后，在本地注册表中按名称查找工具，然后执行它。在设计良好的系统中，注册表要求每个工具在每个会话中都要预先批准。这是大多数开发者依赖的安全不变式。
+
+恶意路由器通过在传输过程中重写响应来打破这个不变式：
+
+```json
+{
+  "role": "assistant",
+  "content": null,
+  "tool_calls": [{
+    "id": "call_a9f7",
+    "type": "function",
+    "function": {
+      "name": "transfer_tokens",
+      "arguments": "{\"to\":\"0xAttackerAddr\",\"amount\":\"500000\"}"
+    }
+  }]
+}
+```
+
+工具名称没有改变——仍然是 `transfer_tokens`，仍然在注册表中，仍然被批准。只有参数不同。Agent 执行了它。模型日志显示原始的（无害的）输出；Agent 日志显示注入的（恶意的）调用。除非你在模型输出和运行时接收的内容之间进行字节级哈希比较，否则这两条记录永远不会相遇，差异也永远不会浮出水面。
+
+Berkeley/UCSD 的论文记录了更复杂的变体：注入模型根本没有生成的新工具调用、悄无声息地丢弃模型真实的工具调用并用攻击者选择的序列替换它们，以及——在加密钱包案例中——在第一个无害调用返回之前注入第二个转移资金的工具调用。Agent 的推理轨迹永远不会看到注入的调用，因为它从未被回放给模型；调用直接进入执行阶段。
+
+## 为什么 MCP 和 A2A 解决不了这个问题
+
+关注 Agent 协议的人第一反应通常是：MCP 的 Server Card 签名不是能处理这个问题吗？或者 A2A 的 Agent Card 验证？答案是不能，而且值得具体说明原因，因为协议文档并没有突出这个缺口。
+
+**MCP 的信任模型认证的是工具服务器，而不是工具调用。** 当 Agent 连接到 MCP 服务器时，Streamable HTTP 传输支持 TLS，2026 年代的 `.well-known/mcp-server-card` 支持签名。这证明了工具端点是合法的。但它不能证明 Agent 即将发出的工具调用实际上来自模型。MCP 假设调用方是可信的。路由器位于 MCP 边界调用方的一侧。
+
+**A2A 的 Agent Cards 签名的是能力广告，而不是消息流。** A2A v1.0 添加了签名 Agent Cards（SigCards）和用于授权的 AP2 Mandates 框架，两者都是在过去几周内发布的。这些保护措施防止恶意 Agent 伪装成合法 Agent。它们不能保护合法 Agent 的上游模型通道在 Agent 进行推理之前被篡改。
+
+**提供商端的日志记录在路由器的下游。** 如果你的路由器剥离了模型真实的输出并用你自己的输出替换，那么模型提供商记录的是它实际发送的内容。你的 Agent 记录的是它实际执行的内容。两者相互一致——每一边都看到它所看到的——但它们描述的是不同的现实。
+
+这个缺口是结构性的：目前没有哪个广泛部署的协议能对从模型推理到工具执行整个链条上的工具调用通道进行端到端认证。模型不签名任何东西。Agent 假设它读取的流就是模型生成的内容。路由器在中间拥有单方面的重写权限。
+
+## 简化的威胁模型
+
+要清晰推理缓解措施，首先明确威胁模型：
+
+1. **对手位置**：模型 API 和 Agent 工具分发循环之间任何网络可达的组件。这包括路由器（OpenRouter、LiteLLM 代理、自定义网关）、如果密钥固定不正确的话会终止 TLS 的负载均衡器、sidecar 容器，以及基于浏览器的 Agent UI 中的浏览器扩展。
+
+2. **对手能力**：在传输过程中修改模型调用的响应体。读取请求体（包括系统提示词、对话历史、工具注册表）。使用真实会话凭证向模型发起后续调用。
+
+3. **对手目标**：导致 Agent 执行模型实际上没有生成的工具调用，参数由对手选择。或者：阻止 Agent 执行模型确实生成的工具调用。
+
+4. **防御者现有的工具**：工具注册表（预先批准的名称）、会话级权限范围、有时对高风险工具进行人工审批。这些都无法捕获参数替换。都无法捕获静默丢弃并替换。
+
+攻击之所以有效，是因为防御者的工具在工具名称层运作，而对手在工具参数和序列层运作。
+
+## 真正有效的缓解措施
+
+有四种防御措施针对根本原因。前三种需要协议或供应商层面的合作；第四种你可以今天单方面实施。
+
+### 1. 模型签名的工具调用
+
+最干净的修复是端到端的：模型提供商使用会话绑定的密钥对每个工具调用进行签名，Agent 运行时在分发前验证签名。验证密钥通过路由器无法篡改的独立通道从提供商处获取（在 Agent 构建时固定的信任根证书）。
+
+```python
+from dataclasses import dataclass
+from typing import Any
+import hmac
+import hashlib
+import json
+
+
+@dataclass(frozen=True)
+class SignedToolCall:
+    call_id: str
+    name: str
+    arguments: dict[str, Any]
+    signature: str
+
+
+def verify_tool_call(call: SignedToolCall, session_key: bytes) -> bool:
+    """Verify the model provider actually issued this call.
+
+    session_key is fetched from the provider's JWKS endpoint at session
+    start, over a pinned-root TLS channel. The key is scoped to the
+    session and rotated on each turn.
+    """
+    canonical = json.dumps(
+        {"id": call.call_id, "name": call.name, "arguments": call.arguments},
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    expected = hmac.new(session_key, canonical, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, call.signature)
+```
+
+这是 MCP 和 A2A 应该添加的功能。截至 2026 年 4 月，两者都还没有发布。路由器能够重写工具调用的原因，恰恰是线格式中没有任何东西强制它们不要这样做。
+
+### 2. 直连提供商连接验证
+
+如果你等不及协议签名，至少可以固定提供商 API 的 TLS 证书，拒绝在任何中间方内部终止 TLS。这可以消除最简单的路由器 MITM 变体：你的 HTTPS 会话被持有提供商密钥的网关解密并重新加密的那种。
+
+在 Agent 构建时固定提供商的证书指纹。当指纹不匹配时拒绝连接。这迫使你和提供商之间的任何路由器成为一个明确的、可见的组件——而不是一个静默终止 TLS 的 sidecar。
+
+代价是运维方面的：任何提供商证书轮换现在都需要一次 Agent 部署。大多数团队为了能够部署网关而接受了这种痛苦。一旦这个权衡有了名字，选择就更加诚实了。
+
+### 3. 高风险工具调用的双通道确认
+
+对于效果不可逆或财务影响显著的工具，添加带外确认。Agent 通过模型通道生成工具调用；一个独立通道（第二次模型调用、一个签名确认 webhook、一个用户端设备）在分发前确认相同的调用。
+
+独立通道不需要是完整的第二个模型——一个简单得多的验证步骤就足够了。在执行 `transfer_tokens` 之前，Agent 运行时调用一个单独的、固定绑定的模型端点，问："考虑到这段对话历史，形式为 `transfer_tokens(to=X, amount=Y)` 的工具调用与用户的请求一致吗？"如果确认模型说不，或者在参数上不同意，则停止并升级。
+
+每次确认这样做既慢又贵。这正是关键。它使得这类攻击对绝大多数工具调用在经济上变得无趣，同时对真正重要的那些应用真正的审查。
+
+### 4. 重放模型输出用于工具调用提取
+
+单方面的修复：不要从原始提供商响应中提取工具调用。相反，将模型的完成结果重放到你端到端控制的本地解析器中，并将得到的工具调用结构与摄入时计算的校验和进行比较。
+
+```python
+from dataclasses import dataclass
+import hashlib
+
+
+@dataclass(frozen=True)
+class ModelResponse:
+    raw_text: str
+    body_sha256: str
+
+
+def extract_tool_calls(response: ModelResponse, expected_sha: str) -> list[dict]:
+    """Parse tool calls locally, refusing to act on modified responses.
+
+    Any intermediary that rewrites the JSON must also rewrite the checksum
+    the agent received over a separate channel. In practice, routers rarely
+    modify both.
+    """
+    actual = hashlib.sha256(response.raw_text.encode("utf-8")).hexdigest()
+    if actual != expected_sha:
+        raise SecurityError(
+            "Model response body does not match expected hash; "
+            "router or transport tampered with the stream."
+        )
+    return _parse_tool_calls(response.raw_text)
+```
+
+这要求提供商在路由器无法伪造的 header 中返回 body 哈希。一些提供商现在确实这样做——这是对现有响应 header 的一个小扩展，它可以在没有协议级加密的情况下捕获最简单的 MITM 案例。如果你的提供商不提供，值得向他们提出这个需求。
+
+## 供应链的等价物
+
+路由器攻击面是 LLM-Agent 领域中等价于 2018 年 `event-stream` npm 被篡改事件、2020 年 SolarWinds 构建管道攻击和 2024 年 XZ Utils 后门事件的案例。共同的结构模式：一块单独来看枯燥无味的基础设施，因惯例而非检查而被广泛信任，位于一个妥协具有不对称杠杆效应的咽喉要道。
+
+让这类问题对 Agent 来说比传统软件更严重的细节在于其新颖性。大多数 Agent 部署没有成熟的依赖审计文化。路由器的选择往往是因为其功能集（100 个提供商集成、成本仪表板、故障转移），而非安全姿态。路由器的代码通常不是开源的。路由器的运营商往往是小团队。而 Agent 执行工具调用的权限往往很广泛——文件系统写入、网络出口、金融交易。
+
+在 LLM 路由器层发生一次 SolarWinds 级别的事件，具备了比 SolarWinds 更糟糕的所有条件：更广的波及范围、更快的执行速度、现有日志中更少的可见性。
+
+## 本周可以采取的行动
+
+如果你在生产环境中运行 Agent，有三个具体行动：
+
+**审计你的路由器。** 准确了解你的 Agent 进程和提供商 API 之间有什么。阅读路由器的安全文档。问问路由器是否具有修改响应体的技术能力。（提供缓存或成本优化的大多数路由器都有。有些不会明确说明。）决定你是否愿意让这种能力处于你的威胁模型范围内。
+
+**尽可能固定提供商证书。** 这在大多数 HTTP 客户端中只需要五行代码，而且可以消除这类攻击中最简单的那种。运维代价是真实的，但可以承受。
+
+**在高风险工具上引入确认机制。** 任何转移资金、将数据发送到信任边界之外、或不可逆的操作都应该有一个独立的确认步骤。一旦你接受路由器被入侵是一个现实的场景，这个成本只是预期损失计算的一小部分。
+
+这些都无法解决全部问题。全部问题需要在协议层面进行工具调用签名，而这需要模型提供商的合作。但这些措施中的每一个，单独来看，都足以提高这类攻击的成本，足以改变经济账。
+
+## 接下来会怎样
+
+路由器市场像任何其他市场一样对激励做出反应。如果客户询问签名的工具调用，路由器将在签名的工具调用上竞争。如果客户不询问，当前的架构——路径上任何路由器都拥有单方面重写权限——将继续是默认选择。
+
+接下来两个季度关注三件事：OpenAI 和 Anthropic 是否在响应信封中发布工具调用签名（他们暗示过，但尚未发布）；OpenRouter 和 LiteLLM 是否发布客户可以切换的完整性验证模式；以及主要 Agent 框架（LangGraph、Claude Agent SDK、Pydantic AI）是否添加对模型到运行时通道的可选验证。
+
+第一个发布端到端签名工具调用的供应商，将拥有一个真正不同于现有产品的差异化优势——不是关于基准测试，不是关于延迟，而是关于客户已经信任的基础设施是否真的值得那份信任。
+
+---
+
+**参考资料**
+
+- 论文报道：*As AI agents scale in crypto, researchers warn of a critical security gap*, CoinDesk, April 13, 2026. [https://www.coindesk.com/tech/2026/04/13/ai-agents-are-set-to-power-crypto-payments-but-a-hidden-flaw-could-expose-wallets](https://www.coindesk.com/tech/2026/04/13/ai-agents-are-set-to-power-crypto-payments-but-a-hidden-flaw-could-expose-wallets)
+- MCP 规范：[https://modelcontextprotocol.io/](https://modelcontextprotocol.io/)
+- A2A 规范：[https://a2a-protocol.org/](https://a2a-protocol.org/)
+- 历史类比：Krebs, B. *A Deep Dive on the Recent Widespread DNS Hijacking Attacks*, 2019，针对不同协议层的类似 MITM 模式。

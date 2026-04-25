@@ -1,0 +1,132 @@
+---title: "MS Agent Framework 1.0：Harness 优先的编排模式"
+description: "微软将 Semantic Kernel 和 AutoGen 合并为一个生产级 SDK，将协调逻辑从 LLM 中移出，交给确定性的交接机制处理。"
+publishDate: "2026-04-19"
+tags: [agent-frameworks, microsoft, semantic-kernel, autogen, multi-agent, orchestration, agent-engineering]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+2026 年 4 月 8 日，微软正式发布了 Agent Framework 1.0。真正重要的不是功能清单，而是其定位背后的含义：这是 Semantic Kernel 和 AutoGen 的正式合并，也是主流厂商首次将一个研究导向的多智能体库和一个企业级 LLM 编排 SDK 整合为单一的生产级接口。有趣的问题不在于合并是否具有战略意义——考虑到内部重复建设，这显然是合理的——而在于它使微软做出了怎样的架构假设。
+
+这个假设贯穿 1.0 API 的每一个角落：**Harness 优先的编排（harness-first orchestration）**：智能体之间的协调逻辑存在于确定性的系统层代码中，而不是 LLM 的规划输出里。框架针对一个特定的失败模式——"智能体在运行时推理协调策略"——通过将协调逻辑完全移出模型来加以避免。
+
+这与 LangGraph 在 2024 年用状态图 API 做出的架构赌注相同，也与 Anthropic 的 Claude Code 用 Task 工具和技能/钩子分层实现的方式相同。Agent Framework 1.0 的特别之处在于：它现在是微软品牌下的默认选项——如果你是一个标准化使用微软技术栈的企业，Harness 优先就是你开箱即得的选择。
+
+## 1.0 实际交付的内容
+
+这个 SDK 暴露了三个原始概念，它们在前身库中不存在同等形式化程度的第一等概念。
+
+**`AgentHandoff`**：从一个智能体向另一个智能体显式转移控制权和上下文负载。不是一句"现在交接给审核者"的提示，而是一个带类型的协议，包含 schema 验证的负载、目标智能体标识符，以及可选的策略来决定接收方是否可以拒绝。
+
+**带确定性路由器的 `GroupChat`**：之前的 AutoGen `GroupChatManager` 依赖 LLM 来选择下一个发言者。1.0 的 `GroupChat` 接受一个 `RoutingPolicy` 对象，可以是纯函数式的对话状态转换。基于 LLM 的路由仍然支持，但现在只是多种策略之一——不再是默认值。
+
+**`Workflow` 作为第一等单元**：顺序、并发和基于交接的工作流都表示为可组合的 `Workflow` 对象，带有显式的状态 schema。顺序工作流是声明式的，而不是由监督智能体推理出来的。
+
+具体来看：
+
+```python
+from microsoft.agents import Agent, AgentHandoff, GroupChat
+from microsoft.agents.workflow import SequentialWorkflow, RoutingPolicy
+
+editor = Agent(
+    name="editor",
+    model="gpt-5.4",
+    instructions="根据提供的简报起草技术内容。",
+)
+
+reviewer = Agent(
+    name="reviewer",
+    model="gpt-5.4-reasoning",
+    instructions="审查技术准确性。通过调用 AgentHandoff 返回具体修改请求给编辑，或者调用 `approve` 工具批准。",
+)
+
+# 确定性路由：审核者恰好在编辑者之后运行一次，
+# 然后控制权返回给调用者，附带最终产物。
+workflow = SequentialWorkflow(
+    agents=[editor, reviewer],
+    max_handoffs_between=2,  # 有界的交接预算
+)
+
+result = workflow.run(brief="写一篇 300 字的 KV 缓存解释文章。")
+```
+
+`AgentHandoff` 对象携带一个类型化的负载：
+
+```python
+@dataclass(frozen=True)
+class AgentHandoff:
+    source: str              # "reviewer"
+    target: str              # "editor"
+    payload: HandoffPayload  # schema 验证的结构化数据
+    reason: str              # "需要修改：第 2 节论点有误"
+    control: Literal["transfer", "copy"]  # 源智能体是否继续运行？
+```
+
+`control` 字段是微妙之处。`transfer` 意味着源智能体停止——交接对它来说是终止性的。`copy` 意味着源智能体继续并行运行。大多数企业工作流需要 `transfer` 语义，因为它们符合审计要求：在任何时刻，恰好有一个智能体"拥有"该任务。
+
+## 支持 Harness 优先的理由
+
+传统的多智能体编排——2023 年原始 AutoGen 论文推广的模式——将协调权交给 LLM。一个监督智能体读取任务，决定下一个工作智能体应该运行什么，构思提示，接收输出，决定如何处理它。这些决策中的每一个都是一次模型调用，每一次都是随机的，失败模式呈乘法叠加。
+
+Harness 优先反其道而行之。Harness——框架运行时——拥有排序逻辑、重试逻辑、超时策略和错误边界。LLM 只拥有那些需要判断力的原始操作：生成什么文字、调用什么工具、提取什么数据。一切结构性的东西都是代码。
+
+微软在 1.0 博客文章中提出的定量论点是 token 消耗。在 LLM 监督式编排下，一个典型的五轮多智能体对话中，大约 40-60% 的总 token 消耗在协调开销上——监督者读取状态、推理下一步、构思交接提示。在确定性路由下，这个数字降到接近零。工作智能体生成它们的内容；Harness 在它们之间移动状态。
+
+定性论点更难量化，但更重要：LLM 监督式编排的产出在生产环境中是不可复现的。同样的输入在不同运行中可能产生不同的执行轨迹，因为监督者的决策是随机的。在 Harness 优先模式下，结构性轨迹是确定性的；只有每个智能体轮次内的内容有所不同。
+
+对于需要审计的企业工作流——贷款审批、合规审查、医疗文档——不可复现的执行轨迹是致命的。Harness 优先架构是对这一需求的直接回应。
+
+## LLM 监督式路由仍然适用的场景
+
+让人不舒服的是，Harness 优先确实有真正的成本。确定性路由要求你提前知道工作流的形状。对于真正开放式的任务——"帮我调试这个奇怪的生产事故"，下一步的正确决策取决于上一个工具调用的返回结果——将决策树编码进 `RoutingPolicy` 有时比让模型推理更困难。
+
+微软 1.0 设计承认了这一点，让 `RoutingPolicy` 可以接受纯函数或使用 LLM 的 `ModelRouter`。与 AutoGen 的区别在于：模型路由器是一个独立的组件，有自己的可观测输出，而不是模糊地分散在监督者智能体的对话历史中。
+
+从生产部署中浮现的经验法则：当决策树能装进你脑子里时，使用确定性路由；当装不下时，使用基于模型的路由，但让它成为一个命名的、可观测的组件。反模式是让监督者"自己搞定"，却不命名"它"是什么。
+
+## Semantic Kernel / AutoGen 合并的代价
+
+合并并不无缝。有几个值得注意的坑，在你决定迁移之前应该了解。
+
+**插件语法是 Semantic Kernel 的，不是 AutoGen 的。** 工具用 `@kernel_function` 装饰器声明，放在 `Plugin` 类里。AutoGen 的 `FunctionTool` 作为兼容垫片提供，但在 1.0 中标记为废弃。如果你的代码库在 AutoGen 侧，预期会有迁移工作。
+
+**对话记忆语义发生了变化。** AutoGen 的 `GroupChat` 维护一个所有人都在读的共享对话历史。Agent Framework 1.0 默认每个智能体有独立记忆，通过显式的 `ChatHistoryProvider` 共享。新的默认设置更安全（默认不出现跨智能体上下文泄漏）但会破坏从 AutoGen 迁移过来的心智模型。
+
+**流式输出现在是第一等的。** 两个前身都有流式输出，但支持在各种智能体类型之间参差不齐。1.0 要求所有智能体子类都必须支持流式输出。好的一面是一致的用户体验；坏的一面是你移植的任何自定义智能体都需要实现异步流式协议，否则无法通过类型检查。
+
+**尚无托管运行时。** 这个框架目前只是客户端 SDK。没有 Microsoft 托管的等价物来对标 LangGraph Cloud 或 OpenAI Agents SDK 的托管运行时。预期在 Build 2026 上公布，但没有随 1.0 一起发布。
+
+## 与其他技术栈的比较
+
+现在有四个框架在企业多智能体工作流领域做出有力主张：LangGraph、OpenAI Agents SDK、Anthropic 的 Claude Code 智能体模型，以及微软 Agent Framework 1.0。它们不可互换，它们的差异更容易从各自优先防止的失败模式来理解。
+
+| 框架 | 防止什么 | 接受什么 |
+|------|----------|----------|
+| LangGraph | 不可复现的轨迹、隐式状态 | 更高的前期工作流建模成本 |
+| OpenAI Agents SDK | 交接丢失、工具调用验证缺口 | OpenAI 模型锁定 |
+| Claude Code 智能体模型 | 智能体角色间的上下文污染 | CLI 之外的结构灵活性较弱 |
+| MS Agent Framework 1.0 | 通过 LLM 协调的 token 开销、审计缺口 | 确定性路由的编写成本 |
+
+这四个框架在同一个元决策上殊途同归：协调逻辑应该放在 LLM 之外。它们在表面 API、默认记忆模型和托管故事上存在分歧，但架构公理是共享的。这是 2026 年智能体框架领域最大的信号——而不是任何单个框架的功能。
+
+## 实践采纳指南
+
+如果你使用 Azure OpenAI 或 Azure AI Foundry，并且已经在 Semantic Kernel 上构建，升级到 1.0 是直接的，而且消除了重复依赖。运行提供的迁移 linter；它会捕获大约 80% 的 API 重命名问题。
+
+如果你使用 AutoGen 进行研究或原型开发，暂停迁移一个发布周期。1.0 API 是稳定的，但研究风格的功能（动态智能体生成、对话历史内省）不如在 AutoGen 中完善。2026 年 6 月的 1.1 里程碑预计会弥补这些差距。
+
+如果你从零开始，选择取决于你的技术栈锁定。在 Azure 上：选 Agent Framework 1.0。在其他平台上：选 LangGraph 以获得更深入的状态图工具，或者如果你想要托管运行时选 OpenAI Agents SDK。Agent Framework 的价值在微软生态内部；在外部，你是在为那些替代方案同样能匹配的功能支付迁移税。
+
+更深刻的收获与供应商无关：2026 年多智能体编排的问题不再是"哪个框架有最好看的 API"。而是"哪个框架的失败模式优先级与我的相匹配"。Harness 优先是微软对"无界限 LLM 协调开销"问题的回答。你的工作负载是否应该优先考虑这一点，才是你真正需要做的决定。
+
+---
+
+**参考文献**：
+- Microsoft Agent Framework 1.0 公告：[devblogs.microsoft.com/agent-framework/microsoft-agent-framework-version-1-0](https://devblogs.microsoft.com/agent-framework/microsoft-agent-framework-version-1-0/)
+- Semantic Kernel 仓库：[github.com/microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel)
+- AutoGen 仓库：[github.com/microsoft/autogen](https://github.com/microsoft/autogen)
+- LangGraph：[github.com/langchain-ai/langgraph](https://github.com/langchain-ai/langgraph)
+- OpenAI Agents SDK：[openai.github.io/openai-agents-python](https://openai.github.io/openai-agents-python/)

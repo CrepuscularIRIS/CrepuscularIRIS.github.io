@@ -1,0 +1,314 @@
+---title: "脚手架比规模更重要"
+description: "对于编程智能体而言，流水线架构比模型规模更重要。SWE-bench 和 Terminal-Bench 的数据量化了这一差距。"
+publishDate: "2026-04-15"
+updatedDate: "2026-04-18"
+tags: [coding-agents, scaffolding, SWE-bench, agent-systems, architecture, evaluation, Terminal-Bench, fault-localization]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+SWE-bench 排行榜讲述了一个大多数人读反了的故事。他们看到哪个模型登顶，就得出结论：模型能力驱动智能体表现。但真实数据说的是另一回事：表现最好的系统并非使用最强大基础模型的那些，而是在足够好的模型周围构建了最佳脚手架的那些。
+
+截至 2026 年 4 月，最佳脚手架系统与裸模型 API 调用在 SWE-bench Verified 上的差距，比最强和最弱的前沿模型之间的差距还要大。换句话说：将中端模型包装在优秀脚手架中，其表现超过了给顶级模型原始访问权限并让它修复 bug 的方式。
+
+对于正在构建编程智能体的任何人来说，这有实际影响。花在脚手架工程上的边际美元，比花在模型升级上的边际美元产生更多性能提升。
+
+## "脚手架"的具体含义
+
+在编程智能体语境下，脚手架是用户意图与模型 API 调用之间除了模型本身之外的一切。包括：
+
+**上下文组装**：哪些文件、符号、测试输出和 git 历史被加载到提示词中。朴素的智能体将整个仓库一股脑塞进上下文窗口。构建良好脚手架的智能体运行静态分析以识别相关依赖图，只加载失败测试调用链中的文件，并包含带有堆栈跟踪的特定错误信息。
+
+**动作分解**：复杂任务如何被分解为适合模型处理的步骤。裸模型收到"修复这个失败的测试"并尝试一次性完成整个修复。脚手架化智能体首先定位故障（哪个函数、哪个分支），然后提出修复方案，接着验证修复能编译，然后运行测试，再检查是否有回归。
+
+**验证循环**：模型生成代码后会发生什么。没有脚手架，输出直接发送给用户。有了脚手架，输出会通过类型检查器、linter、测试套件，可能还有第二轮模型审查——然后才能作为解决方案呈现。
+
+**恢复策略**：步骤失败时会发生什么。裸模型用相同方法重试或放弃。脚手架化智能体有明确的回退策略：如果初始修复无法编译，尝试更简单的改动；如果测试在三次尝试后仍然失败，用更多上下文重新定位故障；如果智能体卡住了，升级到不同的智能体或用户。
+
+## SWE-bench 的证据
+
+SWE-bench 任务要求智能体通过生成能通过仓库测试套件的补丁来解决真实的 GitHub 问题。数据集来自流行 Python 仓库（Django、scikit-learn、matplotlib 等），每个任务都有一个补丁必须通过的 ground-truth 测试。
+
+性能分解揭示了脚手架效应：
+
+```
+System                    | Model           | SWE-bench Verified
+--------------------------|-----------------|-------------------
+Best scaffolded system    | Claude Sonnet   | ~62%
+Best scaffolded system    | GPT-5.4         | ~60%
+Bare model (no scaffold)  | Claude Opus 4.6 | ~38%
+Bare model (no scaffold)  | GPT-5.4         | ~35%
+```
+
+使用中端模型（Sonnet）的最佳脚手架系统，其表现比没有脚手架运行的最强大模型（Opus 4.6）高出 24 个百分点。脚手架的贡献大约是模型贡献的 2 倍。
+
+这种模式在多个基准变体和模型代际中持续存在。当 SWE-bench Pro 引入更难的多文件编辑和架构变更任务时，脚手架优势仍然存在——脚手架更好的系统保持了更高的解决率，尽管绝对性能有所下降。
+
+## Terminal-Bench 证实了这一模式
+
+Terminal-Bench 于 2026 年初发布，测量的是一种不同的能力：在 Linux 环境中从崩溃的系统状态中恢复。任务包括修复配置错误的服务、恢复损坏的文件系统、调试网络配置和解决依赖冲突。
+
+脚手架效应在这里比在 SWE-bench 上更加明显。Terminal-Bench 任务需要顺序诊断——运行命令、解释输出、形成假设、检验假设——其中诊断管道的质量主导了任何单个推理步骤的质量。
+
+```
+System                    | Model           | Terminal-Bench
+--------------------------|-----------------|---------------
+Scaffolded (diagnostic)   | Sonnet 4.6      | ~78%
+Scaffolded (basic)        | Opus 4.6        | ~65%
+Bare model                | Opus 4.6        | ~41%
+```
+
+"诊断脚手架"系统使用结构化故障排除循环：收集系统状态 → 形成假设 → 设计最小测试 → 执行 → 解释 → 完善或升级。每个步骤约束下一步，防止模型跳到结论或未经验证就运行破坏性命令。基础脚手架提供工具访问，但没有诊断结构。
+
+裸 Opus 与脚脚架 Sonnet 在 Terminal-Bench 上的 37 分差距，比 SWE-bench 上的 24 分差距更大。诊断任务对缺少脚手架的惩罚更严重，因为每个错误步骤都会叠加——一个错误的 `rm` 命令会破坏下一步诊断所需的证据。强制"先读后写"和"修改前备份"的脚手架防止了这些级联失败。
+
+## 为什么脚手架主导：一个信息论论证
+
+模型的能力可以理解为它在足够上下文下生成正确代码的容量。脚手架的工作是最大化所呈现上下文与解决任务所需信息之间的互信息。
+
+考虑一个 bug 修复任务。所需的总信息包括：失败测试的断言、导致失败的代码路径、预期行为、可能受修复影响的任何相关函数，以及仓库的编码约定。设这个为 $I_{\text{needed}}$。
+
+模型收到上下文 $C$ 并生成修复。修复质量受限于 $I(C; I_{\text{needed}})$ —— 模型看到的内容与需要知道的内容之间的互信息。
+
+能力更强的模型有更高的容量来利用 $C$ 中的信息。但如果 $C$ 包含的大部分是不相关文件且错过了关键依赖，即使完美的模型也会生成次优修复。脚手架控制 $C$。模型控制对 $C$ 的利用。
+
+```python
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class ScaffoldingAnalysis:
+    context_relevance: float
+    model_exploitation: float
+    verification_recovery: float
+
+    @property
+    def effective_performance(self) -> float:
+        return (
+            self.context_relevance
+            * self.model_exploitation
+            * (1 + self.verification_recovery)
+        )
+```
+
+乘法结构是关键。如果上下文相关性是 0.3（大部分上下文是不相关的），即使利用容量为 0.95 的模型，有效性能也只有 ~0.3。将上下文相关性从 0.3 提高到 0.8 会使有效性能翻倍以上——与模型无关。
+
+这种乘法关系也解释了为什么脚手架改进与模型升级配合良好。上下文相关性提高 10% 和模型利用提高 10% 会产生 ~21% 的有效性能改进（1.1 × 1.1 = 1.21），而非 20%。脚手架和模型相互强化。
+
+## 定位器优先架构
+
+2026 年 4 月，SWE-bench 上表现最高的智能体系统共享一个已成为标准结果的结构模式：一个专门的定位阶段，运行在任何代码生成之前。
+
+```python
+from dataclasses import dataclass, field
+from typing import Protocol
+
+
+class Localizer(Protocol):
+    def locate(self, issue: str, repo_path: str) -> list[str]: ...
+
+class Planner(Protocol):
+    def plan(self, issue: str, files: list[str]) -> list[str]: ...
+
+class Editor(Protocol):
+    def edit(self, plan_step: str, context: str) -> str: ...
+
+class Validator(Protocol):
+    def validate(self, patch: str, repo_path: str) -> bool: ...
+
+
+@dataclass
+class LocalizerFirstAgent:
+    localizer: Localizer
+    planner: Planner
+    editor: Editor
+    validator: Validator
+    max_retries: int = 3
+
+    def solve(self, issue: str, repo_path: str) -> str | None:
+        relevant_files = self.localizer.locate(issue, repo_path)
+
+        context = load_files(relevant_files, repo_path)
+        plan = self.planner.plan(issue, relevant_files)
+
+        patches: list[str] = []
+        for step in plan:
+            for attempt in range(self.max_retries):
+                patch = self.editor.edit(step, context)
+                if self.validator.validate(patch, repo_path):
+                    patches.append(patch)
+                    context = update_context(context, patch)
+                    break
+            else:
+                return None
+
+        return combine_patches(patches)
+
+
+def load_files(files: list[str], repo: str) -> str:
+    sections = []
+    for f in files:
+        with open(f"{repo}/{f}") as fh:
+            sections.append(f"# {f}\n{fh.read()}")
+    return "\n".join(sections)
+
+
+def update_context(context: str, patch: str) -> str:
+    return f"{context}\n\n# Applied patch:\n{patch}"
+
+
+def combine_patches(patches: list[str]) -> str:
+    return "\n".join(patches)
+```
+
+定位器可以使用多种信号：静态分析（AST 解析、调用图遍历）、动态分析（测试覆盖率、堆栈跟踪）和语义搜索（嵌入相似度）。最好的系统结合所有三种，使用静态分析找到结构邻近区域，使用语义搜索找到直接依赖链之外的概念相关代码。
+
+关键点在于，定位器通常使用比编辑器更便宜的模型。定位是一个分类任务（哪些文件是相关的？），而非生成任务（我应该写什么代码？）。一个快速、便宜的模型，能准确地从 1000 个文件的仓库中识别出 5-10 个相关文件，比一个强大的模型收到全部 1000 个文件然后试图内部找到相关文件提供更多价值。
+
+## 最重要的五种脚手架模式
+
+### 1. 修复生成前的故障定位
+
+最高杠杆的脚手架投资是在要求模型生成代码之前缩小搜索空间。
+
+```
+朴素流水线：
+  用户问题 → [完整仓库在上下文中] → 模型 → 补丁
+
+脚手架化流水线：
+  用户问题 → 静态分析 → [依赖图] →
+  → 失败测试 → [堆栈跟踪] → [仅相关文件] →
+  → 模型 → 补丁 → [验证] → 补丁（或重试）
+```
+
+脚手架化流水线的上下文小 10-50 倍，相关度高 5-10 倍。在 SWE-bench 上，投资于故障定位的系统持续优于依赖模型在大上下文中找到相关代码能力的系统。
+
+### 2. 多步骤分解
+
+复杂的修复需要多个协调的更改。脚手架将任务分解为步骤——并独立验证每个步骤——防止级联错误。
+
+```python
+def scaffolded_fix(issue: str, repo_path: str) -> list[str]:
+    relevant_files = fault_localize(issue, repo_path)
+
+    context = build_context(relevant_files, repo_path)
+    analysis = model_analyze(issue, context)
+
+    fix_plan = model_plan(analysis)
+
+    patches = []
+    for step in fix_plan.steps:
+        patch = model_generate(step, context)
+        ok, error = verify_compiles(patch, repo_path)
+        if not ok:
+            patch = model_retry(step, context, error)
+        patches.append(patch)
+
+    if not run_tests(patches, repo_path):
+        return fallback_strategy(issue, patches, repo_path)
+
+    return patches
+```
+
+### 3. 检索增强上下文
+
+不要把整个代码库塞进上下文，只检索相关内容，使用静态分析和语义搜索的组合。
+
+表现最好的 SWE-bench 系统使用两阶段检索：首先，静态分析识别失败测试周围的调用图和导入链。第二，语义搜索在仓库中查找可能在直接依赖链之外的概念相关代码，其中包含相关模式。
+
+这种混合方法一致地优于单独使用任一方法。静态分析捕获结构依赖。语义搜索捕获概念依赖。两者结合，构建了一个既完整又紧凑的上下文。
+
+### 4. 验证作为一等步骤
+
+每个在基准测试中表现良好的脚手架化系统，在生成和输出之间都有明确的验证。最小可行验证栈：
+
+```
+生成的代码
+  → 语法检查（能解析吗？）
+  → 类型检查（类型对齐吗？）
+  → Lint（遵循约定吗？）
+  → 单元测试（失败的测试通过了吗？）
+  → 回归（其他测试仍然通过吗？）
+```
+
+每个验证失败都会产生一条结构化错误消息，反馈给模型进行重试尝试。错误消息是脚手架的一部分——格式良好的错误，包含具体行号和预期类型，比原始编译器输出更有价值。
+
+### 5. 恢复与升级
+
+最后一种脚手架模式是明确的恢复：当智能体卡住时会发生什么。没有恢复脚手架，智能体会进入无限重试循环或产生越来越绝望的补丁。
+
+有效的恢复策略：
+
+- **回溯**：如果当前方法失败 3 次，丢弃最后 N 步并尝试不同的分解
+- **扩大上下文**：加载初始检索中未包含的其他文件
+- **简化**：在尝试复杂修复之前尝试最小修复（单行更改）
+- **升级**：如果所有自动恢复都失败，产生一份结构化报告，说明尝试了什么和什么失败了，供人工审查
+
+## 改变决策的成本核算
+
+脚手架与规模的决策有一个经常被忽略的成本维度。从 Sonnet 升级到 Opus 会使每 token 成本增加大约 5 倍。构建脚手架是一次性工程投资，分摊到每次查询。
+
+```python
+@dataclass(frozen=True)
+class CostComparison:
+    queries_per_month: int
+    sonnet_cost_per_query: float
+    opus_cost_per_query: float
+    scaffolding_engineering_hours: int
+    engineer_hourly_rate: float
+
+    @property
+    def monthly_model_upgrade_cost(self) -> float:
+        return self.queries_per_month * (
+            self.opus_cost_per_query - self.sonnet_cost_per_query
+        )
+
+    @property
+    def scaffolding_investment(self) -> float:
+        return (
+            self.scaffolding_engineering_hours
+            * self.engineer_hourly_rate
+        )
+
+    @property
+    def payback_months(self) -> float:
+        if self.monthly_model_upgrade_cost == 0:
+            return float("inf")
+        return (
+            self.scaffolding_investment
+            / self.monthly_model_upgrade_cost
+        )
+```
+
+对于每月运行 10,000 次智能体查询的团队，Sonnet 和 Opus 在典型 token 量下的成本差异为 $2,000-5,000/月。构建定位和验证脚手架的两周工程冲刺成本约 $15,000，一次性投入。回本周期为 3-7 个月——之后脚手架化的系统既更便宜又更好。
+
+这种成本结构也解释了为什么开源智能体框架越来越多地将脚手架作为其主要价值主张。模型是一个 API 调用。脚手架是产品。
+
+## 基准之外的生产证据
+
+基准数字是必要条件但非充分条件。2026 年初来自生产部署的三个信号证实了脚手架主导模式：
+
+**Cursor 的架构。** Cursor 的 Tab 补全和 Agent 模式对相同的底层模型使用不同的脚手架。Tab 补全使用轻量级脚手架（文件上下文 + 光标位置）。Agent 模式使用完整脚手架（多文件上下文、验证、重试）。模式之间的性能差距大于同一模式内模型版本之间的差距。
+
+**Claude Code 的四层 harness。** Claude Code 的架构——Rules、Skills、Agents、Hooks——完全是脚手架。模型是 Claude Sonnet 或 Opus，按任务选择。harness 决定加载哪些规则、激活哪些技能、应用哪些智能体模式。升级模型带来边际性能提升。改进 harness（更好的文件选择、更紧密的验证、更智能的恢复）带来戏剧性的性能提升。
+
+**Codex CLI 的三级权限。** OpenAI 的 Codex CLI 按信任级别分离脚手架：suggest（只读脚手架）、auto-edit（带验证的写脚手架）、full-auto（带沙箱的写+执行脚手架）。每个层级添加脚手架层。即使使用相同模型，层级之间的性能差异也是实质性的，因为每层都添加了验证和恢复能力。
+
+## 对智能体系统设计的影响
+
+如果脚手架主导模型能力，工程优先级会转移：
+
+**投资于上下文组装。** 任何编程智能体的最高 ROI 改进是更好的上下文选择。构建或采用用于静态分析、依赖图绘制和语义检索的工具。几百行选择正确 20 个文件的脚手架代码，其表现优于向更大的模型扔 1,000 个文件。
+
+**构建验证基础设施。** 每个编程智能体都应该有一个验证循环，在呈现结果之前捕获失败。每次生成后运行 `tsc` 或 `pytest` 的成本可以忽略不计，与向用户呈现破损代码的成本相比。
+
+**使恢复变得明确。** 用与成功路径相同的关注度设计失败路径。一个优雅失败并产生有用诊断输出的智能体，比成功率高 5% 但失败时产生垃圾的智能体更有价值。
+
+**使用更便宜的模型配合更好的脚手架。** 对于大多数编程任务，Sonnet 级模型配合出色脚手架，其表现优于 Opus 级模型配合基础脚手架——成本只有 20%。将昂贵的模型保留给脚手架无法补偿的任务：高度新颖的问题、复杂的架构决策、需要深厚领域专业知识的任务。
+
+**将模型升级作为奖励，而非策略。** 当更好的模型可用时，脚手架化的系统获得免费性能提升——更好的模型更有效地利用相同构建良好的上下文。但不要等待模型升级来改进你的智能体。你今天可以做的脚手架改进，比下个季度即将到来的模型改进更大。
+
+反直觉的结论：最好的编程智能体不是拥有最好模型的智能体，而是围绕足够好的模型拥有最好流水线的智能体。**脚手架比规模更重要**。

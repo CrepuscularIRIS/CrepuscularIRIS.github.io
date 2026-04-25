@@ -1,0 +1,379 @@
+---title: "MCP Apps：当协议成为 UI"
+description: "Model Context Protocol 正在从 JSON 数据交换演变为交互式 UI 平台。这对 agent 开发者意味着什么？"
+publishDate: "2026-04-11"
+updatedDate: "2026-04-18"
+tags:
+  - mcp
+  - agent
+  - protocol
+  - tools
+  - developer
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+一个搜索学术论文的 MCP 工具返回了 47 条 JSON 数组结果。用户盯着满屏文字，滚动过三屏标题和元数据，然后让 agent 按年份筛选。Agent 又调用了一次工具，等待响应，再格式化出一屏文字。三个来回才找到四篇 2025 年引用超过 100 次的论文——这个交互用可排序列表只需两次点击就能解决。
+
+MCP Apps 改变了这一点。2026 年 MCP 路线图引入了包含交互式 HTML/JS/CSS 的工具响应，伴随结构化数据一起返回。工具作者——而非模型或客户端——控制输出格式。论文搜索返回可过滤的表格，日程工具返回日历选择器，代码审查工具返回可折叠的差异视图。**协议正在演变成一个 UI 平台。**
+
+## MCP 目前的架构（以及正在发生的变化）
+
+当前 MCP 架构是有状态且面向连接的。客户端与服务器建立会话，服务器在该会话中维持状态，工具调用发生在该持久连接内部。这在小规模下运行良好——易于推理、易于调试，足以应对单用户工作流。
+
+问题在于水平扩展。有状态的连接将请求绑定到特定的服务器实例。负载均衡变得复杂，因为来自同一客户端的后续请求可能需要到达同一服务器以保持会话状态。如果一半的副本无法服务一半的客户端，那么增加副本也于事无补。
+
+**SEP-1442** 通过转向无状态请求模型来解决这个问题。每个 MCP 请求变成自包含的：它携带足够的上下文，使得任何服务器实例都能处理它，无需预先的会话状态。这与 REST 相对于 SOAP 实现的可扩展性架构转变相同，也正是现代无服务器函数能够工作的原因。
+
+对于开发者而言，这意味着 MCP 服务器可以作为无状态计算部署——Lambda 函数、Cloud Run 实例、边缘工作者——无需协调会话亲和性。
+
+## MCP Apps：它们实际上是什么
+
+2026 路线图中更具创新性的部分是"MCP Apps"。概念如下：MCP 服务器可以在其工具响应中包含一个 `ui` 字段，其中包含一个 UI 包——HTML、CSS 和 JavaScript——由 MCP 兼容的客户端内联渲染。
+
+效果是 agent 可以在对话上下文中呈现交互式界面。数据分析工具不只是返回数字表格；它返回可排序、可过滤的表格。日程工具渲染日历选择器。代码审查工具渲染带可折叠区域的差异视图。
+
+以下是最小化 MCP App 响应的样子：
+
+```json
+{
+  "tool": "show_results",
+  "result": {
+    "data": [
+      {"id": 1, "title": "Attention Is All You Need", "year": 2017, "citations": 120000},
+      {"id": 2, "title": "BERT: Pre-training", "year": 2018, "citations": 85000}
+    ],
+    "ui": {
+      "type": "html",
+      "content": "<div id='results-app'></div>",
+      "scripts": ["https://cdn.example.com/table-sort.js"],
+      "styles": ["https://cdn.example.com/base.css"],
+      "sandbox": "allow-scripts"
+    }
+  }
+}
+```
+
+客户端对渲染内容进行沙箱处理（同源策略适用，无法访问外部对话上下文），但用户获得的是交互式 UI 而不是原始数据。
+
+## 构建一个 MCP App：一个具体示例
+
+理论很简单。以下是构建实际 MCP App 的样子。考虑一个返回交互结果的论文搜索工具：
+
+```python
+from dataclasses import dataclass, field
+from typing import Optional
+import json
+
+
+@dataclass(frozen=True)
+class MCPUIBundle:
+    """A renderable UI component returned alongside tool results."""
+    html: str
+    css: str = ""
+    js: str = ""
+    sandbox_permissions: tuple[str, ...] = ("allow-scripts",)
+
+    def to_mcp_response(self, data: dict) -> dict:
+        return {
+            "result": {
+                "data": data,
+                "ui": {
+                    "type": "html",
+                    "content": self.html,
+                    "styles": [self.css] if self.css else [],
+                    "scripts": [self.js] if self.js else [],
+                    "sandbox": " ".join(self.sandbox_permissions),
+                },
+            },
+        }
+
+
+def build_paper_search_ui(results: list[dict]) -> MCPUIBundle:
+    """Build an interactive paper search results component."""
+    rows = "\n".join(
+        f"""<tr data-year="{r['year']}" data-citations="{r['citations']}">
+            <td>{r['title']}</td>
+            <td>{', '.join(r['authors'][:3])}</td>
+            <td>{r['year']}</td>
+            <td>{r['citations']:,}</td>
+            <td><a href="{r['url']}" target="_blank">PDF</a></td>
+        </tr>"""
+        for r in results
+    )
+
+    html = f"""
+    <div class="mcp-paper-search">
+        <input type="text" id="filter" placeholder="Filter results..."
+               oninput="filterTable(this.value)">
+        <select id="sort" onchange="sortTable(this.value)">
+            <option value="citations-desc">Most cited</option>
+            <option value="year-desc">Most recent</option>
+            <option value="year-asc">Oldest first</option>
+        </select>
+        <table id="results">
+            <thead>
+                <tr><th>Title</th><th>Authors</th><th>Year</th>
+                    <th>Citations</th><th>Link</th></tr>
+            </thead>
+            <tbody>{rows}</tbody>
+        </table>
+        <div id="stats"></div>
+    </div>
+    """
+
+    js = """
+    function filterTable(query) {
+        const rows = document.querySelectorAll('#results tbody tr');
+        const q = query.toLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const show = text.includes(q);
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        document.getElementById('stats').textContent =
+            `Showing ${visible} of ${rows.length} results`;
+    }
+
+    function sortTable(key) {
+        const tbody = document.querySelector('#results tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const [field, direction] = key.split('-');
+        rows.sort((a, b) => {
+            const va = parseInt(a.dataset[field]);
+            const vb = parseInt(b.dataset[field]);
+            return direction === 'desc' ? vb - va : va - vb;
+        });
+        rows.forEach(row => tbody.appendChild(row));
+    }
+
+    // Initialize stats
+    filterTable('');
+    """
+
+    css = """
+    .mcp-paper-search { font-family: system-ui, sans-serif; }
+    .mcp-paper-search input, .mcp-paper-search select {
+        padding: 8px; margin: 4px; border: 1px solid #ddd; border-radius: 4px;
+    }
+    .mcp-paper-search table {
+        width: 100%; border-collapse: collapse; margin-top: 8px;
+    }
+    .mcp-paper-search th, .mcp-paper-search td {
+        padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee;
+    }
+    .mcp-paper-search th { background: #f5f5f5; font-weight: 600; }
+    .mcp-paper-search tr:hover { background: #f9f9f9; }
+    #stats { color: #666; font-size: 0.85em; margin-top: 8px; }
+    """
+
+    return MCPUIBundle(html=html, css=css, js=js)
+```
+
+MCP 服务器处理器将其集成到标准工具中：
+
+```python
+from mcp.server import Server
+
+app = Server("paper-search")
+
+@app.tool()
+async def search_papers(query: str, limit: int = 20) -> dict:
+    """Search academic papers by semantic similarity."""
+    results = await semantic_search(query, limit=limit)
+
+    # Build interactive UI alongside structured data
+    ui_bundle = build_paper_search_ui(results)
+    return ui_bundle.to_mcp_response({"papers": results, "query": query})
+```
+
+理解 `ui` 字段的客户端渲染交互式表格。不理解的客户端仍然收到结构化的 `data` 字段，可以按自己偏好格式化。渐进增强，而非硬性要求。
+
+## 安全模型：为什么沙箱至关重要
+
+在 agent 客户端内部渲染来自 MCP 服务器的任意 HTML 是一个重大攻击面。安全模型需要处理几个威胁向量：
+
+**跨上下文数据泄露。** MCP App 的 JavaScript 不得访问外部对话上下文。如果恶意 MCP 服务器返回一个带有 JavaScript 的 UI 包，该 JavaScript 读取周围页面的 DOM，它就可能窃取用户的对话历史、之前工具结果中可见的 API 密钥或系统提示。
+
+缓解措施是 iframe 沙箱与严格的源隔离：
+
+```html
+<!-- Client-side rendering of MCP App -->
+<iframe
+  sandbox="allow-scripts"
+  srcdoc="${sanitized_html}"
+  csp="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'"
+  referrerpolicy="no-referrer"
+  style="width: 100%; border: none;"
+></iframe>
+```
+
+没有 `allow-same-origin` 的 `sandbox` 属性确保 iframe 具有不透明源——它无法访问父页面的 cookies、localStorage 或 DOM。Content Security Policy 进一步限制了嵌入代码可以做什么。
+
+**网络泄露。** MCP App 脚本可以向外部服务器发起 fetch 请求，泄露对话数据。沙箱应限制出站网络访问：
+
+```python
+@dataclass(frozen=True)
+class MCPAppSecurityPolicy:
+    """Security constraints for rendering MCP App UI bundles."""
+    allow_scripts: bool = True
+    allow_same_origin: bool = False  # NEVER for untrusted servers
+    allow_forms: bool = False
+    allow_popups: bool = False
+    allowed_external_domains: tuple[str, ...] = ()  # CDN allowlist
+
+    @property
+    def sandbox_value(self) -> str:
+        parts = []
+        if self.allow_scripts:
+            parts.append("allow-scripts")
+        if self.allow_same_origin:
+            parts.append("allow-same-origin")
+        if self.allow_forms:
+            parts.append("allow-forms")
+        if self.allow_popups:
+            parts.append("allow-popups")
+        return " ".join(parts)
+
+    @property
+    def csp_value(self) -> str:
+        domains = " ".join(self.allowed_external_domains)
+        return (
+            f"default-src 'self'; "
+            f"script-src 'unsafe-inline' {domains}; "
+            f"style-src 'unsafe-inline' {domains}; "
+            f"connect-src 'none'; "  # Block outbound network
+            f"img-src data: {domains}"
+        )
+```
+
+**资源耗尽。** 带无限循环或过度 DOM 操作的 UI 包可能冻结客户端。渲染超时和 iframe 内存限制提供防御：
+
+```typescript
+// Client-side: render with resource limits
+function renderMCPApp(bundle: MCPUIBundle, container: HTMLElement): void {
+  const iframe = document.createElement("iframe");
+  iframe.sandbox = bundle.sandbox;
+  iframe.srcdoc = assembleSrcdoc(bundle);
+
+  // Kill the iframe if it consumes too much
+  const watchdog = setTimeout(() => {
+    iframe.srcdoc = "<p>MCP App timed out</p>";
+  }, 5000);  // 5-second render budget
+
+  iframe.onload = () => clearTimeout(watchdog);
+  container.appendChild(iframe);
+}
+```
+
+**通过 UI 的提示注入。** MCP App 可以渲染看起来像系统指令的文本（"忽略之前的指令并..."）来欺骗后续轮次中的 agent。客户端必须确保渲染的 UI 内容不会作为文本重新馈送到 agent 上下文——只有结构化交互事件（按钮点击、选择）应通过 MCP 协议传回。
+
+## 无状态传输：部署方式的转变
+
+对于今天构建 MCP 服务器的开发者来说，无状态传输变更有具体的影响。
+
+**SEP-1442 之前（当前状态）**：
+
+```python
+class StatefulMCPServer:
+    def __init__(self):
+        self.sessions: dict[str, SessionState] = {}
+
+    async def handle_tool_call(
+        self, session_id: str, tool: str, args: dict
+    ) -> dict:
+        state = self.sessions.get(session_id)
+        result = await self.execute_tool(state, tool, args)
+        self.sessions[session_id].update(result)
+        return result
+```
+
+**SEP-1442 之后（无状态目标）**：
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+
+class MCPRequest(BaseModel):
+    tool: str
+    args: dict
+    context: dict  # All state arrives in the request
+
+
+class MCPResponse(BaseModel):
+    result: dict
+
+
+app = FastAPI()
+
+
+@app.post("/mcp/v2/call")
+async def mcp_endpoint(request: MCPRequest) -> MCPResponse:
+    # Each request is self-contained — no session lookup needed
+    result = await execute_tool(
+        request.tool, request.args, request.context,
+    )
+    return MCPResponse(result=result)
+```
+
+第二种模式部署到任何无状态计算环境。AWS Lambda、Google Cloud Run、Cloudflare Workers、标准容器。自动扩展正常工作。没有粘性会话、没有状态同步、没有会话清理。
+
+对于 MCP Apps 而言，无状态传输意味着 UI 包在每次请求时重新生成。这简化了缓存失效（没有缓存），但意味着服务器必须很快——用户在数据和 UI 都到达之前无法交互。实践中，预构建的 UI 模板配合动态数据注入将响应时间保持在 **200ms 以下**。
+
+## 你的 MCP 服务器需要什么改变
+
+如果你正在构建面向 2026 协议版本的 MCP 服务器：
+
+**将任何会话状态外部化。** 如果你的服务器在工具调用之间存储内存状态（认证令牌、对话上下文、累积结果），将其移至外部存储（Redis、数据库、请求信封）。设计每个处理器为无状态的。
+
+**返回结构化数据以及 UI。** MCP Apps 与客户端代码可以渲染的结构化结果配合使用。返回 `"找到 47 篇匹配您查询的论文:\n1. Smith 等..."` 的工具比返回结构化 JSON 的工具更难变得交互式。始终包含两者：
+
+```python
+# Return both structured data AND UI
+return {
+    "data": {"papers": results, "total": len(results)},  # For non-UI clients
+    "ui": build_paper_search_ui(results).to_mcp_response(results)["result"]["ui"],  # For UI-capable clients
+}
+```
+
+**渐进添加 UI 提示。** 从可选的 `ui` 元数据字段开始，而非依赖项。理解它们的客户端会使用它们；不理解的客户端会忽略它们。在开发过程中使用有 UI 能力和纯文本客户端进行测试。
+
+**明确版本化你的工具 schema。** 无状态模型使版本控制更重要，因为请求可能在没有会话建立所启用的协商的情况下到达。在工具 schema ID 中使用语义版本控制，并在响应中包含 `protocol_version` 字段。
+
+## 方法比较：MCP Apps 与替代方案
+
+MCP Apps 不是唯一实现丰富 agent 输出的方法。以下是替代方案的对比：
+
+| 方法 | 谁控制 UI | 可移植性 | 安全模型 |
+|----------|----------------|-------------|----------------|
+| **MCP Apps** | 工具作者 | 任意 MCP 客户端 | 沙箱 iframe |
+| **客户端原生** | 客户端开发者 | 仅限一个客户端 | 完全信任 |
+| **Markdown/文本** | 模型 + 客户端 | 通用 | 无执行 |
+| **Artifacts (Claude)** | 模型 | 仅限 Claude | 沙箱 iframe |
+| **Canvas (OpenAI)** | 模型 | 仅限 ChatGPT | 受控编辑器 |
+
+MCP Apps 占据独特位置：工具作者控制 UI（而非模型或客户端），任何 MCP 兼容客户端都可以渲染它。这意味着单一工具实现可以在 Claude Code、Codex CLI、Gemini CLI 以及任何未来 MCP 客户端上工作。
+
+权衡是复杂性。Markdown 输出被普遍支持，天然安全。MCP Apps 需要沙箱、CSP 策略和仔细关注攻击面。正确选择取决于交互能力是否值得安全开销。
+
+## 更宏观的图景
+
+成功协议的历史遵循一个模式：从管道开始，积累足够的采用使管道成为基础设施，然后在基础设施之上发展平台。HTTP 开始作为一个文档检索协议。它变成了应用程序的平台。MCP 正在以压缩的时间尺度追踪相同的弧线。
+
+无状态传输使 MCP 服务器在运维上与 HTTP 服务器相同——易于理解的扩展模式、标准监控、可预测的故障模式。MCP Apps 在数据交换协议之上添加了展示层。渐进增强确保向后兼容：渲染 UI 的客户端获得交互体验；不渲染的客户端仍然获得结构化 JSON。
+
+关键的架构赌注是谁控制输出格式。在当前模型中，LLM 决定如何呈现工具结果。在 MCP Apps 模型中，工具作者决定。这是一个更好的关注点分离，因为工具作者了解数据的形状和用户可能的交互，而模型两者都不可靠地了解。日历工具的作者知道用户想点击日期，而不是解析 ISO 时间戳。那种领域知识属于工具，而非提示。
+
+实际检验是 MCP App 渲染是否成为 agent 客户端的基线期望。如果 Claude Code、Codex CLI 和 Gemini CLI 在 **2026 年第三季度**都支持 MCP App 渲染，工具作者将为其构建，因为受众证明努力是值得的。如果采用分散——一些客户端渲染，其他客户端忽略 `ui` 字段——工具作者将坚持使用结构化 JSON，让模型格式化。协议的渐进增强设计意味着两种场景都能工作。但只有第一种才能兑现平台承诺。
+
+## 资源
+
+- MCP 规范仓库：[github.com/modelcontextprotocol/modelcontextprotocol](https://github.com/modelcontextprotocol/modelcontextprotocol)
+- MCP TypeScript SDK：[github.com/modelcontextprotocol/typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk)
+- MCP Python SDK：[github.com/modelcontextprotocol/python-sdk](https://github.com/modelcontextprotocol/python-sdk)
+- Anthropic MCP 文档：[docs.anthropic.com/mcp](https://docs.anthropic.com/mcp)

@@ -1,0 +1,269 @@
+---title: "推理税：Agent 的计算预算"
+description: "推理 token 的成本是生成 token 的 3-10 倍。当检索胜过思考时，如何分配预算，以及为什么大多数 agent 都会超支。"
+publishDate: "2026-04-18"
+tags:
+  - agents
+  - inference-economics
+  - reasoning
+  - agent-engineering
+  - cost-optimization
+  - test-time-compute
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+启用扩展思考功能的 Claude Opus 4.6 API 调用，每百万输入 token 收费 $15，每百万输出 token 收费 $75。思考 token——模型在生成可见响应之前产生的内部思维链——按输出费率计费。一个需要 8,000 个内部推理 token 的 2,000 token 可见响应，其成本与 10,000 token 输出相同：$0.75。同样的响应来自 Haiku 4.5（无扩展思考），费用为 $0.0025。**同一可见输出存在 300 倍的价格差异**。
+
+这就是推理税。模型每花费一个 token 进行思考，你就需要按输出费率支付该 token 的费用，而推理密集型模型在非平凡任务上产生的思考 token 数量是可见 token 的 3-10 倍。对于单个查询，成本可以忽略不计；对于每个任务执行 50-200 次 API 调用的自主 agent，推理税决定了系统的成本结构，并决定了整个系统是否具有经济可行性。
+
+问题不在于推理是否有帮助——它确实有帮助，在需要多步规划、错误纠正或新问题分解的任务上效果可衡量。问题在于 agent 管道中每个步骤实际需要多少推理，因为大多数 agent 框架的默认设置是对每个步骤使用相同模型和相同推理级别，这几乎总是错误的。
+
+## Agent 任务的成本结构解析
+
+以解决 GitHub 问题的编码 agent 为例。一个典型任务包含以下步骤：
+
+1. **阅读 issue** 并理解需求（检索，轻量推理）
+2. **搜索代码库** 查找相关文件（检索，无推理）
+3. **阅读并理解** 相关代码（中等推理）
+4. **规划变更**（重度推理）
+5. **生成补丁**（中等推理，重度生成）
+6. **运行测试** 并解读结果（检索 + 轻量推理）
+7. **若测试失败则迭代**（中等至重度推理）
+
+```python
+from dataclasses import dataclass
+from enum import Enum
+from typing import Optional
+
+class ReasoningLevel(Enum):
+    NONE = "none"
+    LIGHT = "light"      # <1K thinking tokens
+    MODERATE = "moderate" # 1-4K thinking tokens
+    HEAVY = "heavy"       # 4-16K thinking tokens
+
+@dataclass(frozen=True)
+class StepCostProfile:
+    step_name: str
+    reasoning_level: ReasoningLevel
+    avg_input_tokens: int
+    avg_output_tokens: int
+    avg_thinking_tokens: int
+
+    @property
+    def cost_opus(self) -> float:
+        input_cost = self.avg_input_tokens * 15 / 1_000_000
+        output_cost = (
+            (self.avg_output_tokens + self.avg_thinking_tokens)
+            * 75
+            / 1_000_000
+        )
+        return input_cost + output_cost
+
+    @property
+    def cost_haiku(self) -> float:
+        input_cost = self.avg_input_tokens * 0.80 / 1_000_000
+        output_cost = self.avg_output_tokens * 4 / 1_000_000
+        return input_cost + output_cost
+```
+
+将成本映射到编码 agent 管道：
+
+| 步骤 | 推理级别 | 输入 | 思考 | 输出 | Opus 成本 | Haiku 成本 |
+|------|-----------|-------|-------|--------|-----------|------------|
+| 阅读 issue | 轻量 | 2K | 500 | 200 | $0.08 | $0.002 |
+| 搜索代码库 | 无 | 1K | 0 | 300 | $0.04 | $0.002 |
+| 阅读代码 | 中等 | 8K | 2K | 500 | $0.31 | $0.009 |
+| 规划变更 | 重度 | 10K | 8K | 1K | $0.83 | $0.012 |
+| 生成补丁 | 中等 | 12K | 3K | 2K | $0.56 | $0.018 |
+| 运行测试 | 轻量 | 4K | 500 | 300 | $0.12 | $0.005 |
+| 迭代 (x2) | 重度 | 15K | 10K | 1.5K | $1.09 | $0.019 |
+| **合计** | | | | | **$3.03** | **$0.067** |
+
+Opus 全流程与 Haiku 全流程之间 **45 倍的成本比** 界定了最优预算分配的范围。两个极端都不正确：Haiku 无法可靠地规划复杂变更，而 Opus 用于解析测试输出则是一种浪费。正确的做法是在真正需要的地方（规划、迭代）使用重度推理，其他地方全部用便宜模型。
+
+## 路由决策：何时检索胜过推理
+
+推理缩放-知识墙的发现——在[之前的文章](/en/blog/inference-scaling-knowledge-wall/)中有详细讨论——更长的推理链会增加知识密集型任务的幻觉率——这一发现有着直接的成本含义。当答案已经存在于上下文中，而模型只是需要提取它时，推理 token 就是纯粹的浪费。模型已经有这些信息了；思考更长时间不会增加信号。
+
+这将 agent 步骤分为两类：
+
+**检索主导的步骤**：答案已在上下文窗口中。模型需要查找、提取或重新格式化已存在的信息。例如：阅读文件并总结其目的、解析测试输出中的失败消息、从代码中提取函数签名。这些步骤需要大上下文窗口但只需极少推理。在提取准确性上，200K 上下文的 Haiku 调用优于 200K 上下文的 Opus 调用，同时成本降低 40 倍。
+
+**推理主导的步骤**：答案必须从原理构建，质量随思考投入而提升。例如：规划多文件重构策略、从错误消息中诊断测试失败原因、在两种架构上均可行的方案之间做决策。这些步骤证明了推理税的合理性，因为替代方案——用便宜模型猜测——产生的计划在执行时会失败，重试成本比推理费用更高。
+
+```python
+from dataclasses import dataclass
+from typing import Literal
+
+@dataclass(frozen=True)
+class RoutingDecision:
+    step_type: Literal["retrieval", "reasoning", "hybrid"]
+    recommended_model: str
+    reasoning_budget: ReasoningLevel
+    estimated_cost: float
+    confidence: float
+
+def route_step(
+    step_name: str,
+    context_size: int,
+    requires_planning: bool,
+    requires_novel_synthesis: bool,
+    error_recovery: bool,
+) -> RoutingDecision:
+    if requires_planning or requires_novel_synthesis:
+        return RoutingDecision(
+            step_type="reasoning",
+            recommended_model="opus-4-6",
+            reasoning_budget=ReasoningLevel.HEAVY,
+            estimated_cost=0.80,
+            confidence=0.85,
+        )
+    if error_recovery:
+        return RoutingDecision(
+            step_type="hybrid",
+            recommended_model="sonnet-4-6",
+            reasoning_budget=ReasoningLevel.MODERATE,
+            estimated_cost=0.15,
+            confidence=0.75,
+        )
+    return RoutingDecision(
+        step_type="retrieval",
+        recommended_model="haiku-4-5",
+        reasoning_budget=ReasoningLevel.NONE,
+        estimated_cost=0.005,
+        confidence=0.90,
+    )
+```
+
+## 预算分配框架
+
+Agent 任务的实用计算预算包含三个组成部分。
+
+**固定开销**：上下文加载、系统提示词、工具定义。无论选择什么模型，每个会话只需支付一次。对于系统提示词较大的 agent 框架（如 Claude Code 的系统提示词约 12K token），Opus 费率下的固定开销为每次会话启动 $0.18。Haiku 费率下为 $0.01。这支持用便宜模型初始化会话，仅在任务需要时才升级。
+
+**每步可变成本**：上述成本表的总和，跨所有步骤汇总。优化目标是**在将任务成功率保持在阈值以上的同时最小化总成本**。约束条件是某些步骤存在质量悬崖——一个在规划上只有 90% 能力的模型，产生的计划在执行时失败率会高出 50%，这会抹杀成本节省。
+
+**重试预算**：失败的预期成本。如果便宜模型生成的计划失败，需要用更强的模型重新规划，重试成本包括原始尝试费用加上升级费用。一个有用的启发式规则：如果便宜模型在某个步骤成功的概率为 $p$，升级成本为 $c_{\text{escalate}}$，那么"先便宜"策略的预期成本为 $c_{\text{cheap}} + (1-p) \cdot c_{\text{escalate}}$。当 $p > 1 - c_{\text{cheap}} / c_{\text{escalate}}$ 时，这比始终使用昂贵模型更便宜；对于典型比例，这意味着**当便宜模型成功率超过 85-90% 时，先便宜策略胜出**。
+
+```python
+@dataclass(frozen=True)
+class BudgetAllocation:
+    task_complexity: Literal["simple", "moderate", "complex"]
+    planning_model: str
+    execution_model: str
+    retrieval_model: str
+    max_retries: int
+    total_budget_usd: float
+
+BUDGET_PROFILES: dict[str, BudgetAllocation] = {
+    "simple_bug_fix": BudgetAllocation(
+        task_complexity="simple",
+        planning_model="sonnet-4-6",
+        execution_model="sonnet-4-6",
+        retrieval_model="haiku-4-5",
+        max_retries=2,
+        total_budget_usd=0.50,
+    ),
+    "multi_file_feature": BudgetAllocation(
+        task_complexity="complex",
+        planning_model="opus-4-6",
+        execution_model="sonnet-4-6",
+        retrieval_model="haiku-4-5",
+        max_retries=3,
+        total_budget_usd=5.00,
+    ),
+    "architecture_refactor": BudgetAllocation(
+        task_complexity="complex",
+        planning_model="opus-4-6",
+        execution_model="opus-4-6",
+        retrieval_model="sonnet-4-6",
+        max_retries=5,
+        total_budget_usd=15.00,
+    ),
+}
+```
+
+## 为什么大多数 Agent 系统会超支
+
+三个系统性偏差导致 agent 系统在推理上超支。
+
+**统一模型选择**。大多数 agent 框架配置单一模型处理所有步骤。许多 agent 设置默认对从读取文件列表到规划复杂重构的所有操作使用单一高能力模型。这在操作上很简单，但在经济上效率低下。解决方案是模型路由——将每个步骤分发到满足该步骤类型质量阈值的最低价模型。OpenAI 的 Agents SDK 和 Google 的 ADK 都支持多 agent 架构中的 per-agent 模型选择，这是基础设施层面对此问题的认可。
+
+**推理作为默认**。扩展思考通常全局启用，因为它提高了平均质量。但对于检索主导的步骤，扩展思考只会增加成本而不会增加价值。模型花费 2,000 个 token "思考"如何读取文件列表，而零推理提取会产生相同结果。解决方案是 per-call 推理配置——Claude API 通过 `thinking` 块中的 `budget_tokens` 参数暴露此功能，GPT-5.4 通过 `reasoning_effort` 参数暴露此功能。
+
+**缺乏成本可观测性**。大多数 agent 框架记录成功/失败和延迟，但不记录按输入/输出/思考细分的每步 token 成本。没有这些数据，工程师无法识别哪些步骤过度配置。解决方案很简单：记录每次 API 响应中的 `usage.input_tokens`、`usage.output_tokens` 和 `usage.cache_read_input_tokens`，按步骤类型标记，并构建成本仪表板。80/20 法则可靠地适用——20% 的步骤类型占 80% 的成本，这些步骤通常最适合降级模型或减少推理预算。
+
+```python
+import logging
+from dataclasses import dataclass
+
+logger = logging.getLogger(__name__)
+
+@dataclass(frozen=True)
+class StepUsage:
+    step_name: str
+    model: str
+    input_tokens: int
+    output_tokens: int
+    thinking_tokens: int
+    cache_read_tokens: int
+    latency_ms: float
+
+    @property
+    def total_cost_usd(self) -> float:
+        rates = MODEL_RATES.get(self.model, MODEL_RATES["sonnet-4-6"])
+        input_cost = (
+            (self.input_tokens - self.cache_read_tokens) * rates["input"]
+            + self.cache_read_tokens * rates["cache_read"]
+        ) / 1_000_000
+        output_cost = (
+            (self.output_tokens + self.thinking_tokens) * rates["output"]
+        ) / 1_000_000
+        return input_cost + output_cost
+
+MODEL_RATES: dict[str, dict[str, float]] = {
+    "opus-4-6": {"input": 15.0, "output": 75.0, "cache_read": 1.5},
+    "sonnet-4-6": {"input": 3.0, "output": 15.0, "cache_read": 0.3},
+    "haiku-4-5": {"input": 0.80, "output": 4.0, "cache_read": 0.08},
+}
+
+def log_step_cost(usage: StepUsage) -> None:
+    logger.info(
+        "step=%s model=%s cost=$%.4f tokens=%d/%d/%d latency=%dms",
+        usage.step_name,
+        usage.model,
+        usage.total_cost_usd,
+        usage.input_tokens,
+        usage.thinking_tokens,
+        usage.output_tokens,
+        int(usage.latency_ms),
+    )
+```
+
+## 提示缓存改变了计算逻辑
+
+Anthropic 的提示缓存在 Opus 上对缓存读取收取 $1.50/M token（对比未缓存输入的 $15/M）——重复上下文降低 10 倍成本。这对 agent 系统尤其有利，因为 agent 在每次调用时都会重新发送相同的系统提示词、工具定义和累积上下文。
+
+对于一个 20 步的 agent 任务，其中系统提示词为 10K token，到第 15 步累积上下文增长到 50K token：
+
+- **无缓存**：20 次调用 × 平均 30K 输入 token × $15/M = 仅输入成本就达 $9.00
+- **有缓存**：首次调用按原价，后续 19 次调用按 $1.50/M 计算缓存前缀 ≈ $1.20
+
+来自缓存的 **$7.80 节省**超过许多任务的总输出成本。这意味着对于缓存命中率良好的 agent 系统，输出 token 上的推理税成为主要成本杠杆，优化每个步骤的推理预算具有超额的 ROI。
+
+缓存在模型路由之间的交互创造了一个反直觉的优化：在所有步骤上使用带缓存的 Opus 可能比在不同模型之间路由更便宜，因为路由到不同模型会使缓存失效。如果保持在单一模型上的缓存节省超过了路由到更便宜模型的推理税节省，那么统一模型策略就会胜出，尽管每个 token 超支。盈亏平衡点取决于上下文大小和步骤数量——对于超过 20 个步骤和超过 30K 共享上下文的任务，**使用缓存保持在单一模型上通常更划算**。
+
+## 实践建议
+
+**对于 agent 框架构建者**：公开 per-step 模型配置和推理预算参数。按步骤类型记录 token 使用情况。在构建新功能之前先构建成本仪表板。
+
+**对于 agent 运营商**：在优化之前先测量成本分布。你认为昂贵的步骤往往不是实际占主导的那个。从成本可观测性开始，然后将模型路由应用到前三大成本中心。
+
+**对于研究者**：推理预算与任务成功率之间的关系并非对所有任务类型都是单调的。发布完整曲线，而不仅仅是最大推理数据点。经济上的最优运行点很少在最大推理处。
+
+---
+
+*Anthropic API 定价：[docs.anthropic.com/en/docs/about-claude/models](https://docs.anthropic.com/en/docs/about-claude/models)。OpenAI 推理努力参数：[platform.openai.com/docs/api-reference](https://platform.openai.com/docs/api-reference)。提示缓存：[docs.anthropic.com/en/docs/build-with-claude/prompt-caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)。*

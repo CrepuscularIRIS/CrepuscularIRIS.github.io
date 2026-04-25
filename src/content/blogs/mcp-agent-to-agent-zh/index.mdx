@@ -1,0 +1,309 @@
+---title: "MCP 和 A2A 在 v1.0 之后：边界究竟在哪里"
+description: "MCP 处理 agent 到工具的通信，A2A 处理 agent 到 agent 的通信。在 4 月 9 日 v1.0 发布后，真正的问题是这个边界究竟在哪里，画错它要付出什么代价。"
+publishDate: "2026-04-11"
+updatedDate: "2026-04-19"
+tags: [MCP, A2A, agents, architecture, multi-agent, protocol, engineering, agent-engineering, identity, observability]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+A2A（Agent2Agent）协议于 2026 年 4 月 9 日正式发布 v1.0，距离 Google 在 Cloud Next 上宣布它刚好一年。这次发布带来了 Signed Agent Cards、AP2 支付授权扩展、企业多租户钩子，以及比早期草案更清晰的任务生命周期。规范现在足够稳定，生产级 agent 系统的设计问题已经转移。争论不再是"需不需要一个单独的 agent 间协议"——这个问题已经尘埃落定。真正的核心问题是：**工具调用和 agent 委托的边界究竟在哪里，画错这条线的代价是什么**。
+
+本文聚焦这个边界。我不会提供任一协议的教程——官方 MCP 和 A2A 文档已经有很好的教程资源。本文要做的是精确地界定哪些调用应该放在哪一侧，以及选错时会出什么状况——这些是基于截至 2026 年 4 月我在生产多 agent 系统中反复看到的失败模式。
+
+## 两个协议，压缩版
+
+MCP 标准化了单个 agent 如何与工具通信。agent 是主体，工具是被动接口，调用是返回类型化结果的类型化 JSON-RPC 请求。2026 年的 Streamable HTTP 传输让 MCP 服务器可以部署为无状态微服务。Tasks  primitive（SEP-1686）添加了长运行操作。规范的 well-known 元数据约定让客户端在建立连接前就能发现服务器能力。结构始终一致：agent → MCP client → transport → MCP server → tool。
+
+A2A 标准化了一个 agent 如何与另一个 agent 通信。双方都是主体；双方都能推理；双方都能使用自己的工具。交互默认是多轮的。v1.0 版本将 Agent Card 变成托管在 `/.well-known/agent-card.json` 上的密码学签名 JWS 文档，为每个任务赋予稳定的状态生命周期（`submitted → working → input_required → completed | failed | canceled | rejected | auth_required`），并添加了 AP2 扩展以支持涉及金钱的委托链。结构：agent A → A2A client → transport → A2A server → agent B。
+
+两个协议表面看起来相似——都有 well-known cards，都通过 Streamable HTTP 传输 JSON-RPC，都使用 OAuth 做认证。但一旦看实际传输的内容，差异就浮现了。MCP 传输的是工具调用。A2A 传输的是任务协商。区别在于：接收方是能够**思考**到达的内容，还是只能**执行**它。
+
+## 边界究竟在哪里
+
+在构建了三个生产级 agent 系统（都是先画错边界再改对）之后，我发现最简洁的决策规则是：**当接收方的决策空间是 JSON Schema 时，适合用 MCP。当接收方的决策空间超出 JSON Schema 时，适合用 A2A。**
+
+`read_file(path)` 工具的决策空间只有一个元素——读取该路径的文件或者不读。Schema 完全捕获了这个决策。用 MCP 是正确的。
+
+`generate_migration(schema_diff)` 工具如果迁移是纯机械的，决策空间也只有一个元素——应用这个 diff。Schema 捕获了它。用 MCP 是正确的。
+
+而"从这份 schema diff 生成一个安全的迁移，同时考虑停机时间约束、回滚策略，以及生产环境当前的负载"这个任务，其决策空间不在 Schema 中。接收方需要问澄清问题、权衡利弊，产出的结果要反映出调用方无法预先枚举的判断。用 A2A 是正确的。
+
+早期多 agent 系统中常见的诱惑是把第二种情况表达成一个带有巨大上下文负载参数的 MCP 工具。这种做法某种程度上能工作——另一端的模型可以在工具实现中做推理——但会失去 A2A 原生提供的三样东西：多轮澄清循环、长运行工作的结构化任务生命周期，以及区分"工具失败"和"委托被拒绝"的可见性机制。
+
+## Signed Agent Cards 真正买到了什么
+
+A2A v1.0 的头条功能是 Signed Agent Card。v1.0 之前的 cards 是纯 JSON，任何人都可以托管一张声称是"SQL 专家 Agent"的卡片，声称拥有任何想要的能力。没有密码学锚点。
+
+v1.0 的 card 是一个 JWS 签名的文档，使用绑定到 agent 身份（DID 或域名）的密钥签名，服务于 `/.well-known/agent-card.json`。Card 本身是一个描述 agent 的 JSON 对象；其 `signatures` 字段携带一个关于规范化 card payload（JCS，RFC 8785）的 detached JWS。编排器规范化 card，验证签名与发布密钥的匹配，检查与获取来源 URL 的绑定，然后才信任能力声明。
+
+```json
+{
+  "name": "SQL Specialist Agent",
+  "version": "1.2.0",
+  "url": "https://sql-specialist.internal",
+  "skills": [
+    {"id": "generate-migration", "tags": ["sql", "migration"]}
+  ],
+  "authentication": {"schemes": ["oauth2"]},
+  "signatures": [
+    {
+      "protected": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im1haW4ifQ",
+      "signature": "t-1GjU6...",
+      "header": {
+        "iss": "did:web:sql-specialist.internal",
+        "iat": 1744156800
+      }
+    }
+  ]
+}
+```
+
+被签名的 payload 是去掉 `signatures` 字段后的 card，通过 JCS 规范化，这样签名方和验证方对字节序列达成一致。劫持了 `sql-specialist.internal` DNS 并服务篡改后 card 的攻击者，没有私钥就无法伪造签名。固定了预期 `iss` 的编排器会拒绝这种替换。这在委托链开始花钱（AP2）或执行特权操作时才真正重要——这是让密码学机制值得付出运营成本的使用场景。
+
+MCP 这边在当前规范中没有等效的签名机制。生产 MCP 部署通常在传输层固定服务器证书，要求服务器呈现已知的 TLS 身份。这对点对点调用有效，但不如 A2A 的 payload 级别签名便携——后者经过代理和网关时仍保留其信任属性。
+
+## 任务生命周期才是核心
+
+A2A 的任务生命周期是将其与"加了步骤的 MCP"区分开来的单一特性。状态是刻意借鉴 CI/CD 形状的：
+
+```
+Orchestrator                            Specialist Agent
+     │                                       │
+     ├─[message/send: "generate migration"]─→│
+     │                                       │ state: submitted
+     │←─[task_id, state: submitted]──────────┤
+     │                                       │
+     │   ... agent reasons, runs tools ...   │
+     │                                       │
+     │←─[state: input_required]──────────────┤
+     │   "Should the migration include       │
+     │    a backfill for null tax rates?"    │
+     │                                       │
+     ├─[message/send (reply): "yes, default to 0.0"]→
+     │                                       │ state: working
+     │                                       │
+     │   ... agent continues ...             │
+     │                                       │
+     │←─[state: completed]───────────────────┤
+     │   artifacts: [migration.sql, notes.md]│
+```
+
+`input_required` 状态是让 A2A 物有所值的那零点一秒设计。专业 agent 可以中途暂停任务，抛出一个实质性影响输出的问题，然后用新上下文恢复。没有 MCP 工具调用具有这种形状。工具调用是请求-响应；如果工具需要它没有的信息，它就失败或返回错误输出。A2A 的暂停-询问才让专业 agent 委托真正适用于本质上模糊的任务。
+
+其他状态因不同原因而重要。`auth_required` 是委托需要额外凭证才能继续的状态——常见于专业 agent 需要访问客户数据而编排器的 auth token 不覆盖该场景时。`rejected` 不同于 `failed`：前者是专业 agent 拒绝尝试任务（策略违规、范围不匹配），后者是尝试了但失败。`canceled` 是编排器放弃长运行任务时触发的状态；专业 agent 有机会做清理。
+
+如果你在 MCP 工具里想要这些状态，你是在无意中构建 A2A。
+
+## AP2 添加了什么，为什么它长期来看不可或缺
+
+AP2（Agent Payments Protocol）是处理金钱的 v1.0 扩展。它定义了一个 `mandate`——一份签名授权，规定特定 agent 可以在特定类别上花费不超过特定金额，可选地以时间、交易对手或其他约束为限。当 agent A 委托给需要支付的 agent B 时，A 包含 mandate；B 验证它；支付处理器在执行前独立验证 mandate。
+
+```json
+{
+  "mandate_id": "mnd_8f2a91",
+  "principal": "did:web:user.example.com",
+  "agent": "did:web:procurement-agent.example.com",
+  "scope": {
+    "category": "office-supplies",
+    "max_amount": "500.00",
+    "currency": "USD",
+    "valid_until": "2026-04-30T00:00:00Z"
+  },
+  "signatures": [
+    {"protected": "...", "signature": "..."}
+  ]
+}
+```
+
+AP2 重要的原因，即使你不是在构建会买东西的 agent：mandate 模式是目前桌面上唯一解决任意委托信任链问题的方案。当 agent A 委托给 B，B 委托给 C，C 再委托给 D，"D 做这件事凭的是什么权威"这个问题需要一个审计员可以离线验证的答案。AP2 的 mandates 是签名的、有范围的、可以独立于产生它的链来验证的。同样的机制可以泛化到金钱之外的任何特权操作——`delete_customer_data`、`deploy_to_production`、`email_external_party`。十二个月内我们会看到非支付类 AP2 风格 mandates，因为没有其他方案解决了这个问题。
+
+需要警惕的微妙失败形态是 confused-deputy（混淆副手）：agent B 持有来自 A 的有效 mandate，但将其复用于用户未打算的任务。防御方法是将 mandate 绑定到处理器在执行前重新计算的任务哈希（或意图描述符），而不仅仅是类别和金额。V1.0 将任务绑定粒度留给实现者。把无范围的 mandate 看作宽泛范围的 IAM 角色——是负债，不是便利。
+
+## 实际中的两层技术栈
+
+我反复给团队重绘的那张图（问"MCP 和 A2A 如何配合"）：
+
+```
+┌────────────────────────────────────────────────────┐
+│  Orchestrator (Claude Code, Codex, Gemini CLI)     │
+│                                                     │
+│  ┌──────────────┐      ┌──────────────────────┐   │
+│  │ A2A Client   │      │ MCP Client           │   │
+│  │ (delegation, │      │ (tool invocation)    │   │
+│  │  multi-turn) │      │                      │   │
+│  └──────┬───────┘      └──────────┬───────────┘   │
+└─────────┼──────────────────────────┼──────────────┘
+          │                          │
+          ▼                          ▼
+┌─────────────────────┐    ┌──────────────────────┐
+│ SQL Specialist      │    │ Filesystem MCP       │
+│ (A2A Agent)         │    │ Server               │
+│                     │    │ (read, write, search)│
+│  ┌──────────────┐   │    └──────────────────────┘
+│  │ MCP Client   │   │    ┌──────────────────────┐
+│  │ (own tools)  │   │    │ Git MCP Server       │
+│  └──────┬───────┘   │    │ (commit, diff, log)  │
+│         │           │    └──────────────────────┘
+│         ▼           │    ┌──────────────────────┐
+│  ┌──────────────┐   │    │ HTTP Fetch MCP       │
+│  │ Postgres MCP │   │    │ (GET, POST)          │
+│  │ Server       │   │    └──────────────────────┘
+│  └──────────────┘   │
+└─────────────────────┘
+```
+
+编排器对委托使用 A2A，对直接工具访问使用 MCP。专业 agent 在内部对自己的工具栈使用 MCP。编排器永远不会穿透专业 agent 去调用其工具——边界是被强制执行的。异构性隐藏在协议之后：编排器不知道 SQL 专家是 AWS 上的微调 Llama 还是 Azure 上的 GPT-5 还是私有端点上的 Claude Opus。
+
+这种分层除了清晰分离之外还买到了什么：每次委托都跨过一个 auth 边界。编排器的权限不会传递性地授予专业 agent 权限。如果编排器可以读取主机上的每个文件，但专业 agent 通过其 MCP 服务器只有 Postgres 访问权限，即使专业 agent 的提示词被攻破，专业 agent 也无法渗透文件系统。这是一个被低估的安全属性——协议边界同时也是权限边界。
+
+## 最小编排器形态
+
+下面的 Python 草图是一个编排器的结构，它针对 A2A v1.0 做发现、签名验证和任务委托。重点是形态，不是生产就绪——真实实现需要在每个步骤都有密钥轮换、重试逻辑和失败处理。
+
+```python
+from dataclasses import dataclass
+from typing import Any
+import base64
+import json
+import httpx
+import rfc8785  # JCS canonicalization
+from jwcrypto import jwk, jws as jwcjws
+
+
+@dataclass(frozen=True)
+class AgentCard:
+    name: str
+    url: str
+    issuer: str
+    skills: tuple[dict[str, Any], ...]
+
+
+@dataclass(frozen=True)
+class TaskResult:
+    task_id: str
+    state: str
+    artifacts: list[dict] | None = None
+    pending_question: str | None = None
+
+
+class A2AOrchestrator:
+    """Discover and delegate to A2A v1.0 specialist agents."""
+
+    def __init__(self, agent_urls: list[str], auth_token: str,
+                 trust_anchors: dict[str, jwk.JWK]):
+        self._auth_token = auth_token
+        self._trust_anchors = trust_anchors  # issuer -> JWK
+        self._client = httpx.Client(timeout=30.0)
+        self._by_skill: dict[str, list[AgentCard]] = {}
+        self._discover(agent_urls)
+
+    def _discover(self, urls: list[str]) -> None:
+        for url in urls:
+            card = self._fetch_and_verify_card(url)
+            for skill in card.skills:
+                for tag in skill.get("tags", []):
+                    self._by_skill.setdefault(tag, []).append(card)
+
+    def _fetch_and_verify_card(self, base_url: str) -> AgentCard:
+        resp = self._client.get(f"{base_url}/.well-known/agent-card.json")
+        resp.raise_for_status()
+        card = resp.json()
+
+        # Detached JWS over the JCS-canonicalized card payload (signatures stripped).
+        signatures = card.pop("signatures", [])
+        if not signatures:
+            raise ValueError("Agent Card is unsigned")
+        canonical = rfc8785.dumps(card)  # bytes, RFC 8785 JCS
+        payload_b64 = base64.urlsafe_b64encode(canonical).rstrip(b"=").decode()
+
+        sig = signatures[0]
+        issuer = sig.get("header", {}).get("iss")
+        key = self._trust_anchors.get(issuer)
+        if key is None:
+            raise ValueError(f"Untrusted issuer: {issuer}")
+
+        # Reassemble the compact JWS: protected.payload.signature
+        compact = f"{sig['protected']}.{payload_b64}.{sig['signature']}"
+        verifier = jwcjws.JWS()
+        verifier.deserialize(compact)
+        verifier.verify(key)  # raises on bad signature
+
+        return AgentCard(
+            name=card["name"],
+            url=card["url"],
+            issuer=issuer,
+            skills=tuple(card.get("skills", [])),
+        )
+
+    def delegate(self, skill_tag: str, task_input: dict,
+                 mandate: dict | None = None) -> TaskResult:
+        candidates = self._by_skill.get(skill_tag, [])
+        if not candidates:
+            raise ValueError(f"No agent registered for skill: {skill_tag}")
+        agent = candidates[0]
+        body: dict[str, Any] = {"skill": skill_tag, "input": task_input}
+        if mandate is not None:
+            body["mandate"] = mandate
+        resp = self._client.post(
+            f"{agent.url}/message/send",
+            json=body,
+            headers={"Authorization": f"Bearer {self._auth_token}"},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return TaskResult(
+            task_id=data["id"],
+            state=data["status"]["state"],
+            artifacts=data.get("artifacts"),
+            pending_question=data["status"].get("message"),
+        )
+
+    def respond(self, task_id: str, agent_url: str, reply: str) -> TaskResult:
+        resp = self._client.post(
+            f"{agent_url}/message/send",
+            json={"task_id": task_id, "reply": reply},
+            headers={"Authorization": f"Bearer {self._auth_token}"},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return TaskResult(
+            task_id=data["id"],
+            state=data["status"]["state"],
+            artifacts=data.get("artifacts"),
+            pending_question=data["status"].get("message"),
+        )
+```
+
+有趣的部分是 `_fetch_and_verify_card` 方法。Card 的 `signatures` 字段是一个 detached JWS：`protected` header 和 `signature` 字节在 payload 旁边，而不是与其连接。要验证，你需要去掉 `signatures` 数组，通过 JCS（RFC 8785）规范化剩余部分，这样签名方和验证方对字节序列达成一致，重新组装 compact JWS，然后验证。跳过规范化步骤，任何 card 如果经过重新排序 key 或改变空白的 JSON 解析器往返，都会导致静默验证失败。这就是把 JSON 文档变成可信能力声明的过程。编排器的调用方为此付出的代价是维护 trust-anchor map 的运营成本——哪些密钥信任哪些发行方——以及无法静默地将一个 agent 换成另一个。
+
+## 我持续看到的失败模式
+
+团队在首次构建这个技术栈的多 agent 系统时容易出错的六件事。每件都可修复；每件都值得提前预防。
+
+**MCP 形状的委托。** 团队用 MCP 处理需要多轮澄清的任务，得到错误输出，然后认为是模型不行。模型没问题；协议选错了任务。迁移到 A2A，失败率下降。
+
+**A2A 形状的工具调用。** 反过来：团队用 A2A 做 `read_file`，因为喜欢它的发现故事。现在每次工具调用都增加了 card 获取、签名验证和任务生命周期簿记的延迟。延迟暴跌，成本飙升。用 MCP。
+
+**Trust anchor 蔓延。** 每个新的专业 agent 都需要一个 trust anchor 条目。没有治理，trust-anchor map 会变成一堆一次性密钥的蔓延。修复方法是在少量发行方（每个组织一个）中集中身份，让专业 agent 从父节点派生身份。
+
+**Mandate 范围过宽。** AP2 mandates 如果范围过宽（"任何办公用品，任何供应商，任何时间"），当 agent 被攻破时会造成灾难性后果。写紧凑 mandates 的纪律——窄类别、短过期、单一交易对手——与写紧凑 IAM 策略是相同的纪律。已经具备良好 IAM 卫生的团队会迁移这种实践；不具备的团队会付出高昂代价来学习。
+
+**发现延迟导致启动停滞。** 在启动时获取所有 Agent Cards 增加了初始化时间。对于延迟敏感的编排器，修复方法是使用 stale-while-revalidate 策略的缓存——从缓存提供服务，后台重新获取，将 trust-anchor 不匹配作为告警而不是阻塞调用。
+
+**对话恢复缺口。** 因网络故障中断的多轮 A2A 任务，恢复语义不够明确。v1.0 中的 `stateTransitionHistory` 能力让编排器可以重放状态，但生产系统仍然需要应用级别的 checkpoint 来处理编排器即将发送的半完成输入。不要假设协议会为你做这件事。
+
+## 决策启发式，重述
+
+当子任务需要推理、可能需要中途澄清、运行时间超过几秒、或需要与编排器不同的 auth 边界时，使用 **A2A**。具体例子：领域特定分析、需求模糊的任务、长运行迁移、涉及金钱或其他特权操作的工作。
+
+当操作是确定性的、有完全指定的 schema、快速完成、且使用编排器现有权限运行时，使用 **MCP**。具体例子：文件 I/O、数据库查询、HTTP 调用、git 操作、搜索。
+
+两个协议共同构成严肃 agent 系统的通信栈。MCP 是执行层；A2A 是协作层。v1.0 之后，两者都足够稳定，可以构建。剩余的工作是治理——trust anchors、mandates、能力范围——这是接下来十二个月 agent 工程努力的方向，也是失败模式持续有趣的地方。
+
+---
+
+*参考资料：[Agent2Agent Protocol](https://a2a-protocol.org/latest/)、[MCP 2026 Roadmap](https://blog.modelcontextprotocol.io/posts/2026-mcp-roadmap/)、[A2A on GitHub](https://github.com/a2aproject/A2A)、[AP2 extension](https://github.com/a2aproject/a2a-x-ap2)、[Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#streamable-http)、[JCS (RFC 8785)](https://www.rfc-editor.org/rfc/rfc8785.html)。*

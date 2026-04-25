@@ -1,0 +1,233 @@
+---title: "过度训练以推理：T² 缩放定律的逆转"
+description: "一条新的缩放定律表明，将小型模型过度训练至超越 Chinchilla 最优水平，比扩大模型规模能产生更好的推理能力。数学逻辑发生了逆转。"
+publishDate: "2026-04-18"
+tags: [scaling-laws, reasoning, test-time-compute, chinchilla, overtraining, inference, training-efficiency]
+category: research
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+Chinchilla 缩放定律给出了一个简洁有用的结论：在固定的计算预算下，模型大小与训练数据之间存在一个最优比例，偏离这个比例就是在浪费算力。如果用太少数据训练过大的模型，就会欠拟合。如果用太多数据训练过小的模型，收益就会递减。按照 Hoffmann 等人在 2022 年描述的最优前沿，模型参数和训练 token 应该大致按比例扩展。
+
+该结论基于一个特定的部署场景：每个输入一次前向传播，无搜索，无重复采样，无验证。模型生成一个答案，然后评估。在这个假设下，缩放定律成立，且已被反复验证。
+
+部署场景发生了变化。推理模型——DeepSeek-R1、Claude Opus 4.6 的扩展思考模式、GPT-5.4 Thinking、Gemini 3 Deep Think——在每个问题上花费的推理计算量是可变的。它们会采样多条推理链，验证中间步骤，回溯，然后重试。计算预算被分割为训练和测试时推理两个部分，而这个分割现在是一个设计变量，而非架构的固定属性。
+
+2026 年 4 月初发表的一篇论文（arXiv:2604.01411），基于训练到测试（T²）缩放框架，证明了这一部署场景的变化会*逆转* Chinchilla 关于推理任务的结论。对于固定的总体计算预算（训练 + 推理），最优策略是将一个较小的模型过度训练到远超 Chinchilla 最优数据点的程度，然后将节省下来的训练算力用于推理时搜索。这个过度训练的小模型加上测试时计算，在相同的总 FLOP 预算下优于 Chinchilla 最优的大模型。
+
+这不是一个边际效应。在数学推理基准测试中报告的提升幅度，足以改变你分配训练预算的方式。
+
+## 失效的 Chinchilla 假设
+
+Chinchilla 的结论优化的是一个单一量：在一次前向传播后，对留出集合的损失。称之为 $L_1$——pass@1 的损失。缩放定律说：要在给定的计算预算 $C$ 下最小化 $L_1$，设置模型大小 $N$ 和训练 token $D$ 使得 $N \propto D \propto \sqrt{C}$。
+
+T² 框架优化的则是另一个量：当允许模型进行 $K$ 次尝试时，可以达到的最佳结果。称之为 $L_K$——pass@K 的损失，其中"pass@K"意味着从 $K$ 个独立样本中取最佳结果。对于可以验证输出的推理任务（数学、代码、形式证明），$L_K$ 是具有实际意义的指标：运行模型 $K$ 次，取经验证正确的答案。
+
+关键数学结论：$L_K$ 与模型大小和训练数据的缩放关系与 $L_1$ 不同，而且差异大到足以改变最优分配。
+
+直观理解：一个在大量数据上过度训练的小模型，比一个训练到 Chinchilla 最优的大模型拥有更好的解空间覆盖。在每单位推理计算下，它能生成更多样化的推理链。每条链的质量较低（模型更小），但多样性意味着当你采样 $K$ 条链时，至少有一条正确的概率更高。
+
+```python
+import math
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class ScalingConfig:
+    """Compute allocation between training and inference."""
+    total_flops: float
+    model_params: float
+    training_tokens: float
+    inference_samples_k: int
+
+    @property
+    def training_flops(self) -> float:
+        return 6 * self.model_params * self.training_tokens
+
+    @property
+    def inference_flops_per_sample(self) -> float:
+        avg_seq_len = 2048  # average reasoning chain length
+        return 2 * self.model_params * avg_seq_len
+
+    @property
+    def total_inference_flops(self) -> float:
+        return self.inference_flops_per_sample * self.inference_samples_k
+
+    @property
+    def total_compute(self) -> float:
+        return self.training_flops + self.total_inference_flops
+
+
+def chinchilla_optimal(total_budget: float) -> ScalingConfig:
+    """Chinchilla-optimal allocation: N ~ D ~ sqrt(C/6)."""
+    # Simplified: equal scaling of params and tokens
+    nd = total_budget / 6
+    n = math.sqrt(nd)
+    d = math.sqrt(nd)
+    return ScalingConfig(
+        total_flops=total_budget,
+        model_params=n,
+        training_tokens=d,
+        inference_samples_k=1,
+    )
+
+
+def t2_optimal(total_budget: float, k: int = 64) -> ScalingConfig:
+    """T^2-optimal: smaller model, more data, more inference samples."""
+    # Key insight: shrink model ~10x, spend savings on more data + inference
+    # Total budget = 6*N*D (training) + 2*N*S*K (inference)
+    # where S = avg sequence length per reasoning chain
+    avg_seq_len = 2048
+
+    # Allocate ~30% of total budget to inference
+    inference_budget_fraction = 0.3
+    training_budget = total_budget * (1 - inference_budget_fraction)
+    inference_budget = total_budget * inference_budget_fraction
+
+    # Smaller model: ~10x fewer params than Chinchilla-optimal
+    chinchilla_nd = total_budget / 6
+    chinchilla_n = math.sqrt(chinchilla_nd)
+    n = chinchilla_n / 10  # 10x smaller model
+    d = training_budget / (6 * n)  # remaining training budget to data
+
+    # How many samples can we afford at inference?
+    flops_per_sample = 2 * n * avg_seq_len
+    actual_k = min(k, int(inference_budget / flops_per_sample))
+
+    return ScalingConfig(
+        total_flops=total_budget,
+        model_params=n,
+        training_tokens=d,
+        inference_samples_k=actual_k,
+    )
+
+# At the same total compute budget:
+# - Chinchilla gives you a large model, pass@1
+# - T^2 gives you a small overtrained model, pass@K
+# On reasoning benchmarks, pass@K with the small model wins.
+```
+
+## 为什么过度训练对推理特别有效
+
+其机制不仅仅是"更多数据总是更好"。超过 Chinchilla 最优点进行过度训练确实会降低 pass@1 的表现——与同等大小的 Chinchilla 最优模型相比，该模型的平均输出质量下降。过度训练的作用是改善输出的*分布*方式，使采样更有成效。
+
+三个具体效应：
+
+**1. 解题策略的覆盖率提高。** 一个训练数据量是 Chinchilla 规定量 16 倍的模型，见过更多样化的解题方法。它不会始终应用最佳方法（那需要更大的模型），但在以适度温度采样时，可以生成更广泛的方法组合。对于正确方法在训练分布中不常见的问题，这种覆盖率优势是决定性的。
+
+**2. 校准随过度训练而改善。** 这违反直觉但经验上稳健：过度训练的模型比 Chinchilla 最优模型的校准不确定性更好。当一个过度训练的模型对某个推理步骤不确定时，其输出分布会分散到多种策略。当一个 Chinchilla 最优模型不确定时，它倾向于以中等置信度选定一种策略。过度训练模型中的分散正是使采样富有成效的原因——不同样本探索不同策略，而非重复同一条。
+
+**3. 对更小模型而言验证步骤更便宜。** 在生成-验证循环中，使用更小的生成器意味着验证器（无论是外部测试、形式检查器，还是同一模型的不同模式）处理的是更短、更集中的输出。一个过度训练的 7B 模型生成 64 个样本可以并行验证，成本仅为运行 70B 模型的一小部分。对于通过运行测试或检查数学证明来进行验证的任务，生成器大小根本不影响验证成本——这使得更小的生成器严格优于更大的。
+
+论文将这些效应形式化为对缩放定律的修正。Chinchilla 的公式是 $L_1 \propto N^{-\alpha} D^{-\beta}$（其中 $\alpha \approx \beta$），而 T² 定律给出 $L_K \propto N^{-\alpha'} D^{-\beta'} K^{-\gamma}$，其中 $\gamma > 0$，且最优的 $N$ 更小（向更多 $D$ 和更多 $K$ 偏移）。指数 $\gamma$——即额外测试时采样的价值——是打破 Chinchilla 对称性的新项。
+
+## 具体数字
+
+论文在数学推理（GSM8K、MATH、竞赛级问题）和代码生成（HumanEval、SWE-bench 子集）上报告了结果。在不同任务中，模式是一致的：
+
+对于固定的总体计算预算（训练 + 推理 FLOP 合计），分配大致如下。预算约为 6e23 FLOPs，相当于训练一个 70B 模型在 1.4T token 上：
+
+| 策略 | 模型规模 | 训练 token | 推理 K | 训练 FLOPs | MATH 准确率 |
+|----------|-----------|----------------|-------------|-------------|---------------|
+| Chinchilla 最优 | 70B | 1.4T | 1 | ~5.9e23 | ~78% |
+| 轻度过度训练 | 30B | 3T | 16 | ~5.4e23 | ~82% |
+| T² 最优 | 7B | 12T | 64 | ~5.0e23 | ~86% |
+| T² 最优 | 3B | 25T | 256 | ~4.5e23 | ~84% |
+
+每行中剩余的 FLOPs 用于推理（生成 + 验证）。在 12T token 上训练的 7B 模型——约为该规模 Chinchilla 最优数据的 8 倍——加上 64 次推理采样，在 MATH 上优于 70B Chinchilla 最优模型。3B 模型进一步加大过度训练力度，开始出现收益递减——模型变得过小，以至于根本无法表达某些解题策略，任何数量的采样都补救不回来。
+
+正如论文所描述的，最优点是一个模型足够小使得推理便宜，但又足够大能够表达解空间。对于当前的推理基准测试，这个最优点大约是 7B-14B 参数、15-25T 训练 token——超过 Chinchilla 最优水平 10-15 倍的过度训练因子。
+
+## 深度思考比例的关联
+
+一条相关的研究线——"深入思考，而非仅仅更长"（arXiv:2602.13517，2026 年 4 月更新）——解决了互补问题：既然你要在推理上投入推理计算，如何高效地花费它？
+
+论文引入了深度思考比例（DTR），这是一种衡量推理链中有效部分与冗余部分的指标。观察发现，推理模型经常"唠叨"——它们产生很长的思维链，后续 token 大多是已经得出的结论的重复或微小变体。DTR 识别模型内部状态稳定的层和 token 位置，并建议在该点截断链。
+
+被称为"Think@n"的实用技术，通过根据早期层的表示预测哪些推理路径会成功，并在它们消耗完整 token 预算之前终止不成功的路径，将推理成本降低约 50%。与 T² 过度训练策略结合使用时，产生复合效应：你生成更多样本（因为模型更小），而每个样本更便宜（因为不成功的链被提前截断）。
+
+```python
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class ThinkAtNConfig:
+    """Configuration for early-termination reasoning."""
+    max_thinking_tokens: int
+    stability_check_interval: int  # check DTR every N tokens
+    dtr_threshold: float  # terminate if DTR drops below this
+    n_parallel_chains: int
+
+    @property
+    def expected_tokens_per_chain(self) -> float:
+        # Empirically, ~50% of chains terminate early
+        # Successful chains use ~70% of budget on average
+        return self.max_thinking_tokens * 0.6
+
+    @property
+    def expected_total_tokens(self) -> float:
+        return self.expected_tokens_per_chain * self.n_parallel_chains
+
+
+# Example: instead of 1 chain at 32K tokens (32K total),
+# run 8 chains with shorter budget + early termination
+standard = ThinkAtNConfig(
+    max_thinking_tokens=32768,
+    stability_check_interval=0,  # no early termination
+    dtr_threshold=0.0,
+    n_parallel_chains=1,
+)
+# standard total: 32768 * 1 = 32K tokens
+
+efficient = ThinkAtNConfig(
+    max_thinking_tokens=8192,
+    stability_check_interval=512,
+    dtr_threshold=0.3,
+    n_parallel_chains=8,
+)
+# efficient: 8 chains * 8192 * 0.6 (avg utilization) ≈ 39K tokens
+# ~1.2x more total tokens, but pass@8 >> pass@1 on reasoning
+```
+
+## 这改变了谁的算法
+
+T² 结果对不同处境的人有不同的含义。
+
+**对于训练 100B+ 模型的前沿实验室：** 该结果并不否定大模型。大模型在 pass@1 上仍然更好，这对延迟敏感的应用（聊天、实时编码辅助）很重要。结果表明，如果你的部署支持重复采样和验证——推理模型部署确实支持——你可以用小 10 倍的模型达到相同的推理精度。这是一个成本论证，而非能力论证。实验室是否据此行动，取决于推理成本是否是约束条件（随着 agent 工作负载增长，越来越多的是）。
+
+**对于开放权重实践者：** 该结果改变了计算方式。训练一个 7B 模型在 12T token 上仍然昂贵——数千 GPU 小时——但这只是训练 70B 模型成本的一小部分。更重要的是，推理计算可以按查询租用，而训练计算是沉没成本。对于还没有已训练 70B 模型的任何人来说，经济账都支持过度训练的小模型，因为 7B 的每查询成本低一个数量级。
+
+**对于 agent 系统架构师：** 该结果重新框架化了模型选择决策。推荐不再是"使用你能负担得起的最大模型"，而是"使用解空间覆盖你任务分布的最小模型，过度训练它，然后将节省下来的用于推理时搜索。"这与推动推理模型后训练采用 GRPO 的逻辑相同——额外采样的价值超过额外模型容量的价值，达到某个点为止。
+
+**对于 Chinchilla 叙事：** 该结果没有推翻 Chinchilla。它表明 Chinchilla 优化的是推理模型部署场景下错误的指标。对于 pass@1 的语言建模损失，Chinchilla 是正确的。对于带验证的推理精度 pass@K，T² 是正确的。两者都是有效的缩放定律；它们适用于不同的问题。从 pass@1 到 pass@K 的领域转变才是使 T² 具有实际意义的根本。
+
+## 验证瓶颈
+
+整个 T² 框架依赖一个容易忽略的假设：可以从 $K$ 个样本中识别出正确答案。对于数学问题，这很简单——检查最终数值答案。对于代码，这是可处理的——运行测试。对于开放式推理，这很困难。对于创意任务，这是未定义的。
+
+因此，T² 缩放的范围受限于可验证任务的范围。这个范围并不狭窄——数学、代码、形式证明、带引文的事实问答、结构化数据提取——但它确实是我们使用语言模型的所有场景的一个真子集。论文明确承认这一局限性，并未声称过度训练对无法验证的任务有帮助。
+
+验证瓶颈也解释了为什么 GRPO 和 T² 缩放是互补的。GRPO 在训练期间使用验证信号（结果正确性）来塑造策略。T² 在推理期间使用验证信号来选择样本。两者都需要同一个验证器。实现了这两者的训练流水线在训练时做的是隐式过程奖励建模（通过 GRPO 的分组结构），在推理时做的是显式最佳选择（通过 T² 的采样策略）。验证器是共享的基础设施。
+
+## 实践建议
+
+对于 2026 年做出模型选择或训练决策的任何人：
+
+**1. 以 pass@K 而非 pass@1 为基准进行测试。** 如果你的部署支持重复采样（大多数 agent 部署确实支持），你的模型选择应该基于 pass@K 表现，而非 pass@1。在 pass@1 上表现较差但在 pass@64 上表现更好的模型，才是你用例中更好的模型。
+
+**2. 将训练和推理预算联合规划。** 旧的心智模型——"训练是沉没成本，推理是边际成本"——在两者可相互替代时就不成立了。过度训练一个更小的模型会提高每个样本的正确概率，从而减少达到目标 pass@K 所需的样本数量——这是训练算力和推理算力之间的直接权衡。联合优化正是 T² 框架所提供的。
+
+**3. 投资于验证基础设施。** 额外推理样本的价值受限于你验证它们的能力。如果你无法验证，你就无法从 T² 缩放中获益。建立任务特定的验证器（测试套件、形式检查器、引文验证器）是现在对模型能力的头等投资，而非下游质量保证步骤。
+
+**4. 关注 7B-14B 这个最优点。** 在这个参数范围内的过度训练模型，是未来一年最可能在推理基准测试中实现快速改进的模型，因为 T² 逆转效应在这些模型上最强。如果你在为推理做微调，从这里开始。
+
+缩放定律没有被推翻。它们被精化了。精化的结论是：当你可以验证时，过度训练和采样比扩大规模更有效。模型变小了。推理变智能了。数学逆转了。
+
+---
+
+**参考文献**
+
+- T^2 Scaling Laws: arXiv:2604.01411. April 2026.
+- Think Deep, Not Just Long: arXiv:2602.13517. Updated April 2026.
+- Hoffmann et al. *Training Compute-Optimal Large Language Models* (Chinchilla). 2022.
+- Related coverage: [T^2 Scaling: Overtraining as Optimal Strategy](/blog/t2-scaling-overtraining-optimal), [GRPO Was a Process Reward Model All Along](/blog/grpo-as-process-reward-model), [Inference-Time Scaling and Deep Think](/blog/inference-time-scaling-deep-think).

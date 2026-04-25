@@ -1,0 +1,189 @@
+---title: "任务预算：跨循环的 Effort 搭档"
+description: "Opus 4.7 的 effort 参数限制了每步推理的资源消耗。任务预算则限制整个 agentic 循环——并让模型能看到自己的倒计时。"
+publishDate: "2026-04-18"
+updatedDate: "2026-04-18"
+category: engineering
+tags:
+  - claude
+  - inference-time-compute
+  - agent-architecture
+  - cost-optimization
+  - budgets
+  - agentic-loops
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+Opus 4.7 的发布说明以 `xhigh` effort 级别和 100 万上下文窗口为亮点。但更有趣的变化藏在功能标志背后：`task-budgets-2026-03-13` beta header。启用它、设置 token 上限后，模型现在会在一个对自己可见的持续倒计时下运行。当时间不多时，它会优先处理仍然重要的事项。这是**第一个模型能够知道自己还有多少预算、并利用这个信息来塑造自身行为的通用 API**。
+
+这不是成本控制功能。这是一个控制流原语，它与 `effort` 配对使用，使 agentic 工作负载的成本曲面第一次变得可导航。
+
+## 三层预算体系
+
+有了 Opus 4.7，单次 agentic 运行现在有三个不同的预算旋钮，每个在不同的作用域运行，具有不同的语义。
+
+```
+┌───────────────────────────────────────────────────────────┐
+│  max_tokens                                                │
+│  - 作用域：每次响应                                         │
+│  - 模型是否知情？否                                         │
+│  - 行为：硬截断，stop_reason="max_tokens"                    │
+├───────────────────────────────────────────────────────────┤
+│  effort (low | medium | high | xhigh | max)                │
+│  - 作用域：每个模型步骤（推理 trace + 响应）                 │
+│  - 模型是否知情？内部知情——影响推理深度                       │
+│  - 行为：每次调用的软性推理预算                               │
+├───────────────────────────────────────────────────────────┤
+│  task_budget  (Opus 4.7 beta 新增)                         │
+│  - 作用域：整个 agentic 循环（N 次工具调用，N 次响应）        │
+│  - 模型是否知情：是——能看到实时倒计时                        │
+│  - 行为：建议性的；模型自我优先排序以完成任务                 │
+└───────────────────────────────────────────────────────────┘
+```
+
+`max_tokens` 是老式的硬上限，运作在传输层。模型对它没有任何表征——当服务器达到限制时，流被直接切断，响应返回 `stop_reason: "max_tokens"`。这种做法粗暴且不可预测——在响应中途突然截断，而且完全对推理过程不可见。
+
+`effort`，之前引入的，是每次调用的推理预算。我之前在 [可编程推理预算](/en/blog/opus-4-7-programmable-inference-budget) 中讨论过它——它将多代理设计从模型选择转向预算分配。但 `effort` 只控制**一个步骤**。在调用工具 30 次的代理循环中，设置 `effort=xhigh` 意味着所有 30 次调用都支付额外的推理成本，无论每个步骤是否真正需要它。
+
+`task_budget` 填补了这个空白。它是整个循环的软上限，最小值是 20K tokens。Anthropic 的文档将其描述为"建议性的——模型了解它但不会被严格限制。"这一句话承载了很多含义。收到任务预算的模型不是上下文窗口被缩短的模型，而是一个被以它能够推理的方式告知它还有多少"跑道"的模型。
+
+## 为什么模型知情很重要
+
+大多数预算系统都是外部强制执行的。Kubernetes pod 被 OOM 杀死。无服务器函数达到超时限制，运行时终止它。LLM 调用达到 `max_tokens`，响应被截断。这些都是致命中断——进程没有任何优雅行为，因为它从来不知道限制即将到来。
+
+`task_budget` 的设计是不同的。模型在每个步骤都观察到倒计时。当预算充足时，它可以探索、验证、分支。当预算紧张时，它裁剪——跳过可选的验证、直切答案、或拒绝明显无法完成的任务。
+
+Anthropic 的文档明确命名了这个失败模式：*"预算太小而无法完成任务可能导致类似拒绝的行为。当 Claude 看到一个明显不足以完成工作的预算时（例如，一个需要数小时 agentic 编码任务只有 20,000 token 预算），它可能拒绝尝试。"*
+
+这是一个有自我意识的代理拒绝开始它无法完成的工作。这个失败模式与静默截断截然不同——**从操作角度也好得多**。拒绝是一个信号；截断是损坏的输出。
+
+## Beta Header
+
+```python
+from anthropic import Anthropic
+
+client = Anthropic(
+    default_headers={
+        "anthropic-beta": "task-budgets-2026-03-13",
+    }
+)
+
+response = client.messages.create(
+    model="claude-opus-4-7",
+    max_tokens=8192,                    # 每次响应的硬上限
+    effort="xhigh",                     # 每步推理深度
+    task_budget=200_000,                # 整个循环的软上限
+    tools=[...],
+    messages=[...],
+)
+```
+
+三个旋钮，三个作用域。`max_tokens` 控制单次响应。`effort` 控制 Claude 每步推理的详尽程度。`task_budget` 控制 Claude 愿意在整个运行中完成的总工作量。
+
+20K 的最小值很重要。低于 20K，系统拒绝启用预算，因为围绕小预算的推理开销会支配有用工作。20K 大约是"一个作用域良好的编码任务加上几次工具调用"。对于更小的东西，单次响应的 `max_tokens` 才是正确的工具。
+
+## 当代理看到时钟时如何改变
+
+更深的含义是，以前假设无界循环的代理设计模式现在需要考虑已知的范围。这颠覆了几个常见的编排选择。
+
+**重试逻辑变得成本感知。** 失败时重试的自我纠正代理，在无界情况下只是一个带重试计数的循环。在预算感知的情况下，重试策略需要查询剩余预算。运行早期，积极重试。运行晚期，提交给当前最佳尝试。代理可以直接推理这个——你不需要在模型外部将其编码为策略层。
+
+**验证变得预算敏感。** Opus 4.7 被训练"在报告前想出验证自身输出的方法"。自我验证在小任务上便宜，在大任务上昂贵。有了任务预算，模型可以根据主要工作后剩余的预算来缩放验证深度。你不会告诉工程师"每次提交前都运行完整测试套件"——你告诉他们合并前运行完整测试，迭代期间运行快速测试。任务预算给模型相同的校准信号。
+
+**探索-利用变得显式。** 思维树、best-of-N 以及大多数其他推理时间搜索方法都有一个隐含假设：更多样本总是更好。有了上限，代理需要决定边际样本何时不再值得。如果模型能观察到倒计时，它可以自己做出这个决定。如果不能，协调器必须猜测。
+
+## 任务预算 vs 外部调度器
+
+生产代理系统已经使用外部预算强制执行有一段时间了。一个常见模式是跟踪每请求 tokens 的协调器，维护运行计数，当计数超过阈值时杀死循环。
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class AgentResult:
+    messages: list[dict]
+    reason: str
+
+class BudgetedOrchestrator:
+    """外部强制预算 — 标准的前任务预算模式"""
+
+    def __init__(self, client, tool_router, total_budget: int):
+        self.client = client
+        self.tool_router = tool_router       # callable: response -> list[dict]
+        self.remaining = total_budget
+        self.stop_reason = None
+
+    def run(self, prompt: str) -> AgentResult:
+        messages = [{"role": "user", "content": prompt}]
+        while True:
+            # 提前预留输出预算以确保会计不会超支
+            if self.remaining <= 0:
+                self.stop_reason = "budget_exhausted"
+                break
+            # 估算输入成本，预留保守的输出切片，然后调用
+            input_est = estimate_tokens(messages)        # 用户提供的 tokenizer 调用
+            output_slice = min(4096, self.remaining - input_est)
+            if output_slice <= 0:
+                self.stop_reason = "budget_exhausted"
+                break
+            response = self.client.messages.create(
+                model="claude-opus-4-7",
+                messages=messages,
+                max_tokens=output_slice,
+            )
+            # 按 API 报告的实际使用量扣减
+            self.remaining -= response.usage.input_tokens
+            self.remaining -= response.usage.output_tokens
+            if response.stop_reason == "end_turn":
+                return AgentResult(messages=messages, reason="complete")
+            messages.extend(self.tool_router(response))
+        return AgentResult(messages=messages, reason=self.stop_reason)
+```
+
+这可以工作，但注意到模型无法做到的事情：它无法看到还剩多少 tokens。当外部协调器杀死循环时，模型正在做的任何事情都在中途被切断。协调器没有办法编码"在停止前先完成你正在做的事"。
+
+有了 `task_budget`，同样的代码简化了：
+
+```python
+response = client.messages.create(
+    model="claude-opus-4-7",
+    task_budget=total_budget,
+    tools=tools,
+    messages=[{"role": "user", "content": prompt}],
+)
+```
+
+而且——更重要的是——模型参与预算决策。Anthropic 的文档指出模型"如果正处于一个行动中途，而这个行动被中断比完成它更具破坏性，它可能偶尔超过预算"。这是预期行为。优雅的收尾比在工具调用中途硬杀死更好。
+
+外部强制仍然有用——你仍然需要 `max_tokens` 作为安全网，你可能需要协调器级别的策略来强制执行其他约束（墙上时间、工具特定配额、每用户上限）。但上面的 token 会计循环一旦模型是预算感知的就变得多余了。
+
+## 何时任务预算有帮助，何时没有
+
+**使用任务预算的场景：**
+- 在没有人参与循环的情况下运行的自主代理。200K 预算配合 `effort=xhigh` 是编码任务的合理默认值。如果任务太大，代理会优雅地自我终止。
+- 批处理中每项方差很高的情况。设置每项预算，这样一个病态输入就无法耗尽共享池。
+- 迭代开发。在原型设计期间限制运行，生产时提高限制。
+
+**不要依赖任务预算的场景：**
+- 硬性成本 SLA。建议性质意味着预算可以被超出。如果你有合同性上限，在协调器中用每请求会计强制执行它。
+- 细粒度的每工具预算。任务预算是单一整体的。如果你需要"最多 10 次搜索，最多 5 次文件写入"，在工具层面实现配额。
+- 延迟控制。预算限制 tokens，不是时间。模型可以在并行工具调用上快速消耗大预算，或在顺序推理上慢慢消耗。
+
+## 更广泛的模式
+
+任务预算是一个小功能，但其含义比发布说明暗示的更深。模型正在成为自身资源管理的主动参与者。这延续了一条轨迹，这条轨迹从扩展思考开始（模型决定推理多少），经过工具使用自选择（模型决定调用哪些工具），现在到达自我终止（模型决定何时停止）。
+
+代理系统的设计问题过去是"我如何从外部约束这个循环？"问题正在转向"我如何向模型传达我的约束以便它正确地约束自己？"任务预算是围绕这第二个问题构建的第一个 API 原语。
+
+它也锐化了 `effort` 和任务预算之间的区别，而文档只是暗示了这一点。`effort` 是模型**在一个步骤内**如何思考。任务预算是模型**跨步骤**如何规划。它们共同为 agentic 工作负载定义了一个二维设计空间——一个轴是推理深度，另一个轴是时间跨度——这之前被压缩成"我应该允许多少 tokens"。
+
+2025 年的代理工程 folklore 充满了反模式：失控循环、预算爆发的重试风暴、协调器在工具调用中途硬杀死。大多数存在是因为模型没有办法知道它的约束。任务预算不能消除这些失败模式，但它们将控制中心从模型外部移到内部。这是代理系统构建方式的结构性改变。
+
+## 参考
+
+- Anthropic，"Introducing Claude Opus 4.7"，2026 年 4 月 16 日：https://www.anthropic.com/news/claude-opus-4-7
+- Anthropic，"Task budgets" API 文档：https://platform.claude.com/docs/en/build-with-claude/task-budgets
+- 相关文章：[可编程推理预算：Opus 4.7 Effort API](/en/blog/opus-4-7-programmable-inference-budget)
+- 相关文章：[多代理系统中的协调税](/en/blog/coordination-tax-multi-agent)

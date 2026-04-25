@@ -1,0 +1,119 @@
+---title: "多头潜在注意力：压缩 KV 的几何结构"
+description: "MLA 不是 KV-cache 的小技巧。它是对注意力算子的低秩分解，让长时程 agent 工作负载在经济上变得可行。"
+publishDate: "2026-04-17"
+tags:
+  - attention
+  - mla
+  - kv-cache
+  - long-context
+  - deepseek
+  - inference-efficiency
+  - agent-infrastructure
+category: technical
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+一个运行一小时编程 session 的 coding agent 面临的上下文问题，与聊天机器人的上下文问题本质不同。聊天机器人的上下文是单次对话，通常不超过 10k tokens。Agent 的上下文是它读过的每个文件、收到的每个工具结果、草拟和修改的每个计划——经常是午餐前 200k tokens，傍晚 800k tokens。
+
+标准多头注意力的全 KV cache 把这变成了一个内存问题，计算其次，而经济问题始终存在。采用标准 MHA 的 70B 类稠密模型——64 头、头维度 128、80 层——在 bfloat16 下每 token 存储约 2.5 MB 的 KV（精确值：$2 \cdot 64 \cdot 128 \cdot 80 \cdot 2 \approx 2.6$ MB）。用现代 GQA 比率（比如 8 个 KV 头），这降至约 320 KB/token。无论哪种，128k tokens 的 agent 上下文在标准注意力架构下从几十到上百 GB 的 KV cache 不等。乘以并发 session 数，基础设施预算开始决定哪些部署是可行的。
+
+---
+
+多头潜在注意力（Multi-head Latent Attention, MLA），由 DeepSeek-V2（DeepSeek-AI, 2024）引入并在 DeepSeek-V3 中精炼，是这个问题的两种严肃回应之一。（另一种是滑动窗口 / 状态空间 / 线性注意力的技术路线，我留到另一篇文章讨论。）MLA 保持标准点积注意力的函数形式，但通过低秩潜在量重新参数化 KV 计算，使 KV cache 远小于匹配的 MHA 实现。
+
+这篇文章是关于那个重新参数化的几何结构——什么被真正压缩了、为什么有效、以及代价是什么。
+
+## 标准 MHA 一段话讲清楚
+
+Attention 取输入 $x_t \in \mathbb{R}^{d_\text{model}}$ 并生成三个投影：$Q_t = x_t W_Q$, $K_t = x_t W_K$, $V_t = x_t W_V$，每个都分到 $h$ 个头上。对于自回归生成，cache 存储过去的 keys 和 values：在第 $t$ 步，你需要 $\{K_1, \ldots, K_t\}$ 和 $\{V_1, \ldots, V_t\}$ 来计算注意力。每 token 的 cache 大小是 $2 \cdot h \cdot d_{\text{head}}$ floats 每层。
+
+用 $h = 64$, $d_{\text{head}} = 128$, $L = 64$ 层 at bfloat16: $2 \cdot 64 \cdot 128 \cdot 64 \cdot 2 \approx 2.1$ MB **每 token**（约 2.1 GB 每 1k tokens 上下文）。
+
+Multi-Query Attention（MQA, Shazeer 2019）在所有头间共享一个 key 和 value，通过 $h\times$ 削减 cache 但有明显的质量代价。Grouped-Query Attention（GQA, Ainslie et al. 2023）在小组头间共享 keys 和 values，恢复质量。两者都通过减少*每个 token 存储什么*来降低内存。
+
+MLA 走了不同的路线。它通过改变*投影目标*来降低内存，同时通过低秩但头特定的读取设计保持每头注意力多样性。
+
+## MLA 分解
+
+核心操作：将 $x_t$ 投影到一个低维潜在量 $c_t \in \mathbb{R}^{d_c}$，其中 $d_c \ll h \cdot d_{\text{head}}$。然后通过上投影从 $c_t$ 计算 keys 和 values：
+
+$$c_t = x_t W_{DKV}$$
+
+$$K_t = c_t W_{UK}, \quad V_t = c_t W_{UV}$$
+
+只有 $c_t$ 被 cache。$K_t$ 和 $V_t$ 在注意力计算时按需重建。
+
+初看这只是用计算（向上投影）换内存。你确实付出了。但诀窍在下一步：注意力分数计算
+
+$$a_{ti} \propto Q_t (c_i W_{UK})^\top = Q_t W_{UK}^\top c_i^\top$$
+
+可以将 $W_{UK}^\top$ 吸收到修改后的 query $\tilde{Q}_t = Q_t W_{UK}^\top$ 中。向上投影发生在被吸收的 query-乘以潜在量的乘法中。在生成过程中你永远不需要实例化完整的 $K_t$ 矩阵；你只需要 cache 的潜在量 $c_i$ 和被吸收的 query。
+
+同样的技巧扩展到 value 侧，再次通过将 $W_{UV}$ 吸收到输出投影。Value 吸收在实践中比 key 吸收更复杂，因为它与每头 softmax 交互，但 cache 占用仍然由压缩潜在量主导。
+
+最终结果：每 token 每层的 cache 大小约为 $d_c$ floats（加上一个小的解耦 RoPE 分量，见下文），而不是 $2 \cdot h \cdot d_{\text{head}}$ floats。DeepSeek-V2 使用 $d_c = 512$，$h = 128$，$d_{\text{head}} = 128$。标准 MHA cache 每层：$2 \cdot 128 \cdot 128 = 32{,}768$ floats 每 token。MLA cache 每层：$512 + d_r$ floats 每 token，其中 $d_r$ 是小的解耦 RoPE 维度。DeepSeek-V2 报告的 cache 大小减少约为数量级，在匹配质量下。
+
+## 为什么这不只是压缩技巧
+
+这之所以重要，以及为什么 MLA 是架构意义上的重要进展，而不是工程便利，在于有效 key 空间发生了什么。
+
+在标准 MHA 中，每个头有自己的 $d_{\text{head}}$ 维 key 空间。$h$ 个头看表征的不同子空间，模型的表达能力随 $h \cdot d_{\text{head}}$ 缩放。KV cache 记住每个 token 贡献的所有 $h \cdot d_{\text{head}}$ 维度。
+
+在 MLA 中，共享潜在量 $c_t$ 生活在 $d_c$ 维度，小于 $h \cdot d_{\text{head}}$。表面上看这是秩约简。你会预期模型损失表示能力。
+
+它没有，原因有二。首先，向上投影矩阵 $W_{UK}, W_{UV}$ 对每个头是独立学习的，所以每个头仍然得到自己的 $d_{\text{head}}$ 维子空间——只是它是共享潜在量的线性函数，而不是对输入的独立投影。其次，潜在量 $c_t$ 被迫编码头需要提取的所有信息，这诱导了一个有用的压缩先验：cache 存储 token 的紧凑充分统计量，头读取它的投影。
+
+从几何上讲，MLA 将一组 $h$ 个独立的 $d_{\text{head}}$ 维投影（每头一个）替换为两阶段分解：一个到潜在量的单次共享投影，然后是每头读取函数。投影不再是独立的，但每头读取保留了头多样性。全 MHA 中跨头编码的"冗余"——同一个信息片段在多头 KV 中部分表示——被提取到共享潜在量中。
+
+这本质上是对注意力算子的低秩因子分解，从输入到每头 key/value 的映射。数学恒等式很简单；它不损失质量就能工作是对 transformer 实际如何使用 KV 的经验发现。
+
+## RoPE 的复杂性
+
+MLA 的吸收技巧对旋转位置嵌入（RoPE）失效。RoPE 在内积前对 queries 和 keys 应用位置依赖旋转，而旋转与向上投影不交换。当 keys 已被每个 $c_i$ 位置不同的位置特定矩阵旋转时，你不能简单地将 $W_{UK}$ 吸收到 $Q_t$。
+
+DeepSeek 的解决方案是分裂设计：大部分 key 空间使用 MLA 风格吸收（不应用 RoPE），key 的一个小而专门的子空间——通常是头维度的 1/4 到 1/8——通过并行的非压缩 RoPE 路径携带位置信息。注意力分数计算为压缩内容分数和未压缩位置分数之和。这就是"解耦 RoPE"或"ROPE-decoupled MLA"设计。
+
+这个分裂的工程代价适中：每个 token cache 一个额外的小位置 key 分量。架构洞察是 RoPE 和 MLA 解决注意力计算的不同轴，不需要共享表示。位置是 token 序列的几何属性；内容是高维语义属性；它们可以存在于正交子空间。
+
+## Agent 场景下的关键数字
+
+为什么 64× cache 减少改变了 agent 部署的可行性？
+
+以 DeepSeek-V3 类模型为例（128 个注意力头，$d_{\text{head}} = 128$，61 层）。标准 MHA 下，每 token 每层 KV cache 是 $2 \cdot 128 \cdot 128 = 32{,}768$ floats ≈ 64 KB。跨 61 层，一个 token 消耗约 3.9 MB。128k-token session 在纯 MHA 下持有约 500 GB KV cache——这是任何实际部署都不会用的数字，这正是 DeepSeek 需要 MLA 的原因。
+
+在 $d_c = 512$ 加解耦 RoPE 分量的 MLA 下，每 token cache 降至约 70 KB，跨所有层，同一 128k session 持有约 9 GB。**数量级不同；部署故事不同。**
+
+这种压缩改变了单个节点能服务的并发长上下文 agent sessions 数量。粗略版本：MLA 将每节点 agent-session 数从一个小倍数变为一个大倍数，没有质量回归大到可以解释掉这个收益。
+
+这是打开新架构模式的基础设施变化。之前被迫激进上下文剪枝的 agents——总结旧的工具结果、遗忘中间推理、使用 RAG 重新加载过去上下文——现在可以让完整轨迹保持可用。调试复杂系统的 agent 可以在前向传递中保持它读过的每个文件的完整保真度。围绕 agent memory 的"编译 vs. 检索"争论获得新选项：*保留一切*，成本曾只适用于聊天机器人。
+
+## 失效场景
+
+MLA 不是没有权衡。三个重要问题。
+
+**训练 FLOP 成本。** 潜在投影在训练时增加了 FLOPs，因为现在有额外的矩阵乘法。计算增加约 5-10%。对模型提供商这是舍入误差；对预算较小的重新实现者这是不可忽视的。
+
+**$d_c$ 的质量敏感性。** 潜在维度选择是承重的。DeepSeek 报告将 $d_c$ 降到 512 以下会明显降质，但最优值与模型大小相关，尚未在架构范围内充分表征。这是一个在架构间不能干净迁移的超参数。
+
+**蒸馏和适配。** 将标准 MHA 模型事后转换为 MLA 不简单——潜在投影必须以保留原始模型行为的方式学习或初始化。这对开源生态系统有影响，大多数下游用户采用预训练 checkpoint 并适配它们。MLA 从头训练比蒸馏到现有模型更容易。
+
+从头训练的要求是最大的实际摩擦。大多数部署 agents 的组织使用 Llama、Qwen 或 Mistral 衍生架构，都不附带 MLA。采用 MLA 意味着承诺不同的基础模型家族。对现有部署的务实路径是带激进 cache 压缩（量化或驱逐）的 GQA，而不是 MLA——至少在主要开源权重实验室发布其旗舰模型的 MLA 变体之前。
+
+## 可组合性问题
+
+一个有趣的开放问题：MLA 如何与其他推理效率技术组合？
+
+MLA 减少 cache 大小。量化（FP8、NF4、自定义方案）减少每个 cache 条目的位数。分页注意力和前缀缓存跨请求重用 cache 条目。FlashAttention 减少计算注意力本身的成本。这些大多是正交的，堆叠是 2026 年代部署的预期生产配置。
+
+紧张关系在于 MLA 和在投影前 KV 表示上操作的技术之间。例如前缀缓存跨请求重用共享提示的 KV cache。使用 MLA，你 cache 潜在量 $c_t$，这是提示内容的**有损摘要**。跨请求共享前缀时这是否产生相同的注意力输出是一个微妙问题：如果潜在投影是确定性的且 key 的 RoPE-free 部分被正确处理，是的；如果有任何方差来源，则不是。生产系统的答案是"实践中是"，但理论保证比普通 KV cache 更弱。
+
+## 对技术栈的影响
+
+MLA 风格压缩的逻辑终点是 KV cache 不再是推理的主要内存约束。当这个转变完成时，绑定约束转移到别处：模型本身的权重内存、MoE 路由决策的计算成本、自回归生成循环的 token 间延迟。Agent 工作负载不是停止需要内存；它只是需要不同的内存。
+
+一年前，agent 基础设施的架构图将 KV cache 显示为每个 session 最大的单一分配。一年后，在 MLA-native 基础模型上，它们将显示权重内存——严肃 MoE 的 500 GB——作为最大的分配，KV 是舍入误差。Agent 每 session 占用将由模型的路由和生成部分主导，不是记忆部分。这是**不同形状的约束**，下一轮基础设施工具将围绕它构建。
+
+对 2026 年架构长期 agent 系统的人的要点：**"最便宜"的基础模型现在是同时堆叠 MLA 和 GQA 的模型，不是静态基准分数最高的模型。** 服务经济学正开始将模型选择从原始质量拉向架构效率，这是旧基准无法捕捉的方式。

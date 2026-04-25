@@ -1,0 +1,263 @@
+---title: "代理运行时中的延迟工具发现"
+description: "在上下文中塞入2000个工具的代理表现不如塞入20个的代理。渐进式发现是解决方案。"
+publishDate: "2026-04-18"
+tags: [agents, mcp, tool-use, context-engineering, agent-architecture, runtime]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+Claude Code 接入了数百个 MCP 工具。Codex CLI 连接数十个工具服务器。Gemini Code Assist 集成了整个 Google Cloud 工具目录。工具数量不断增长，性能却持续下降。
+
+这个模式在各项评测中高度一致：系统提示词中包含的工具描述越多，工具选择准确率就越低。在 Gorilla 和 ToolBench 等基准测试中，超过几十个工具后准确率就会明显下降；到了几百个工具的规模，模型消耗在「该调用哪个工具」上的 token 比实际执行工具的还多。上下文窗口充斥着与当前子任务无关的工具模式，信号噪声比彻底崩溃。
+
+这就是工具发现问题：代理如何在不预先加载全部工具描述的情况下，找到适合当前子任务的正确工具？
+
+## 为什么激进加载会失败
+
+把全部工具模式一股脑塞进系统提示词的朴素做法，有三个相互叠加的失败原因。
+
+**上下文预算紧张。** 每个 MCP 工具模式占用 100-500 个 token（名称、描述、参数模式、示例）。200 个工具还没开始干活就烧掉了 20K-100K 个 token。对于 200K 上下文的模型，这意味着多达一半的窗口被工具元数据占用。对于 32K 上下文的模型，直接结束。
+
+**选择困惑。** 大语言模型在长列表的细粒度区分上表现挣扎。当 15 个工具的描述高度重叠时（「查询数据库」「搜索数据库」「查找数据库记录」「从数据库获取」），模型频繁选错。区分问题的难度随列表长度超线性增长，因为两两比较的次数呈二次方增长。
+
+**潜在的提示注入攻击面。** 上下文中的每个工具模式都是一次注入机会。恶意的 MCP 服务器可以在工具描述中嵌入指令，劫持代理行为。上下文中工具越少，注入面越小。最近披露的通过仓库配置文件实现的提示注入（参见[配置注入](/blog/config-injection-repo-attacks-agents)）表明，工具模式是实际可行的攻击向量，而非理论假设。
+
+## 渐进式发现：架构设计
+
+解决方案是让工具加载变为惰性的。代理不再预先提供全部工具，而是以少量元工具启动，这些元工具可以按需发现和加载其他工具。
+
+该架构分为三层：
+
+```
+┌─────────────────────────────────────────────┐
+│ 第三层：领域工具                              │
+│（按需加载，按子任务加载）                      │
+│ 例如：query_postgres、deploy_k8s、lint_py   │
+├─────────────────────────────────────────────┤
+│ 第二层：发现工具                              │
+│（始终可用，轻量级）                           │
+│ search_tools、load_tool、list_categories    │
+├─────────────────────────────────────────────┤
+│ 第一层：核心工具                              │
+│（始终可用，必需）                             │
+│ read_file、write_file、run_bash、grep        │
+└─────────────────────────────────────────────┘
+```
+
+**第一层（核心）** 包含代理基本操作所需的 5-10 个工具。这些始终驻留在上下文中。读、写、执行、搜索——通用原语。
+
+**第二层（发现）** 包含查询工具注册表的元工具。代理调用 `search_tools("deploy to kubernetes")`，得到按相关性排序的工具列表及简要描述。然后调用 `load_tool("deploy_k8s_service")` 将该工具的完整模式加载到当前回合的上下文中。
+
+**第三层（领域）** 包含实际工具。它们注册在可搜索的索引中，但其模式**不会**驻留在代理上下文中，直到被显式加载。
+
+## 实现工具注册表
+
+工具注册表是对工具元数据进行搜索的索引。它需要支持语义搜索（代理不会总是知道确切工具名），并返回带排名的结果，提供足够信息让代理决定是否加载完整模式。
+
+```python
+from dataclasses import dataclass
+import numpy as np
+
+@dataclass(frozen=True)
+class ToolEntry:
+    name: str
+    server: str
+    brief: str        # 1-line description, under 50 tokens
+    tags: tuple[str, ...]
+    full_schema: dict  # JSON Schema, loaded on demand
+
+class ToolRegistry:
+    def __init__(self, embedding_model):
+        self.entries: dict[str, ToolEntry] = {}
+        self.embeddings: dict[str, np.ndarray] = {}
+        self.embedding_model = embedding_model
+
+    def register(self, tool: ToolEntry) -> None:
+        self.entries[tool.name] = tool
+        text = f"{tool.name}: {tool.brief} [{', '.join(tool.tags)}]"
+        self.embeddings[tool.name] = self.embedding_model.encode(text)
+
+    def search(self, query: str, top_k: int = 5) -> list[dict]:
+        q_emb = self.embedding_model.encode(query)
+        scores = {
+            name: float(np.dot(q_emb, emb) / (
+                np.linalg.norm(q_emb) * np.linalg.norm(emb)
+            ))
+            for name, emb in self.embeddings.items()
+        }
+        ranked = sorted(scores.items(), key=lambda x: -x[1])[:top_k]
+        return [
+            {"name": name, "brief": self.entries[name].brief, "score": score}
+            for name, score in ranked
+        ]
+
+    def load_schema(self, tool_name: str) -> dict | None:
+        entry = self.entries.get(tool_name)
+        return entry.full_schema if entry else None
+```
+
+暴露给代理的元工具封装了此注册表：
+
+```python
+@mcp_tool(name="search_tools")
+async def search_tools(query: str, top_k: int = 5) -> str:
+    """
+    Search for tools matching a natural language description.
+    Returns tool names and brief descriptions. Use load_tool
+    to get the full schema for a specific tool.
+    """
+    results = registry.search(query, top_k=top_k)
+    return "\n".join(
+        f"- {r['name']}: {r['brief']} (relevance: {r['score']:.2f})"
+        for r in results
+    )
+
+@mcp_tool(name="load_tool")
+async def load_tool(tool_name: str) -> str:
+    """
+    Load the full schema for a specific tool into context.
+    After loading, the tool becomes available for use.
+    """
+    schema = registry.load_schema(tool_name)
+    if schema is None:
+        return f"Tool '{tool_name}' not found in registry."
+    # Inject schema into agent's available tools
+    await agent_runtime.register_dynamic_tool(tool_name, schema)
+    return f"Tool '{tool_name}' loaded. You can now call it directly."
+```
+
+## MCP 2.0 的方向
+
+MCP 规范正在向这个模式演进。2025-03-26 的修订引入了 Streamable HTTP 传输，使 MCP 服务器可以作为无状态的 HTTP 服务部署。逻辑上的下一步——从 2026 年 4 月路线图可以看出方向——是协议层面的渐进式工具发现。
+
+机制：`tools/list` 调用不再返回服务器提供的全部工具，而是返回分页的、可过滤的列表。客户端（代理运行时）可以按类别、关键词或能力进行查询。只有当代理决定使用某个工具时，才通过 `tools/get` 单独获取其完整的 JSON Schema。
+
+```json
+// 当前：tools/list 返回全部
+{
+  "tools": [
+    {"name": "tool_1", "description": "...", "inputSchema": {...}},
+    {"name": "tool_2", "description": "...", "inputSchema": {...}},
+    // ... 200 more tools
+  ]
+}
+
+// 渐进式：tools/list 返回摘要，tools/get 返回完整模式
+// 请求：带过滤的 tools/list
+{
+  "filter": {"category": "database", "query": "postgres"},
+  "page": 1,
+  "page_size": 10
+}
+
+// 响应：轻量摘要
+{
+  "tools": [
+    {"name": "query_postgres", "brief": "Execute read-only SQL"},
+    {"name": "pg_schema_inspect", "brief": "List tables and columns"}
+  ],
+  "total": 2,
+  "has_more": false
+}
+
+// 请求：获取完整模式的 tools/get
+{"name": "query_postgres"}
+
+// 响应：完整 JSON Schema
+{
+  "name": "query_postgres",
+  "description": "Execute a read-only SQL query against a PostgreSQL database...",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "sql": {"type": "string", "description": "The SQL query to execute"},
+      "database": {"type": "string", "description": "Target database name"}
+    },
+    "required": ["sql"]
+  }
+}
+```
+
+这与现有协议向后兼容。不支持过滤的服务器仍按原有方式返回完整工具列表。不支持渐进发现的客户端忽略分页信息。但**支持**渐进发现的客户端将获得大幅缩小的初始上下文。
+
+## Claude Code 已经在做这件事
+
+Claude Code 的 `ToolSearch` 机制是这一模式的早期实现。它不是在启动时注入全部延迟工具模式，而是在需要时加载：
+
+```
+// 延迟工具仅列出名称——模式不在上下文中
+Available deferred tools: NotebookEdit, WebSearch, WebFetch, ...
+
+// 代理在需要时查询
+ToolSearch(query: "select:WebSearch,WebFetch")
+
+// 模式仅为此回合加载到上下文中
+```
+
+「代码模式」进一步深化了这种方法。代理不是暴露工具目录，而是获得恰好两个元工具——`run_code` 和 `inspect_output`——并通过编写导入库的代码来发现能力。工具目录被编程语言的包生态取代。**两个工具取代了两千个**。
+
+## 成本模型：何时发现 vs. 预加载
+
+渐进发现每次工具查询增加一次往返。如果代理需要先搜索和加载工具才能使用，该子任务的总延迟增加 **1-2 秒**。对于交互式使用场景（聊天、IDE 编程助手），这很关键。
+
+优化手段是**工作集**——一小部分最近使用的工具，在回合之间保持加载状态：
+
+```python
+from collections import OrderedDict
+
+class ToolWorkingSet:
+    """LRU cache of recently-loaded tool schemas."""
+    def __init__(self, max_size: int = 20):
+        self.cache: OrderedDict[str, dict] = OrderedDict()
+        self.max_size = max_size
+
+    def get(self, tool_name: str) -> dict | None:
+        if tool_name in self.cache:
+            self.cache.move_to_end(tool_name)
+            return self.cache[tool_name]
+        return None
+
+    def put(self, tool_name: str, schema: dict) -> str | None:
+        """Returns evicted tool name, if any."""
+        evicted = None
+        if tool_name in self.cache:
+            self.cache.move_to_end(tool_name)
+        else:
+            if len(self.cache) >= self.max_size:
+                evicted_name, _ = self.cache.popitem(last=False)
+                evicted = evicted_name
+            self.cache[tool_name] = schema
+        return evicted
+```
+
+工作集大小（上例中为 20 个工具）是一个可调参数。正确值取决于上下文预算和任务多样性。对于主要使用文件操作和测试运行器的编码代理，10 个工具的工作集就足够。对于横跨数据库、云 API、监控和 CI/CD 的 DevOps 代理，可能需要 30 个。
+
+决策树：
+
+| 条件 | 策略 |
+|-----------|----------|
+| 少于 20 个工具 | 激进加载全部 |
+| 20-100 个工具，工作流可预测 | 预加载工作集 + 延迟发现 |
+| 100+ 个工具，任务多样 | 纯延迟发现 + LRU 缓存 |
+| 安全敏感环境 | 延迟发现 + 工具白名单 |
+
+## 更深层的模式：将上下文视为受管理资源
+
+延迟工具发现是代理工程中更广泛转变的一个实例：将上下文窗口视为**受管理的资源**，而非仅可追加的日志。
+
+提示工程将上下文视为静态的——精心构造完美的系统提示词，注入所有相关信息，希望模型能处理。上下文工程将上下文视为动态的——在需要时加载信息，在不需要时清除它，在回合之间管理预算。
+
+工具是最容易管理的上下文类型，因为它们是离散的、自描述的、可独立加载的。同样的模式适用于检索文档（加载相关片段，清除过时片段）、对话历史（总结旧回合，保留最近的）以及代理记忆（加载相关记忆，跳过无关的）。
+
+正确管理这四类上下文类型（工具、文档、历史、记忆）作为统一预算的代理运行时，将超越那些拥有更大模型和更宽上下文窗口但上下文管理简单的代理。**瓶颈不在于你能塞入多少上下文，而在于你选择放入什么的能力有多强**。
+
+---
+
+## 参考文献
+
+- Anthropic, "Model Context Protocol Specification," revision 2025-03-26. [modelcontextprotocol.io](https://modelcontextprotocol.io/specification)
+- Hsieh et al., "Tool Learning with Large Language Models: A Survey," 2025. [arXiv:2405.17935](https://arxiv.org/abs/2405.17935)
+- Patil et al., "Gorilla: Large Language Model Connected with Massive APIs," 2023. [arXiv:2305.15334](https://arxiv.org/abs/2305.15334)

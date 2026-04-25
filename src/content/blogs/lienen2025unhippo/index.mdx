@@ -1,0 +1,85 @@
+---
+title: "UnHiPPO: Uncertainty-aware Initialization for State Space Models"
+description: "Revisits the foundational HiPPO initialization through a stochastic-control lens and derives a noise-robust alternative without runtime cost."
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+tags: [paper, ssms, initialization, stochastic-control, icml-2025]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=U8GUmxnzXn"]
+confidence: medium
+status: draft
+---
+
+# UnHiPPO: Uncertainty-aware Initialization for State Space Models
+
+**Original Title:** UnHiPPO: Uncertainty-aware Initialization for State Space Models  
+**Authors:** Marten Lienen, Abdullah Saydemir, Stephan Günnemann  
+**Published:** ICLR 2025 | **Link:** [OpenReview](https://openreview.net/forum?id=U8GUmxnzXn)
+
+---
+
+## One-Line Summary
+
+HiPPO — the initialization scheme powering modern state-space models like Mamba — breaks down on real noisy data. UnHiPPO patches this gap by re-deriving the same initialization from a stochastic-control perspective, making SSMs robust to noise **without adding a single FLOP at runtime**.
+
+---
+
+## Why This Is Worth Your Time
+
+Most SSM papers chase architectural novelty. This one asks a quieter, harder question: *what if the foundation itself is broken?*
+
+HiPPO (High-Order Polynomial Projection) is the initialization theory behind Mamba, S4, and a dozen follow-ons. It assumes your input sequence is a clean, noise-free signal — an assumption that holds exactly never in production.
+
+Sensor drift, quantization artifacts, lossy compression, pre-processing pipelines: every one of these introduces noise that HiPPO treats as signal.
+
+The authors don't just flag this problem. They solve it at the **initializer level**, which means it costs you nothing to deploy. That's the real trick here.
+
+---
+
+## Core Method (3-Minute Version)
+
+HiPPO's original derivation treats the memorization of a sequence as a control problem: find a linear system whose hidden state best tracks the input as time progresses. The data enters as a *control signal* — assumed clean.
+
+UnHiPPO flips this. It reformulates the same problem so that the data are **noisy observations of an unknown latent system**.
+
+Now you're not just tracking a signal; you're trying to infer the underlying state from corrupted measurements.
+
+Rather than sampling from that posterior (expensive), UnHiPPO derives a *deterministic approximation* — a single fixed initialization that already bakes in uncertainty awareness.
+
+Plug it in where you would plug in HiPPO, and your SSM starts with a better prior for noisy regimes.
+
+---
+
+## Key Results
+
+- Derived uncertainty-aware dynamics initialization by extending HiPPO theory to account for measurement noise.
+- Reformulated HiPPO as a linear stochastic control problem where data are noisy outputs of a latent system.
+- Demonstrated improved noise resistance at **both training and inference time** without increasing runtime.
+- No concrete numbers reported in the source — experiments are presented qualitatively and on synthetic setups.
+
+---
+
+## Limits and Unanswered Questions
+
+The paper is theoretically elegant, but the empirical section is thin on real-world benchmarks. The noise experiments use synthetic corruption, which raises questions about whether the gains transfer to domain-specific noise (e.g., medical sensor drift, ASR artifacts).
+
+There's also no ablation on *how much* noise the method tolerates before degrading — a calibration curve would help practitioners know when to reach for this.
+
+Code availability and reproducibility details are not fully specified in the current source note.
+
+---
+
+## Further Reading
+
+- **HiPPO** (Voelker et al., 2021) — the original framework this work extends.
+- **Mamba** (Gu & Dao, 2023) — the most prominent SSM architecture that relies on HiPPO-style initialization.
+
+---
+
+**Curation Date:** 2026-04-25  
+**Reading Difficulty:** ⭐⭐⭐☆☆ (1–5 stars)  
+**Recommendation:** 🔥🔥🔥🔥 (1–5 fire)

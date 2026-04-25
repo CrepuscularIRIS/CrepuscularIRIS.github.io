@@ -1,0 +1,606 @@
+---title: "2026年多智能体系统的三条研究路径"
+description: "一份涵盖控制平面、上下文管理和通信协议的研究路线图——包含代码、实验和风险分析。"
+publishDate: "2026-04-15"
+updatedDate: "2026-04-16"
+tags: [multi-agent, research-roadmap, control-plane, context-management, communication-protocol, agent-research]
+category: research
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+规划多智能体系统的长期研究时，这个领域呈现出的可能方向令人眼花缭乱。在回顾了两年顶级会议发表和行业部署报告后，我将可行的研究路径缩减为三条，按优先级排序：
+
+> **控制平面 > 上下文管理 > 通信/回滚协议**
+
+这个排序反映了 2025-2026 年 NeurIPS、ICML 和 ICLR 等会议上浮现的共识：审稿人奖励那些有真实环境评估、在固定 backbone 基础上能获得可衡量系统级提升、且具备硬指标（成本、稳定性、安全性）的研究。他们惩罚的是模糊的 AGI 叙事、单一 LLM-as-judge 评估方式，以及无法操作化的概念。
+
+| 路径 | 核心主题 | 优先级 | 关键特征 |
+|-------|-----------|----------|-------------------|
+| 路径一 | 主动控制平面 | 最高 | 系统导向、多目标指标、控制论视角 |
+| 路径二 | 上下文价值评估 | 第二 | 稳定、低资源需求、易于解释 |
+| 路径三 | 通信/回滚协议 | 第三 | 工程导向、协议导向、低算力需求 |
+
+## 路径一：主动控制平面（最高优先级）
+
+**建议标题：** *面向持久性智能体的预算约束主动控制*
+
+### 核心问题
+
+在持续工作流中，智能体何时应该介入、何时保持沉默、何时升级给人类、或何时回滚之前的操作——且这一切都要在明确成本约束下进行，以最大化长期成功率和跨任务一致性？
+
+这个框架将工作与简单的"介入时机"分类器区分开来。控制平面在状态空间（压缩历史 + 当前环境）上运行，动作集合是离散的：**assist**、**silent**、**escalate**、**rollback**。优化目标不是单任务准确率，而是平衡多目标成本函数：
+
+- **误报成本**：不必要的干预，侵蚀用户信任
+- **漏报成本**：应该介入时未能介入的失败
+- **Token 成本**：每次干预消耗的计算预算
+- **延迟成本**：控制循环本身的时间开销
+
+一致性维度将问题从分类提升到控制理论层面。一个成功率 90% 但在随机任务上不可预测地失败的智能体，比成功率 85% 但失败模式可预测的智能体更差。顶级会议的审稿人已开始明确要求一致性指标，而非仅仅汇总成功率。
+
+### 参考实现
+
+控制平面可以建模为约束马尔可夫决策过程。状态编码压缩的任务历史和环境信号。动作空间是离散的。成本函数是多目标的。
+
+```python
+from dataclasses import dataclass
+from enum import Enum
+import numpy as np
+
+class Action(Enum):
+    ASSIST = "assist"
+    SILENT = "silent"
+    ESCALATE = "escalate"
+    ROLLBACK = "rollback"
+
+@dataclass(frozen=True)
+class CostWeights:
+    """多目标成本函数权重。"""
+    false_alarm: float = 1.0    # 不必要干预的成本
+    miss: float = 5.0           # 未能介入的成本
+    token: float = 0.001        # 每 token 消耗的成本
+    latency: float = 0.1        # 每秒延迟的成本
+
+@dataclass
+class ControlState:
+    """智能体状态的压缩表示。"""
+    confidence: float           # 模型自报告置信度 [0, 1]
+    steps_since_intervention: int
+    error_rate_window: float    # 最近 N 步的滚动错误率
+    token_budget_remaining: float
+    task_complexity: float      # 从初始提示词估计
+
+class ProactiveControlPlane:
+    """
+    决定智能体何时应该行动、保持沉默、升级或回滚。
+
+    该策略是参考实现的简单阈值控制器。在研究版本中，
+    这将被学习到的策略替代（例如通过约束 PPO 或 GRPO 训练）。
+    """
+
+    def __init__(self, cost_weights: CostWeights | None = None):
+        self.costs = cost_weights or CostWeights()
+        self.action_history: list[Action] = []
+        self.reward_history: list[float] = []
+
+    def select_action(self, state: ControlState) -> Action:
+        # 计算每个动作的预期成本
+        action_costs = {}
+
+        for action in Action:
+            cost = self._expected_cost(state, action)
+            action_costs[action] = cost
+
+        # 选择成本最低的动作
+        best_action = min(action_costs, key=action_costs.get)
+        self.action_history.append(best_action)
+        return best_action
+
+    def _expected_cost(self, state: ControlState, action: Action) -> float:
+        """估计在当前状态下执行动作的预期成本。"""
+        if action == Action.ASSIST:
+            # 成本 = token 成本 + 延迟，但降低漏报概率
+            miss_prob = max(0, 1 - state.confidence) * 0.3
+            return (
+                self.costs.token * self._estimated_tokens(state)
+                + self.costs.latency * self._estimated_latency(state)
+                + self.costs.false_alarm * state.confidence  # 高置信度 = 可能是误报
+                - self.costs.miss * miss_prob  # 防止漏报的收益
+            )
+
+        elif action == Action.SILENT:
+            # 成本 = 如果发生错误则潜在漏报
+            miss_prob = state.error_rate_window * (1 - state.confidence)
+            return self.costs.miss * miss_prob
+
+        elif action == Action.ESCALATE:
+            # 固定成本 + 延迟（人类响应时间）
+            return self.costs.latency * 10.0 + self.costs.false_alarm * 0.5
+
+        elif action == Action.ROLLBACK:
+            # 回滚 + 重新执行的 token 成本
+            return (
+                self.costs.token * self._estimated_tokens(state) * 2
+                + self.costs.latency * self._estimated_latency(state) * 1.5
+            )
+
+        return float("inf")
+
+    def _estimated_tokens(self, state: ControlState) -> float:
+        return state.task_complexity * 500
+
+    def _estimated_latency(self, state: ControlState) -> float:
+        return state.task_complexity * 2.0
+
+    def consistency_score(self) -> float:
+        """
+        衡量跨任务一致性。
+        动作分布低方差 = 高一致性。
+        """
+        if len(self.action_history) < 10:
+            return 0.0
+        action_counts = np.zeros(len(Action))
+        for a in self.action_history:
+            action_counts[list(Action).index(a)] += 1
+        probs = action_counts / action_counts.sum()
+        entropy = -np.sum(probs * np.log(probs + 1e-10))
+        # 归一化：最大熵 = log(4) ≈ 1.386
+        return 1.0 - (entropy / np.log(len(Action)))
+```
+
+阈值控制器是起点。研究贡献将用通过约束强化学习训练的学习策略替换 `select_action`，其中约束是跨任务类型的最低一致性分数。
+
+### 实验设计
+
+**主要评估（ProAgentBench）：**
+
+| 指标 | 测量内容 |
+|--------|-----------------|
+| Precision / Recall / F1 | 干预质量 |
+| 干预次数 | 智能体行动频率 |
+| Token 成本 | 计算效率 |
+| 跨任务一致性 | 跨任务类型的稳定性 |
+
+**启用回滚时：**
+
+| 指标 | 测量内容 |
+|--------|-----------------|
+| 恢复成功率 | 回滚解决问题的频率 |
+| Pass@k | k 次尝试内的成功率 |
+| 平均恢复成本 | 恢复消耗的 token |
+
+**基线（4 个对比）：**
+
+1. **始终干预** — 最大程度中断，最小化漏报。召回率上界，精确率下界。
+2. **固定阈值** — 简单启发式：置信度低于静态 cutoff 时干预。行业标准实践。
+3. **时机优化** — 仅决定*何时*行动，无回滚能力。测试回滚是否增加价值。
+4. **仅回滚** — 仅有被动恢复，无主动控制。测试主动干预是否增加价值。
+
+所提系统结合所有四种动作类型与成本感知优化。消融结构直接衡量每种能力的边际贡献。
+
+**基准组合：** ProAgentBench（主要）、tau-bench（一致性补充）、OSWorld / WebArena（外部泛化）。
+
+### 三个月时间线
+
+- **第1月：** 核心控制平面，支持 assist/silent 动作。建立基线性能曲线。
+- **第2月：** 添加 rollback/escalate 动作。完成成本函数和消融实验。
+- **第3月：** 多 backbone 迁移实验。误差分析和决策边界可视化。
+
+### 风险评估
+
+主要风险是审稿人认为这是"分类器加规则"。防御策略在于架构层面：控制平面在状态空间上做出连续决策，配合成本函数，而非点预测。多目标优化和一致性约束与二元分类有本质不同。论文必须在开头就清晰地界定这个区别。
+
+**优势：** 难题、硬指标、强系统导向——正是 2026 年顶级会议奖励的方向。
+
+## 路径二：上下文价值评估（最稳定）
+
+**建议标题：** *面向长时程智能体的上下文价值评估*
+
+### 核心问题
+
+在长时程智能体任务中，如何评估每个上下文片段的边际价值，并在固定 token 预算下保留最重要的历史？
+
+每个生产级智能体系统都面临这个问题。上下文窗口很大但有限。随着任务延伸至数十步，智能体的历史会超出其窗口。必须丢弃某些内容。问题在于丢弃什么。
+
+当前方法分为粗略类别：截断最旧内容（丢失可能仍相关早期决策）、均匀压缩所有内容（丢失关键时刻的细节）、或让模型临时决定（不一致且不可审计）。
+
+### 核心贡献
+
+1. **价值每 token 评估：** 一种轻量级评分函数，根据预测的未来效用为每个 token 分配保留价值。并非所有历史都同等有价值。第 3 步的一个变量赋值如果在第 47 步仍被引用，则具有高价值。第 12 步已被放弃的失败方案几乎没有价值。
+
+2. **证据保留压缩：** 当上下文被压缩时，压缩必须保留因果可追溯性。如果智能体在第 50 步基于第 8 步收集的证据做出决策，压缩后的上下文必须保留足够多的第 8 步内容以重建推理链。这比标准摘要更强——后者保留语义内容但往往丢失证据结构。
+
+### 参考实现
+
+```python
+from dataclasses import dataclass, field
+import numpy as np
+
+@dataclass
+class ContextSegment:
+    """带有保留元数据的智能体历史片段。"""
+    content: str
+    step_number: int
+    token_count: int
+    segment_type: str  # "action", "observation", "reasoning", "error"
+    references_to: list[int] = field(default_factory=list)  # 此片段引用的步数
+    referenced_by: list[int] = field(default_factory=list)  # 引用此片段的步数
+
+    @property
+    def is_referenced(self) -> bool:
+        return len(self.referenced_by) > 0
+
+
+class ContextValueEstimator:
+    """
+    按估计的未来效用对上下文片段评分。
+
+    启发式版本使用引用计数和时效性。
+    学习版本用小型神经网络替换 score_segment，
+    在 (片段, 未来任务成功) 对上训练。
+    """
+
+    def __init__(
+        self,
+        token_budget: int = 32_000,
+        recency_decay: float = 0.95,
+    ):
+        self.token_budget = token_budget
+        self.recency_decay = recency_decay
+
+    def score_segment(
+        self,
+        segment: ContextSegment,
+        current_step: int,
+        total_segments: int,
+    ) -> float:
+        """计算片段的保留价值。"""
+
+        # 组成部分 1：引用价值
+        # 被后续步骤引用的片段更有价值
+        ref_score = len(segment.referenced_by) * 0.3
+
+        # 组成部分 2：时效性
+        # 最近的片段更可能相关
+        age = current_step - segment.step_number
+        recency_score = self.recency_decay ** age
+
+        # 组成部分 3：类型先验
+        # 错误和关键决策比常规观察更有价值
+        type_weights = {
+            "action": 0.6,
+            "observation": 0.3,
+            "reasoning": 0.8,
+            "error": 0.9,
+        }
+        type_score = type_weights.get(segment.segment_type, 0.5)
+
+        # 组成部分 4：因果链成员资格
+        # 如果此片段是导致仍活跃决策的推理链的一部分，
+        # 则获得奖励
+        chain_bonus = 0.5 if segment.is_referenced else 0.0
+
+        return ref_score + recency_score + type_score + chain_bonus
+
+    def select_context(
+        self,
+        segments: list[ContextSegment],
+        current_step: int,
+    ) -> list[ContextSegment]:
+        """选择符合 token 预算、最大化总价值的片段。"""
+        scored = [
+            (seg, self.score_segment(seg, current_step, len(segments)))
+            for seg in segments
+        ]
+
+        # 按价值密度排序（每 token 价值）
+        scored.sort(key=lambda x: x[1] / max(x[0].token_count, 1), reverse=True)
+
+        selected = []
+        remaining_budget = self.token_budget
+
+        for seg, score in scored:
+            if seg.token_count <= remaining_budget:
+                selected.append(seg)
+                remaining_budget -= seg.token_count
+
+        # 按步数重新排序以保持时间连贯性
+        selected.sort(key=lambda s: s.step_number)
+        return selected
+```
+
+### 基线
+
+| 基线 | 类别 | 描述 |
+|----------|----------|-------------|
+| 最近窗口截断 | 简单 cutoff | 保留最后 N 个 token，丢弃其他 |
+| LLMLingua-2 / Selective Context | 通用压缩 | 无任务感知的 token 级压缩 |
+| AgentFold / ReSum | 基于摘要 | 智能体历史的层次化摘要 |
+| **所提方法** | **价值感知** | **基于估计未来效用的保留决策** |
+
+### 实验设计
+
+**表 1（固定 token 预算）：** 成功率、pass@k、每步平均上下文长度。这衡量每种方法在相同资源约束下保留有用信息的能力。
+
+**表 2（不同压缩率）：** 性能-成本帕累托曲线。每种方法在什么压缩率下崩溃？价值感知方法应在比均匀方法更高的压缩率下保持性能。
+
+**表 3（证据保留）：** 压缩上下文是否保留因果链？通过忠实归因衡量：智能体能否通过指向压缩历史中的特定证据来解释*为何*做出决策？
+
+**基准：** WebArena / BrowseComp（具有许多决策步骤的长时程环境）、tau-bench（压缩下的一致性测量）。
+
+### 三个月时间线
+
+- **第1月：** 启发式价值评分。建立跨基准的 token 预算曲线。
+- **第2月：** 学习价值估计器。实现证据保留压缩变体。
+- **第3月：** 稳定性实验、反事实消融（移除高价值片段，测量退化）、误差归因分析。
+
+### 风险评估
+
+风险是审稿人将此标记为"压缩调参"。防御在于框架：这个工作的核心不是压缩比，而是*决策耦合的价值估计*。智能体的上下文管理是决策问题，而非信息论问题。上下文片段的价值取决于智能体未来的行动，而非仅仅其信息内容。
+
+**优势：** 低资源需求、清晰的评估方法、高审稿人可及性。这是获得强论文的最快路径。
+
+## 路径三：通信/回滚协议（最工程化）
+
+**建议标题：** *面向多智能体系统的异步状态隔离*
+
+### 核心问题
+
+在多智能体协作中，如何利用预算约束的消息路由、状态隔离和异步回滚来减少通信冗余、错误传播和攻击面？
+
+标准多智能体模式是完全广播：每个智能体看到来自其他所有智能体的每条消息。通信成本为 O(n²)，且创建了错误传播的最大连通图。一个智能体的幻觉输出会污染所有其他智能体的上下文。
+
+### 核心贡献
+
+1. **消息生命周期管理：** TTL（生存时间）、ACK（确认）和摘要路由。消息在配置周期后过期。接收方确认收到。长消息在转发给不需要完整细节的智能体前自动摘要。
+
+2. **基于检查点的状态隔离：** 每个智能体在可配置间隔维护状态快照。状态变更相互隔离——一个智能体的状态损坏不会自动传播给其他智能体。
+
+3. **沿消息日志的本地回滚：** 当检测到错误时，回滚沿消息链而非重置整个系统。只有接收并执行了错误消息的智能体需要回滚。这是部分回滚，而非全局重启。
+
+### 参考实现
+
+```python
+import time
+import uuid
+from collections import deque
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
+
+class MessageStatus(Enum):
+    PENDING = "pending"
+    DELIVERED = "delivered"
+    ACKNOWLEDGED = "acknowledged"
+    EXPIRED = "expired"
+    ROLLED_BACK = "rolled_back"
+
+@dataclass
+class Message:
+    """多智能体通信协议中的消息。"""
+    id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
+    sender: str = ""
+    recipient: str = ""
+    content: str = ""
+    ttl_seconds: float = 300.0  # 默认 5 分钟
+    created_at: float = field(default_factory=time.time)
+    status: MessageStatus = MessageStatus.PENDING
+    parent_id: str | None = None  # 用于线程化
+    token_count: int = 0
+
+    @property
+    def is_expired(self) -> bool:
+        return (time.time() - self.created_at) > self.ttl_seconds
+
+@dataclass
+class AgentCheckpoint:
+    """智能体在某一时刻的状态快照。"""
+    agent_id: str
+    step: int
+    state: dict[str, Any]
+    message_log: list[str]  # 截至此点已处理的消息 ID
+    timestamp: float = field(default_factory=time.time)
+
+
+class MessageRouter:
+    """
+    带 TTL 和摘要路由的预算约束消息路由器。
+
+    完全广播是 O(n²)。此路由器维护一个路由表，
+    决定哪些智能体需要完整消息、哪些获取摘要、哪些什么也不获取。
+    """
+
+    def __init__(
+        self,
+        agents: list[str],
+        token_budget_per_step: int = 4000,
+        summary_threshold: int = 500,  # 超过此长度的消息将被摘要
+    ):
+        self.agents = agents
+        self.token_budget = token_budget_per_step
+        self.summary_threshold = summary_threshold
+        self.messages: dict[str, Message] = {}
+        self.checkpoints: dict[str, list[AgentCheckpoint]] = {
+            a: [] for a in agents
+        }
+        # 路由表：(发送者, 接收者) -> "full" | "summary" | "none"
+        self.routing_table: dict[tuple[str, str], str] = {}
+        self._init_default_routing()
+
+    def _init_default_routing(self):
+        """默认：同一团队的智能体获取完整消息，其他获取摘要。"""
+        for sender in self.agents:
+            for recipient in self.agents:
+                if sender != recipient:
+                    self.routing_table[(sender, recipient)] = "full"
+
+    def send(self, message: Message) -> list[str]:
+        """根据路由表将消息路由到接收者。"""
+        self.messages[message.id] = message
+        delivered_to = []
+
+        for recipient in self.agents:
+            if recipient == message.sender:
+                continue
+
+            route = self.routing_table.get(
+                (message.sender, recipient), "none"
+            )
+
+            if route == "none":
+                continue
+            elif route == "summary" and message.token_count > self.summary_threshold:
+                # 为此接收者创建并存储摘要版本
+                summary = self._summarize(message)
+                summary.recipient = recipient
+                self.messages[summary.id] = summary
+                delivered_to.append(recipient)
+            else:
+                delivered_to.append(recipient)
+
+        message.status = MessageStatus.DELIVERED
+        return delivered_to
+
+    def acknowledge(self, message_id: str) -> None:
+        """将消息标记为由其接收者确认。"""
+        if message_id in self.messages:
+            self.messages[message_id].status = MessageStatus.ACKNOWLEDGED
+
+    def rollback(self, error_message_id: str) -> list[str]:
+        """
+        仅回滚受错误消息影响的智能体。
+        沿消息链追溯——部分回滚，而非全局重置。
+        """
+        affected_agents = self._trace_message_chain(error_message_id)
+        # 收集错误链中的所有消息 ID
+        chain_msg_ids = self._collect_chain_messages(error_message_id)
+        rolled_back = []
+
+        for agent_id in affected_agents:
+            checkpoints = self.checkpoints[agent_id]
+            valid_checkpoints = [
+                cp for cp in checkpoints
+                if error_message_id not in cp.message_log
+            ]
+            if valid_checkpoints:
+                restore_point = valid_checkpoints[-1]
+                # 仅将错误链中的消息标记为已回滚
+                for msg_id in chain_msg_ids:
+                    if msg_id in self.messages:
+                        self.messages[msg_id].status = MessageStatus.ROLLED_BACK
+                rolled_back.append(agent_id)
+
+        return rolled_back
+
+    def _collect_chain_messages(self, message_id: str) -> set[str]:
+        """收集错误消息下游的所有消息 ID。"""
+        chain = {message_id}
+        queue = deque([message_id])
+        while queue:
+            mid = queue.popleft()
+            for other_id, other_msg in self.messages.items():
+                if other_msg.parent_id == mid and other_id not in chain:
+                    chain.add(other_id)
+                    queue.append(other_id)
+        return chain
+
+    def _trace_message_chain(self, message_id: str) -> set[str]:
+        """查找接收或受消息影响的所有智能体。"""
+        affected = set()
+        visited = {message_id}
+        queue = deque([message_id])
+
+        while queue:
+            mid = queue.popleft()
+            msg = self.messages.get(mid)
+            if not msg:
+                continue
+            affected.add(msg.recipient)
+            for other_id, other_msg in self.messages.items():
+                if other_msg.parent_id == mid and other_id not in visited:
+                    visited.add(other_id)
+                    queue.append(other_id)
+
+        return affected
+
+    def _summarize(self, message: Message) -> Message:
+        """创建长消息的摘要版本。"""
+        # 在生产环境中，这会调用 LLM。为研究目的，我们截断。
+        summary_content = message.content[:200] + "..."
+        return Message(
+            sender=message.sender,
+            recipient=message.recipient,
+            content=summary_content,
+            ttl_seconds=message.ttl_seconds,
+            parent_id=message.id,
+            token_count=min(message.token_count, self.summary_threshold),
+        )
+
+    def save_checkpoint(self, agent_id: str, step: int, state: dict):
+        """保存智能体状态以备潜在回滚。"""
+        processed = [
+            mid for mid, msg in self.messages.items()
+            if msg.status in (MessageStatus.ACKNOWLEDGED, MessageStatus.DELIVERED)
+        ]
+        checkpoint = AgentCheckpoint(
+            agent_id=agent_id,
+            step=step,
+            state=state,
+            message_log=processed,
+        )
+        self.checkpoints[agent_id].append(checkpoint)
+
+    def gc_expired(self) -> int:
+        """垃圾回收过期消息。"""
+        expired = [
+            mid for mid, msg in self.messages.items()
+            if msg.is_expired and msg.status != MessageStatus.ROLLED_BACK
+        ]
+        for mid in expired:
+            self.messages[mid].status = MessageStatus.EXPIRED
+        return len(expired)
+```
+
+### 基线
+
+| 基线 | 类别 | 描述 |
+|----------|----------|-------------|
+| 完全广播 | 无优化 | 每个智能体看到一切 |
+| 静态拓扑 | 固定路由 | 消息沿预定义路径 |
+| AgentPrune / RCR-Router | 通信剪枝 | 减少消息量的学习路由 |
+| **所提方法** | **基于协议** | **TTL + ACK + 摘要 + 状态隔离 + 本地回滚** |
+
+### 实验设计
+
+**表 1：** 成功率、总 token、每任务平均消息数、端到端延迟。
+
+**表 2（故障注入）：** 从一个智能体注入错误输出。跨基线测量错误传播率和回滚恢复率。
+
+**表 3（协议参数扫描）：** 变化 TTL 值、摘要阈值和检查点频率。绘制通信-保真度成本曲线。
+
+**场景：** 多智能体编码任务、协作 QA、自定义 3-5 节点系统。重点不是规模，而是在受控条件下量化协议变量。
+
+### 三个月时间线
+
+- **第1月：** 最小邮箱运行时。对比完全广播和静态路由基线。
+- **第2月：** 添加 TTL、摘要路由、状态快照和本地回滚。
+- **第3月：** 故障注入实验、安全分析、协作收益测量。
+
+### 风险评估
+
+风险是审稿人认为这是"普通分布式系统工程"。防御需要仔细构建框架：每个设计选择都以 token 预算、语言模型输出的错误传播（而非仅网络错误）和随机智能体的状态隔离（而非确定性进程）为基础。标题和摘要必须突出这些 LLM 特定方面。
+
+**优势：** 低算力需求、强工程直觉、协议导向设计，在充斥"我们造了更大模型"论文的领域中独树一帜。
+
+## 战略建议
+
+**如果想要最强力的顶级会议投稿：** 路径一（控制平面）。它有最难的 问题 formulation、最全面的指标，以及与 NeurIPS/ICML 审稿人在 2025-2026 年一直奖励的方向最清晰的对齐。
+
+**如果想要最强结果的快速路径：** 路径二（上下文价值）。低资源需求、简单的评估方法，以及每个智能体构建者都能立即理解的问题。三个月获得可发表结果是现实的。
+
+**如果想要最差异化的贡献：** 路径三（通信协议）。工程化特色使其在众多"我们做了更大模型"的论文海洋中脱颖而出。它需要在顶级会议谨慎构建框架，但如果框架得当，新颖性无可否认。
+
+我的建议：将路径一作为主要研究方向，路径二作为并行备选——如果路径一遇到障碍可以加速推进。路径三是第二篇论文或具有分布式系统专业知识的团队的强力候选。
+
+三条路径的共同关键点：一切都要可操作化。没有测量程序就不谈指标。没有消融实验就没有贡献。没有基线对比就不提 claim。2026 年的审稿格局奖励严谨而非野心。

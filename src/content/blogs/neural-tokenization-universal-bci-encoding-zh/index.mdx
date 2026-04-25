@@ -1,0 +1,205 @@
+---title: "神经分词：通用脑机接口难题"
+description: "跨头戴设备、跨被试、跨模态。脑机接口基础模型需要一种通用神经分词器。为什么这件事如此困难？"
+publishDate: "2026-04-18"
+tags: [bci, eeg, foundation-models, neural-decoding, tokenization, geometric-deep-learning]
+category: research
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+2018年左右，NLP领域迎来了它的分词时刻。BPE、WordPiece、SentencePiece——这些算法解决了一个具体问题：如何将任意文本转换为固定词汇表中的离散 token，让 transformer 能够处理。分词器变成了看不见的基础设施。你在调用 GPT 或 Claude 时不会想到它，但正是它让同一模型无需独立预处理流程就能处理英文、中文、代码和 emoji。
+
+脑机接口正在撞上同样的墙——而且解决方案更难。128导临床脑电图系统、8导消费级头戴设备、64电极皮层脑电图阵列、fMRI 扫描——它们记录的都是神经活动。但记录的空间分辨率不同、时间分辨率不同、噪声基底不同、记录的物理介质也不同（头皮电极 vs. 皮层植入物 vs. 血氧动力学）。当前训练的每个 BCI 模型都锁死在特定的传感器配置上。移动电极、换头戴设备、从 EEG 切换到 fMRI——模型就失效了。
+
+这就是神经分词问题：如何将异构的神经记录转换到一个单一表示空间，让基础模型能够在**不问数据如何采集**的情况下进行处理？
+
+## 为什么这比文本分词更难
+
+文本分词将一维字符序列映射到一维 token 序列。输入结构本质上是序列化的。BPE 及其后继者利用字符共现的统计规律性——频繁出现的子字符串成为 token，罕见的被分解。
+
+神经数据没有这种结构。有三个特性使其根本不同：
+
+**空间拓扑很重要。** EEG 电极位于头皮上的特定位置。电极 Cz（顶点）和电极 O1（枕部）的信号携带不同信息，不是因为它们的数值，而是因为它们相对于底层皮层区域的位置。如果分词器将通道视为无序集合——就像 BPE 对待字符那样——就会丢失使信号可解释的空间结构。
+
+**"词汇表"因设备而异。** 文本分词器可以定义固定词汇表（如 32K 个 token），因为每个文本文档使用相同的字符集。EEG 记录没有固定的通道集。128 通道系统有 128 个"字符"；8 通道系统有 8 个。它们覆盖范围有重叠，但精确位置不同。给固定通道分配固定索引的分词器在通道数量变化时就会失效。
+
+**时间分辨率相差数个数量级。** EEG 采样率为 250-1000 Hz。fMRI 采样率约为 0.5 Hz（每 2 秒一帧）。皮层脑电图介于两者之间。以固定时间粒度运行的分词器要么对慢速模态过采样（浪费上下文），要么对快速模态欠采样（丢失信息）。
+
+## 神经分词的三种方法
+
+该领域已收敛到三种策略，每种解决问题的不同子集。
+
+### 方法一：空间插值到标准网格
+
+最简单的方法：将所有电极位置映射到标准空间网格，无论原始导联方式如何。如果你有 128 个电极，将它们的信号插值到标准化网格上。如果你有 8 个电极，以较低保真度插值到同一网格。
+
+```python
+import numpy as np
+from scipy.interpolate import griddata
+
+def interpolate_to_canonical_grid(
+    electrode_positions: np.ndarray,  # (n_channels, 3) in MNI coordinates
+    signals: np.ndarray,              # (n_channels, n_timepoints)
+    grid_resolution: int = 32,        # canonical grid size
+) -> np.ndarray:
+    """
+    Interpolate signals from arbitrary electrode positions
+    to a canonical 2D grid (azimuthal projection of the scalp).
+    """
+    # Project 3D positions to 2D azimuthal
+    r = np.sqrt(electrode_positions[:, 0]**2 + electrode_positions[:, 1]**2)
+    theta = np.arctan2(electrode_positions[:, 1], electrode_positions[:, 0])
+    proj_x = r * np.cos(theta)
+    proj_y = r * np.sin(theta)
+
+    # Define canonical grid
+    grid_x = np.linspace(proj_x.min(), proj_x.max(), grid_resolution)
+    grid_y = np.linspace(proj_y.min(), proj_y.max(), grid_resolution)
+    gx, gy = np.meshgrid(grid_x, grid_y)
+
+    # Interpolate each timepoint
+    # Note: per-timepoint interpolation is slow for real data.
+    # In practice, vectorize or use pre-computed interpolation weights.
+    canonical = np.zeros((grid_resolution, grid_resolution, signals.shape[1]))
+    for t in range(signals.shape[1]):
+        canonical[:, :, t] = griddata(
+            np.column_stack([proj_x, proj_y]),
+            signals[:, t],
+            (gx, gy),
+            method='cubic',
+            fill_value=0.0,
+        )
+
+    return canonical  # (H, W, T) — treat as video frames
+```
+
+这种方法适用于 EEG 到 EEG 的迁移（相同模态，不同导联）。输出是一个空间"图像"序列，可以由视频模型或 3D CNN 处理。Brain-OF 模型使用这种方法的变体，将 fMRI、MEG 和 EEG 统一到共同的空间表示中。
+
+局限性：从 8 个通道插值到 32×32 网格本质上是信息损失的。你在凭空生成输入中不存在空间细节。模型可能会学习利用插值伪影而非神经信号。
+
+### 方法二：球面流形上的拓扑嵌入
+
+一个更有原则的方法：不插值信号，而是将电极位置本身嵌入连续几何空间，让模型学习处理任意配置。
+
+关键洞察是头皮上的电极位置近似球面上的点。如果你将每个电极映射到球坐标，然后使用在任意点集上运行的几何神经网络，架构自然能处理不同的通道数量。
+
+```python
+import torch
+import torch.nn as nn
+
+class SphericalPositionEncoder(nn.Module):
+    """
+    Encode electrode positions on a unit sphere using
+    spherical harmonics as a basis. This gives a continuous
+    positional encoding that works for any electrode montage.
+    """
+    def __init__(self, max_degree: int = 8, embed_dim: int = 64):
+        super().__init__()
+        self.max_degree = max_degree
+        n_harmonics = (max_degree + 1) ** 2
+        self.projection = nn.Linear(n_harmonics, embed_dim)
+
+    def spherical_harmonics(
+        self, theta: torch.Tensor, phi: torch.Tensor
+    ) -> torch.Tensor:
+        """Compute real spherical harmonics up to max_degree."""
+        harmonics = []
+        for l in range(self.max_degree + 1):
+            for m in range(-l, l + 1):
+                # Simplified: use associated Legendre polynomials
+                # In practice, use a library like e3nn or spherical_harmonics
+                Y_lm = self._compute_ylm(l, m, theta, phi)
+                harmonics.append(Y_lm)
+        return torch.stack(harmonics, dim=-1)
+
+    def forward(
+        self, electrode_theta: torch.Tensor, electrode_phi: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Args:
+            electrode_theta: (n_channels,) polar angles
+            electrode_phi: (n_channels,) azimuthal angles
+        Returns:
+            (n_channels, embed_dim) positional embeddings
+        """
+        harmonics = self.spherical_harmonics(electrode_theta, electrode_phi)
+        return self.projection(harmonics)
+```
+
+这是最近 EEG 拓扑基础模型工作的方向（如 ICLR 2026 发表的 Uni-NTFM，它将电极位置映射到连续球面流形以实现跨头戴设备泛化）。电极位置成为学习空间场中的连续查询，模型处理可变长度的（位置，信号）对序列——结构上与视觉 transformer 在配合位置编码处理可变分辨率图像时完全相同。
+
+相对于网格插值的优势：**没有信息是被捏造的**。8 通道输入产生 8 个带有丰富位置编码的 token。128 通道输入产生 128 个 token。模型端到端学习空间位置与信号含义之间的关系。
+
+### 方法三：模态无关的潜在对齐
+
+最大胆的方法：根本不分词原始信号。取而代之的是训练独立的模态特定编码器（一个用于 EEG，一个用于 fMRI，一个用于 ECoG），它们都投影到共享潜在空间。"分词"通过对齐目标隐式发生。
+
+这是多模态模型（如 CLIP，对齐图像和文本）使用的策略，由 [CorText](/blog/cortext-brain-language-fusion) 和 [TRIBE v2](/blog/fmri-foundation-models-tribe-v2) 等模型适应到神经科学领域。训练目标迫使"看到一只狗"的潜在表示无论由 fMRI 测量（高空间分辨率，低时间分辨率）还是 EEG 测量（低空间分辨率，高时间分辨率）都相似。
+
+```python
+class ModalityAligner(nn.Module):
+    def __init__(self, latent_dim: int = 512):
+        super().__init__()
+        self.eeg_encoder = EEGEncoder(out_dim=latent_dim)
+        self.fmri_encoder = fMRIEncoder(out_dim=latent_dim)
+        self.ecog_encoder = ECoGEncoder(out_dim=latent_dim)
+        self.temperature = nn.Parameter(torch.tensor(0.07))
+
+    def contrastive_loss(
+        self, z1: torch.Tensor, z2: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        CLIP-style contrastive loss. z1 and z2 are latent
+        representations from two different modalities for the
+        same stimulus.
+        """
+        z1 = nn.functional.normalize(z1, dim=-1)
+        z2 = nn.functional.normalize(z2, dim=-1)
+        logits = z1 @ z2.T / self.temperature.exp()
+        labels = torch.arange(len(z1), device=z1.device)
+        loss = (
+            nn.functional.cross_entropy(logits, labels) +
+            nn.functional.cross_entropy(logits.T, labels)
+        ) / 2
+        return loss
+```
+
+局限性：这需要配对数据——相同的被试、观看相同的刺激、用多种模态同时记录。这类数据集很小（最多几百名被试）且收集成本高昂。对齐质量受可用配对数据的上限约束。
+
+## 当前实践状态
+
+截至 2026 年 4 月，没有单一方法胜出。该领域处于类似 2016 年 NLP 的状态——在 BPE 标准化分词之前，每个模型都有自己的输入流水线。
+
+最有前景的路径结合了方法二和方法三：使用拓扑位置编码处理模态内变化（不同头戴设备、不同导联方式），使用对比对齐处理跨模态变化（EEG vs. fMRI）。基础模型位于两者下游。
+
+**所缺的是规模**。最大的 BCI 数据集包含数千名被试。NLP 基础模型在数万亿 token 上训练。即使考虑到每个神经样本的信息密度更高，BCI 基础模型至少缺少两个数量级的数据。合成数据生成——使用生成模型在受控条件下模拟神经活动——是可能的桥梁，但保真度要求很高。一个愚弄分类器的合成 EEG 样本可能无法愚弄下游语言解码器。
+
+## 通用神经分词器能实现什么
+
+如果解决，通用神经分词将解锁三项当前不可能的能力：
+
+**跨设备零样本迁移。** 在临床 128 通道系统上训练 BCI，部署到消费级 8 通道头戴设备，无需重训练。分词器处理分辨率差异。这是该领域自 2015 年以来一直在追求的"即插即用" BCI。
+
+**跨被试泛化。** 当前的 BCI 需要被试校准（通常 15-60 分钟）。能够捕捉跨被试神经活动共享结构的通用分词器可以将校准时间缩短到几分钟或完全消除。被试之间的大脑差异是真实的，但神经活动的**语义结构**出人意料地共享——这是对比对齐利用的事实。
+
+**多模态融合。** 在推理时结合 EEG（廉价、便携、高时间分辨率）和 fMRI（昂贵、固定、高空间分辨率）。患者每天佩戴 EEG 头戴设备；每月 fMRI 扫描提供空间定位。分词器将两者融合成单一表示，比单独使用任何一个都好。
+
+## 没人谈论的硬骨头
+
+上述技术挑战已被充分认识。论文中很少出现的挑战是**神经隐私**。跨设备、跨被试、跨模态工作的通用神经分词器也是通用神经解码器。使瘫痪患者能够交流的同一技术也使对手能够从可穿戴 EEG 数据中解码认知状态。
+
+2026 年出现的"神经权利"立法直接针对这个问题：谁拥有你大脑活动的潜在表示？如果基础模型在训练期间将你的 EEG 编码到共享潜在空间，这个表示是你的吗？能否应要求删除？这些不是假设性问题——它们正在阻止最强大的 BCI 系统在受监管市场部署。
+
+NLP 分词时刻创造了通用文本接口，推动了十年语言模型进步。神经分词时刻到来时，将创造通用脑机接口。技术路径清晰可见。社会路径则不然。
+
+---
+
+## 参考文献
+
+- Defossez 等，《从非侵入性脑记录中解码语音感知》，Nature Machine Intelligence，2023。
+- Chen 等，《Brain-OF：一个适用于 fMRI、MEG 和 EEG 的基础模型》，2026。（参见博客：[Brain-OF](/blog/brain-of-omnifunctional-bci)）
+- Thomas 等，《TRIBE v2：合成神经科学基础模型》，2026。（参见博客：[TRIBE v2](/blog/fmri-foundation-models-tribe-v2)）
+- Bronstein 等，《几何深度学习：网格、群、图、测地线和规范》，2021。[arXiv:2104.13478](https://arxiv.org/abs/2104.13478)
+- Radford 等，《从自然语言监督中学习可迁移视觉模型》，ICML 2021。[arXiv:2103.00020](https://arxiv.org/abs/2103.00020)

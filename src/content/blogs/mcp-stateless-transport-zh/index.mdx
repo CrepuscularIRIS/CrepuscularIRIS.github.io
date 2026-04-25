@@ -1,0 +1,231 @@
+---title: "为什么 MCP 选择无状态架构"
+description: "MCP 从 Server-Sent Events 到无状态 HTTP 的转变，解决了阻碍企业级 Agent 部署的负载均衡难题。"
+publishDate: "2026-04-13"
+tags: [mcp, distributed-systems, agent-infrastructure, protocol-design, enterprise-ai]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+MCP（Model Context Protocol）从一开始就有个架构决策在本地开发时运行良好，一旦上规模就立刻失效——Agent 客户端和工具服务器之间采用有状态的 Server-Sent Events（SSE）连接。
+
+MCP 最初的 HTTP+SSE 传输层要求为服务器向客户端消息维护一条持久的 SSE 通道，同时用单独的 HTTP POST 请求处理客户端向服务器的消息。这种组合意味着客户端和服务器之间维持着与特定连接绑定的有状态会话。一旦连接断开，状态就丢失了。如果需要通过负载均衡器将请求路由到多个服务器实例，你就需要粘性会话（sticky sessions）——负载均衡器必须记住某个客户端正在和哪个后端通信，并始终路由到同一个后端。
+
+对于聊天应用和通知系统来说，这是一个已经解决的问题。但如果你的组织里每个 Agent 都需要同时保持与数十个 MCP 工具服务器的持久连接，而这些服务器需要水平扩展，Agent 运行时本身还可能是短暂的（CI 任务、无服务器函数、持续 20 分钟的 Claude Code 会话），这就成了一个无法解决的问题。
+
+Streamable HTTP 传输协议（追踪编号 SEP-1442）用统一的 HTTP 请求-响应模型取代了 SSE+POST 的组合方式。其影响比机制本身更有意思。
+
+## 有状态 SSE 的真实代价
+
+考虑一个中等复杂度的 Agent 工作流：一个能够搜索代码、读取文件、运行测试、查询数据库并提交 GitHub Issues 的编码 Agent。那就是五个 MCP 工具服务器，每个都需要从 Agent 客户端建立自己的 SSE 连接。
+
+在单用户本地环境中，五条持久连接微不足道。但在有 200 名开发者运行编码 Agent 的企业部署中：
+
+```
+200 个 Agent x 5 个工具服务器 = 1,000 条持久 SSE 连接
+```
+
+每条连接在服务器上消耗一个文件描述符，占用反向代理连接池中的一个槽位，还需要负载均衡器维护会话亲和性。如果某个工具服务器实例重启（部署、扩缩容、OOM），所有连接到这个实例的 Agent 会同时丢失状态。恢复路径需要 Agent 重新建立 SSE 连接，并以某种方式重建进行中的对话上下文——这是 SSE 协议本身无法原生解决的问题。
+
+1,000 条连接配合精心的基础设施还能管理。10,000 条连接（拥有多样化工具服务器的大型组织）就成了主要的扩缩容瓶颈。原本设计让工具普遍可访问的 MCP 协议，反而成了限制你能实际暴露多少工具的约束。
+
+```python
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class TransportMode(Enum):
+    SSE = "sse"            # 遗留：每个工具服务器一个持久连接
+    STATELESS_HTTP = "http" # SEP-1442：每次调用一个请求-响应
+
+@dataclass(frozen=True)
+class ConnectionProfile:
+    """维护 Agent 到工具连接的资源成本。"""
+    transport: TransportMode
+    num_agents: int
+    tools_per_agent: int
+    avg_session_minutes: float
+
+    @property
+    def concurrent_connections(self) -> int:
+        if self.transport == TransportMode.SSE:
+            # 每个 Agent 保持到每个工具服务器的持久连接
+            return self.num_agents * self.tools_per_agent
+        # 无状态：连接是短暂的，只在请求期间保持
+        # 假设任意时刻有 2% 的 Agent 在调用工具
+        return int(self.num_agents * self.tools_per_agent * 0.02)
+
+    @property
+    def file_descriptors_per_server(self) -> int:
+        return self.concurrent_connections // self.tools_per_agent
+
+# 企业场景：500 个 Agent，每个 8 个工具服务器
+sse_profile = ConnectionProfile(
+    transport=TransportMode.SSE,
+    num_agents=500,
+    tools_per_agent=8,
+    avg_session_minutes=30.0,
+)
+http_profile = ConnectionProfile(
+    transport=TransportMode.STATELESS_HTTP,
+    num_agents=500,
+    tools_per_agent=8,
+    avg_session_minutes=30.0,
+)
+
+print(f"SSE: {sse_profile.concurrent_connections} 条持久连接")
+# SSE: 4000 条持久连接
+print(f"HTTP: {http_profile.concurrent_connections} 条并发连接")
+# HTTP: 80 条并发连接（减少 50 倍）
+```
+
+并发连接减少 50 倍不是主要收益。主要收益是标准 HTTP 基础设施——负载均衡器、API 网关、CDN、限流器——无需修改就能工作。不需要粘性会话。部署时不需要连接排空。不需要编写自定义健康检查来考虑 SSE 通道状态。
+
+## 无状态传输的实际工作原理
+
+Streamable HTTP 传输协议将通信统一为标准 HTTP POST 请求。服务器可以选择性地用 SSE 流响应长时间运行的结果，但关键变化是会话不再与持久连接绑定。
+
+请求可以包含一个可选的 `Mcp-Session-Id` 标头来关联服务器端会话。但这个传输层的设计使得服务器*可以*以无状态方式运行——仅用请求携带的信息和服务器自行选择维护的会话状态来处理每个请求。
+
+```
+┌──────────┐         ┌──────────────┐         ┌──────────────┐
+│  Agent    │  POST   │  标准        │  路由   │  MCP 工具    │
+│  客户端   │────────>│  HTTP LB     │────────>│  服务器      │
+│           │         │  (无粘性)    │         │  (无状态)    │
+│           │<────────│              │<────────│              │
+│           │  200 OK │              │  结果   │              │
+└──────────┘         └──────────────┘         └──────────────┘
+
+请求头：
+  Mcp-Session-Id: <session-id>
+  Content-Type: application/json
+
+请求体：
+  { "tool": "search_code", "args": {"query": "auth middleware"} }
+```
+
+会话令牌是关键的设计决策。有两种可行的方案：
+
+**服务器端会话（Redis/DynamoDB）：** 令牌是一个不透明的会话 ID。服务器在外部存储中查找状态。这是传统的 Web 会话模型，可以工作，但引入了一个具有自身可用性和延迟特征的会话存储依赖。
+
+**客户端会话（签名令牌）：** 令牌是一个签名压缩的有效载荷，包含完整的对话状态。服务器验证签名、解压状态并继续。不需要外部存储。代价是令牌大小——复杂的多轮工具对话可能积累大量状态。
+
+Streamable HTTP 规范将会话管理策略留给实现者决定。服务器可以在内存中维护会话，在外部存储中维护，或者如果协议消息携带足够上下文，完全以无状态方式运行。关键的架构收益：传输层不再*要求*负载均衡器级别的会话亲和性。
+
+## Tasks 原语：处理长时间运行的操作
+
+无状态 HTTP 有一个明显的局限性：当工具调用需要几分钟时（运行测试套件、训练模型、生成报告）会发生什么？
+
+SEP-1686 引入的 Tasks 原语与无状态传输配合使用。工具服务器可以返回 202 Accepted 并附带任务 ID 来响应调用，而不是立即返回结果。Agent 客户端随后轮询完成状态或注册 webhook 回调。
+
+```python
+import httpx
+import time
+from dataclasses import dataclass
+from typing import Optional, Any
+
+@dataclass(frozen=True)
+class TaskHandle:
+    task_id: str
+    poll_url: str
+    estimated_seconds: Optional[int] = None
+
+@dataclass(frozen=True)
+class TaskResult:
+    task_id: str
+    status: str  # "pending" | "running" | "completed" | "failed"
+    result: Optional[Any] = None
+    error: Optional[str] = None
+
+def invoke_tool(
+    server_url: str,
+    tool_name: str,
+    args: dict,
+    session_token: str,
+    timeout: float = 5.0,
+) -> TaskResult | TaskHandle:
+    """调用 MCP 工具，处理同步和异步响应。"""
+    response = httpx.post(
+        f"{server_url}/invoke",
+        json={"tool": tool_name, "args": args},
+        headers={
+            "X-MCP-Session": session_token,
+            "Accept": "application/json",
+        },
+        timeout=timeout,
+    )
+
+    if response.status_code == 200:
+        # 同步结果——工具在超时时间内完成
+        data = response.json()
+        return TaskResult(
+            task_id="inline",
+            status="completed",
+            result=data["result"],
+        )
+
+    if response.status_code == 202:
+        # 异步——服务器返回了任务句柄
+        data = response.json()
+        return TaskHandle(
+            task_id=data["task_id"],
+            poll_url=data["poll_url"],
+            estimated_seconds=data.get("estimated_seconds"),
+        )
+
+    response.raise_for_status()
+    raise RuntimeError("Unreachable")
+
+def poll_task(poll_url: str, max_wait: float = 300.0) -> TaskResult:
+    """轮询任务句柄直到完成或超时。"""
+    start = time.monotonic()
+    interval = 1.0
+
+    while time.monotonic() - start < max_wait:
+        response = httpx.get(poll_url, timeout=10.0)
+        result = TaskResult(**response.json())
+
+        if result.status in ("completed", "failed"):
+            return result
+
+        time.sleep(min(interval, max_wait - (time.monotonic() - start)))
+        interval = min(interval * 1.5, 10.0)  # 指数退避，上限 10 秒
+
+    return TaskResult(
+        task_id="timeout",
+        status="failed",
+        error=f"任务在 {max_wait}s 内未完成",
+    )
+```
+
+这是一个分布式系统工程师会立即认出的模式：来自基于 webhook 的 API 的异步任务模式，被应用到 Agent 工具调用中。Agent 不需要阻塞连接等待慢速工具。它发送请求、获取句柄，然后继续推理问题的其他部分。当需要结果时，它再轮询。
+
+## SSE 无法做到、无状态能做到的事
+
+**无服务器 MCP 工具。** 工具服务器现在可以是 Lambda 函数或 Cloud Run 服务，在空闲时缩容到零，按需启动。SSE 连接无法在冷启动中存活——连接本身就是状态。无状态 HTTP 使 MCP 工具服务器可以像 REST API 一样部署。
+
+**跨区域工具路由。** 东京的 Agent 可以调用弗吉尼亚州的工具服务器，而无需承受维护持久跨大西洋 SSE 连接的延迟代价。每次请求独立路由到最近的健康实例。
+
+**Agent 迁移。** 如果 Agent 进程需要迁移（抢占、扩缩容、故障恢复），会话令牌携带完整上下文。新的 Agent 实例从旧实例中断的地方继续，连接到任意可用的工具服务器实例。无需重新建立 SSE 通道，无需状态协调。
+
+**标准可观测性。** HTTP 请求生成标准访问日志，可以用 OpenTelemetry span 追踪，集成到现有 API 监控仪表板中。SSE 连接对大多数可观测性工具是不透明的——你能看到连接建立和断开，但流中的各个工具调用在没有自定义插桩的情况下是不可见的。
+
+## 权衡：延迟和流式传输
+
+Streamable HTTP 传输协议没有消除 SSE——它使 SSE 成为可选的。服务器可以对 POST 用标准 JSON 结果响应，*或者*将响应升级为 SSE 流以返回增量结果。客户端也可以打开独立的基于 GET 的 SSE 连接以接收服务器发起的通知。这是关键的设计洞察：流式传输在需要时可用，但基础传输是无状态 HTTP，可以与标准基础设施配合。
+
+大多数工具调用很短（5 秒以内），不需要流式传输的优势。那些需要流式传输的少数情况——代码搜索逐步返回匹配项、长时间运行的分析流式传输进度——可以使用 SSE 响应路径，而不需要整个传输层变为连接导向。协议为常见情况优化，同时为其他情况提供逃生舱。
+
+## 对 Agent 架构的影响
+
+如果你现在正在构建 Agent 系统，无状态 MCP 改变了部署模式：
+
+**SEP-1442 之前：** 你的 Agent 运行时需要管理到每个工具服务器的连接池。工具服务器部署需要连接排空。Agent 层和工具层的扩缩容是耦合的——更多 Agent 意味着更多持久连接，即使实际调用量没有变化，也意味着需要更多工具服务器容量。
+
+**SEP-1442 之后：** 你的 Agent 运行时发起 HTTP 请求。工具服务器是无状态服务，位于负载均衡器之后。扩缩容解耦了——你根据调用量扩缩工具服务器，而不是根据连接数。Agent 层和工具层可以独立扩缩容，像任何微服务架构一样。
+
+心智模型的转变：MCP 工具服务器不再是"你的 Agent 连接到的服务"，而是"你的 Agent 调用的 API"。这是类别变化，不是程度变化。这意味着 20 年 API 基础设施工程的所有模式、工具和实践都可以直接应用到 Agent 工具部署中。
+
+Agent 越来越智能。协议越来越简单。这通常是架构走向正确的信号。

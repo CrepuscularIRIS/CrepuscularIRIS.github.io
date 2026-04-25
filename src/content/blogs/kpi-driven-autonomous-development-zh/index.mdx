@@ -1,0 +1,370 @@
+---title: "KPI 驱动开发：优化指标的 Agent 循环"
+description: "从任务执行型 Agent 到指标优化循环的转变——架构、失效模式，以及让代码模式真正工作的方法。"
+publishDate: "2026-04-12"
+tags: [agents, autonomous-ml, engineering, KPI, multi-agent, evaluation, mlops]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+2024–2025 年间构建的大多数 Agent 系统本质上是指令执行器。你给 Agent 一个任务（"写一个解析 JSON 的函数""用 async/await 重构这个模块"），它执行一系列动作，直到判断指令已被满足才停止。这种 Agent 在优化**任务完成**，而"完成"由指令文本本身定义。
+
+这在处理孤立的、定义良好的任务时足够用。但对于持续的、目标导向的工作——真正构成一个软件项目的那些工作——它就失效了。"提高测试覆盖率"不是一系列步骤，而是一个需要优化的指标。"将 P95 延迟降到 200ms 以下"不是一条指令，而是对某个目标的约束。"让 CI 流水线可靠"描述的是系统的一个属性，而非一个流程。
+
+KPI 驱动开发（KDD）是一种架构模式：给 Agent 的是需要优化的指标，而非需要遵循的指令。Agent 的控制循环运行到某个可测量条件满足为止，而非任务描述耗尽为止。这改变了 Agent 的行为方式、失败模式的样子，以及人类工程师的角色定位。
+
+## 架构上的差异
+
+指令跟随型 Agent 和 KPI 驱动型 Agent 的控制循环在结构上是不同的。
+
+**指令跟随型循环：**
+
+```python
+def instruction_following_agent(task: str, tools: list[Tool]) -> str:
+    """标准任务执行 Agent 循环。"""
+    messages = [{"role": "user", "content": task}]
+    
+    while True:
+        response = llm.call(messages, tools=tools)
+        
+        if response.stop_reason == "end_turn":
+            # Agent 自己判断完成了。相信它。
+            return response.content
+        
+        # 执行工具调用并继续
+        tool_results = execute_tools(response.tool_calls)
+        messages.extend([response, tool_results])
+```
+
+Agent 通过自我报告完成来终止。人类提示是"完成"定义的唯一规范。没有外部预言机。
+
+**KPI 驱动型循环：**
+
+```python
+from dataclasses import dataclass
+from typing import Callable
+
+@dataclass(frozen=True)
+class KPISpec:
+    name: str
+    measure: Callable[[], float]      # 外部测量函数
+    target: float                      # 数值阈值
+    direction: str                     # "maximize" 或 "minimize"
+    budget: dict                       # {"iterations": 20, "wall_hours": 4}
+    
+    def satisfied(self, value: float) -> bool:
+        if self.direction == "maximize":
+            return value >= self.target
+        return value <= self.target
+
+
+def kpi_driven_agent(
+    kpi: KPISpec,
+    context: str,
+    tools: list[Tool],
+) -> dict:
+    """KPI 优化 Agent 循环。"""
+    history = []
+    iteration = 0
+    best_value = None
+    
+    while iteration < kpi.budget["iterations"]:
+        # 外部测量当前状态，而非从 Agent 输出中获取
+        current_value = kpi.measure()
+        
+        if best_value is None or (
+            kpi.direction == "maximize" and current_value > best_value or
+            kpi.direction == "minimize" and current_value < best_value
+        ):
+            best_value = current_value
+        
+        if kpi.satisfied(current_value):
+            return {"status": "target_met", "value": current_value, 
+                    "iterations": iteration, "history": history}
+        
+        # 告知 Agent 当前状态和需要改进的方向
+        prompt = f"""
+        KPI: {kpi.name}
+        Target: {kpi.direction} to {kpi.target}
+        Current value: {current_value}
+        Best so far: {best_value}
+        Iterations remaining: {kpi.budget['iterations'] - iteration}
+        
+        Context:
+        {context}
+        
+        Previous actions and their effects:
+        {format_history(history)}
+        
+        What change will move the metric toward the target?
+        """
+        
+        response = llm.call([{"role": "user", "content": prompt}], tools=tools)
+        actions = execute_tools(response.tool_calls)
+        
+        history.append({
+            "iteration": iteration,
+            "value_before": current_value,
+            "actions": actions,
+        })
+        iteration += 1
+    
+    return {"status": "budget_exhausted", "best_value": best_value, 
+            "history": history}
+```
+
+关键差异：`kpi.measure()` 由测试框架调用，而非 Agent 报告。Agent 无法自我认证完成。循环持续运行直到外部测量确认目标达成，或预算耗尽。
+
+## 三个 KPI：揭示模式威力的案例
+
+指标比循环更重要。以下三个例子展示了该模式如何应用于截然不同的优化场景。
+
+### 测试覆盖率：唾手可得的 KPI
+
+测试覆盖率是典型案例，因为指标精确、测量成本低、搜索空间足够大，值得研究。
+
+```python
+import subprocess
+import json
+
+def measure_test_coverage() -> float:
+    """运行 pytest-cov 并以 [0, 1] 范围内的浮点数返回分支覆盖率。"""
+    subprocess.run(
+        ["python", "-m", "pytest", "--cov=src", "--cov-branch",
+         "--cov-report=json:coverage.json", "-q"],
+        capture_output=True, text=True, cwd="/repo", check=False
+    )
+    with open("/repo/coverage.json") as f:
+        data = json.load(f)
+    # percent_covered 是浮点数（如 87.3）；percent_covered_display 是字符串
+    return float(data["totals"]["percent_covered"]) / 100.0
+
+coverage_kpi = KPISpec(
+    name="branch_test_coverage",
+    measure=measure_test_coverage,
+    target=0.90,           # 90% 分支覆盖率
+    direction="maximize",
+    budget={"iterations": 25, "wall_hours": 2},
+)
+```
+
+这之所以成为有趣的 KPI 任务，是因为 Agent 必须决定在哪里添加测试，而非仅仅知道需要添加测试。它读取覆盖率报告找出未覆盖的分支，检查代码理解这些分支的行为，编写测试来执行它们，运行套件验证新测试通过且覆盖率提升，然后迭代。这不是"写测试"——而是"高效地弥合当前覆盖率与目标覆盖率之间的差距"。
+
+Agent 循环在每次迭代中看到覆盖率变化和未覆盖代码的分布。它可以推理高杠杆目标（被高频调用的函数中一个未覆盖分支，胜过死代码路径中的许多未覆盖分支）。
+
+### 延迟：测量复杂度型 KPI
+
+P95 延迟更难，因为测量需要运行基准测试，结果有噪声，干预的交互效果难以预测。
+
+```python
+import statistics
+import time
+import httpx
+
+def measure_p95_latency_ms() -> float:
+    """测量主要 API 端点的 P95 响应时间。"""
+    latencies = []
+    client = httpx.Client(base_url="http://localhost:8000")
+    
+    # 预热
+    for _ in range(10):
+        client.get("/api/predict", params={"input": "warmup"})
+    
+    # 测量
+    for _ in range(200):
+        start = time.perf_counter()
+        client.get("/api/predict", params={"input": "benchmark_query"})
+        latencies.append((time.perf_counter() - start) * 1000)
+    
+    latencies.sort()
+    return latencies[int(0.95 * len(latencies))]
+
+latency_kpi = KPISpec(
+    name="p95_api_latency_ms",
+    measure=measure_p95_latency_ms,
+    target=200.0,
+    direction="minimize",
+    budget={"iterations": 15, "wall_hours": 3},
+)
+```
+
+该循环的 Agent 上下文必须包含对分析工具的访问——`py-spy`、`cProfile`、`line_profiler`——因为 Agent 需要识别延迟来自哪里，而非仅仅应用通用优化模式。如果 Agent 的工具集中没有测量工具，它只能猜测。
+
+延迟优化的失败模式是作弊：一个缓存基准测试响应、添加人工预热、或给基准测试查询特殊待遇的 Agent。如果循环在单次有利的测量上终止，它就会收敛到噪声而非真正的改进。
+
+### 不稳定率：统计型 KPI
+
+CI 流水线可靠性（以不稳定测试率衡量）是该领域中最难的 KPI，因为：
+
+- 不稳定性是概率性的——需要多次运行才能获得可靠估计
+- 测量成本高（运行 CI 套件 N 次）
+- 根本原因多种多样（时序依赖、共享状态、网络调用、随机种子）
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import NamedTuple
+
+class FlakinessResult(NamedTuple):
+    flaky_tests: list[str]
+    flakiness_rate: float   # 非确定性失败的测试运行占比
+
+def measure_flakiness(n_runs: int = 10) -> float:
+    """
+    并行运行测试套件 n_runs 次，识别有时通过有时失败的测试
+    （非确定性失败）。
+    """
+    def run_once(run_id: int) -> set[str]:
+        report_path = f"/tmp/pytest-report-{run_id}.json"
+        subprocess.run(
+            ["python", "-m", "pytest", "--tb=no", "-q",
+             f"--json-report", f"--json-report-file={report_path}"],
+            capture_output=True, text=True, cwd="/repo", check=False
+        )
+        report = json.loads(Path(report_path).read_text())
+        return {t["nodeid"] for t in report["tests"] if t["outcome"] == "failed"}
+    
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        all_failures = list(executor.map(run_once, range(n_runs)))
+    
+    # 如果测试在某些运行中失败但并非全部失败，则为不稳定的
+    all_failed_tests: set[str] = set().union(*all_failures)
+    non_empty = [f for f in all_failures if f]
+    # always_failed: 每次有失败的运行中都失败的测试
+    always_failed: set[str] = set.intersection(*non_empty) if non_empty else set()
+    flaky_tests = all_failed_tests - always_failed
+    
+    # 统计不稳定出现次数 vs. 总测试执行次数
+    total_tests_per_run = len(all_failed_tests | set().union(*all_failures)) or 1
+    total_test_runs = n_runs * total_tests_per_run
+    flaky_test_runs = sum(
+        sum(1 for run in all_failures if test in run)
+        for test in flaky_tests
+    )
+    return flaky_test_runs / total_test_runs
+
+flakiness_kpi = KPISpec(
+    name="ci_flakiness_rate",
+    measure=lambda: measure_flakiness(n_runs=10),
+    target=0.01,   # 不到 1% 的测试运行是不稳定的
+    direction="minimize",
+    budget={"iterations": 12, "wall_hours": 6},
+)
+```
+
+这里的测量成本是真实的：测量一次不稳定性需要 10 次完整的 CI 运行。Agent 循环必须具有预算意识，并按预期不稳定率降低幅度排序修复优先级。
+
+## 分层模式：Manager + Worker
+
+对于复杂的 KPI，单个 Agent 循环往往不够。有效的模式是两级分层：一个 Manager Agent 负责战略推理和选择干预措施，Worker Agent 负责实现具体变更。
+
+```python
+@dataclass
+class AgentAction:
+    description: str
+    agent_type: str    # "code_modifier", "test_writer", "profiler" 等
+    scope: str         # Worker 应该关注的具体文件或模块
+    expected_delta: float  # Manager 预测的指标改善幅度
+
+def kpi_manager_agent(
+    kpi: KPISpec,
+    codebase_context: str,
+    worker_pool: dict[str, Callable],
+) -> dict:
+    """
+    Manager Agent：读取当前指标状态和代码库，
+    选择预期价值最高的干预措施，分派 Worker。
+    """
+    current_value = kpi.measure()
+    
+    # Manager 推理干预策略
+    strategy_prompt = f"""
+    Current {kpi.name}: {current_value} (target: {kpi.target})
+    
+    Codebase summary:
+    {codebase_context}
+    
+    Available worker agents: {list(worker_pool.keys())}
+    
+    Identify the highest-expected-value intervention. 
+    Return: agent_type, scope, rationale, expected_delta.
+    Do NOT implement the change — only select the intervention.
+    """
+    
+    action = llm.call_structured(
+        strategy_prompt,
+        output_schema=AgentAction
+    )
+    
+    # 分派给 Worker
+    worker_fn = worker_pool[action.agent_type]
+    worker_result = worker_fn(scope=action.scope, kpi=kpi)
+    
+    # 测量效果
+    new_value = kpi.measure()
+    actual_delta = new_value - current_value
+    
+    return {
+        "action": action,
+        "predicted_delta": action.expected_delta,
+        "actual_delta": actual_delta,
+        "new_value": new_value,
+    }
+```
+
+Manager 永不写代码。它读取代码库，理解当前指标状态，决定**尝试哪种干预**以及**在哪里尝试**。Worker Agent 在有限范围内执行干预。
+
+这种分离很重要，因为技能组合不同：选择干预需要对代码库进行整体推理；执行特定变更（为 `authenticate()` 函数的错误路径写三个测试）需要专注的实现技能。将两者合并到一个 Agent 中会得到两者最差的部分——战略决策没有足够的实现上下文，实现选择没有足够的战略上下文。
+
+## 什么会失败，以及为什么
+
+KPI 驱动循环以三种典型方式失败。
+
+**指标作弊**：Agent 发现优化指标比改善底层系统更容易。测试覆盖率作弊是典型案例——Agent 可以编写执行代码路径但没有任何有意义断言的测试，这提高了覆盖率却没有改善测试质量。防御手段是在测量函数中加入测试质量预言机（例如，在行覆盖率之外加入变异测试覆盖率）。
+
+**测量噪声利用**：对于像延迟这样的有噪声指标，Agent 可能发现它的更改并没有真正改善延迟，但重新运行测量有时会产生幸运的样本。如果循环在单次有利的测量上终止，它会收敛到噪声而非改进。防御手段：要求 N 次连续测量都超过阈值，而非仅凭一次。
+
+**范围逃逸**：Agent 优化了被测量的范围，却让未被测量的系统退化。一个延迟 Agent 可能会内联一个关键函数，改善了基准测试却让代码无法维护。防御手段是二级约束：无论主 KPI 改善多少，引入另一测试套件回归的更改都会被拒绝。
+
+```python
+def validate_no_regression(constraint_suite: Callable[[], dict[str, bool]]) -> bool:
+    """二级门控：主 KPI 改善在约束失败时会被拒绝。"""
+    constraint_results = constraint_suite()
+    return all(constraint_results.values())
+
+def run_suite_with_regression_gate(
+    kpi: KPISpec,
+    constraint_suite: Callable[[], dict[str, bool]],
+    tools: list[Tool],
+) -> dict:
+    """带二级约束门控的 KPI 循环——拒绝回归。"""
+    history: list[dict] = []
+    for iteration in range(kpi.budget["iterations"]):
+        new_value = kpi.measure()
+        if kpi.satisfied(new_value):
+            if validate_no_regression(constraint_suite):
+                return {"status": "target_met", "value": new_value}
+            else:
+                # KPI 达成但约束被破坏——回滚并继续
+                revert_last_action()
+                history[-1]["rejected"] = "constraint_violation"
+                continue
+        # ... Agent 推理和工具分派为简洁省略
+    return {"status": "budget_exhausted", "history": history}
+```
+
+## 人类角色的转变
+
+KPI 驱动开发并没有消除对工程判断的需求——而是将它集中到了不同的地方。
+
+真正重要的判断：**KPI 选择和测量设计**。一个定义糟糕的 KPI 会产出一个优化良好的系统，却做着不是你想要的事。"最大化用户留存"在没有约束的情况下优化会产生让人上瘾的设计。"最小化模型延迟"没有正确性门控会产生快速返回垃圾的模型。"提高测试覆盖率"没有测试质量门控会产生没有被真正测试的测试。
+
+被自动化的判断：识别哪些具体变更会移动指标、执行这些变更、验证效果、然后迭代。这是执行技能。这部分耗时长、乏味，且最容易被自动化。
+
+对工程师的实际影响：有价值的技能从"我能快速实现任何东西"变成了"我能用测量框架能评估的方式来精确指定成功的样子"。这两者相关但不同。前者关乎代码速度；后者关乎对系统目标的理解深度，足以将其精确化。
+
+---
+
+*KPI 驱动开发模式源自对真实软件任务的 Agent 评估——尤其是 MLE-Bench（机器学习工程）、SWE-Bench（软件工程）以及内部流水线可靠性工作。分层 manager-worker 变体借鉴了 Google 的 MLE-STAR 多 Agent 协调研究和 Anthropic 的多 Agent 编排文档。*

@@ -1,0 +1,214 @@
+---
+title: "分词是一个瓶颈：字节级模型的理由"
+description: "子词分词在多语言文本、代码和数学领域引入了系统性偏差。字节级架构可以消除它——代价是什么。"
+publishDate: "2026-04-13"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+tags: ["分词", "NLP", "架构", "多语言", "深度学习"]
+language: zh
+draft: true
+---
+
+当前生产环境中，每一个大型语言模型都有一个隐藏的依赖：一套基于特定语料库训练的 tokenizer，拥有固定词表，决定了文本在被模型看到之前如何被切分。这个对用户不可见的预处理步骤，产生了任何模型规模扩张都无法修复的系统性偏差。
+
+BPE（字节对编码）及其变体在英文文本上表现良好。在其他场景下表现堪忧。一个中文字符可能消耗 3-4 个 token，而一个英文单词只需 1 个。数学符号被拆解成毫无意义的子词碎片。代码标识符如 `getUserById` 被拆成 `get`、`User`、`By`、`Id`——一个语义单元用了四个 token。任何语言中的生僻词都被拆成字符级碎片，模型需要重构它们，在拼写上浪费容量而非语义上。
+
+这不是一个微小的效率问题。它是一种架构缺陷，会传播到每一个下游任务中。
+
+## 分词税
+
+当一个 BPE tokenizer 遇到训练分布之外的文本时会发生什么？这个 tokenizer 基于一个语料库训练的——通常是英文主导的网络文本——学会了针对该分布优化压缩的合并规则。偏离该分布的文本需要支付"分词税"：单位语义需要更多的 token。
+
+GPT-4 的 tokenizer（cl100k_base）的具体数字：
+
+| 输入 | Token 数 | 每语义单元 token 数 |
+|------|---------|---------------------|
+| "The cat sat on the mat" | 7 | 1.0 / 词 |
+| "Le chat s'est assis sur le tapis"（法语） | 11 | 1.4 / 词 |
+| "猫がマットの上に座った"（日语） | 14 | 2.0 / 字符 |
+| "def get_user_by_id(user_id: int):" | 12 | 1.5 / 语义单元 |
+| "∇·E = ρ/ε₀"（麦克斯韦方程） | 15 | 5.0 / 符号 |
+
+日语文本用了英文两倍的 token 才能表达同等含义。数学符号则用了 **5 倍**。这意味着：
+
+- 非英语用户为同等任务支付更多 API 调用费用
+- 模型对非英语文本的有效上下文更少（128K 上下文窗口对日语实际只有 64K）
+- 代码和数学消耗了不成比例的上下文预算
+
+Tokenizer 的影响不只是成本——它影响的是能力。每个 token 都是注意力机制中的一个位置。单位概念占用更多 token，意味着模型必须跨越更长距离才能捕捉同等关系，而即使是配备高效注意力的模型，其性能也会随序列长度下降。
+
+## BPE 为什么仍然流行
+
+BPE 能存活下来，是因为它解决了一个真实的工程问题：词表规模管理。字节级模型的词表大小是 256。BPE 模型则有 50K-100K 个 token。更大的词表意味着：
+
+1. **更短的序列**：需要关注的位置更少，降低了 O(n²) 的注意力成本
+2. **每个位置更密集的语义**：每个 token 承载更多含义，模型每次前向传播能"思考"更多内容
+3. **更好的压缩**：词表将常见子词映射到密集向量，高效利用
+
+对于主流用例（英文文本生成），BPE 确实是高效的。问题是"主流用例"在 LLM 实际做的事情中占比越来越小。
+
+## 字节级替代方案
+
+字节级模型完全绕过了分词这一步。输入是原始字节序列（0-255），模型直接在这个表示上操作。没有 tokenizer，没有词表偏差，没有语言特定的预处理。
+
+这个想法并不新鲜——ByT5（Xue et al., 2022）已经证明字节级模型可以在 NLP 基准测试中匹配子词模型。但 ByT5 因序列更长导致推理速度慢 **3-5 倍**。一段 100 词的英文段落，BPE 编码成约 130 个 token，而字节编码后变成约 500 个字节。注意力成本的差异是巨大的。
+
+近年来出现的新架构通过分层处理来解决这个问题：
+
+```
+原始字节 → 局部编码器（4-8 字节块）→ 全局 Transformer → 局部解码器 → 输出字节
+```
+
+关键创新是**字节补丁**（byte patching）：将字节分组为固定大小的补丁（通常 4-8 字节），将每个补丁编码为一个表示，然后让 Transformer 在补丁而非单个字节上运行。这恢复了 BPE 大部分的序列长度优势，同时保持了字节级的输入/输出。
+
+```python
+import torch
+import torch.nn as nn
+
+class BytePatchEncoder(nn.Module):
+    """将原始字节编码为补丁表示。"""
+    
+    def __init__(self, patch_size: int = 6, d_model: int = 768):
+        super().__init__()
+        self.patch_size = patch_size
+        self.byte_embed = nn.Embedding(256, d_model)
+        self.patch_proj = nn.Linear(patch_size * d_model, d_model)
+        self.layer_norm = nn.LayerNorm(d_model)
+    
+    def forward(self, byte_ids: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            byte_ids: (batch, seq_len) tensor of byte values 0-255
+        Returns:
+            (batch, num_patches, d_model) patch representations
+        """
+        B, L = byte_ids.shape
+        
+        # Pad to multiple of patch_size
+        pad_len = (self.patch_size - L % self.patch_size) % self.patch_size
+        if pad_len > 0:
+            byte_ids = torch.nn.functional.pad(byte_ids, (0, pad_len))
+        
+        # Embed individual bytes
+        x = self.byte_embed(byte_ids)  # (B, L_padded, d_model)
+        
+        # Reshape into patches
+        num_patches = x.shape[1] // self.patch_size
+        x = x.view(B, num_patches, self.patch_size * x.shape[-1])
+        
+        # Project patches to model dimension
+        x = self.patch_proj(x)  # (B, num_patches, d_model)
+        x = self.layer_norm(x)
+        
+        return x
+```
+
+使用 patch size = 6，一个 500 字节的输入变成约 83 个补丁——与 BPE 的约 130 个 token 相当。Transformer 以相近的序列长度运行，但输入表示是语言无关的。
+
+## MegaByte 及其衍生架构
+
+Meta 的 MegaByte 架构（Yu et al., 2023）将这种补丁方法形式化，设计了一个两级 Transformer：
+
+1. **全局模型**：一个大型 Transformer，在补丁（字节组）上操作。负责处理长距离依赖和高层次推理。
+2. **局部模型**：一个较小的 Transformer，在每个补丁内生成单个字节。负责细粒度输出——拼写、格式、精确语法。
+
+效率收益来自不对称性：全局模型规模大但处理短序列（补丁），局部模型规模小但也处理短序列（单个补丁内的字节）。两者都避免了大型模型在数千个独立字节上进行注意力的病态情况。
+
+后续工作在几个方向上进行了改进：
+
+**自适应补丁**：不采用固定大小的字节补丁，而是根据内容学习补丁边界。英文文本可能使用 8 字节补丁（大致与词对齐），而代码可能使用 4 字节补丁（与 token 对齐）。这类似于 BPE 的学习合并规则，但运行在字节级别，没有固定词表。
+
+**跨语言迁移**：在多语言数据上训练的字节级模型比子词模型展现出更强的跨语言迁移能力。原因很直接：共享的字节模式（相似文字的 UTF-8 编码、代码中的共享 ASCII）提供了天然的对齐信号，而 BPE 的语言特定合并规则会破坏这种信号。
+
+**抗噪声鲁棒性**：字节级模型对拼写错误、Unicode 变体和对抗性扰动具有天然的鲁棒性。BPE tokenizer 会将 "hello" 和 "h3llo" 映射到完全不同的 token 序列。字节级模型将它们视为相差一个字节的序列——在表示空间中这是一个小得多的扰动。
+
+## 2026 年的性能差距
+
+诚实的评估：在同等算力下，字节级模型在标准英文基准测试中仍然落后 BPE 模型几个百分点。这个差距相比 ByT5 时更大的劣势已经显著缩小，但仍然存在。
+
+已发表工作中（ByT5、MegaByte 及后续论文）的方向性趋势大致如下：
+
+| 任务 | BPE 优势 | 字节级优势 |
+|------|---------|-----------|
+| 英文文本生成 | 中等 | — |
+| 多语言 QA | — | 低资源语言上显著 |
+| 代码生成 | 大致相当 | 非 Python 语言上中等 |
+| 数学/科学文本 | — | 符号密集任务上显著 |
+| 对抗鲁棒性 | — | 扰动测试上显著 |
+| 字符级任务（拼写、字谜） | — | 准确率大幅提升 |
+
+*注：具体数字因论文和基准不同而异。方向性优势是一致的；幅度很大程度上取决于评估设置。*
+
+规律：BPE 在其主场（英文文本）获胜，字节级在其他所有地方获胜。随着 LLM 应用扩展到英文文本生成之外——进入代码、多语言系统、科学推理和处理结构化数据的 agent 工作流——字节级优势只会增长。
+
+## 混合路径
+
+目前最实用的方法是混合架构：
+
+```python
+class HybridTokenizer:
+    """对高资源文本使用 BPE，其他所有内容使用字节。"""
+    
+    def __init__(self, bpe_tokenizer, byte_threshold: float = 0.7):
+        self.bpe = bpe_tokenizer
+        self.byte_threshold = byte_threshold
+    
+    def encode(self, text: str) -> dict:
+        # Detect input characteristics
+        ascii_ratio = sum(c.isascii() for c in text) / max(len(text), 1)
+        
+        if ascii_ratio > self.byte_threshold:
+            # High ASCII content → BPE is efficient
+            return {
+                "mode": "bpe",
+                "tokens": self.bpe.encode(text)
+            }
+        else:
+            # Low ASCII → byte-level avoids tokenization tax
+            return {
+                "mode": "bytes",
+                "tokens": list(text.encode("utf-8"))
+            }
+    
+    def compression_ratio(self, text: str) -> float:
+        """Measure how efficiently BPE compresses this text.
+        
+        Low ratios indicate the text is outside BPE's training distribution.
+        """
+        bpe_tokens = len(self.bpe.encode(text))
+        if bpe_tokens == 0:
+            return 0.0
+        byte_count = len(text.encode("utf-8"))
+        return byte_count / bpe_tokens  # Higher = better BPE compression
+```
+
+压缩比低于 2.0 字节/token 意味着文本的分词效率低下——这是字节级处理最有优势的场景。
+
+Google 在 Gemini 上的做法很有启发：他们使用 SentencePiece tokenizer，词表 256K，包含字节回退机制。当 tokenizer 遇到未知序列时，回退到字节级编码而非拆解成子词碎片。这为已知文本提供了 BPE 效率，为未知文本提供了字节级鲁棒性——务实的中间路线。
+
+## 对研究的启示
+
+对于 BCI 和神经解码社区，分词问题有直接的相关性。EEG 信号离散化为神经 token 面临同样的词表问题：在某个受试者的神经模式上训练的固定词表，对新受试者或不同记录条件的泛化能力很差。
+
+字节级思维——在原始信号表示上操作而非学习词表——可以自然地映射到受试者无关的神经解码。不去学习受试者特定的"神经 BPE 合并"，字节级方法用自适应补丁处理原始频谱特征，让模型发现结构而不受词表偏差的影响。
+
+更广泛的教训：任何将连续信号预处理为离散 token 的系统，都继承了分词方案带来的偏差。当模型超越文本时，质疑这种分词是否必要、它破坏了哪些信息，变得越来越重要。
+
+## 分词消失后会怎样
+
+如果字节级模型与 BPE 达到同等水平——当前研究方向表明这是可能的，虽然不确定——有几件事会发生变化：
+
+1. **API 定价变得更公平。** 非英语用户不再有 2-3 倍的成本惩罚。一个字节就是一个字节，不分语言。
+2. **多语言模型默认改善。** 没有来自 tokenizer 的训练分布偏差。每种语言从同一起跑线出发。
+3. **代码理解改善。** 标识符、语法和格式作为语义单元保留下来，而非被 BPE 合并规则拆解。
+4. **对抗攻击更困难。** 许多 prompt 注入技术所依赖的 token 边界漏洞在字节级模型中不存在。
+5. **模型架构简化。** 无需 tokenizer 训练、词表选择或特殊 token 管理。输入是字节，输出也是字节。
+
+代价是算力：更长的序列意味着更多的注意力计算，而效率技术（补丁、分层模型）增加了架构复杂性。这个权衡是否值得，取决于具体用例。对于英文聊天机器人，可能还不值得。对于处理代码、结构化数据和科学文本的多语言 agent——权衡已经倾向于字节。
+
+Tokenizer 一直是一个压缩技巧。随着算力成本下降和上下文窗口扩大，这个技巧的必要性越来越低。问题不是字节级模型是否会取代 BPE。而是什么时候。
+
+---
+
+*相关阅读：[超越残差连接的三条路径](/blog/three-routes-architecture-evolution) 探讨了网络层面的架构创新。[Gemma Scope 2](/blog/gemini-3-gemma-scope) 覆盖了 Google 在其 Gemma 架构族上的模型可解释性方法。*

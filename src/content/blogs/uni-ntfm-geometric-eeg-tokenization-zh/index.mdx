@@ -1,0 +1,215 @@
+---
+title: "Uni-NTFM：神经数据的 BPE 时刻"
+description: "球面流形上的拓扑嵌入，解决了 EEG 基础模型多年来无法跨设备泛化的核心瓶颈。"
+publishDate: "2026-04-18"
+tags: [BCI, EEG, foundation-models, geometric-deep-learning, neural-tokenization, ICLR-2026]
+category: research
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+EEG 基础模型有一个 NLP 领域从未面对的硬件碎片化问题。OpenAI 在互联网文本上训练 GPT 时，每份文档共享同一套字符集。而当一个 BCI 实验室用 128 通道 BioSemi 系统录制的 EEG 数据训练神经解码器时，这个模型与 32 通道 g.tec 头戴式设备或 8 通道消费级 Muse 头环的数据在结构上根本不兼容——电极位置不同，通道数量不同，空间采样密度不同。在一种配置上训练的模型，无法不做额外适配就处理另一种配置的数据。
+
+这就是神经数据的分词（tokenization）瓶颈：**传感器网格本身因设备而异，所以不存在通用 token 词表。**
+
+ICLR 2026 发表的 Uni-NTFM，用几何方法解决了这个问题——将任意电极配置映射到球面流形上的连续拓扑嵌入。最终得到一个 2.4B 参数的基础模型，能够在 8 通道可穿戴头戴设备和 128 通道临床阵列之间零迁移，无需重新校准。架构本身证明：加入更多样的训练数据，有助于而非干扰跨配置泛化。
+
+## 几何直觉
+
+人头皮接近球面。电极在其上采样的是连续电磁场在不同离散点上的值。不同头戴设备在场的不同位置、以不同密度采样，但底层的场是同一个。
+
+Uni-NTFM 的做法是完全放弃固定网格假设。不再把 EEG 通道视为平坦向量（通道 1、通道 2、……、通道 N），模型将每个电极表示为其物理坐标（方位角、仰角）定义的单位球面上的一个点。然后用可逆神经网络将这些离散点映射为连续球谐表示。
+
+球面谐波（spherical harmonics）是球面函数的傅里叶基。就像一维傅里叶变换把时域信号分解为与采样率无关的频率分量，球面谐波把头皮表面电位场分解为与采样电极数量无关的**空间频率分量**。
+
+```python
+import torch
+import torch.nn as nn
+from dataclasses import dataclass
+from typing import Tuple
+
+
+@dataclass(frozen=True)
+class ElectrodeConfig:
+    positions: torch.Tensor   # (n_channels, 2) — 方位角、仰角，单位弧度
+    n_channels: int
+    device_name: str
+
+
+class SphericalHarmonicProjection(nn.Module):
+    """将任意电极位置投影到球面谐波基上。"""
+
+    def __init__(self, max_degree: int = 16, embed_dim: int = 256):
+        super().__init__()
+        self.max_degree = max_degree
+        self.n_coefficients = (max_degree + 1) ** 2
+        self.embed_dim = embed_dim
+        self.coefficient_proj = nn.Linear(self.n_coefficients, embed_dim)
+
+    def compute_basis(
+        self, positions: torch.Tensor
+    ) -> torch.Tensor:
+        """在电极位置处计算球面谐波基。
+
+        Args:
+            positions: (n_channels, 2) 方位角和仰角。
+
+        Returns:
+            基矩阵 (n_channels, n_coefficients)。
+        """
+        azimuth, elevation = positions[:, 0], positions[:, 1]
+        basis = []
+        for l_degree in range(self.max_degree + 1):
+            for m_order in range(-l_degree, l_degree + 1):
+                y_lm = self._spherical_harmonic(l_degree, m_order, azimuth, elevation)
+                basis.append(y_lm)
+        return torch.stack(basis, dim=-1)
+
+    def forward(
+        self, eeg_data: torch.Tensor, electrode_config: ElectrodeConfig
+    ) -> torch.Tensor:
+        """将可变通道数 EEG 转换为固定维度表示。
+
+        Args:
+            eeg_data: (batch, n_channels, time_steps) 原始 EEG。
+            electrode_config: 电极物理位置。
+
+        Returns:
+            (batch, time_steps, embed_dim) 传感器无关特征。
+        """
+        basis = self.compute_basis(electrode_config.positions)
+        # 最小二乘拟合：将通道数据投影到谐波基上
+        # basis: (n_channels, n_coeff), eeg: (batch, n_channels, time)
+        coefficients = torch.linalg.lstsq(basis, eeg_data).solution
+        # coefficients: (batch, n_coeff, time) -> (batch, time, n_coeff)
+        coefficients = coefficients.transpose(1, 2)
+        return self.coefficient_proj(coefficients)
+
+    @staticmethod
+    def _spherical_harmonic(
+        l: int, m: int, azimuth: torch.Tensor, elevation: torch.Tensor
+    ) -> torch.Tensor:
+        """计算实球面谐波 Y_l^m。"""
+        # 简化版——生产环境使用 scipy.special.sph_harm 或 torch_harmonics
+        cos_elev = torch.cos(elevation)
+        if m == 0:
+            return cos_elev ** l
+        elif m > 0:
+            return cos_elev ** (l - m) * torch.cos(m * azimuth)
+        else:
+            return cos_elev ** (l + m) * torch.sin(-m * azimuth)
+```
+
+关键性质：输出维度由 `max_degree` 决定，而非输入通道数。8 通道头戴设备和 128 通道设备输出的 `(batch, time_steps, embed_dim)` 张量形状完全相同。128 通道版本有更多信息来拟合谐波系数——带来更高的空间分辨率——但**表征空间是一致的**。
+
+---
+
+## 之前的方案为什么失败了
+
+此前的 EEG 基础模型尝试了三种跨设备迁移策略，但都存在根本性局限。
+
+**通道插值**（channel interpolation）对数据进行填充或重采样以达到固定通道数。将 32 通道记录插值到 128 通道。这会引入空间伪影：所谓"插值通道"不含真实信号，只是相邻通道的平滑估计。模型在训练时学会了依赖这些幻影通道，当真实数据来自不同配置、占据了相同位置时便失效了。
+
+**通道子集选择**（channel subset selection）丢弃通道，直到所有数据集共享一组公共电极。国际 10-20 系统定义了 21 个标准位置，可以把所有数据集限制在这 21 个通道上。但这丢弃了高密度记录中 **80%+ 的空间信息**——而这恰恰是基础模型的核心价值所在。
+
+**设备专属适配器**（per-device adapters）为每种头戴类型训练单独的输入投影层。这能work，但每接入一个新设备都需要适配器训练数据，无法对未见过的设备做零样本推理。类比视觉领域，相当于为每种相机分辨率训练一套独立的 patch 嵌入。
+
+Uni-NTFM 绕开了以上所有做法——它操作的是连续场，而非离散样本。不存在插值伪影，不丢弃信息，也不需要设备专属适配器。新的头戴设备只是球面上新的采样点。
+
+## Mamba 主干网络
+
+在球面谐波层之下，Uni-NTFM 用基于 Mamba 的状态空间模型（SSM）替代 Transformer 做时间建模。这个选择是务实导向的。
+
+临床 EEG 记录中，单段数据通常 10-60 秒，采样率 256-1024 Hz。30 秒的 512 Hz 片段包含 15,360 个时间步。标准 Transformer 的二次注意力复杂度在这个长度上扩展很差。即便是高效注意力变体（FlashAttention、线性注意力）在 EEG 上也吃力，因为 EEG 时间模式同时在多个时间尺度上运作——P300 事件相关电位仅持续 50-100ms，而 α 节律在 8-12 Hz 振荡，皮层慢电位则跨越秒级。
+
+SSM 通过状态动力学天然处理多尺度时间结构。学习到的状态转移矩阵同时捕捉快速瞬态和慢速振荡，无需 Transformer 架构所需的那种显式多尺度窗口设计。
+
+```python
+class UniNTFMBackbone(nn.Module):
+    """球面投影 -> Mamba SSM 时间编码器。"""
+
+    def __init__(
+        self,
+        max_harmonic_degree: int = 16,
+        embed_dim: int = 256,
+        n_mamba_layers: int = 24,
+        ssm_state_dim: int = 64,
+    ):
+        super().__init__()
+        self.spatial_encoder = SphericalHarmonicProjection(
+            max_degree=max_harmonic_degree,
+            embed_dim=embed_dim,
+        )
+        self.temporal_encoder = nn.ModuleList([
+            MambaBlock(
+                d_model=embed_dim,
+                d_state=ssm_state_dim,
+                expand_factor=2,
+            )
+            for _ in range(n_mamba_layers)
+        ])
+        self.norm = nn.LayerNorm(embed_dim)
+
+    def forward(
+        self,
+        eeg_data: torch.Tensor,
+        electrode_config: ElectodeConfig,
+    ) -> torch.Tensor:
+        """将原始 EEG 编码为任务无关表征。
+
+        Args:
+            eeg_data: (batch, n_channels, time_steps)。
+            electrode_config: 电极物理布局。
+
+        Returns:
+            (batch, time_steps, embed_dim) 语境化特征。
+        """
+        x = self.spatial_encoder(eeg_data, electrode_config)
+        for mamba_layer in self.temporal_encoder:
+            x = mamba_layer(x) + x  # 残差连接
+        return self.norm(x)
+```
+
+2.4B 参数的分配大约是：空间编码器（球面谐波 + 投影层）400M，Mamba 主干（24 层）2B。训练使用了 14 个公开 EEG 数据集，涵盖临床数据（Temple University Hospital EEG Corpus，25,000+ 个 session）、研究数据（THINGS-EEG、MOABB benchmarks）和消费级数据（BCI 竞赛数据集中的 Muse 记录）。
+
+---
+
+## 真正有意义的基准测试结果
+
+Aggregate 准确率数字没那么重要，具体看跨设备迁移结果更有价值。
+
+**分布内表现**：在与训练数据相同头戴设备的数据集上，Uni-NTFM 在运动想象分类（BCI Competition IV-2a 上 89.3%，此前 SOTA 87.1%）、情绪识别（SEED 数据集，94.2% vs 91.8%）和癫痫检测（Temple EEG，AUROC 0.973 vs 0.961）上匹配或小幅超越之前的最优结果。
+
+**跨设备零样本**：模型在 128 通道临床数据上训练后，直接评估于 32 通道研究设备（无任何微调）在运动想象任务上得分为 **81.4%**——比直接用 32 通道数据监督训练的模型仅低 8 个百分点。加上 10 分钟校准数据的微调，达到了 87.9%，超越监督基线。
+
+**消费级迁移**：在 8 通道 Muse 数据（仅额区通道）上，零样本模型在二分类注意力检测任务上得分为 67.2%。这个数字用于实际部署有些勉强，但考虑到模型仅从覆盖头皮前部小区域的 8 个位置接收空间信息，这个结果已经相当惊人——设备专属模型用 100 倍更多的 Muse 数据训练得分是 71.8%。
+
+**扩展曲线是最有价值的结果**。随着训练数据多样性增加（更多头戴类型，而非更多同类型头戴的 session），零样本迁移准确率呈对数线性提升。这是对 BPE 的直接类比：基于更多样化文本训练的 tokenizer 产生更好的子词单元；基于更多样化电极配置训练的空间编码器产生更好的谐波分解。
+
+---
+
+## 对 BCI 工程意味着什么
+
+Uni-NTFM 在三个具体方面改变了 BCI 应用的开发流程。
+
+**校准时间大幅缩短**。现有 BCI 系统每个用户、每个 session 需要 20-60 分钟的校准数据。有了能提供强零样本表征的基础模型，校准可以聚焦在任务专属解码器头部，而非整个特征提取管道。初步实验报告，使用 2-5 分钟校准即可达到可比性能。
+
+**消费级硬件进入研究视野**。临床与消费级 EEG 硬件之间的持续差距，部分是算法差距——在高密度数据上训练的模型无法迁移到低密度设备。有了传感器无关的表征，研究者可以用 250 美元的 Muse 头环做原型验证，然后用 5 万美元的临床系统做正式评估，知道特征空间是兼容的。
+
+**多中心研究不再是一场工程噩梦**。跨医院整合 EEG 临床研究意味着汇聚来自不同厂商头戴设备的数据。当前的标准做法——通道插值到通用montage——引入了系统性伪影，干扰跨中心分析。球面谐波编码将异构硬件视为特性，而非缺陷。
+
+## 悬而未决的问题
+
+这个架构留下了几个未解决的问题。空间分辨率受谐波阶数限制——`max_degree=16` 产生 289 个系数，可能欠采样局灶性皮层活动（高频空间频率事件，如来自局灶源的癫痫尖波）。提高阶数有帮助，但高阶谐波计算存在数值不稳定问题。
+
+Mamba 主干网络用注意力建模任意成对时间依赖性的能力换取更好的长度扩展性。对于长程时间依赖重要的任务（从发作前数分钟的 pre-ictal 模式预测癫痫），这个取舍可能带来损失。论文没有评估癫痫预测延迟，只评估了检测。
+
+部署约束很明确：2.4B 参数太大，无法在便携式 BCI 设备上边缘部署。蒸馏实验显示一个 150M 参数变体保留了 **91% 的零样本迁移性能**——在移动 GPU 上可行，但对可穿戴设备中亚瓦级嵌入式处理器仍然不现实。从基础模型到落地部署，可能不仅需要蒸馏，还需要对球面编码本身做架构改进，在连续表征保真度和计算效率之间做取舍。
+
+这些都是工程问题，不是根本性局限。几何直觉——将电极网格视为球面上连续场的离散采样——是成立的，且可泛化。它同样适用于 MEG（脑磁图，传感器同样采样头部形状表面上的场）、高密度 EMG（肌电图，肢体表面）和潜在 ECoG（皮层脑电图，皮层表面）。任何传感器在已知几何形状上采样场的模态，都可以受益于这个方法。
+
+---
+
+*Uni-NTFM 基于几何深度学习文献中的球面谐波框架（Bronstein et al., 2021），并将其扩展到神经数据的特殊挑战。2.4B 参数模型和训练代码尚未公开发布；引用的结果来自 ICLR 2026  camera-ready 论文。*

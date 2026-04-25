@@ -1,0 +1,158 @@
+---title: "架构收敛：超越统一深度"
+description: "2026年的四篇论文指向同一方向：稀疏路由、动态聚合、学习型深度、正交化优化取代了统一深度。"
+publishDate: "2026-03-23"
+updatedDate: "2026-04-17"
+category: research
+tags:
+  - attention
+  - architecture
+  - MoBA
+  - residual-connections
+  - sparse-routing
+  - mixture-of-depths
+  - scaling
+  - muon
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+2025年Q4至2026年Q1期间发表的四个研究方向共享一个结构性假设：统一的残差连接——即在每一层以相同方式应用 `x + f(x)`——不仅仅是一种便利，更是一个瓶颈。每个方向都提出了打破统一性的不同机制，但对问题的诊断收敛比分歧的治疗方案更值得关注。其中三个来自 Moonshot AI（MoBA、Attention Residuals、Muon）。第四个是 Google DeepMind 将 Mixture of Depths 扩展为生产训练配方的工作——它直接攻击了层级的统一深度问题。
+
+将这四篇论文放在一起阅读，它们并非对现有架构的增量改进。它们代表了该领域对神经网络深度认知的转变——从固定顺序管道到动态路由图，其中注意力、层聚合、token 级深度和优化器几何都是一阶设计维度。
+
+## 统一性的问题
+
+标准残差连接对每一层的贡献一视同仁：
+
+$$h_{l+1} = h_l + f_l(h_l)$$
+
+每一层以相同权重添加到残差流中。不存在让网络自主决定某个给定输入中第17层的贡献比第12层更重要的机制，也不可能让第5-8层完全跳过某些 token。
+
+在实际训练中，Transformer 表现出相当大的逐层贡献幅度差异。剪枝研究持续发现，移除某些层几乎不影响输出质量，而移除另一些层则导致灾难性降级。网络学会了让某些层变得重要、另一些层近乎冗余，但这发生在**尽管**架构将所有层一视同仁的前提下，而非**因为**架构支持这样做。Geva 等人2021年对前馈层即键值记忆的分析，以及 Tenney、 Rogers、 Belinkov 等人漫长的层探测研究线，使这一观察在几年前就变得经验上严谨。架构落后于经验图景；这四篇论文是架构终于迎头赶上的标志。
+
+统一性问题随规模扩大而加剧。100层 Transformer 对每个 token 应用100次顺序变换，无论该 token 的复杂度如何。"The" 与困难的推理步骤获得相同的计算预算。Token 级早退出研究表明，在100层模型中，简单 token 的表示质量在第20-30层就已收敛。其余70层处理这些 token 时几乎没有实质性贡献——消耗了计算资源却毫无收益。
+
+## MoBA：注意力层面的路由
+
+MoBA（混合块注意力）针对统一性问题的一个特定表现：整个上下文窗口的完全注意力。在标准多头注意力中，每个查询 token  attends to 每个键值 token。对于1M token 的上下文，每层是万亿级注意力计算。其中大部分计算的注意力权重可忽略不计。
+
+MoBA 的解决方案是将键值序列划分为块，并使用轻量级路由器来选择每个查询要 attend to 的块。路由器计算每个查询与每个块的代表键（块均值）之间的相关性分数，然后选取 top-K 块进行完整注意力计算。下方的草图是示意性伪代码——生产级内核在查询间向量化，并使用 FlashAttention 风格的融合内核批处理；风险自担。
+
+```python
+def moba_attention_schematic(query, keys, values, block_size=512, top_k=8):
+    # shapes (ignoring batch, heads): query [q, d], keys/values [s, d]
+    num_blocks = keys.shape[0] // block_size
+    block_keys   = keys.reshape(num_blocks, block_size, -1)      # [b, B, d]
+    block_values = values.reshape(num_blocks, block_size, -1)    # [b, B, d]
+
+    # Route: score each query against block representatives
+    block_means = block_keys.mean(dim=1)                         # [b, d]
+    scores = torch.einsum("qd,bd->qb", query, block_means)       # [q, b]
+    selected = scores.topk(top_k, dim=-1).indices                # [q, k]
+
+    # Attend only to selected blocks (per-query for clarity)
+    attended = []
+    for q_idx in range(query.shape[0]):
+        blk = selected[q_idx]
+        active_kv = block_keys[blk].reshape(-1, keys.shape[-1])
+        active_v  = block_values[blk].reshape(-1, values.shape[-1])
+        attn_out  = standard_attention(query[q_idx:q_idx+1], active_kv, active_v)
+        attended.append(attn_out)
+
+    return torch.cat(attended, dim=0)
+```
+
+关键属性：路由是无参数的。块选择使用查询与块均值之间的点积相似度——没有学习路由权重。这意味着路由能够适应数据分布，无需额外参数或训练复杂性。关于代码语法的查询会路由到包含代码的块；关于人物的查询会路由到包含传记信息的块。路由从预训练表示中涌现，而非来自单独的路由网络。
+
+性能数据相当可观：1M token 上下文上实现 **6.5倍**加速，10M token 上实现 **16倍**加速，下游任务质量损失可忽略不计。MoBA 已部署于 Kimi 生产环境，处理推动其产品差异化的长上下文查询。该设计处于较旧的 MoE-for-attention 文献（Longformer、BigBird）与更新的上下文长度扩展工作的交叉点——而且与旧版稀疏注意力方案不同，它无需从头训练：Kimi 公开文章描述 MoBA 被插入到全注意力基础模型中，并经过中间微调。
+
+## Attention Residuals：学习型层聚合
+
+MoBA 打破的是注意力模式的统一性，Attention Residuals 打破的则是残差连接本身的统一性。不是 `h_{l+1} = h_l + f_l(h_l)`，每一层的输出是所有前序层贡献的加权学习和：
+
+$$h_{l+1} = \sum_{i=0}^{l} \alpha_{l,i} \cdot f_i(h_i)$$
+
+权重 $\alpha_{l,i}$ 由一个小型注意力机制计算，该机制在层维度而非序列维度上运作。每一层"attend to"所有前序层的输出，选择纳入哪些。
+
+这使网络能够表达非平凡的深度结构：
+
+- **跳跃连接**：后层可以直接强attend to 早期层而忽略中间层，在网络中创建有效的快捷路径。
+- **层分组**：层可以形成功能簇，其中输出在该组内聚合，组的结果向前传播。
+- **输入依赖深度**：不同输入激活不同层组合，创建有效的可变深度计算，而无需显式早退出机制。
+
+计算开销很小。层维度注意力在一个序列长度等于层数（通常为32-128）的维度上运作，而非 token 序列长度。每层在层历史记录上添加一个小注意力计算，与主序列级注意力相比可以忽略不计。
+
+最惊人的经验发现：当你可视化学习到的聚合权重时，网络一致地发展出一种模式，其中早期层（嵌入、基本语法）被后期层（输出生成）直接引用，绕过了中间表示构建层。网络学习的结构更接近 U-Net 而非顺序管道——早期特征在相关时直接连接到晚期特征。从这个意义上说，Attention Residuals 是将 Highway Networks 和 DenseNet 风格连接改装到 Transformer 残差流中，但使其可学习且内容依赖。
+
+## Mixture of Depths，生产化
+
+第三篇论文使这四篇论文成为一个真正的收敛。DeepMind 于2024年中提出的 Mixture of Depths（MoD）提出赋予每个 token 一个学习选择：是否实际流经给定层的注意力和 MLP 或完全跳过它。原则上这提供了按 token 的深度，但原始工作是研究规模。随最近的 Gemini 级模型报告的生产配方——每块容量因子、负载均衡路由损失以防止死层、与 FlashAttention 风格块稀疏内核的交互关闭了 MoD 与密集基线之间的 wall-clock 差距——是最终使 MoD 在生产规模上具有竞争力的关键部分。
+
+简而言之，MoD 层有一个路由器，为每个 token 分配深度分数。Top-$k$ 比例的 token（其中 $k$ 是层的容量因子）通过完整层；其余的接收恒等变换。一个示意性草图：
+
+```python
+def mod_layer_schematic(x, router, layer, capacity=0.5):
+    # x: [batch, seq, dim]
+    B, S, D = x.shape
+    scores = router(x)                              # [B, S]
+    k = max(1, int(capacity * S))
+    top = scores.topk(k, dim=1).indices             # [B, k]
+
+    # Gather selected tokens, run dense path, scatter back
+    batch_idx = torch.arange(B).unsqueeze(-1).expand(-1, k)
+    selected  = x[batch_idx, top]                   # [B, k, D]
+    processed = layer(selected)                     # [B, k, D]
+
+    out = x.clone()
+    out[batch_idx, top] = processed
+    return out
+```
+
+MoD 的生产配方添加了原始论文在规模上未考虑的三点：(1) 预训练阶段使用均匀容量，然后是容量衰减到目标分布的冷却期，这稳定了早期路由；(2) 路由器上的熵正则化器以防止退化解（总是将相同 token 发送通过的路由器只是一个静态子集架构）；(3) 内核级融合利用了未选中 token 不需要注意力计算这一事实。MoD 后续工作的公开报告将端到端训练吞吐量优势置于匹配参数量的密集基线的高个位数百分比到低2倍范围内，严重依赖于容量因子和内核实现。
+
+MoD 和 Attention Residuals 是同一杠杆的两端。MoD 决定每个 token **是否执行这一层**。Attention Residuals 决定每层**如何加权每个前序层的贡献**。结合使用，你会得到一个每个 token 通过栈选择自己的图的网络——这正是自2021年 Switch Transformer 以来该领域一直在围绕的"动态路由图"框架。
+
+## Muon：优化作为隐式架构
+
+收敛的第四块不太明显。Muon（Moonshot AI 基于矩阵正交化的优化器）没有显式修改残差连接或注意力模式。相反，它改变了训练期间梯度如何流经网络，这隐式决定了网络发展出什么样的层专门化。
+
+标准 AdamW 优化器更新通过权重衰减维持每个参数矩阵的尺度，但不约束不同层参数矩阵之间的关系。随训练进行，这有助于层坍缩——多层收敛到近乎相同的变换。网络有100层但可能只使用约30-40个功能上截然不同的变换。
+
+Muon 在更新步骤中应用矩阵正交化，确保每层的参数在权重空间中与其他层的参数保持"距离"。这不会阻止相似层在任务需要时出现，但改变了推动不必要收敛的梯度动态。结果：使用 Muon 训练的模型以更少的总计算量发展出更多样化的逐层行为。Muon 论文报告在等效验证损失下相比 AdamW 有 **约2倍**的训练效率提升。论文的消融实验与减少的层冗余对该收益的贡献一致，但改进的完整分解仍未确定。
+
+Muon 是这四篇论文中的静默成员，因为它是唯一不需要架构变更的。换掉优化器，现有的架构就会变得更愿意专门化。这就是为什么最近的 Kimi 检查点默认使用 Muon；2026年具体有哪些开源权重发布（Qwen 3.5、DeepSeek V3.x）将 Muon 作为主要优化器，值得对照每个模型卡检查后再制定策略。
+
+## 收敛
+
+这四个研究方向攻击同一底层问题的不同表面：神经网络在统一处理上浪费计算资源，而任务和输入需要非统一的分配。
+
+- **MoBA** 使注意力在上下文窗口上非统一——每个查询看到输入的不同部分。
+- **Attention Residuals** 使深度聚合在层上非统一——每个 token 通过栈取不同路径。
+- **Mixture of Depths** 使深度本身在 token 上非统一——每个 token 可以跳过它不需要的层。
+- **Muon** 使训练在层上非统一——每层发展出独特的专门化。
+
+共同方向是走向根据输入需求动态分配计算的网络，而非均匀应用固定管道。这与人类认知的计算类比：简单的判断快速且浅层，困难的判断调动更多处理。区别在于这些方法使分配可学习而非手工设计。
+
+对从业者而言，这意味着2026年训练运行的架构选择与2024年不同。在64k token 以上的上下文中，固定完全注意力正被路由稀疏注意力取代。固定残差连接正被学习型聚合所增强。统一层处理正被按 token 容量所取代。标准优化器正被正交化感知替代品所取代。每个变化都有独立动机，但它们共同指向计算在每个层级动态分配的一代模型——从 attend to 哪些上下文块，到路由通过哪些层，到训练过程本身如何构建参数空间。
+
+## 2026年训练运行的务实配方
+
+如果你在2026年设计新的训练运行并希望采用这种收敛而非从中挑选一项，合理的基线是：
+
+1. **将 MoBA 注意力作为64k token 以上上下文的默认选择**。收益在那里最大，质量风险最小，因为 MoBA 在短上下文上优雅地降级到接近全注意力。
+2. **每隔一层添加 Mixture-of-Depths 路由**，容量因子为0.5，并使用2026年配方中的熵正则化器。不要每层都应用 MoD——跳过关键路径层的质量代价恰好出现在你预期的地方（早期句法层、最终输出层）。
+3. **将 AdamW 替换为 Muon** 用于主参数矩阵。保留 embeddings 和层归一化的 AdamW，那里正交化没有意义。
+4. **将 Attention Residuals 留作备选**。它是四个中最具侵入性的，证据仍在积累。但如果你的模型在使用 Muon 后出现层坍缩迹象，Attention Residuals 是手术刀式的解决方案。
+
+ResNet 时代认为统一深度是正确的归纳偏置的假设，正在让位于对统一深度是牺牲效率换取简单性的便利默认这一认知的转变。这里回顾的四篇论文代表了首批在保持简单性的同时恢复效率的具体替代方案。
+
+## 参考文献
+
+- MoBA: *Mixture of Block Attention for Long-Context LLMs* (Moonshot AI, ICLR 2025). [arXiv:2502.13189](https://arxiv.org/abs/2502.13189)
+- Attention Residuals: *Breaking the Uniformity of Residual Connections* (Moonshot AI, arXiv 2026).
+- Mixture of Depths: *Mixture-of-Depths: Dynamically allocating compute in transformer-based language models* (Raposo et al., DeepMind, 2024). [arXiv:2404.02258](https://arxiv.org/abs/2404.02258)
+- Muon: *Muon is Scalable for LLM Training* (Moonshot AI, 2025). [arXiv:2502.16982](https://arxiv.org/abs/2502.16982)
+- Geva et al., *Transformer Feed-Forward Layers Are Key-Value Memories*, EMNLP 2021.
+- Fedus et al., *Switch Transformer: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity*, JMLR 2022.

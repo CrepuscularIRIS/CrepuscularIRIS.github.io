@@ -1,0 +1,297 @@
+---title: "神经解码的物理学知情 Transformer"
+description: "DeeperBrain 将体积传导和相位重置编码进 Transformer——在零样本 EEG 解码任务上击败体积大 100 倍的模型。"
+publishDate: "2026-04-13"
+tags: [EEG, BCI, neural-decoding, transformer, physics-informed-ml, foundation-models, neuroscience]
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+如果你的 EEG 基础模型在数据集 A 上训练，却在数据集 B 上完全失效——这不是模型太小的问题，而是架构本身有缺陷。大多数 EEG 基础模型把头皮电极传来的信号当作通用时间序列处理：tokenize 电压轨迹，扔进标准 Transformer，期待自注意力机制从数据中自己学会信号结构。
+
+这在一定程度上有效。EEG-GPT、LaBraM 和 NeuroGPT 在运动 imagery、情绪识别和事件相关电位检测任务上能达到不错的解码准确率——前提是训练数据和目标数据来自同一个域。
+
+**问题出在零样本迁移上。** 当你在数据集 A（比如 BCI Competition IV 的运动 imagery 数据）上训练模型，却在数据集 B（比如 THINGS-EEG 的视觉 imagery 数据）上部署时，性能急剧下降。原因很清晰：模型学到的是训练分布的统计规律，而非生成这些规律的物理学。统计模式是数据集特定的；物理学是通用的。
+
+2026 年 4 月更新的 DeeperBrain 走了一条相反的路：直接把 EEG 生成的生物物理学整合进 Transformer 架构。结果是，一个模型在零样本解码任务上优于体积大 100 倍的黑盒模型——因为它在架构层面就"知道"了数据驱动模型必须从零开始发现的 EEG 物理特性。
+
+## EEG 的物理本质
+
+在解释架构之前，值得先把 EEG 电极实际测量的是什么说清楚——因为这决定了正确的归纳偏置应该是什么。
+
+头皮上的 EEG 电极**不是直接测量正下方神经元活动**。它测量的是数百万同步活跃的皮层锥体神经元产生的电场的叠加，这些电场经过脑脊液、颅骨和皮肤的传导后抵达头皮。这种传导过程——**体积传导（volume conduction）**——充当空间低通滤波器，使源活动按距离衰减的方式扩散到多个电极。
+
+**后果**：相邻电极高度相关，不是因为它们测量了相似的神经活动，而是因为它们通过略微不同的传播路径测量了相同的神经活动。标准 Transformer 的自注意力机制将电极间相关性视为需要从数据中学习的关系。但这些相关性有已知的物理起源——头部的几何形状和组织层的电导率。编码这种物理约束省掉了模型原本必须消耗容量去学习的东西。
+
+第二个物理约束是**神经动态振荡**。神经群体不会随机放电，而是在特征频率带中振荡（delta: 1-4 Hz, theta: 4-8 Hz, alpha: 8-13 Hz, beta: 13-30 Hz, gamma: 30-100+ Hz），这些频带反映底层皮层的不同计算模式。这些振荡在受到刺激时会发生**相位重置（phase-resetting）**——外部事件（一次闪光、一次运动指令、一声听觉音调）导致正在进行的振荡重置其相位，将神经群体时序与刺激对齐。
+
+相位重置是事件相关电位（ERP）产生的主要机制。标准 Transformer 处理原始电压轨迹时，不知道相关信号是正在进行的振荡的相位扰动。它必须从数据中学习振荡和扰动两者。**DeeperBrain 在架构层面将它们分离。**
+
+## 体积传导感知编码
+
+第一个架构组件是用物理学知情电极关系模型替换标准位置嵌入的空间编码器。
+
+在标准 EEG Transformer 中，每个电极获得一个学习的位置嵌入（或基于通道索引的正弦嵌入）。这告诉模型通道 1"不同于"通道 2，但不知道*如何*不同——关系完全从数据中学习。
+
+DeeperBrain 用一个**体积传导核（volume conduction kernel）** 替代它，根据电极的三维位置和简化的头部模型计算任意一对电极之间的预期信号混合：
+
+```python
+import torch
+import torch.nn as nn
+import numpy as np
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class HeadModelConfig:
+    """Simplified 3-sphere head model parameters."""
+    scalp_radius: float = 0.092      # meters
+    skull_radius: float = 0.086
+    brain_radius: float = 0.080
+    scalp_conductivity: float = 0.33  # S/m
+    skull_conductivity: float = 0.0042
+    brain_conductivity: float = 0.33
+
+
+class VolumeConductionEncoder(nn.Module):
+    """Physics-informed spatial encoding for EEG electrodes."""
+
+    def __init__(
+        self,
+        num_electrodes: int,
+        embed_dim: int,
+        electrode_positions: torch.Tensor,  # (num_electrodes, 3) in meters
+        head_cfg: HeadModelConfig = HeadModelConfig(),
+    ):
+        super().__init__()
+        self.embed_dim = embed_dim
+
+        # Compute pairwise lead field attenuation matrix
+        # Simplified exponential decay model (not a full 3-sphere model)
+        distances = torch.cdist(electrode_positions, electrode_positions)
+        conductivity_ratio = (
+            head_cfg.skull_conductivity / head_cfg.scalp_conductivity
+        )
+
+        # Simplified attenuation: exponential decay with skull resistance
+        attenuation = torch.exp(
+            -distances / (head_cfg.skull_radius * conductivity_ratio)
+        )
+        self.register_buffer("attenuation_matrix", attenuation)
+
+        # Project physics-informed relationships to embedding space
+        self.spatial_projection = nn.Linear(num_electrodes, embed_dim)
+        self.channel_embedding = nn.Embedding(num_electrodes, embed_dim)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: Raw EEG signals (batch, num_electrodes, time_steps)
+        Returns:
+            Spatially encoded signals (batch, num_electrodes, embed_dim)
+        """
+        batch_size, num_ch, time_steps = x.shape
+
+        # Apply volume conduction mixing — this is the physics
+        # Each electrode's representation includes its expected
+        # contribution from all other electrodes
+        vc_features = torch.matmul(
+            self.attenuation_matrix, x
+        )  # (batch, num_ch, time_steps)
+
+        # Project to embedding space
+        spatial_embed = self.spatial_projection(
+            vc_features.transpose(1, 2)
+        ).transpose(1, 2)  # (batch, num_ch, embed_dim)
+
+        # Add learned channel identity
+        channel_ids = torch.arange(num_ch, device=x.device)
+        channel_embed = self.channel_embedding(channel_ids)
+
+        return spatial_embed + channel_embed.unsqueeze(0)
+```
+
+衰减矩阵编码了一个物理事实：Fp1 和 Fp2（都在额部）比 Fp1 和 O1（额部和枕极）共享更多信号——**不是因为神经网络从数据中学会了这种相关性，而是因为物理学这么说的。** 模型仍有学习到的参数（空间投影和通道嵌入），但这些参数是在物理先验之上运作，而非必须重新发现它。
+
+## 神经动力学感知时间门
+
+第二个组件处理 EEG 的时间结构。标准 Transformer 在时间步上使用自注意力，对建模长距离依赖很有效，但对神经信号的振荡结构漠不关心。
+
+DeeperBrain 引入了**时间门（temporal gates）**，将输入信号分解为频带，并在每个频带内检测相位重置事件：
+
+```python
+class NeurodynamicTemporalGate(nn.Module):
+    """Detect phase-resetting events in neural oscillations."""
+
+    # Canonical EEG frequency bands (Hz)
+    BANDS: dict[str, tuple[float, float]] = {
+        "delta": (1.0, 4.0),
+        "theta": (4.0, 8.0),
+        "alpha": (8.0, 13.0),
+        "beta": (13.0, 30.0),
+        "gamma": (30.0, 100.0),
+    }
+
+    def __init__(self, embed_dim: int, sample_rate: float = 256.0):
+        super().__init__()
+        self.sample_rate = sample_rate
+        self.num_bands = len(self.BANDS)
+
+        # Learnable bandpass filters initialized at canonical frequencies
+        self.filter_centers = nn.Parameter(
+            torch.tensor([
+                (low + high) / 2 for low, high in self.BANDS.values()
+            ])
+        )
+        self.filter_widths = nn.Parameter(
+            torch.tensor([
+                (high - low) / 2 for low, high in self.BANDS.values()
+            ])
+        )
+
+        # Phase-reset detector: identifies sudden phase discontinuities
+        self.phase_detector = nn.Conv1d(
+            in_channels=self.num_bands,
+            out_channels=self.num_bands,
+            kernel_size=5,
+            padding=2,
+            groups=self.num_bands,  # Depthwise — each band independent
+        )
+
+        # Gate projection
+        self.gate_projection = nn.Linear(self.num_bands, embed_dim)
+
+    def _bandpass(
+        self, x: torch.Tensor, center: torch.Tensor, width: torch.Tensor,
+    ) -> torch.Tensor:
+        """Differentiable bandpass via frequency-domain Gaussian window."""
+        seq_len = x.size(-1)
+        freqs = torch.fft.rfftfreq(seq_len, d=1.0 / self.sample_rate)
+        freqs = freqs.to(x.device)
+
+        # Gaussian bandpass window
+        window = torch.exp(
+            -0.5 * ((freqs - center) / width) ** 2
+        )
+
+        x_fft = torch.fft.rfft(x, dim=-1)
+        filtered = torch.fft.irfft(x_fft * window, n=seq_len, dim=-1)
+        return filtered
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: Time-domain signal (batch, channels, time_steps)
+        Returns:
+            Temporal gate signal (batch, channels, embed_dim)
+        """
+        batch_size, num_ch, time_steps = x.shape
+
+        # Decompose into frequency bands
+        band_signals = []
+        for i in range(self.num_bands):
+            filtered = self._bandpass(
+                x, self.filter_centers[i], self.filter_widths[i],
+            )
+            # Compute instantaneous phase via Hilbert transform
+            analytic = torch.view_as_complex(
+                torch.stack([filtered, self._hilbert_imag(filtered)], dim=-1)
+            )
+            phase = torch.angle(analytic)
+            # Phase derivative — spikes at phase-reset events
+            phase_diff = torch.diff(phase, dim=-1, prepend=phase[..., :1])
+            band_signals.append(phase_diff)
+
+        # Stack bands and detect phase resets
+        bands = torch.stack(band_signals, dim=2)  # (batch, ch, bands, time)
+        bands_flat = bands.view(-1, self.num_bands, time_steps)
+        reset_signals = torch.sigmoid(self.phase_detector(bands_flat))
+
+        # Pool over time to get per-channel gate
+        gate = reset_signals.mean(dim=-1)  # (batch*ch, bands)
+        gate = gate.view(batch_size, num_ch, self.num_bands)
+
+        return self.gate_projection(gate)  # (batch, ch, embed_dim)
+
+    @staticmethod
+    def _hilbert_imag(x: torch.Tensor) -> torch.Tensor:
+        """Compute imaginary part of analytic signal via FFT.
+
+        Uses the standard frequency-domain method: zero out negative
+        frequencies, double positive frequencies, then take the
+        imaginary part of the inverse FFT.
+        """
+        n = x.size(-1)
+        x_fft = torch.fft.fft(x, dim=-1)
+        # Build the frequency-domain multiplier h
+        h = torch.zeros(n, device=x.device)
+        h[0] = 1  # DC component unchanged
+        if n % 2 == 0:
+            h[n // 2] = 1  # Nyquist unchanged
+            h[1:n // 2] = 2  # Double positive frequencies
+        else:
+            h[1:(n + 1) // 2] = 2
+        analytic_fft = x_fft * h
+        return torch.fft.ifft(analytic_fft, dim=-1).imag
+```
+
+关键设计选择：滤波器中心和带宽在**标准 EEG 频率上初始化**但作为**可学习参数**。训练期间，模型可以调整频带分解以更好匹配数据的实际振荡结构——这可能因受试者、记录硬件和任务而与教科书值不同。**物理学提供初始化；数据提供细化。**
+
+相位重置检测器使用深度卷积（各频带独立处理）来识别振荡瞬时相位突然变化的时刻。这些时刻对应神经事件——刺激onset、运动指令、注意力转移——这些是 EEG 中可解码信息的主要载体。
+
+## 为什么这能超越更大的模型
+
+物理学知情架构在零样本迁移上的性能优势有一个精确的解释。
+
+标准 Transformer 在数据集 A 上训练，学到的内容包括：数据集 A 使用的特定电极帽的体积传导模式、数据集 A 受试者的特定频率结构、数据集 A 用来记录的放大器的特定噪声特征。这些都与感兴趣的神经信号混在一起。
+
+当迁移到数据集 B——不同的帽、不同的受试者、不同的放大器——模型学到的关于记录设置的所有知识都错了。只有关于底层神经信号的知识能转移。但在标准模型中，这些知识纠缠在相同的参数里。
+
+DeeperBrain 在架构层面分离它们：
+
+- **体积传导**由空间编码器处理，它以电极位置作为输入。不同的帽 → 不同的位置 → 不同的衰减矩阵。物理学自动适应。
+- **振荡结构**由时间门处理，它在通用频带上初始化。学习调整很小（中心频率和带宽的细化），因此比必须从零学习整个频率结构的参数更稳健地转移。
+- Transformer 剩余需要学习的是神经信号本身——脑状态与认知事件之间的关系——这是实际跨数据集泛化的部分。
+
+**这就是为什么 300M 参数的 DeeperBrain 在零样本迁移上优于 30B 参数的黑盒模型**：物理学知情组件处理了数据集特定的变化，而黑盒模型浪费参数去学习这些变化然后无法转移。
+
+## 更广泛的原则：归纳偏置即压缩
+
+DeeperBrain 是一个通用原则的具体实例：**已知物理学是免费的压缩**。当你知道数据的生成过程时，将该过程编码进架构会减少模型必须搜索的假设空间。更少的假设意味着更少的数据需求、更快的收敛和更好的泛化。
+
+这个原则在 ML 中广泛存在：
+
+- **卷积神经网络**编码平移等变性——猫就是猫，不管它出现在图像的哪个位置。这是图像形成几何意义上的"物理学"。
+- **图神经网络**编码关系结构——分子性质取决于键拓扑，而非你碰巧给原子编的号。
+- **等变神经网络**编码对称群——物理系统中的旋转和平移对称性。
+
+DeeperBrain 增加了两个新的：
+
+- **体积传导编码**——电磁场通过组织传播的物理学。
+- **振荡相位编码**——皮层群体活动的神经动力学。
+
+模式总是一致：如果你知道真实生成函数满足的约束，就把它构建进架构，而不是希望模型从数据中学会它。模型最终会学会——但"最终"意味着"有足够的数据和参数"，而零样本迁移时，你两样都没有。
+
+## 对 BCI 研究的实际启示
+
+对于构建 EEG 解码系统的研究者，DeeperBrain 的架构建议了几个直接的设计选择：
+
+**始终使用电极位置。** 如果你的模型不知道电极在头部上的位置，它就无法考虑体积传导。大多数当前模型将电极通道视为可互换的特征，使用学习的位置嵌入。这浪费了模型的容量去学习你本已知道的东西。
+
+**先分解，再注意。** 标准 Transformer 对原始信号应用自注意力。先分解为频带——即使使用固定（非学习）的带通滤波器——能给注意力机制更清晰的时间特征。注意力可以学习跨频带交互（如 theta-gamma 耦合），而无需首先学习频率分解本身。
+
+**从物理学初始化，用数据优化。** DeeperBrain 消融实验中最强的配置使用在物理值上初始化的可学习参数。固定物理学模型表现不佳，因为真实生成过程偏离了简化的头部模型。完全学习模型表现不佳，因为没有大数据集无法从随机初始化找到正确配置。最佳点是基于物理学知情初始化加上数据驱动细化。
+
+**评估零样本迁移，而非数据集内准确率。** 数据集内准确率衡量的是对数据集特定统计模式的记忆。零样本迁移衡量的是对底层神经信号的理解。对于临床 BCI 应用——系统必须在不重新训练的情况下在新患者上工作——零样本迁移才是重要的指标。
+
+## 下一步是什么
+
+DeeperBrain 指向一个 BCI 社区一直在缓慢采用的研究方向：**神经生理学感知的深度学习**。过去五年 EEG 解码的大多数进展来自扩展标准架构（更大的 Transformer、更多的数据、更长的训练）。DeeperBrain 表明，架构创新——具体而言，将已知神经科学编码进模型结构——可以更少资源实现更多。
+
+悬而未决的问题是这一原则能走多远。体积传导和振荡动力学是有成熟数学模型表征良好的物理学。神经信号生成的其他方面——皮层折叠对偶极子方向的影响、个体颅骨电导率差异、记录期间脑状态的动态变化——建模不足但对解码准确率同样重要。每个能可靠编码进架构的额外物理约束都减少了零样本迁移的数据需求。
+
+EEG 基础模型的终极目标是构建一个在首次接触时就能在任何受试者、任何电极配置、任何记录设置上工作的系统——就像放射科医生阅读任何机器的 X 光片一样。DeeperBrain 没有完全实现这一点，但它证明了**物理学知情架构比单纯参数扩展更快速地朝正确方向推进。**
+
+---
+
+*DeeperBrain（arXiv:2601.06134v3）于 2026 年 4 月更新。本文中代码示例是作者对论文描述的架构原则的重建，非原始实现。在引用前请验证具体声明与已发表论文的一致性。*

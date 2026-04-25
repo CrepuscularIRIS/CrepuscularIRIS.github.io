@@ -1,0 +1,122 @@
+---title: "用于 EEG 解码的状态空间模型"
+description: "三年来，EEG 解码一直是 Transformer 的标杆任务。信号结构指向状态空间模型——2026 年的结果正在印证这一点。"
+publishDate: "2026-04-18"
+updatedDate: "2026-04-18"
+category: research
+tags:
+  - eeg
+  - bci
+  - mamba
+  - state-space-models
+  - neural-decoding
+  - architecture
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+2023 年主导的 EEG 解码架构是 Conformer 或各种 EEG 化的 Transformer 变体——EEGNet-Transformer 混合结构、ViT 风格的通道-时间 patch、跨被试注意力模型。它们在 BCI Competition IV-2a 上击败了卷积基线，扩展到多被试预训练，基准表上堆满了对看似已定型的架构的微小改进。但一个令人不安的细节是，如果你仔细观察训练曲线，会发现 **Transformer 是在对抗信号，而不是拟合信号**。
+
+EEG 与自注意力的结构性不适配：A single sleep-staging window is 30 s × 256 Hz × ~32 channels = ~250K samples。运动想象试验规模较小，但在建模试次间上下文或半球间依赖时仍会撞上 O(N²) 的墙。领域一直在用下采样、分词、窗口化、分块注意力来打补丁——每一步都是在承认：对 EEG 自然产生的序列长度，注意力是错误的基本原语。状态空间模型（SSMs），具体是 Mamba 及其变体，才是适配信号的那个。2025-2026 年的一小组论文已经开始表明，这个切换不是边际改进——而是架构能力的一次形变（shape change）。
+
+## 复杂度论证，精确版
+
+二次项在 EEG 上比在文本上更早成为瓶颈。Transformer 在 10-sample patch 的 token 上操作仍然承受 token 序列上的 `L²` 成本；对 256Hz 的 30 秒窗口，那是 `(250000 / 10)² = 6.25 × 10⁸` 次注意力操作每层每样本——这还没算任何多被试或多通道上下文的扩展。下采样至 128Hz 减半了计算量，代价是丢弃了 gamma 频段，而运动想象和语言想象中大多数解码相关信息就在 gamma 频段。
+
+Mamba 的选择性状态空间层在并行扫描实现下运行复杂度为 `O(L log L)`，顺序循环实现下为 `O(L)`。在同样的 25 万样本窗口上，扫描成本比注意力低**约三个数量级**。这不是常数因子的优化；而是意味着你可以用原生采样率建模原始信号，并能把上下文窗口推进到整个实验会话能在单次前向传播中处理的范围。
+
+选择机制与扫描同样重要。具备固定参数的标准 SSM（S4）将长序列压缩为隐藏状态，但这种压缩仅对线性动力系统是无损的。EEG 明显是非线性和非平稳的：试验第 12 秒处的频谱内容与第 6 秒处不同，电极间的传递函数随觉醒、注意力、电极漂移而变化。Mamba 的数据依赖型 A/B/C 矩阵，在每个时间步从输入中选择，是处理这种非平稳性的机制。模型学习的是一个控制器，而不是固定的"历史重要性"系数——控制器在每步决定保留多少、遗忘多少、过滤多少新信息。
+
+实践中这正是 Mamba 在 EEG 上与 Transformer 竞争的原因。Transformer 通过显式关注不同时间点来处理非平稳性，选择性 SSM 通过动态调整循环来处理。第二种机制每步成本低得多，而且——这是更不那么显而易见的点——**跨被试泛化更好**。不同被试的非平稳性模式不同；Transformer 在一个被试上学到的注意力模式无法干净地迁移，但 SSM 动态上学到的控制器可以，因为控制器读取的是信号当前的形态，而不是记忆特定的时间索引特征。
+
+## 架构草图
+
+2025-2026 年研究中浮现的 EEG-Mamba 模式大致如此（细节因论文而异；这是通用形态）：
+
+```python
+class EEGMamba(nn.Module):
+    def __init__(self, cfg):
+        super().__init__()
+        # Per-channel feature extraction
+        self.channel_conv = nn.Conv1d(
+            in_channels=cfg.n_electrodes,
+            out_channels=cfg.d_model,
+            kernel_size=cfg.patch_size,
+            stride=cfg.patch_size,
+        )
+        # Bidirectional Mamba stack
+        self.blocks = nn.ModuleList([
+            BidirectionalMambaBlock(
+                d_model=cfg.d_model,
+                d_state=cfg.d_state,
+                d_conv=4,
+                expand=2,
+            )
+            for _ in range(cfg.n_layers)
+        ])
+        self.norm = nn.RMSNorm(cfg.d_model)
+        self.head = nn.Linear(cfg.d_model, cfg.n_classes)
+
+    def forward(self, x):
+        # x: (batch, electrodes, samples)
+        h = self.channel_conv(x)        # (batch, d_model, samples/patch)
+        h = h.transpose(1, 2)            # (batch, L, d_model)
+        for block in self.blocks:
+            h = block(h) + h             # residual
+        h = self.norm(h.mean(dim=1))     # global pool
+        return self.head(h)
+```
+
+三个关键选择：
+
+1. **Patch-size conv 作为 tokenizer**。这取代了基于 Transformer 的 EEG 工作强加的显式分词。步幅卷积配小卷积核（4-32 样本）给 Mamba 堆栈一个可以高效扫描的信号，不会像大步幅 patch 那样丢弃时间结构。
+
+2. **Bidirectional Mamba**。分类固定长度的试验本质上是非因果的——你想在决定运动意图前前后读完整个试验。单向 Mamba 强加了一个对试次级标签毫无意义的因果限制。双向变体运行两次扫描并拼接（或平均）隐藏状态。
+
+3. **Mamba 堆栈前的多尺度卷积或空洞卷积**。EEG 在多个时间尺度上有相干结构（spike、waveform、burst、rhythm），单一 patch 大小必然丢失其中一个。多尺度特征提取器在前端用并行分支（卷积核宽度 4/16/64）捕获层级结构，而不让 SSM 变大。
+
+参数规模在用于跨被试运动想象准确率 SOTA 时落在 **2-5M 范围**，显著小于它竞争的 10-30M Transformer 基线——这本身就是一个信号：架构在拟合信号结构，而不是在过拟合算力。
+
+## 跨被试泛化数字说了什么
+
+对 BCI 部署最重要的基准是跨被试准确率：在某组被试上训练，在留出被试上测试，不做微调。这决定了实验室级解码器能否泛化到新用户而不需要数小时的校准。Transformer 基的 EEG 模型三年来在这个轴上进展缓慢——改进主要来自更大的预训练语料而非架构突破，跨被试上限每年只移动了几个百分点。
+
+2025/2026 年 preprint 中出现的 Mamba 基解码器以更小的参数规模缩小了剩余差距的相当一部分。更小的架构、相同或更少的数据训练出更好的数字，最简洁的解释是：选择机制在以固定注意力模式做不到的方式跨被试泛化。准确率具体数值因 preprint 和基准而异；持续浮现的模式是**更小模型与更好跨被试泛化的组合**，不是某个单一头条数字。
+
+一个更有趣的结果出现在更长上下文的情况下。Mamba 的线性 scaling 意味着你可以用 10 分钟窗口而非 4 秒试验来训练。在这个窗口长度上，模型开始学习被试级非平稳性——觉醒漂移、电极阻抗漂移、依赖上下文的频谱偏移——而这正是破坏跨被试泛化的那类东西。Transformer 原则上可以学到同样的东西，但二次方成本使得 10 分钟上下文窗口在训练时根本不切实际。架构的效率不是可选项；它解锁了一个 Transformer 根本训练不了的数据 regime。
+
+## 睡眠分期信号
+
+睡眠分期是最清晰的论证。一夜睡眠是 8 小时 × 256 Hz = **约 740 万样本**。基于 Transformer 的睡眠分期器在 30 秒 epoch 上操作，然后用序列模型把分期预测粘合在一起；两级流水线是注意力二次方成本的变通方案。基于 Mamba 的分期器可以**单次前向传播扫描整夜**，这意味着它可以建模定义睡眠架构的远程结构——REM 密度、睡眠剥夺后的慢波反弹、觉醒阈值的晚间到早晨漂移。
+
+在标准睡眠基准（DREAMS、SHHS、Sleep-EDF）上，**单次 SSM 分期器正在达到与分层 Transformer 基线相当的吻合水平**，同时完全省掉了分层流水线。临床相关的细节是转换检测——分期器捕捉到从 2 期到 REM 的转变，因为它有前一小时的上下文来区分阶段 2 觉醒。30 秒上下文的 Transformer 根本看不到这个模式；添加顶层序列模型是标准变通方案，但它引入了自己的误差累积边界。
+
+## 未解决的事
+
+三个注意事项，每个都值得认真对待。
+
+**可解释性更差**。Attention maps，虽然充满噪声，但给你一个关于模型关注哪些时间点和电极的故事。SSM 没有——内部状态是学习到的密集向量，其坐标不能自然解释为"此时此通道"。Mamba 在 EEG 上的可解释性工具尚在开发中；在语言上有效的技术（SSM activation patching、状态空间字典学习）还没有被干净地迁移到生理信号。
+
+**在线部署比看起来更难**。Bidirectional Mamba 对离线解码很好，但排除了因果 BCI 应用——你需要每 100ms 基于过去样本做出预测。单向变体通常在标准基准上损失几个百分点，这在基线已经接近天花板的情况下影响显著。闭环 BCI 部署仍然主要是 Transformer 和卷积的领地，因为它们的因果约束匹配，而且推理延迟的故事对小窗口更友好。
+
+**基础模型预训练仍然探索不足**。大多数 Mamba-for-EEG 工作是单任务监督。下一个赢点是掩码重建预训练在大型多数据集语料上——EEG 的 BERT。领域尝试过 Transformer（TriBE、LaBraM、BIoT），结果喜忧参半；瓶颈始终是二次方成本使得长上下文预训练不切实际。Mamba 让这个瓶颈消失，但社区还没有发布一个canonical的 Mamba 基 EEG 基础模型。未来六个月的 arxiv preprint 会告诉我们架构的效率优势是否真正转化为基础模型规模的收益。
+
+## 方法论要点
+
+除了具体数字之外，更大的教训关于生理信号处理中的架构选择。社区花了三年把 Transformer 当默认架构然后打补丁克服其 scaling 病理——tokenization 方案、windowed attention、分层模型。每个补丁也是对模型能学什么的约束：tokenization 压缩了细粒度时间结构，窗口隐藏了长程依赖，层级引入了边界处的误差累积。
+
+Mamba 让你移除大多数补丁。你可以用原生采样率跑原始信号，建模任意长度上下文，让单一架构学习局部和长程结构。当这样做时，补丁原来掩盖的失败浮现出来——窗口边界处的跨被试准确率悬崖、长 epoch 上的降级表现、对手工多尺度特征提取器的需求——而架构本身可以在给予正确归纳偏置时解决这些。
+
+这与语言建模中已经发生的故事相同：序列短且结构局部时注意力是正确的原语；序列长且结构在时间上扩展且具有选择性时 SSM 是正确的原语。EEG 坚定地处于第二侧。在语言长上下文上赢的架构（Mamba 及其后代）是将在 EEG 长上下文上赢的架构。2025-2026 年的结果是这场转变的开始；未来一年构建的基础模型将使其不再模糊。
+
+## 参考文献
+
+- Gu, A. & Dao, T. "Mamba: Linear-Time Sequence Modeling with Selective State Spaces." arXiv:2312.00752, 2023 — [arxiv.org/abs/2312.00752](https://arxiv.org/abs/2312.00752)
+- Dao, T. & Gu, A. "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality." arXiv:2405.21060, 2024 — [arxiv.org/abs/2405.21060](https://arxiv.org/abs/2405.21060)
+- Lawhern, V. et al. "EEGNet: A Compact Convolutional Neural Network for EEG-based Brain-Computer Interfaces." Journal of Neural Engineering, 2018 — [arxiv.org/abs/1611.08024](https://arxiv.org/abs/1611.08024)
+- Song, Y. et al. "EEG Conformer: Convolutional Transformer for EEG Decoding and Visualization." IEEE TNSRE, 2023 — [ieeexplore.ieee.org/document/9991178](https://ieeexplore.ieee.org/document/9991178)
+- Jiang, W.-B. et al. "LaBraM: Large Brain Model for Learning Generic Representations with Tremendous EEG Data in BCI." ICLR 2024 — [openreview.net/forum?id=QzTpTRVtrP](https://openreview.net/forum?id=QzTpTRVtrP)
+- 相关文章：[《EEG Foundation Models: Generative Decoding》](/blog/eeg-foundation-models-generative-decoding)
+- 相关文章：[《The BLEU Trap: EEG-to-Text Needs Semantic Grounding》](/blog/semkey-bleu-trap-eeg-decoding)
+- 相关文章：[《Physics-Informed Transformers for EEG》](/blog/physics-informed-transformers-eeg)

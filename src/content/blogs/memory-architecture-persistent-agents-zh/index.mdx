@@ -1,0 +1,219 @@
+---title: "持久代理的记忆架构"
+description: "上下文窗口会过期。如何构建能跨会话存续、可扩展且抗腐蚀的持久记忆。"
+publishDate: "2026-04-13"
+tags: [agents, memory, architecture, context-engineering, persistent-state]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+任何运行时间超过单次会话的代理系统，都会撞上同一堵墙：上下文窗口是有限的，对话是短暂的，代理下次醒来时就会失忆。用户需要重复自己的偏好设置。代理需要重新发现代码库结构。之前的决策变得不可见。人类协作者之所以有价值的那种积累性理解——持续积累的知识——在代理身上完全缺失。
+
+这是架构问题，而非参数问题。更大的上下文窗口只是推迟了那堵墙出现的时间，但并没有移除它。当前前沿模型的上下文窗口达到 1-2M token——Claude Opus 4.6 为 1M，Gemini 3 为 1M，GPT-5.4 超过 1M。这些容量对于单次会话工作来说足够大了，但仍然是有限的，而且不会跨会话持久化。昨天帮过你的代理对它在过去学到的东西没有任何记忆。
+
+持久记忆是将无状态的文本生成器转化为随时间积累能力的系统的关键。设计空间比大多数实现方案所暗示的要广阔得多。
+
+## 记忆分类法
+
+代理记忆系统沿三个维度有所不同：**存储什么**、**何时检索**、**谁来决定保留什么**。
+
+### 存储什么：内容类型
+
+**情景记忆**（Episodic memory）存储发生了什么——对话记录、工具调用历史、做出的决策及其结果。这是原始材料。写入成本低（只是记录一切），但读取成本高（在数千次过去的交互中搜索相关的记忆）。
+
+**语义记忆**（Semantic memory）存储代理知道什么——关于用户、代码库、项目的事实，已习得的偏好。这是经过提炼的情景。需要判断力才能写入（什么值得记住？），但读取速度快（按主题的结构化查找）。
+
+**程序记忆**（Procedural memory）存储如何做事——习得的工作流程、成功模式、工具使用策略。这是三者中最罕见也最有价值的类型。一个记得"上次调试 React 水合错误时，修复在服务端组件而非客户端组件"的代理拥有程序记忆。
+
+```python
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+from datetime import datetime
+
+class MemoryType(Enum):
+    EPISODIC = "episodic"      # 发生了什么
+    SEMANTIC = "semantic"      # 我知道什么
+    PROCEDURAL = "procedural"  # 如何做事情
+
+@dataclass(frozen=True)
+class MemoryRecord:
+    """代理记忆的单个单元。"""
+    content: str
+    memory_type: MemoryType
+    created_at: str
+    source: str                # 哪个会话/交互产生了这条记忆
+    confidence: float          # 这条记忆的可靠程度 (0-1)
+    tags: tuple[str, ...] = ()
+    expires_at: Optional[str] = None  # None = 永久
+    superseded_by: Optional[str] = None  # 取代这条记忆的更新记忆的 ID
+```
+
+### 何时检索：检索策略
+
+**常驻加载**：一组固定的记忆注入每次对话。Claude Code 的 `CLAUDE.md` 文件就是这种模式——项目规则、用户偏好和约定在会话开始时加载，无论任务是什么。
+
+**查询触发**：记忆响应特定需求而被检索。向量相似度搜索是标准机制：将当前上下文向量化，找到最相似的已存储记忆，注入进去。这是基于 RAG 的记忆系统所做的事。
+
+**事件触发**：当满足特定条件时加载记忆。"当用户提到部署时，加载部署清单和最近三次部署事故记录。"这需要一个路由层来将事件映射到记忆查找。
+
+权衡：常驻加载的记忆可靠，但每次交互都会消耗上下文预算。查询触发的记忆高效，但会遗漏以非显而易见方式相关的记忆。事件触发的记忆精确，但需要有人编写和维护显式规则。
+
+### 谁来管理：策展策略
+
+**代理策展**：代理决定记住什么。每次会话结束后，它回顾对话并提取值得保留的记忆。这就是 Claude Code 自动记忆系统的工作方式——代理基于它观察到的东西，将记忆文件写入 `~/.claude/projects/*/memory/`。
+
+**用户策展**：用户明确告诉代理记住什么。"记住我更喜欢 pytest 而不是 unittest。"这很可靠但无法扩展——用户忘记策展，重要的隐式偏好不会被记录。
+
+**混合模式**：代理提出记忆建议，用户批准或编辑。这质量最高，但引入了大多数用户在快节奏工作流中无法忍受的摩擦。
+
+## 基于文件的记忆：实用的默认方案
+
+在生产环境中可用的最简单的记忆架构是基于文件的：记忆以 Markdown 文件形式存储在目录中，由清单文件索引，在会话开始时加载到上下文中。
+
+这就是 Claude Code 用其 `MEMORY.md` + 单独记忆文件模式实现的方式：
+
+```
+~/.claude/projects/<project>/memory/
+├── MEMORY.md              # 索引：指向记忆文件的一行指针
+├── user_preferences.md    # 语义：用户的编码风格、工具、角色
+├── feedback_testing.md    # 程序："提交前必须运行测试"
+├── project_auth_rewrite.md  # 情景：正在进行工作的上下文
+└── reference_linear.md    # 语义：外部资源的查找位置
+```
+
+每个记忆文件都有结构化的 frontmatter：
+
+```markdown
+---
+name: user-testing-preferences
+description: 用户偏好使用 fixtures 的 pytest，数据库测试不用 mocks
+type: feedback
+---
+
+集成测试必须访问真实数据库，而不是 mocks。
+
+**原因：** 之前的事故中，mock 与生产环境的差异掩盖了一个失败的迁移。
+
+**如何应用：** 为涉及数据库的代码编写测试时，
+使用 testcontainers 或真实的测试数据库。永远不要 mock ORM 层。
+```
+
+这个设计在规模化时具有几个重要特性：
+
+**可 grep 搜索**：记忆文件是纯文本。你可以用标准工具搜索它们。无需管理数据库、无需运行 embedding 模型、无需重建向量索引。
+
+**可 Git 追踪**：记忆文件可以与代码一起提交。团队成员可以共享项目级记忆。记忆变更会出现在 diff 中。
+
+**上下文预算感知**：`MEMORY.md` 索引始终加载（很小），单独的记忆文件按需加载。代理可以根据当前任务的相关性选择读取哪些记忆。
+
+**抗衰减**：包含"原因"行的记忆存活更久，因为几个月后仍然可解释。"不要对数据库测试使用 mocks"没有上下文会被忽略。"不要对数据库测试使用 mocks，因为 mock 与真实 schema 的差异曾导致生产故障"会被遵循。
+
+## 向量记忆：基于文件的方案失效时
+
+基于文件的记忆适用于几十到几百条记忆。超过这个数量，对索引的线性搜索会成为上下文预算问题——你无法将一个有 500 条条目的 `MEMORY.md` 加载到每次对话中。
+
+向量记忆使用 embedding 相似度来检索相关记忆：
+
+```python
+import numpy as np
+from pathlib import Path
+import json
+
+@dataclass
+class VectorMemoryStore:
+    """大规模记忆集合的基于 embedding 的记忆检索。"""
+    memories: list[MemoryRecord]
+    embeddings: np.ndarray          # (n_memories, embedding_dim)
+    embed_fn: Callable               # text -> np.ndarray
+
+    def retrieve(self, query: str, top_k: int = 5,
+                 type_filter: Optional[MemoryType] = None) -> list[MemoryRecord]:
+        """找到与当前上下文最相关的记忆。"""
+        query_embedding = self.embed_fn(query)
+
+        # 余弦相似度
+        similarities = self.embeddings @ query_embedding
+        similarities /= (
+            np.linalg.norm(self.embeddings, axis=1)
+            * np.linalg.norm(query_embedding)
+            + 1e-8
+        )
+
+        # 应用类型过滤
+        if type_filter:
+            mask = np.array([m.memory_type == type_filter for m in self.memories])
+            similarities = np.where(mask, similarities, -1.0)
+
+        # 返回 top-k
+        top_indices = np.argsort(similarities)[-top_k:][::-1]
+        return [self.memories[i] for i in top_indices if similarities[i] > 0.3]
+```
+
+阈值（0.3）很关键。太低会检索到无关记忆污染上下文；太高会遗漏相关但措辞与查询不同的记忆。在实践中，0.3-0.5 对大多数 embedding 模型有效，但需要按领域调整。
+
+向量记忆的失败模式是**语义漂移**：embedding 模型对相似性的理解与代理对相关性的理解不匹配。关于"数据库迁移失败"的记忆可能不会被检索到，当时代理正在处理"schema 变更"，因为 embedding 模型没有足够强地连接这些概念。这正是困扰 RAG 系统的同一检索鸿沟。
+
+## 腐蚀问题
+
+自动写入的记忆系统面临一个独特风险：**记忆腐蚀**。如果代理误解了用户偏好并将其写入记忆，那么每个未来会话都从错误假设开始。错误会复合——代理基于腐蚀的记忆行动，用户纠正行为却不知道记忆的存在，下一次会话错误又浮现。
+
+三种机制防止腐蚀：
+
+**写穿验证**：在写入记忆前，代理向用户确认其理解。"我要记住你偏好 SQLAlchemy 而不是原生 SQL。这样对吗？"这在写入时捕获误解。
+
+**过期检测**：记忆包含创建时间戳。当使用超过阈值（项目记忆 30 天，用户偏好 90 天）的记忆时，代理在依赖它之前验证它是否仍然准确。代码会变。偏好会演进。老记忆会成为谎言。
+
+**矛盾解决**：当新观察与现有记忆矛盾时，代理必须决定信任哪个。规则很简单：信任现在的观察而非记忆中的内容。如果代码库当前使用原生 SQL，而记忆说"用户偏好 SQLAlchemy"，观察获胜。更新或删除过时的记忆。
+
+```python
+from datetime import datetime, timedelta
+
+def check_memory_staleness(
+    memory: MemoryRecord,
+    staleness_thresholds: dict[MemoryType, int],
+) -> bool:
+    """如果记忆在使用前需要重新验证则返回 True。"""
+    threshold_days = staleness_thresholds.get(memory.memory_type, 90)
+    created = datetime.fromisoformat(memory.created_at)
+    age = datetime.now() - created
+    return age > timedelta(days=threshold_days)
+
+STALENESS_THRESHOLDS = {
+    MemoryType.EPISODIC: 14,     # 事件很快变得无关
+    MemoryType.SEMANTIC: 90,     # 事实变化缓慢
+    MemoryType.PROCEDURAL: 180,  # 工作流程相对稳定
+}
+```
+
+## 记忆与上下文工程
+
+记忆系统是更广泛的上下文工程学科的一个组件。上下文窗口不仅仅是用户的消息和系统提示——它是模型在推理时看到的记忆、检索到的文档、工具结果和对话历史的汇编集合。
+
+记忆系统的职责是确保正确的记忆在正确的时间出现在上下文中。这意味着：
+
+**预算分配**：如果上下文窗口是 200K token，应该分配多少给记忆？太少代理会遗忘，太多记忆会挤占实际任务上下文。一个合理的默认值：记忆占用上下文预算的 5-10%，并根据任务复杂度动态调整。
+
+**排序**：位于上下文前部的记忆对模型行为的影响更大（首因效应）。关键记忆（安全规则、核心偏好）应出现在锦上添花的记忆（风格偏好、历史上下文）之前。
+
+**去重**：关于同一主题的多条记忆记录应该合并，而非堆叠。五条关于用户测试偏好的记忆不会提供五倍的信号——它们用冗余浪费上下文预算。
+
+## 当前可行的方案
+
+2026 年 4 月经过生产验证的记忆架构是一种混合方案：
+
+1. **常驻加载层**：`CLAUDE.md` / `MEMORY.md` 索引，包含关键项目和用户上下文。2K token 以下。每次会话都加载。
+
+2. **按需文件层**：当代理检测到相关性时加载单独的内存文件。代理读取索引，识别哪些记忆可能重要，然后加载它们。这可以扩展到数百条记忆而不会造成上下文膨胀。
+
+3. **自动策展**：代理在学到关于用户、项目或有效工作流程的新知识后会写记忆。写穿验证防止腐蚀。过期检查防止漂移。
+
+4. **不采用向量数据库**：对于大多数代理用例（个人助手、编码代理、研究工具），带有结构化 frontmatter 的基于文件的记忆优于基于向量的检索。记忆数量足够少，语义搜索增加的复杂性没有带来相应收益。向量记忆只在活跃记忆超过约 500 条时才变得必要，而大多数单用户代理系统永远不会达到这个数量。
+
+当前系统的缺口是程序记忆。代理能很好地记住事实和偏好。它们记住**如何做事情**——成功的调试策略、针对这个特定代码库的有效代码模式、已知问题的变通方案——却很糟糕。从成功的代理会话中提取和存储程序知识是值得解决的开放问题。
+
+---
+
+*本分析借鉴了 Claude Code 记忆系统的模式、LangGraph 的检查点架构，以及人类记忆系统的认知科学文献（Tulving 的情景/语义区分，1972）。*

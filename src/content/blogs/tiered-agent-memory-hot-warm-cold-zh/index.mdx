@@ -1,0 +1,177 @@
+---title: "分层 Agent 记忆：热、温、冷"
+description: "无限上下文是一个陷阱。生产级 Agent 使用分层记忆：原始 KV 用于活跃推理，压缩用于温热上下文，检索用于冷存储。"
+publishDate: "2026-04-19"
+tags: [agents, memory, kv-cache, compression, long-context, agent-engineering, retrieval, hierarchical-memory]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+更长上下文窗口的军备竞赛在大约 1000 万 token 处达到顶峰，然后悄然逆转。2026 年投入生产的 Agent 并没有用"所有相关历史"填满一百万 token 的窗口。它们在做系统社区几十年前就认识到的事情：**带显式升级和淘汰规则的分层记忆**。最近几百个 token 用原始 KV 对，最近几千个 token 用压缩状态，长尾部分用外部检索。注意力机制是一个快速、昂贵的缓存；应该像对待缓存一样对待它。
+
+这篇文章阐述为什么扁平上下文在 Agent 生命周期增长时失效，分层记忆模式在代码中实际是什么样子，以及哪些 2024-2026 年的技术（H2O、LLMLingua、StreamingLLM、SnapKV、scissorhand 风格压缩器、agent 级变体）可以组合成连贯的运行时。
+
+## 为什么扁平上下文在几小时后就会失效
+
+扁平上下文失效模式有三个随时间累积的组成部分。
+
+**推理时二次注意力也不是免费的。** 即使有线性注意力近似和 FlashAttention 风格的内核，每个生成 token 注意力覆盖 100 万 token 也足够慢，足以主导 Agent 延迟。在单块 H100 上，1M 上下文的一次 100 token 响应可能需要数十秒。Agent 工作负载对此通常很敏感，因为它们交错执行许多小型补全。
+
+**大多数上下文在需要时已经变成语义噪声。** 在 Agent 会话的第 200 轮时，第 17 轮的冗长工具输出对模型的推理不再有用。把它留在 KV 缓存中会在每个后续 token 上浪费计算——长上下文中的边际价值急剧下降，像 RULER（Hsieh 等，2024）这样的长上下文评估表明，有效可用上下文远短于标称窗口大小，检索精度在名义限制之前就已退化。
+
+**仅上下文内记忆下的状态漂移。** 模型在会话中对实体没有持久标识。在第 3 轮引入的变量名在第 150 轮被引用时仍然必须在注意力中搜索。随着上下文增长，模型解析长距离共指的能力退化——不是线性的，而是更快——因为不相关的中间 token 稀释了注意力分布。
+
+无限上下文不能解决这些问题；它通过增加每个注意力 softmax 的分母使问题变得更糟。解决方法是**一开始就不要把所有东西都放进窗口**。
+
+## 分层记忆模式
+
+这个模型从操作系统内存层次结构中进行了整体借鉴：*寄存器 → L1 → L2 → RAM → 磁盘*，适配为 Agent 记忆即*活跃 KV → 压缩 KV → 摘要状态 → 外部检索*。每个层级都有访问成本和语义损失预算。
+
+| 层级 | 形态 | 访问成本 | 语义保真度 | 典型大小 |
+|---|---|---|---|---|
+| 热层 | 原始 KV 对 | 一次注意力步骤 | 完美 | 最近 4k-32k token |
+| 温层 | 压缩 KV | 一次注意力步骤 + 解压 | 有损，有界 | 32k-128k token 等效 |
+| 凉层 | 蒸馏摘要状态 | 一次 prompt 注入 | 语义（事实保留，形式丢失） | 无界，稠密 |
+| 冷层 | 外部向量/图存储 | 一次检索调用 | 精确但在上下文外 | 无界 |
+
+Agent 循环然后是这个层次结构上的调度器：
+
+```python
+@dataclass
+class AgentMemoryState:
+    hot_kv: KVCache                    # 原始的，用于即时注意力
+    warm_kv: CompressedKVCache         # 热层的淘汰目标
+    cool_summary: DistilledState       # 结构化事实，永不进入 KV
+    cold_store: VectorStore            # 按需检索
+
+async def agent_step(state: AgentMemoryState, user_msg: str) -> str:
+    retrieved = await state.cold_store.query(user_msg, k=5)
+    prompt = assemble_prompt(
+        cool_facts=state.cool_summary.relevant_to(user_msg),
+        retrieved=retrieved,
+        user=user_msg,
+    )
+    response = await model.generate(
+        prompt,
+        kv_cache=[state.hot_kv, state.warm_kv],
+    )
+    state.hot_kv.append(prompt, response)
+    if state.hot_kv.size > HOT_LIMIT:
+        evicted = state.hot_kv.evict_oldest(to_size=HOT_LIMIT)
+        state.warm_kv.ingest(evicted)
+    if state.warm_kv.size > WARM_LIMIT:
+        distilled = await distiller.compress(state.warm_kv.evict_oldest(to_size=WARM_LIMIT))
+        state.cool_summary.merge(distilled)
+    return response
+```
+
+结构比具体阈值更重要。每个层级都是一个队列，带有到下一层的显式淘汰，因此老化自然发生，热层保持快速。
+
+## 哪些技术适合哪个层级
+
+2024-2026 年的研究领域产生了许多在独立使用时看起来有竞争力的方法，但它们解决的是不同层级的问题。显式映射：
+
+### 热层：留在注意力中的内容
+
+**StreamingLLM / attention sinks。** 修复了注意力分数集中于几个早期 token 的观察。实际含义是前 4-8 个 token 永远不应该被淘汰，因为它们充当 softmax 归一化锚点。每个自回归模型的分层记忆运行时都应该保留一个 sink 前缀。
+
+**SnapKV 和 H2O。** 都指出在生成时，只有过去 token 的很小一部分被大多数注意力头关注。SnapKV 观察 prompt 的注意力模式来选择保留项；H2O 使用注意力质量的"高频词汇"启发式方法。任一方法都适用于在 50% 压缩比下无质量损失地选择保留在热层的内容。
+
+**滑动窗口注意力。** 是模型架构层面的而非运行时层面的，但逻辑操作相同——只有最近的 K 个 token 参与后续层的注意力。Mistral 的 SWA 和 Gemma 的全局-局部模式在原生层面实现了这一点。
+
+共同点：热层不是"最后 N 个 token"，而是"对下一步生成最重要的 N 个 token，根据廉价启发式方法判断"。
+
+### 温层：压缩而不淘汰
+
+**Transcoder / 自编码器 KV 压缩。** 训练一个小型编码器，将一组 KV 对映射到更稠密的表示，带有一个按需重建 KV 的解码器。这一系列方法（如微软的 LazyLLM，它延迟和剪枝 KV 计算，以及越来越多的学习型 KV 压缩工作）报告了 4-8 倍有效压缩，困惑度成本很小。注意 NVIDIA 的"Context Parallel"是一种跨 GPU 分布注意力的并行化策略，不是压缩方法——它与这个层级正交，但有时被混为一谈。
+
+**LLMLingua（prompt 级）。** 在输入变成 KV 之前压缩输入文本，使用小型语言模型去除低信息量 token。比 KV 级压缩更简单；在 tokenization 层工作。LLMLingua-2 的语义感知变体在保留指令跟随文本方面特别有效。
+
+**ScissorHands 及类似剪枝。** 基于持续重要性启发式方法在层级剪枝 KV 头或 token。没有压缩那么激进，但更容易与任意注意力实现结合。
+
+温层是大多数工程收益所在的地方。仅热层系统很快触及上下文上限；仅凉层系统丢失太多细节。温层承担重活。
+
+### 凉层：蒸馏作为类型化状态
+
+这是自动化程度最低的层级，也是最被低估的。凉层不是压缩的 token——它是 Agent 显式写入的**结构化、可查询状态**。想想：一个"我已建立的事实"的 dataclass，而不是对用户所说内容的失真压缩。
+
+这个层级存在的原因是压缩的 KV 仍然消耗注意力计算，而且在某个年龄阈值后，事实作为 prompt 注入的结构化文本比作为缓存更有用。在第 3 轮确立了"用户的生产数据库在 us-east-2"的 Agent 不应该在第 200 轮在该 token 上花费注意力。它应该是状态中的一个字段。
+
+填充凉层的技术：
+
+- **自摘要 prompt。** 定期"你学到了什么？以 JSON 格式返回"。简单，有效，需要每次摘要一次模型往返。
+- **启发式提取器。** 对被淘汰的温块进行命名实体 + 关系提取。更便宜但失真更多。
+- **学习型蒸馏器。** 训练一个专用小型模型从原始 Agent 轨迹输出结构化状态。最高质量，最高设置成本。
+
+### 冷层：正确做检索
+
+冷存储是从 RAG 时代就解决了的问题——向量存储（Qdrant、Weaviate、pgvector）、图存储（Neo4j、Kùzu）、全文搜索（Tantivy、Elasticsearch）。有趣的问题不是"哪个存储"而是"索引什么"。Agent 应该索引它*做过*的事（过去的工具调用、过去的代码编辑、过去的计划），而不仅仅是它*读过*的事。Agent 历史是检索最有用的语料库，而 2026 年几乎没有 Agent 框架默认这样做。
+
+一个最小但有效的冷存储：
+
+```python
+class AgentEpisodicStore:
+    async def log(self, turn: Turn) -> None:
+        embedding = await self.embedder.embed(turn.to_summary())
+        await self.vector_store.upsert(
+            id=turn.id,
+            vector=embedding,
+            metadata={
+                "turn_idx": turn.idx,
+                "tool": turn.tool,
+                "success": turn.success,
+                "entities": turn.extracted_entities,
+            },
+        )
+
+    async def recall(self, query: str, k: int = 5) -> list[Turn]:
+        return await self.vector_store.search(
+            vector=await self.embedder.embed(query),
+            k=k,
+            filter={"success": True},
+        )
+```
+
+值得强调的两个设计决策：索引一个 turn 的*摘要*（不是原始文本），以及在检索时过滤到成功的 turn（失败模式很少有用，除非 Agent 明确推理过去的错误）。
+
+## 升级和降级策略
+
+在层级之间，运行时决定什么移动到哪里以及何时移动。三个策略原语足以覆盖大多数情况：
+
+**仅基于新鲜度。** 按年龄将 token 升级到下一层。简单，可辩护，大多数系统通过滑动窗口隐式执行此操作。
+
+**按需相关性。** 当 Agent 询问某事时，将匹配的凉/冷项升级回热层。昂贵但对于长会话中的共指是必要的。实现：在每个生成步骤之前，使用最后一条用户消息作为查询从凉层和冷层检索，并将前 K 个结果在生成前注入 prompt。
+
+**基于重要性学习。** 训练或提示辅助模型对每个 turn 的"保留重要性"评级，并用它来控制升级。这是最干净的表述，但需要要么一个调优好的分类器，要么每个 turn 一次额外的 LLM 调用。
+
+实际上，混合使用效果最好：默认降级用新鲜度，升级用按需相关性，重要性学习用于保护特定项不被淘汰（例如，用户的原始目标永远不应该过期）。
+
+## 衡量是否有效
+
+分层记忆只有在相同有效计算预算下优于扁平窗口时才有用。真正重要的指标：
+
+**N 轮距离处的共指精度。** 给定在第 K 轮引入的实体，Agent 在第 K+N 轮仍能正确解析吗？绘制精度 vs. N。带 1M token 的扁平窗口优雅退化；分层系统应该退化更优雅（因为重要实体被升级到凉层，永远不会过期）。
+
+**会话年龄 T 时每步生成的延迟。** 分层系统在 T 上应该是平坦的（热层保持小）。扁平窗口系统是 O(T) 或更差。
+
+**每会话天的成本。** Agent 连续运行 24 小时的 token 成本。扁平窗口在这里是灾难性的，因为每步注意力成本随上下文长度增长；具有激进温压缩和基于检索的凉/冷层的分层系统可以保持每步成本大致恒定，在长会话中产生数量级节省。精确比例取决于工作负载——关键是扩展曲线发散，而不是任何单一发表数字普遍适用。
+
+这些不是假设——它们是决定 Agent 系统能否负担生产成本的数字。2026 年部署长时域 Agent 的团队都独立地收敛到分层模式的变体，因为替代方案的经济性不成立。
+
+## 窗口大小军备竞赛遗漏了什么
+
+2024-2025 年的 100 万 token 上下文公告暗示记忆是一个容量问题。它从来不是那样。这是一个**层次问题**——CPU 用缓存解决的问题，操作系统用虚拟内存解决的问题。注意力是 Agent 认知的 L1。把它当作无限主内存会产生既慢又贵、且不比有缓存意识的替代方案更有能力的系统。
+
+主导 2026 年末至 2027 年的 Agent 运行时是那些把记忆当作需要管理的层次结构、而不是需要扩大的窗口的那些。技术已经在文献中——SnapKV、StreamingLLM、LLMLingua、学习型蒸馏器——基础设施模式（热/温/凉/冷与显式升级）是数十年系统工作的直接移植。剩下的问题是哪些框架将其作为一等公民原生提供，哪些留给应用开发者作为练习。
+
+## 参考
+
+- Xiao, G. et al. "Efficient Streaming Language Models with Attention Sinks." ICLR 2024. https://arxiv.org/abs/2309.17453
+- Zhang, Z. et al. "H2O: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models." NeurIPS 2023. https://arxiv.org/abs/2306.14048
+- Li, Y. et al. "SnapKV: LLM Knows What You are Looking for Before Generation." NeurIPS 2024. https://arxiv.org/abs/2404.14469
+- Jiang, H. et al. "LLMLingua-2: Data Distillation for Efficient and Faithful Task-Agnostic Prompt Compression." ACL Findings 2024. https://arxiv.org/abs/2403.12968
+- Liu, Z. et al. "ScissorHands: Exploiting the Persistence of Importance Hypothesis for LLM KV Cache Compression at Test Time." NeurIPS 2023. https://arxiv.org/abs/2305.17118
+- Hsieh, C. et al. "RULER: What's the Real Context Size of Your Long-Context Language Models?" COLM 2024. https://arxiv.org/abs/2404.06654
+- Hennessy, J. and Patterson, D. "Computer Architecture: A Quantitative Approach." Chapter 2 on memory hierarchy — the canonical treatment of the pattern this post borrows.

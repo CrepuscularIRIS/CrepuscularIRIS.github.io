@@ -1,0 +1,92 @@
+---title: "A2P: Teaching Time Series to Predict Its Own Breakdowns"
+description: "First framework to forecast the exact future time points when anomalies will occur in time series, moving beyond mere detection or immediate anomaly flagging."
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper
+tags: [paper, time-series, anomaly-detection, forecasting, icml-2025]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=Dqp6IMI3gQ"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+# A2P: Teaching Time Series to Predict Its Own Breakdowns
+
+**Original title:** When Will It Fail?: Anomaly to Prompt for Forecasting Future Anomalies in Time Series  
+**Authors:** Min-Yeong Park, Won-Jeong Lee, Seong Tae Kim, Gyeong-Moon Park  
+**Published at:** ICML 2025 (OpenReview)  
+**Link:** [OpenReview](https://openreview.net/forum?id=Dqp6IMI3gQ)
+
+---
+
+## One-Line Summary
+
+A2P reframes time-series anomaly handling from "detect the problem happening now" to "tell me when the next failure is coming" — by teaching the forecasting model not just normal patterns but the structural signatures of upcoming anomalies.
+
+---
+
+## Why This Is Worth Your Time
+
+Most anomaly detection research optimizes for one task: *catching what's already broken*. The model watches a sensor stream and raises a flag when something looks off right now. That's useful, but it's reactive by design.
+
+**Anomaly Prediction (AP)** asks a harder question: given everything you know up to today, which specific time points in the future will go off the rails? That's closer to what an engineer actually wants — a heads-up before the turbine overheats, before the server cluster degrades.
+
+This paper is the first systematic attempt I'm aware of that tackles AP as a first-class forecasting problem rather than a downstream classification hack. The insight that anomaly *relationships over time* (not just anomaly *scores*) are what make future forecasting tractable is genuinely new.
+
+---
+
+## Core Method (3-Minute Version)
+
+The name says it all: **Anomaly to Prompt (A2P)**. The framework has two interlocking parts.
+
+### Part 1: Anomaly-Aware Forecasting (AAF)
+
+Standard time-series forecasters learn to predict future *values* given past values. AAF extends this: it also learns how anomalies relate to each other across time. If a spike in sensor A historically precedes a drop in sensor B by ~3 steps, AAF encodes that cross-anomaly dependency into the forecasting model. The model isn't just learning "normal" — it's learning "what abnormal looks like when it compounds."
+
+### Part 2: Synthetic Anomaly Prompting (SAP)
+
+This is the more technically novel piece. SAP introduces a **learnable Anomaly Prompt Pool (APP)** — a bank of signal-adaptive vectors that the model uses to simulate diverse anomaly patterns during training.
+
+Think of it as data augmentation for anomalies. Real anomalies are rare (by definition), so the model has few examples to learn from. SAP generates synthetic anomaly "prompts" that逼真地 mimic different anomaly morphologies (sudden spikes, gradual drifts, context-dependent shifts). The APP learns which prompts produce the most informative training signal, effectively bootstrapping the model into an anomaly-robust forecaster.
+
+Together, AAF + SAP allow the model to produce precise future time-point forecasts — not just "something bad will happen" but "at step T+7 the reading will deviate in this specific way."
+
+---
+
+## Key Results
+
+- Proposes **A2P framework** as a dedicated solution for Anomaly Prediction (AP)
+- Introduces **AAF** to explicitly learn inter-anomaly temporal relationships
+- Introduces **SAP** with a learnable **APP** for signal-adaptive synthetic anomaly generation
+- Evaluated on standard time-series anomaly benchmarks
+
+> No concrete numbers reported in the source materials available for this curation.
+
+The paper's contribution is primarily architectural and paradigmatic — establishing AP as a distinct task with a dedicated solution, rather than squeezing it into existing detection or forecasting pipelines.
+
+---
+
+## Limits and Unanswered Questions
+
+The absence of concrete numbers in the available source makes it hard to assess how much of the improvement comes from the architectural choices versus dataset-specific tuning.
+
+Questions I want answered before recommending this for production use:
+
+- **Cross-domain transfer**: How well does the APP generalize across completely different sensor types (e.g., from industrial to financial time series)?
+- **Prompt stability**: The APP is learnable — does it converge stably, and is it sensitive to initialization?
+- **Latency trade-off**: Anomaly prediction requires more modeling capacity than detection. What's the inference cost compared to a standard detector?
+- **Ground truth problem**: Labeling "future anomaly at step T+7" is harder than labeling "current anomaly." How does label quality affect the results?
+
+---
+
+## Further Reading
+
+- Classic anomaly detection baselines (e.g., LSTM-ND, OmniAnomaly) contrast well — both solve detection, neither solves prediction.
+- The APP concept draws from prompt-tuning literature in NLP; cross-pollination between LLM prompting and time-series is an emerging thread worth watching.
+
+---
+
+*Curated: 2026-04-25 | Confidence: medium | Based on: ICML 2025 OpenReview submission (Dqp6IMI3gQ)*

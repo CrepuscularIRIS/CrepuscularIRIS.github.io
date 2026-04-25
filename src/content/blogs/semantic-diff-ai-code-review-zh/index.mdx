@@ -1,0 +1,196 @@
+---title: "行级 Diff 不是审查 AI 代码的正确抽象"
+description: "审阅者用错误的工具做错误的工作。语义级 AST diff——重构与行为变更与副作用的区分——才是解法。"
+publishDate: "2026-04-19"
+tags: [coding-agents, code-review, ast, tree-sitter, semantic-diff, agent-engineering, autonomous-coding, developer-tools]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+一位审阅者打开了一个来自编程智能体的 600 行 Pull Request。Diff 展示了红色和绿色的代码块，函数体重写，import 重排序，两个工具文件被重命名。审阅者滚动页面。他们先看测试变更，然后看失败模式，然后是那些人类容易犯的错误——变量遮蔽、缺失的错误返回值。他们滚动十分钟，在看懂的部分打上"lgtm"，在没看懂的部分留下九条澄清注释，然后合并。一周后值班工程师追查一个回归 bug，根源藏在 PR 第七个文件的副作用里——审阅者从未读过那段代码，因为 diff 显示的只是"移动了工具函数"。
+
+这不是一个关于懒审阅者的故事。这是一个关于错误工具的故事。行级 diff 是为人类手动编辑代码而设计的。每个代码块都是一个小规模的语义变更——修复拼写错误、添加一行日志、重命名一个变量——阅读 diff 是理解变更的合理代理。但当编辑器是一个能产生 200 到 2000 行补丁的自主智能体时，这个代理就失效了。代码块不再对应原子意图。审阅者无法从 `+` 和 `-` 判断一个变更是重构（语义等价）、行为变更（某些输入产生不同输出）、副作用引入（触及函数边界外的状态）还是修复（变更行为以匹配规范）。在 `git diff` 里，这四种看起来完全一样。但这四种需要截然不同的审阅投入。
+
+多个团队已经开始推出对 diff 按变更类型进行分类的工具——使用 AST 分析在人类审阅者看到之前标记每个代码块。这篇文章探讨的就是这个模式——实际在计算什么，在哪里有效，在哪里失效，以及为什么尽管有这一切，行级 diff 还会在生产环境里再存在十年。
+
+## "语义 Diff"实际指什么
+
+AST 感知 diffing 有很长的学术研究历史——GumTree（2014）、ChangeDistiller（2007）、JDiff。这些工具的输出是抽象语法树上的一系列编辑操作：`move`、`update`、`insert`、`delete` 应用于带类型的节点。这比行 diff 更精确，因为它能经受格式化、标识符重命名和代码移动的考验。两个计算相同结果的函数产生的 AST diff 会比行 diff 更小。
+
+用于 AI 代码审阅的语义 diff 在此基础上又高了一层。它接收 AST diff 作为输入，并根据每个编辑操作的预期效果进行分类。跨实现收敛的类别大致是：
+
+- **重构**：AST 变更，可观察行为保持不变。变量重命名、函数提取、import 排序、死代码删除（代码被证明是死的）。
+- **修复**：行为以解决已知缺陷的方式变更。模式：编辑对应一个之前失败的测试现在通过，或者对应 commit 信息中引用的 issue。
+- **行为变更**：行为变更且变更是故意的但不是修复。新功能、修改算法、变更默认值。
+- **副作用**：编辑触及函数边界之外——修改全局状态、写入磁盘、发送网络请求、修改共享数据结构。函数签名没有暗示这些。
+- **美化**：空白、注释、docstring。零行为影响。
+
+分类器需要三条信息才能可靠地分配这些标签：AST diff、周围类型信息（这样可以判断重命名的标识符是否是同一绑定），以及一个小的推理步骤（这样可以在 AST 形状单独不足以判断时区分重构和行为变更）。前两条来自 tree-sitter 这样的解析器和 Sourcegraph 的 SCIP 这样的类型感知索引器。第三条来自模型——而且不需要是前沿模型。推理是局部的、结构化的，这类任务小型开源模型在低成本下处理得很好。
+
+## 为什么行 diff 对智能体 PR 尤其糟糕
+
+当人类审阅者阅读智能体 diff 时，三种失败模式会可靠地出现。
+
+**等价编辑看起来像重写。** 一个将函数从 `for` 循环重写为 `map`/`filter`/`reduce` 链的模型会产生 100% 红色/绿色的 diff。审阅者把每一行都当作新代码来读。AST diff 显示：`表达式形式变更，行为保持，无新依赖`。语义分类器说：`重构`。对于正确分类的代码块，审阅者的工作量下降了一个数量级。
+
+**行为变更隐藏在重构里。** 一个"整理"函数的模型经常在清理过程中悄悄加入行为变更——变更默认值、把比较从 `<=` 改为 `<`、调换两个有副作用的调用顺序。在一个三十行其他变更的行 diff 里，这是不可见的。一个能将有行为影响的编辑从周围重构中隔离出来的 AST 分类器会把它推到审阅的最前面。
+
+**副作用隐藏在新增代码里。** 一个添加新代码路径的模型经常引入副作用——打开一个未关闭的文件句柄、修改作为参数传入的列表、向全局状态写入缓存条目。阅读行 diff 的审阅者没有简单的信号；新行看起来就是新行。读取 AST 的副作用追踪器可以标记 `open(` 的引入、参数引用的修改操作、对已知非纯函数的调用。
+
+三种模式的共同点：行 diff 缺乏*意图*的概念。AST diff 也没有意图，但它有*形状*，而形状足以引导一个推理步骤来推断意图。
+
+## 正在成为标准的架构
+
+三个部分，每个都可以独立构建，每个都有开源基础设施可用。
+
+**解析层。** tree-sitter 是这里的通用溶剂。它有约 150 种语言的语法，支持增量解析（所以能跟上编辑器活动），并生成易于遍历的稳定具体语法树。建立在 tree-sitter 之上的 AST diff 算法通常看起来像 GumTree：自顶向下匹配两棵树，然后自底向上生成编辑脚本。生产级实现包括 `difftastic` 和 Sourcegraph 的代码导航栈。多个编程智能体 CLI 似乎也在朝同一方向演进，尽管具体细节因工具和周而异。
+
+**分类层。** 给定 AST diff 和类型索引访问权限，对每个编辑进行分类。最小可行分类器是一组规则：
+
+```
+if 所有变更都在字符串字面量或注释里:
+    label = COSMETIC
+elif 重命名的标识符解析为同一绑定:
+    label = REFACTOR(rename)
+elif 提取的函数体被证明等价:
+    label = REFACTOR(extract)
+elif 引入对已知非纯函数的调用:
+    label = SIDE_EFFECT
+elif 表达式中变更了默认值或边界条件:
+    label = BEHAVIOR_CHANGE
+else:
+    label = 需要推理步骤
+```
+
+`需要推理步骤`的情况——在非平凡 PR 中通常占 30-50% 的编辑——被路由到一个小型 LLM，并携带 AST 上下文。模型看到变更前后的子树、周围函数体，以及一个紧凑的 prompt："将此编辑分类为 REFACTOR、FIX、BEHAVIOR_CHANGE 或 SIDE_EFFECT，附一句话理由。"推理步骤是局部的——它看不到 PR 的其余部分——这保持了成本可预测和输出稳定。
+
+**标注层。** 分类器输出叠加在审阅界面的 diff 上。每个代码块获得一个彩色标签、置信度分数和简短理由。审阅者看到与之前相同的 diff，但美化类和重构类代码块被预折叠，行为变更和副作用类代码块被展开并显示理由。审阅者的注意力被导向 diff 中实际需要关注的部分。
+
+```
+┌────────────────────────────────────────────────┐
+│ src/billing/invoice.py                          │
+│                                                  │
+│ ▼ [BEHAVIOR_CHANGE] (conf 0.92)                 │
+│   "默认税率从 0.08 变更为 0.10"                  │
+│ - tax_rate = 0.08                               │
+│ + tax_rate = 0.10                               │
+│                                                  │
+│ ▶ [REFACTOR(extract)] (conf 0.97) — collapsed   │
+│   "提取了辅助函数 `_format_currency`，            │
+│    行为保持不变。"                               │
+│                                                  │
+│ ▶ [COSMETIC] (conf 0.99) — collapsed            │
+│   "重排序了 imports。"                          │
+└────────────────────────────────────────────────┘
+```
+
+## 一个可工作的实现草图
+
+下面的伪代码是一个最小可行标注器的样貌，用 Python 编写。重点是数据流的形态，而不是生产就绪——用真实仓库运行会产生边缘情况（宏、条件编译、生成的代码），需要单独处理。
+
+```python
+from dataclasses import dataclass
+from typing import Literal
+import tree_sitter_python as tsp
+from tree_sitter import Language, Parser
+
+PY = Language(tsp.language())
+parser = Parser(PY)
+
+Label = Literal["COSMETIC", "REFACTOR", "FIX", "BEHAVIOR_CHANGE", "SIDE_EFFECT"]
+
+IMPURE_BUILTINS = {"open", "print", "input", "exec", "eval"}
+IMPURE_PATTERNS = {".write(", ".send(", ".commit(", "subprocess.", "os.environ["}
+
+
+@dataclass(frozen=True)
+class Edit:
+    path: str
+    before: bytes
+    after: bytes
+    line_range: tuple[int, int]
+
+
+@dataclass(frozen=True)
+class Annotation:
+    label: Label
+    confidence: float
+    rationale: str
+
+
+def classify_edit(edit: Edit, model_call) -> Annotation:
+    before_tree = parser.parse(edit.before)
+    after_tree = parser.parse(edit.after)
+
+    if _only_comments_or_whitespace_changed(before_tree, after_tree):
+        return Annotation("COSMETIC", 0.99, "comments/whitespace only")
+
+    if _is_pure_rename(before_tree, after_tree):
+        return Annotation("REFACTOR", 0.95, "identifier rename, same binding")
+
+    introduced_calls = _new_calls(before_tree, after_tree)
+    if any(_is_impure(name) for name in introduced_calls):
+        impure = next(name for name in introduced_calls if _is_impure(name))
+        return Annotation(
+            "SIDE_EFFECT", 0.90,
+            f"introduced call to impure function `{impure}`",
+        )
+
+    return _ask_model(edit, model_call)
+
+
+def _is_impure(call_name: str) -> bool:
+    if call_name in IMPURE_BUILTINS:
+        return True
+    return any(p in call_name for p in IMPURE_PATTERNS)
+
+
+def _ask_model(edit: Edit, model_call) -> Annotation:
+    prompt = f"""Classify this code edit as one of:
+REFACTOR, FIX, BEHAVIOR_CHANGE, SIDE_EFFECT.
+
+Before:
+{edit.before.decode()}
+
+After:
+{edit.after.decode()}
+
+Reply as JSON with fields: label, confidence (0-1), rationale (one sentence)."""
+    return Annotation(**model_call(prompt))
+```
+
+`_only_comments_or_whitespace_changed`、`_is_pure_rename` 和 `_new_calls` 的函数体是对 tree-sitter 解析树进行遍历——简单但繁琐。有趣的决策在启发式规则里：什么算"非纯"、规则集在哪里结束而模型在哪里接管、以及当多个编辑聚集在单个代码块时置信度分数如何组合。
+
+值得指出的一个微妙之处：在任何具有反射或动态查找的语言里，"纯重命名"都是谎言。Python 重命名更新了每个词法引用，但仍可能破坏其他地方的一个 `getattr(obj, name_string)` 调用，Ruby 的 `send`、JS 的属性字符串访问也存在类似危险，在重载解析的语言里名称变更可能静默地重新绑定到不同目标。健壮的分类器要么在代码库任何地方使用反射 API 时降低重命名置信度，要么将该代码块升级给模型进行二次审查。
+
+值得强调的细节：模型调用是针对单个编辑的，而不是整个 PR。成本保持有界——每个 `需要推理步骤` 的编辑通常只需几百个 token——输出是可复现的，因为模型不是在试图总结全局，而只是分类一个局部变更。这是小型开源模型的正确工作场景。前沿模型在这里是浪费。
+
+## 这个模式在哪里失效
+
+五个地方，都值得在构建之前了解。
+
+**跨文件行为变更。** 分类器一次只看一个编辑。在孤立情况下是重构但与其他文件的编辑组合时变成行为变更的变更会被错误标记。全 PR 分析有帮助但成本高。当前的实践状态是：将任何跨文件数据流变更标记为需要人工审阅，不管每个编辑的标签是什么。
+
+**生成的代码和宏。** 生成代码内部的 diff 对 AST 分类器看起来像行为变更，但实际上是生成器小变更的下游效应。没有生成 vs 手写的概念，分类器浪费审阅者的注意力。大多数生产工具维护一个 `.gitattributes` 风格的生成代码路径白名单来跳过它们。
+
+**类型系统缺失。** 没有类型索引器的语言（Python 之外的大多数动态语言）使重命名检测变得困难。JavaScript 中重命名的标识符可能是也可能不是同一绑定；分类器只能猜测。Sourcegraph 的 SCIP 索引器覆盖主流语言，但长尾语言确实缺失。
+
+**对抗性 commit 信息。** "修复"分类经常依赖 commit 信息声明了一个修复。学会无视意图地写"fix: ..."的模型会获得免费的 `FIX` 标签并跳过深入审阅。缓解措施是在认可 `FIX` 标签之前要求关联的测试或 issue 链接。
+
+**审阅者信任转移。** 最让我担心的风险不是分类器错了，而是它足够对以至于审阅者停止阅读未标记的代码块。行级 diff 的失败模式是审阅者走马观花。语义 diff 的失败模式是审阅者跳过。解决方案是让未标记的代码块保持可见，只是折叠，并带有一键展开——审阅者必须主动决定不看，这与 diff 不存在是不同的姿态。
+
+## 静默的采用
+
+2026 年 4 月有趣的是，这个模式的各个部分正在没有任何人宣布"类别"的情况下发货。Sourcegraph 的 diff 视图已经有多年 AST 感知能力，是分类器叠加的自然宿主。多个编程智能体 CLI 现在向审阅 prompt 喂 AST 结构化上下文（不只是行 diff）。更大的代码托管平台已经推出了 PR 摘要功能，其行为与某种形式的结构化代码块分类一致，尽管实现细节未公开。具体细节每月都在变化；方向不会。
+
+这个模式在无声无息中传播的原因是它没有改变用户可见的产物——diff 仍然看起来像 diff——只是让 diff 可操作。相同的审阅界面仍然有效；只是变得更聪明了。这是一种靠积累而非发布来获胜的变更。
+
+我接下来关注的是正在构建 IDE 级审阅的团队（Cursor、Windsurf、Codex Web），在那里 diff 在编辑器内渲染，编辑器已有的 AST 感知能力可以免费使用。在那里添加语义分类的边际成本比将其改造到代码托管平台要低得多，而且审阅者的注意力已经集中在一个文件上——这正是分类器处理最好的粒度。
+
+行级 diff 留下来。它是代码变更的通用交换格式，没有什么能取代它。但位于 diff 和审阅者之间的那层——决定高亮什么、折叠什么、标记什么的层——才是未来几年代码审阅工具构建的地方。赌注是：审阅一个智能体的 PR 应该感觉更像是分类筛选，而不是阅读理解。
+
+---
+
+*参考文献：[tree-sitter](https://tree-sitter.github.io/)、[GumTree (Falleri et al., ASE 2014)](https://hal.archives-ouvertes.fr/hal-01054552/document)、[difftastic](https://difftastic.wilfred.me.uk/)、[Sourcegraph SCIP](https://github.com/sourcegraph/scip)、[ChangeDistiller (Fluri et al., 2007)](https://ieeexplore.ieee.org/document/4339230)。*

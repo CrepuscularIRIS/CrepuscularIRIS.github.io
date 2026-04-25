@@ -1,0 +1,208 @@
+---title: "多智能体编排的帕累托前沿"
+description: "顺序式、并行式、分层式、反身式。2026年3月对1万份SEC文件的基准测试为"哪种架构更优"提供了数据支撑——结果不是最花哨的那个。"
+publishDate: "2026-04-18"
+updatedDate: "2026-04-18"
+category: engineering
+tags:
+  - multi-agent
+  - agent-architecture
+  - orchestration
+  - evaluation
+  - cost-optimization
+  - production-ml
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+2023-2025年的多智能体文献存在一个文化问题。每个新框架都在demo中演示其编排模式——在一个干净的任务中，优雅的模式产生了引人入胜的执行追踪——然后就此得出结论：这就是构建智能体的正确方式。对于任何在实际生产中运行这些系统的人来说，隐藏的真相是：大多数巧妙设计都伴随着一个没人做基准测试的成本——token消耗、延迟、失败级联，以及当监督图中的某个工作节点产生幻觉时进行调试的运维开销。
+
+Kulkarni & Kulkarni（arXiv:2603.22651，2026年3月）是我读到的第一篇真正为这个领域提供数字支撑的论文。他们对四种编排模式——顺序管道、并行扇出合并、分层监督者-工作节点、反身自纠正循环——在五个前沿及开源模型上，针对1万份SEC文件（10-K、10-Q、8-K）进行了基准测试。任务是结构化信息提取，这类工作负载中"我们用多智能体保证安全性"通常掩盖着一个3倍的账单，而没有人会做消融实验。
+
+结果将这些架构放到了成本-准确度的帕累托前沿上。同时也揭示了一个隐藏的事实：大多数生产系统运行在前沿上的错误位置。
+
+## 四种模式
+
+在给出数据之前，先清晰地回顾这些模式是什么，以及它们的失效模式长什么样。
+
+**顺序管道。** 智能体依次运行。智能体N的输出是智能体N+1的输入。典型示例：提取 → 验证 → 格式化。构造上最便宜——无并行、无冗余、无共识。在第一个断点处灾难性失效。调试简单：追踪记录是线性的。
+
+```
+[input] → extract → validate → format → [output]
+```
+
+**并行扇出合并。** 一个协调者将输入并行分发给K个工作节点。合并智能体进行聚合。典型示例：用K个不同的提示或模型运行相同的提取，通过多数投票合并。K倍成本，通过集成可能获得更好的准确度，个别工作节点的失效被隐藏在合并过程中。调优K和合并策略是工程投入的主要所在。
+
+```
+         ┌→ worker₁ ─┐
+[input] →┼→ worker₂ ─┼→ merge → [output]
+         └→ worker₃ ─┘
+```
+
+**分层监督者-工作节点。** 监督者智能体分解任务，将子任务分派给专业化的工作节点，并组合它们的输出。典型示例：一个路由智能体将表格发送给数值提取器，将散文发送给语义提取器。路由逻辑更复杂，但每个工作节点在更窄的、更好定义的范围上运作。
+
+```
+[input] → supervisor ─┬→ worker_numeric ─┐
+                      ├→ worker_prose    ─┼→ supervisor → [output]
+                      └→ worker_tables   ─┘
+```
+
+**反身自纠正循环。** 智能体生成候选输出，然后批判或验证，再编辑，循环直到满足终止条件。典型示例：生成提取结果，与源文本验证，纠正差异，重复。这是成本最高但通常准确度最高的——每次迭代都是对证据的又一次完整遍历。
+
+```
+[input] → generate → verify → correct ─┐
+               ↑_____________________________│  (直到验证通过或预算耗尽)
+```
+
+## 数据
+
+Kulkarni & Kulkarni在1万份SEC文件基准测试上的核心数据：
+
+| 架构 | 字段F1 | 相对成本 |
+|---|---|---|
+| 顺序管道（基线） | 0.853 | 1.0× |
+| 并行扇出（K=3） | 0.884 | 2.8× |
+| 分层监督者-工作节点 | **0.921** | **1.4×** |
+| 反身自纠正 | **0.943** | **2.3×** |
+
+帕累托前沿上有三个点：顺序式在(0.853, 1.0×)——成本最低点；分层式在(0.921, 1.4×)；反身式在(0.943, 2.3×)。每个点在不同区域占优。并行扇出是唯一严格不在前沿上的架构：分层式有更高的F1（0.921 vs 0.884），成本却只有一半（1.4× vs 2.8×），所以任何能容纳并行扇出的成本预算，花在分层式上会更好。
+
+这个结果违背直觉。并行扇出是"我们需要更好的准确度"时的默认直觉——任何构建过集成系统的人都这样想。运行三个工作节点，合并结果，获得集成级的可靠性。基准测试表明，当底层任务有结构时——不同的字段、不同的文档部分、不同的数据类型——一个智能路由的监督者比三个并行运行后投票的相同工作节点表现更好。协调智能的成本低于它消除的冗余工作的成本。
+
+第三个有趣的数字隐藏在消融实验中：**混合配置在仅1.15倍基线成本下恢复了反身架构准确度提升的89%**。反身架构比顺序式高出+0.090 F1（0.943 − 0.853）；89%的增益就是+0.080，使混合系统达到F1约0.933，成本为1.15倍——本质上处于帕累托前沿的一个新线段，低于分层的成本且高于分层的准确度。机制：采用分层系统，添加选择性反射，只对分层标记为低置信度的字段应用验证-纠正循环。
+
+## 为什么这超出了SEC文件的范畴
+
+诱惑在于将此解读为"论文发现分层在SEC文件上击败了并行"。但我认为这个结果由于结构性原因可以推广。
+
+**并行扇出在任务真正不确定时获胜**——真的需要K次独立尝试，因为没有单一尝试是可靠的。证据模糊时的分类。开放性推理。多种方法都合理的代码生成。在这些场景下，通过自洽性或best-of-K的集成提供了真实的准确度提升。
+
+**并行扇出在任务结构化时失效**——当输入的不同部分需要不同的处理方式时。10-K文件有资产负债表、风险因素部分、管理层讨论与分析部分。在整个文档上运行三个相同的提取器，成本三倍但准确度不会三倍增长，因为每个提取器在其不擅长的部分上花费了2/3的预算。分层模式更便宜，因为其工作节点是专业化的——每个只在其擅长的输入部分上运行。
+
+实用启发：
+
+- **任务模糊，没有自然分解** → 并行扇出合并，或反身自纠正。
+- **任务有特性不同的清晰子问题** → 分层监督者-工作节点。
+- **任务是线性、有明确定义转换** → 顺序管道。
+- **任务准确度要求高，成本不敏感** → 反身自纠正。
+- **任务大部分干净但偶有困难案例** → 分层 + 选择性反射低置信度输出。
+
+最后一种组合——分层加选择性反射——就是那个89%恢复率、1.15倍成本的配置。它不是独立的架构；它是当你读完消融实验表格后做出显而易见选择时，生产系统应有的样子。
+
+## 最小实现
+
+这些架构比它们的实现看起来要简单得多。下面是一个约50行的最小分层加选择性反射系统：
+
+```python
+from dataclasses import dataclass, field
+from typing import Callable, Protocol
+
+@dataclass
+class ExtractionResult:
+    fields: dict[str, str] = field(default_factory=dict)
+    confidence: dict[str, float] = field(default_factory=dict)
+
+class Worker(Protocol):
+    def extract(self, section: str) -> ExtractionResult: ...
+    def verify(self, section: str, result: ExtractionResult) -> ExtractionResult: ...
+
+# Concrete workers — stubbed here; in production each wraps a model call
+# with a specialized system prompt (e.g. table-aware vs prose-aware).
+class NumericWorker:
+    def extract(self, section: str) -> ExtractionResult:
+        ...  # call a table-oriented model
+        return ExtractionResult()
+    def verify(self, section: str, result: ExtractionResult) -> ExtractionResult:
+        ...  # re-check each numeric field against the source
+        return result
+
+class ProseWorker:
+    def extract(self, section: str) -> ExtractionResult:
+        ...
+        return ExtractionResult()
+    def verify(self, section: str, result: ExtractionResult) -> ExtractionResult:
+        ...
+        return result
+
+def extract_section(document: str, heading: str) -> str:
+    """Slice a named section out of the filing — regex or layout-aware parser."""
+    ...
+    return ""
+
+def supervisor_route(document: str) -> dict[str, str]:
+    """Split document into sections, tagged by type.
+
+    In production: a fine-tuned classifier or a small model call.
+    """
+    return {
+        "balance_sheet": extract_section(document, "BALANCE SHEET"),
+        "risk_factors": extract_section(document, "RISK FACTORS"),
+        "mda": extract_section(document, "MANAGEMENT'S DISCUSSION"),
+    }
+
+WORKER_REGISTRY: dict[str, Worker] = {
+    "balance_sheet": NumericWorker(),
+    "risk_factors": ProseWorker(),
+    "mda": ProseWorker(),
+}
+
+def reflect(
+    section_text: str,
+    result: ExtractionResult,
+    verifier: Callable[[str, ExtractionResult], ExtractionResult],
+    max_rounds: int = 2,
+    confidence_threshold: float = 0.7,
+) -> ExtractionResult:
+    """Selectively re-verify only low-confidence fields."""
+    low_conf_fields = [
+        f for f, c in result.confidence.items() if c < confidence_threshold
+    ]
+    if not low_conf_fields:
+        return result
+    for _ in range(max_rounds):
+        result = verifier(section_text, result)
+        still_low = [
+            f for f in low_conf_fields if result.confidence[f] < confidence_threshold
+        ]
+        if not still_low:
+            break
+    return result
+
+def extract_filing(document: str) -> dict[str, ExtractionResult]:
+    sections = supervisor_route(document)
+    results: dict[str, ExtractionResult] = {}
+    for name, text in sections.items():
+        worker = WORKER_REGISTRY[name]
+        raw = worker.extract(text)
+        results[name] = reflect(text, raw, verifier=worker.verify)
+    return results
+```
+
+监督者切分文档。专业化工作节点从分配给它们的章节中提取。反射循环**仅在低置信度字段上运行**，而非整个输出。这种选择性就是成本节省的来源——10-K中的大多数字段是明确的，你不会想重新验证一个从标号清晰的单元格中提取出来的日期。
+
+`WORKER_REGISTRY`遵循生产ML系统中常见的工厂模式。无需触碰编排代码即可切换工作节点。置信度阈值是一个超参数——设得太低会退化为纯分层（便宜，无反射）；设得太高会退化为纯反身（昂贵，反射无处不在）。论文中的89%恢复率数字意味着他们仔细调优了这个阈值。
+
+## 这改变了什么
+
+我想谨慎地避免过度断言。一篇论文、一个基准测试无法决定整个设计空间。分层在结构化提取上优于并行扇出的发现，不会原封不动地迁移到开放式研究任务或创意写作上。但有几个我认为可以泛化的观点：
+
+**"多智能体"不是一种架构；而是一个类别。** 四种模式差异足够大，混用同一个标签会形成误导。当有人说"我们构建了一个多智能体系统"，第一个问题应该是四种中的哪一种（或哪种混合），因为成本影响相差3倍。
+
+**默认顺序管道，有理有据地往上走。** 我见过的生产系统大多默认并行或反身，因为demo看起来很棒。帕累托前沿说明顺序式是成本最低的端点——对于F1 0.85可接受且成本敏感的工作负载，顺序式是正确的答案。只有当你能说出正在填补的具体准确度差距时，才往上走。
+
+**分层系统中，监督者质量是杠杆点。** 整个架构的成败取决于路由分类子问题的效果。一个差的监督者比没有监督者更糟——它把输入发送给错误的工作节点，然后工作节点产出垃圾。把路由准确度作为与工作节点准确度分开的一项来预算。
+
+**反射应该是选择性的，而非默认的。** 在每个输出上运行验证-纠正循环是2-3倍的成本溢价，换来的准确度提升在大多数字段上很小。只在低置信度输出上运行它，以一小部分成本保留大部分准确度收益。置信度信号是触发器，而非常态。
+
+**基准测试架构，不只是模型。** 智能体工程界对模型对比有巨大胃口——Claude vs GPT vs Gemini——但对编排模式对比几乎为零。这篇论文是我见过的首个系统性地做后者的工作，表明对于生产准确度和成本，架构选择至少和模型选择同等重要。
+
+这个领域在架构权衡上摸索了三年。把硬数字引入对话，早该如此。
+
+## 参考
+
+- Kulkarni & Kulkarni, "Benchmarking Multi-Agent LLM Architectures for Financial Document Processing: A Comparative Study of Orchestration Patterns, Cost-Accuracy Tradeoffs and Production Scaling Strategies," arXiv:2603.22651 (March 2026): https://arxiv.org/abs/2603.22651
+- 相关文章：[Multi-Agent Systems中的协调税](/zh/blog/coordination-tax-multi-agent)
+- 相关文章：[使用FSM的声明式多智能体编排](/zh/blog/declarative-multi-agent-orchestration-fsm)
+- 相关文章：[四层智能体架构](/zh/blog/four-layer-agent-architecture)
+- 相关文章：[Agent架构中的认知路由](/zh/blog/cognitive-routing-agent-architectures)

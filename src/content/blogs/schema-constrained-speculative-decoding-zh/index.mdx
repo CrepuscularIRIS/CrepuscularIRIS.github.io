@@ -1,0 +1,157 @@
+---title: "Schema约束的推测解码"
+description: "工具调用智能体在wall time中大部分时间都在重新推导JSON schema已经固定的token。把schema本身当作草稿可以消除这种浪费。"
+publishDate: "2026-04-18"
+updatedDate: "2026-04-18"
+category: engineering
+tags:
+  - speculative-decoding
+  - tool-calling
+  - structured-output
+  - agent-architecture
+  - inference-optimization
+  - mcp
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+工具调用智能体从外部看成本高昂——大量模型调用、长prompt、不断膨胀的上下文。但如果你分析实际耗时（wall-clock time）花在哪里，答案令人不安：大部分都在解码那些从一开始就**没有变数**的token。智能体输出 `{"name": "search_web", "arguments": {"query": "...` 然后，逐个token地，模型重新推导下一个是引号、闭合大括号后可能是逗号、"arguments"这个键的拼写始终如一。自回归解码的每token计算成本是固定的，无论这个token是出人意料的词汇选择，还是一个JSON schema在调用开始前就已确定的字符。
+
+过去两年独立发展的两项技术在那个浪费点上恰好交汇。**结构化输出**——将生成约束到语法或JSON schema——已经从库级别的补丁（Outlines、lm-format-enforcer、json-schema-to-grammar）演进为provider原语（OpenAI的`response_format`、Anthropic的tool-use `input_schema`、llama.cpp中的本地语法）。**推测解码**——并行运行一个廉价草稿模型，让目标模型在单次前向传播中验证——已经从研究好奇（Leviathan等，2023）变成了默认部署模式（vLLM的speculative engine、EAGLE-2/3）。这两项技术很少一起讨论，但它们的组合是工具调用工作负载的自然架构。一旦schema固定了合法的下一个token，草稿模型不再需要是一个小语言模型在猜测——它可以是schema本身，输出一长串目标模型几乎不会改动的token。
+
+## 延迟的实际所在
+
+运行一个生产环境工具调用循环，查看每次调用的token分解。一个典型的Claude或GPT工具调用响应，当工具非平凡时，长这样：
+
+```
+total_output_tokens = 180
+  其中：
+    schema固定token     ≈ 60-80  (大括号、引号、键、逗号)
+    schema约束token     ≈ 40-60  (枚举值、布尔值、类型合法字面量)
+    自由选择token       ≈ 30-50  (实际查询文本、prose参数)
+```
+
+schema固定和schema约束的token加起来高达输出的80%。每一个仍然需要完整的transformer前向传播。柱状图的样子是一样的，无论你调用的是"支持结构化输出"作为一等功能的模型，还是不是——今天的"支持"通常意味着API拒绝格式错误的输出或屏蔽非法logits，而不是避免做解码工作本身。模型仍然逐个emit token；只是emit的是对的那些。
+
+朴素地应用推测解码对这个工作负载的帮助微乎其微。一个小的草稿LM在预测下一个字符是逗号这件事上，并不会比目标模型好太多；两者都对强制token赋予高概率，所以接受率很高，但在长而高度约束的序列上，草稿模型的推理成本会抵消大部分收益——因为草稿在重做schema已经确定的工作。
+
+正确的视角是：**JSON schema本身就是一个约束输出部分的草稿模型**。它在每个schema固定位置给唯一的合法延续赋予概率1.0，在每个schema约束位置给合法集合赋予均匀概率（或快速学习的先验）。把它当作草稿，让目标模型在一次批处理前向传播中验证，这是关键的结构性动作。
+
+## Schema即草稿：形式化
+
+将其框架为推测解码，其中草稿提议分布 `q(y | x)` 是：
+
+- 当schema只允许一个token时，为1.0
+- 当有多个合法token时，在允许集合上均匀分布（或使用快速学习的先验）
+- 当schema局部无约束时（例如在自由文本字符串字段内的查询），为基础LM的分布
+
+验证步骤是通常的拒绝采样接受：目标模型的分布 `p(y | x)` 在长度为 `k` 的草稿span上计算，每个草稿token以概率 `min(1, p/q)` 被接受。对于schema固定位置，`q = 1.0`，`p` 是目标LM在该token上赋予的质量；接受总是"在目标下的最大概率"，所以token被接受当且仅当目标也给它分配了不可忽略的质量——对于在分布内schema上训练良好的LM来说，几乎总是如此。对于schema约束位置，从目标在允许集合上的限制中拒绝采样。
+
+实践核心，伪代码：
+
+```python
+def schema_constrained_speculate(
+    target_model,
+    schema,
+    prompt,
+    max_speculate: int = 32,
+):
+    output = []
+    state = schema.start_state()
+
+    while not state.is_terminal:
+        # 1. 草稿：从schema emit最多max_speculate个token
+        draft_tokens = []
+        draft_state = state
+        for _ in range(max_speculate):
+            next_set = draft_state.admissible_tokens()
+            if len(next_set) == 1:
+                tok = next_set[0]           # schema强制
+            elif draft_state.is_free_text():
+                break                       # 回退到目标LM
+            else:
+                tok = min(next_set)         # 确定性平局决胜
+            draft_tokens.append(tok)
+            draft_state = draft_state.step(tok)
+
+        if not draft_tokens:
+            # 自由文本span：回退到小草稿LM或仅目标解码
+            tok = target_model.sample(prompt + output)
+            output.append(tok)
+            state = state.step(tok)
+            continue
+
+        # 2. 验证：一次前向传播过output + draft_tokens
+        target_logprobs = target_model.forward_batch(
+            prompt + output + draft_tokens
+        )
+
+        # 3. 接受目标同意的最长前缀
+        accepted = 0
+        for i, tok in enumerate(draft_tokens):
+            if target_logprobs[i][tok] > ACCEPT_THRESHOLD:
+                accepted += 1
+            else:
+                break
+
+        output.extend(draft_tokens[:accepted])
+        state = draft_state  # 前进已接受的token
+        if accepted < len(draft_tokens):
+            # 在该位置用目标采样替换第一个拒绝
+            resample = target_model.sample_at(prompt + output)
+            output.append(resample)
+            state = state.step(resample)
+```
+
+核心很短，因为regex/语法引擎在做重活。schema的admissible-tokens函数是`outlines`或`lm-format-enforcer`在prompt时已经构建的同一数据结构；推测解码包装器只是把这个结构当作提议分布，而不是应用到LM logit上的约束掩码。
+
+在一个真实schema上——OpenAI的function-call格式，或MCP工具的`inputSchema`——允许集在约60-70%的位置是单例。这个比例恰好是不需要目标模型做任何决定的部分；验证传播在单次前向调用中确认一长串"是的，我同意"。
+
+## 为什么这在智能体循环上比Chat上更重要
+
+对于聊天补全，schema约束推测在结构化输出上是还不错2-3×加速，prose上没什么效果。对于智能体循环，复合效果不同。一个智能体每个任务做10次工具调用，每次都有JSON响应，schema固定解码成本要付十次。如果每次调用在schema部分压缩3×，而schema部分占调用的70%，单步加速大约是：
+
+```
+加速 ≈ 1 / (0.3 + 0.7/3) ≈ 1 / 0.53 ≈ 1.87×
+```
+
+单步如此。跨10步循环且有重叠前缀缓存，累积改进更大，因为节省的token本会是后续调用的缓存未命中。每一个跳过的schema强制token都是一个你永远不需要缓存或重新编码的token。
+
+更有趣的是二阶效应：**延迟P99**。工具调用延迟被尾部主导：模型决定emit一个长`arguments`字段的调用，或嵌套对象把总输出token数推高的调用。Schema固定token恰好聚集在那些尾部——长嵌套对象有更多逗号和大括号，而不是更多自由文本内容。穿透它们做推测，对尾部的削减比对中位数的削减更厉害。生死取决于P99的生产智能体系统看到的是真正的收益。
+
+## MCP视角
+
+MCP的`tools/call`原语在架构上是一个schema约束推测的邀请。每个MCP工具在注册时声明其`inputSchema`；运行時在模型开始生成之前就知道schema了。模型不需要逐token内省schema——MCP服务器可以将编译好的admissible-tokens自动机随工具定义一起发送到推理运行時。
+
+这是清晰的关注点分离。MCP服务器拥有schema。推理运行時拥有推测核心。模型可以对两者都保持无知，只是对草稿span emit验证投票。关闭这个循环的MCP协议更新是一个`tools/precompile`扩展（尚未标准化，但形状很明显）：服务器一次发送schema，客户端编译一次，后续对该工具的`tools/call`运行时已经安装了schema作为草稿。
+
+这在MCP-over-agent设置中特别闪亮——同一工具在智能体轨迹中被调用多次。编译好的schema驻留在运行时的工具注册表中，所以每次调用零schema编译成本和全推测解码收益。对于文件编辑智能体、搜索智能体和检索智能体——主导智能体调用计数的工具——这是移动端到端实际耗时的模式。
+
+## 陷阱：过度约束的Schema
+
+这个技术有一个容易忽略的失败模式。一个*太*约束的schema——单合法值的枚举字段、过于狭窄的regex模式、固定格式日期字符串——可能把目标模型逼进一个目标模型实际上不想要的token。推测核心会接受那些token（schema说它们合法，目标模型在它们上面的概率非零），但调用的语义内容由此被schema驱动，而不是模型的判断。
+
+可观察的症状是下游任务成功率下降，尽管单个工具调用格式良好。一个文件编辑工具的`operation`枚举是`[insert, delete]`但没有`replace`，会看到模型成对emit `delete`然后`insert`，而不是更干净的`replace`——schema阻止了正确的调用。推测加速了这种失败，而不是暴露它。
+
+缓解方法是schema纪律，而不是核心纪律：设计schema使得schema固定和schema约束位置只覆盖句法结构，让语义选择不受约束。枚举字段应该枚举真实选项，而不是prose的代理——那会更自然。如果schema设计良好，schema约束推测是纯粹的正向收益；如果schema过度约束，核心会愉快地生成快速、格式良好但错误的调用。
+
+## 为什么这个模式会泛化
+
+两个趋势使schema即草稿模式在工具调用之外变得**举足轻重**。
+
+首先，frontier模型的API表面正在向结构化输出转移作为默认，而不是马后炮。Anthropic的工具使用、OpenAI的response_format和function calls、Gemini的grounded output——所有这些都作为一等类型化输出交付。生产环境LM调用中emit类JSON结构的比例正在上升。任何针对那个比例的延迟原语都会复合。
+
+其次，智能体运行時正在变得更确定性。从"LM自由规划"向"LM在工作流图中填充槽位"的移动（参见：Claude Code中routine作为一等原语、声明式多智能体FSM）意味着模型输出的更多是结构脚手架，更少是自由prose。Schema使脚手架显式化。每个声明式工作流原语都是schema约束推测的免费收益。
+
+结论是，相关的推理优化问题不是"我们能让token生成多快"，而是"我们生成的内容中有多少是足够受约束的，不需要目标模型前向传播"。在结构化输出上答案是60-70%，而且在上升。Schema约束推测是收集那部分节省的核心。
+
+## 参考文献
+
+- Leviathan, Y., Kalman, M., & Matias, Y. "Fast Inference from Transformers via Speculative Decoding." arXiv:2211.17192, 2023 — [arxiv.org/abs/2211.17192](https://arxiv.org/abs/2211.17192)
+- Cai, T. et al. "Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads." arXiv:2401.10774, 2024 — [arxiv.org/abs/2401.10774](https://arxiv.org/abs/2401.10774)
+- Willard, B.T. & Louf, R. "Efficient Guided Generation for Large Language Models." arXiv:2307.09702, 2023 (Outlines库) — [arxiv.org/abs/2307.09702](https://arxiv.org/abs/2307.09702)
+- lm-format-enforcer库 — [github.com/noamgat/lm-format-enforcer](https://github.com/noamgat/lm-format-enforcer)
+- Model Context Protocol规范 — [modelcontextprotocol.io](https://modelcontextprotocol.io)
+- 相关文章：["Code Mode: MCP with Two Tools"](/blog/code-mode-mcp-two-tools)
+- 相关文章：["KV-Cache Compression: Long-Context Economics"](/blog/kv-cache-compression-long-context-economics)

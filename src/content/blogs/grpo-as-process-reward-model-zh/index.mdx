@@ -1,0 +1,92 @@
+---title: "GRPO 本质上一直是一个过程奖励模型"
+description: "GRPO 通常被描述为 PPO 的简化方案。更准确的理解是：它在做隐式的逐步信用分配——这才是它在推理任务上有效的真正原因。"
+publishDate: "2026-04-17"
+updatedDate: "2026-04-17"
+category: research
+tags:
+  - rl
+  - grpo
+  - process-reward-models
+  - post-training
+  - reasoning
+  - credit-assignment
+  - alignment
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+如果你在训练推理模型但 GRPO 训练失败的原因让你摸不着头脑，问题可能出在对 GRPO 底层机制的理解上。
+
+Group Relative Policy Optimization 于 DeepSeek-R1 论文中提出，如今已被开源模型实验室广泛采用来训练推理模型，它几乎在任何地方都用同一套话术描述：PPO 需要价值函数，价值函数成本高，GRPO 用一组采样响应的平均奖励替代价值函数，这让训练更便宜、更稳定。这个描述技术上是正确的，但完全没解释 **GRPO 为什么能在推理任务上 work，而其他 outcome-reward 方法做不到**。
+
+过去六个月的理论论文逐渐澄清了一个更准确的框架，特别是 λ-GRPO（[arxiv.org/abs/2509.21154](https://arxiv.org/abs/2509.21154)）和相关 PURE 分析：**带 outcome reward 的 GRPO 在数学上等价于一种特定形式的过程奖励模型，只是你不需要单独训练 PRM**。Group-relative advantage 在做隐式的逐步信用分配，这正是该方法能处理长 chain-of-thought 轨迹、而使用同样 outcome reward 的 vanilla policy-gradient 方法做不到的原因。理解这个 reframing，会改变你诊断 GRPO 训练失败的方式、调整 group 大小的思路，以及你如何看待 THINKPRM 这类"生成式验证器"方法的定位——它们是互补而非竞争关系。
+
+本文推导这一等价性，展开其推论，并讨论三个训练推理模型的实践后果。
+
+## GRPO 实际在计算什么
+
+先回顾设置。有策略 $\pi_\theta$、prompt $x$ 和 reward 函数 $R$，$R$ 对完成的轨迹 $y = (y_1, \ldots, y_T)$ 打分。经典 REINFORCE 应用梯度 $(R(x,y) - b) \nabla_\theta \log \pi_\theta(y \mid x)$，其中 $b$ 是 baseline。PPO 用价值函数 $V_\phi$ 增强，给出 token 级别的 advantage $A_t = \hat{R}_t - V_\phi(s_t)$。
+
+GRPO 用 group baseline 替代 $V_\phi$。对于每个 prompt $x$，从当前策略采样 $G$ 个 completions $y^{(1)}, \ldots, y^{(G)}$，计算 rewards $R^{(1)}, \ldots, R^{(G)}$。然后第 $i$ 个 completion 所有 token 使用的 advantage 为
+
+$$
+A^{(i)} = \frac{R^{(i)} - \bar{R}}{\sigma_R}
+$$
+
+其中 $\bar{R}$ 和 $\sigma_R$ 是 group 内的均值和标准差。这是一个每条轨迹的标量，相同地应用于该轨迹中的每个 token。
+
+表面上看，这应该比 PPO 的 token 级别 advantage 更差，不是更好。为什么一个应用于 1000 token chain-of-thought 中每个 token 的标量能产生合理的梯度？标准直觉是它不会——梯度信号粗糙，你之所以能存活只是因为相对 baseline 将其维持在低方差状态。
+
+## 为什么粗糙的信号并不粗糙
+
+缺失的部分是：GRPO group 中的样本来自同一个策略、以同一个 prompt 为条件。它们的轨迹共享可能的 token 的公共前缀，在策略有意义的 uncertainty 处发散。当 group 中两个样本在推理步骤 $k$ 处分支，且一条路径导致正确答案、另一条导致错误答案时，group-relative advantage 本身已经是一个逐步 reward 信号——获胜分支 token 上的梯度增加其概率，失败分支 token 上的梯度减少其概率，正好在分支发生的位置。
+
+非正式地说：设 $s_k$ 是 group 某子集共享的前缀直到 token $k$，设 group 分裂为继续到正确答案的子集 $G^+$ 和继续到错误答案的子集 $G^-$。在 token $k+1$ 处，$G^+$ 的成员收到正的标准化 advantage，$G^-$ 的成员收到负的。因为两个子组共享直到 $s_k$ 的相同上下文，只在它们接下来发出的 token 上不同，所以在位置 $k+1$ 处的梯度相对于相同前缀，**增加导致正确答案的 token 的 log-probability，减少导致错误答案的 token 的 log-probability**。Reward $R$ 在结果处分配，但梯度在发散处应用。这就是过程奖励模型所做的：它在推理分歧的步骤分配信用。λ-GRPO 论文形式化了这个论点的一个版本，并提出对损失的重加权，使发散级别的信用分配变得显式。
+
+含义是 GRPO 不是"便宜的 PPO"。它是一个 Monte Carlo 过程奖励估计器，使用策略本身作为验证器，以结果正确性作为通过 group 分支结构传播回的真实信号。
+
+## 等价性何时失效
+
+等价性依赖两个并不总是满足的条件。
+
+**条件 1：group 必须有有意义的内部方差。** 如果 group 中所有 $G$ 个样本达到相同答案（全部正确或全部错误），$\sigma_R = 0$，GRPO 产生零梯度信号。这在当前策略远好于或远差于任务难度时的任务上是主要失败模式。在简单任务上，模型正确解决大多数 rollout，只有罕见 miss 上的 reject 信号传播。在困难任务上，模型失败大多数 rollout，信号只来自罕见成功。在两种机制中，有效训练信号都是贫乏的。
+
+实际补救是将 group 大小与任务难度匹配。对于 **80% 的 pass@1**，8 的 group 给你 6-7 个正确和 1-2 个错误，这是一个可用的分裂。对于 **50% 的 pass@1**，4 个 group 就够。对于 **10% 的 pass@1**，需要 32 或 64 的 group 来获得足够的正样本，这就是为什么在研究级数学问题做 RL 很贵——你在为 group 方差付费。
+
+**条件 2：采样温度必须足够高以在 group 中产生结构性发散。** 如果所有样本都接近贪婪，它们追踪几乎相同的路径，只在生成的尾部发散。隐式过程 reward 信号坍缩到最终几个 token——这是退化情况，此时 GRPO 真的表现得像纯 outcome-reward 方法。GRPO rollout 通常调优的 **0.7-1.0 采样温度**存在于此，不是因为更高温度的答案更好，而是因为更高温度的 group 探索 advantage 计算需要的分支结构。
+
+λ-GRPO 的实践贡献是按每个发散 group 的大小对损失重加权。在标准 GRPO 中，分裂 7-1 的发散与分裂 4-4 的发散权重相同，这使梯度偏向自信但错误的错误，远离真正模糊的决定。λ 修正——对分裂对应侧的每 token advantage 乘以 $1/|G^{\pm}|$——重新平衡了这一点，在困难推理基准上产生更平滑的训练曲线。
+
+## 这对 PRM 辩论意味着什么
+
+AI post-training 社区两年来一直在争论过程奖励模型是否值得标注成本。用于训练 PRM 的手动 step 级别标注很贵——Let's-Verify-Step-by-Step，典型数据集，需要数千小时的专家数学标注——且在其上训练的 PRM 在不同领域泛化不均匀。没有 PRM800K 规模标注预算的实验室的务实回应是放弃 PRM，只用 outcome reward 训练。
+
+GRPO-as-PRM 框架化解了大部分辩论。如果你的 RL 算法已经从 group 结构产生隐式 step 级别信用分配，一个单独的 PRM 在某种程度上是冗余的，主要用于处理 group-relative 信号遗漏的边缘情况——通常是结果远离早期推理步骤的长轨迹，或不同路径不产生不同 reward 的领域（通过笨拙路线得到的正确证明与通过优雅路线得到的正确证明获得相同的结果分数，但优雅路径包含更多可学习的结构）。
+
+这也是为什么新兴的"生成式验证器"方法适合这个图景而非取代 GRPO。THINKPRM（[arxiv.org/abs/2504.16828](https://arxiv.org/abs/2504.16828)）和类似方法训练一个通过产生自己的 chain-of-thought 来验证推理轨迹的 reward 模型，而非判别性地评分它。当你将生成式验证器插入 GRPO 时，你从两个来源获得 step 信号：来自 group 结构的隐式信号，和来自验证器的显式逐 step 评估。它们的错误模式在很大程度上是独立的——group 信号在罕见发散点有噪声，验证器在分布偏移上有噪声。结合它们给出严格比单独任一个更好的梯度，而验证器的成本在许多 rollout 上摊销。
+
+## 三个实践调优后果
+
+如果你接受这个 reframing，三个通常被错误处理的调优决策变得清晰。
+
+**Group 大小。** 相关量不是训练吞吐量（更大的 group = 每次更新更多工作）而是预期同时有正面和负面两侧的发散点数。如果你的目标任务有罕见的正确答案，即使训练时间增加，也要投资更大的 group。每梯度步的样本效率才是重要的东西，它由 **group 多样性**主导。
+
+**Temperature 调度。** 常见病理学是在 temperature 1.0 训练 GRPO，然后在贪婪解码评估。如果贪婪解码产生一个训练中从未见过的轨迹（因为它位于采样分布的低概率模式中），策略被要求从 off-policy 样本泛化。要么在匹配 eval 的更低 temperature 训练，要么接受 eval 指标不反映训练信号。
+
+**Outcome reward 设计。** 因为梯度在发散 token 逐点应用，一个平滑的 reward 函数（部分信用、分级正确性）比硬 0/1 reward 产生更平滑的梯度。对于二进制 reward 和 $G$ 个样本，每 group advantage 坍缩到两个离散值（一个正确，一个错误），通过归一化按 group 的正分数缩放——梯度方向完全由样本在 $G^+$ 还是 $G^-$ 决定，**忽略错误答案离正确多近**。分级 reward 在 $[0, 1]$ 中产生跨整个范围的 advantage，携带更多关于哪些分支更接近正确的信息。公开报告已显示从二进制到分级 reward 的移动产生有意义的最终准确率提升，尽管效果大小因任务和 group 配置而异。
+
+## 这是什么的走向
+
+Outcome-reward RL 和 process-reward RL 的统一在数学中一直是隐含的——问题是隐式版本是否足够强大，不需要显式版本。2026 年的答案似乎是它对于常见情况足够强大，显式验证器是一个乘数而非替代品。下一代 post-training pipeline 将几乎肯定会将 GRPO 风格的基于 group 的 RL 与轻量级生成式验证器耦合，在 joint loop 中用 RL 消费的相同 rollout 训练验证器，RL 从验证器信号改进。
+
+这是一个不同于纯 RLHF 或纯 DPO 的训练形态。它更接近一个自我对弈循环，其中策略生成，隐式验证器（group）标记发散，次级显式验证器在隐式信号最弱的地方纠正。昂贵部分——PRM 标注——已被样本生成方式的结构取代。
+
+## 参考文献
+
+- λ-GRPO: [arxiv.org/abs/2509.21154](https://arxiv.org/abs/2509.21154)
+- THINKPRM: [arxiv.org/abs/2504.16828](https://arxiv.org/abs/2504.16828)
+- PURE min-form credit assignment: [arxiv.org/abs/2410.01444](https://arxiv.org/abs/2410.01444)
+- DeepSeek-R1 (original GRPO for reasoning): [arxiv.org/abs/2501.12948](https://arxiv.org/abs/2501.12948)
+- 相关内部覆盖：[DPO and Its Descendants](/zh/blog/dpo-descendants-post-rlhf-training-stack/), [Post-RLHF Alignment Stack](/zh/blog/post-rlhf-alignment-stack/), [Circuit-Level RLAIF](/zh/blog/circuit-level-rlaif-mechanistic-rewards/), [Emergent Misalignment and Reward Hacking](/zh/blog/emergent-misalignment-reward-hacking/)

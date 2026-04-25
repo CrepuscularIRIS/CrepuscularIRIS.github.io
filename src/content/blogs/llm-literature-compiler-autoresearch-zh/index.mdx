@@ -1,0 +1,388 @@
+---title: "LLM文献编译器：为什么RAG是错误范式"
+description: "Karpathy的autoresearch将LLM视为编译器——将原始论文重组为互联的知识图谱，而非静态检索索引。"
+publishDate: "2026-04-13"
+tags: [LLM, agents, research-tools, knowledge-graph, RAG, Karpathy, agent-engineering]
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+你读文献的方式，可能正在悄悄浪费大量时间。当你想确认"某项技术方案目前有没有被证伪"，RAG给你的答案和五年前一样——它根本不追踪这个。这是RAG范式的根本缺陷，而Karpathy在2026年初提出的`autoresearch`给出了一种完全不同的思路。
+
+目前LLM辅助文献综述的主流范式是检索：把论文embedding后存进向量数据库，查询时返回语义相似的段落，模型再综合成答案。这就是RAG（检索增强生成），而它有一个根本性设计缺陷——一旦你需要做持续性的研究，这个缺陷就会暴露无遗。
+
+RAG是一个**查找系统**。你问它一个问题，它找到最语义相似的内容。它不理解一个研究领域的结构。它无法告诉你，两篇用不同术语写的论文实际上是在从不同角度攻击同一个问题。它无法追踪2024年的某个发现在2025年被矛盾证据推翻的过程。它把每篇文档当作独立工件，每个查询当作一次性的检索——而这恰好与科学知识的真实结构背道而驰。
+
+Karpathy的`autoresearch`代码库在2026年4月初浮出水面，它提出了一个不同的思路：不要把LLM当作检索器，而是当作**编译器**。这个比喻是精确的。编译器不只是找到代码——它解析、分析，并将代码转换为结构化的表示，捕捉依赖关系、类型和调用图。将这个思路应用到文献上，编译器阅读论文后持续重写一个结构化的知识库，捕捉想法之间如何连接、矛盾、如何相互建立。
+
+## 编译器能做的事，检索做不到
+
+核心洞察在于信息结构。论文写出来是自成一体的论证。当你读十篇关于残差连接的论文时，你会在脑海中构建一幅图：论文A提出动态加权，论文B表明它在某些任务上不稳定，论文C提供了一个修复，论文D本质上只是论文A换了应用领域。这幅图存在于你脑中，而RAG没有机制来表示它。
+
+编译器式的系统将这张图显式构建出来。处理每篇论文后，它不是简单地向索引添加一个段落——而是更新该领域的一个结构化表示：
+
+```python
+import anthropic
+from pathlib import Path
+from dataclasses import dataclass, field
+from typing import Optional
+import json
+
+@dataclass
+class KnowledgeNode:
+    """知识图谱中的一个节点。"""
+    paper_id: str
+    title: str
+    core_claim: str          # 一句话：本文实际声称什么？
+    mechanism: str           # 工作原理是什么？
+    evidence_type: str       # "synthetic benchmark" | "real task" | "theoretical" | "empirical"
+    extends: list[str]       # 构建于哪些论文ID之上
+    contradicts: list[str]   # 与哪些论文ID矛盾
+    superseded_by: Optional[str]  # 取代本文的论文ID（如果有）
+    open_questions: list[str]     # 本文遗留的问题
+    
+@dataclass
+class KnowledgeGraph:
+    """已编译的研究领域。"""
+    nodes: dict[str, KnowledgeNode] = field(default_factory=dict)
+    
+    def to_context(self, max_nodes: int = 20) -> str:
+        """将图谱序列化为编译器的结构化上下文。"""
+        recent_nodes = list(self.nodes.values())[-max_nodes:]
+        lines = []
+        for node in recent_nodes:
+            lines.append(f"[{node.paper_id}] {node.title}")
+            lines.append(f"  Claim: {node.core_claim}")
+            lines.append(f"  Extends: {', '.join(node.extends) or 'none'}")
+            lines.append(f"  Contradicts: {', '.join(node.contradicts) or 'none'}")
+            if node.superseded_by:
+                lines.append(f"  Superseded by: {node.superseded_by}")
+        return "\n".join(lines)
+    
+    def save(self, path: Path) -> None:
+        path.write_text(json.dumps(
+            {k: vars(v) for k, v in self.nodes.items()}, 
+            indent=2
+        ))
+    
+    @classmethod
+    def load(cls, path: Path) -> "KnowledgeGraph":
+        if not path.exists():
+            return cls()
+        data = json.loads(path.read_text())
+        kg = cls()
+        for paper_id, node_dict in data.items():
+            kg.nodes[paper_id] = KnowledgeNode(**node_dict)
+        return kg
+```
+
+编译步骤使用LLM来解析每篇论文并更新图谱——不是作为一次性的提取，而是作为增量重组，知道图谱中已经有什么：
+
+```python
+client = anthropic.Anthropic()
+
+def compile_paper(
+    paper_text: str,
+    paper_id: str,
+    kg: KnowledgeGraph,
+) -> KnowledgeNode:
+    """
+    将新论文编译进知识图谱。
+    
+    与RAG的关键区别：LLM拥有*现有图谱*作为上下文。
+    它不是在孤立地从论文中提取——而是在将论文置于
+    当前理解的领域中。
+    """
+    existing_context = kg.to_context()
+    
+    response = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=2048,
+        messages=[{
+            "role": "user",
+            "content": f"""You are compiling a research paper into a structured knowledge graph.
+
+EXISTING KNOWLEDGE GRAPH:
+{existing_context}
+
+NEW PAPER (ID: {paper_id}):
+{paper_text[:15000]}
+
+Extract the following fields. Be specific — one precise sentence per field, not summaries.
+
+1. TITLE: Paper title
+2. CORE_CLAIM: What does this paper claim? (one sentence, with the key result)
+3. MECHANISM: How does it work? (the actual technical mechanism)
+4. EVIDENCE_TYPE: One of: synthetic_benchmark | real_task | theoretical | empirical
+5. EXTENDS: List paper IDs from the graph that this builds on (comma-separated, or "none")
+6. CONTRADICTS: List paper IDs whose claims this paper challenges (or "none")
+7. SUPERSEDED_BY: Paper ID that makes this obsolete, if any you know of (or "none")
+8. OPEN_QUESTIONS: 2-3 questions this paper raises but doesn't answer
+
+Format: FIELD: value, one per line."""
+        }]
+    )
+    
+    # Parse structured output
+    text = response.content[0].text
+    fields = {}
+    for line in text.strip().split("\n"):
+        if ": " in line:
+            key, _, value = line.partition(": ")
+            fields[key.strip().upper()] = value.strip()
+    
+    def parse_list(s: str) -> list[str]:
+        if s.lower() in ("none", "n/a", ""):
+            return []
+        return [x.strip() for x in s.split(",") if x.strip()]
+    
+    return KnowledgeNode(
+        paper_id=paper_id,
+        title=fields.get("TITLE", paper_id),
+        core_claim=fields.get("CORE_CLAIM", ""),
+        mechanism=fields.get("MECHANISM", ""),
+        evidence_type=fields.get("EVIDENCE_TYPE", "empirical"),
+        extends=parse_list(fields.get("EXTENDS", "")),
+        contradicts=parse_list(fields.get("CONTRADICTS", "")),
+        superseded_by=fields.get("SUPERSEDED_BY", None) if fields.get("SUPERSEDED_BY", "none").lower() != "none" else None,
+        open_questions=parse_list(fields.get("OPEN_QUESTIONS", "")),
+    )
+```
+
+## CRON循环：为什么编译器要持续运行
+
+一次性的编译仍然只是一个静态索引。编译器的比喻意味着重新编译：新论文到来时，图谱更新，之前编译的节点可能被标记为已取代或矛盾。
+
+autoresearch模式将其实现为一个后台循环。以下是一个最小化版本：
+
+```python
+import time
+from pathlib import Path
+from datetime import datetime, timedelta
+import subprocess
+
+PAPERS_DIR = Path("~/papers").expanduser()
+GRAPH_PATH = Path("~/research-graph.json").expanduser()
+COMPILED_LOG = Path("~/compiled-papers.txt").expanduser()
+
+def get_uncompiled_papers() -> list[Path]:
+    """找出尚未编译的论文。"""
+    compiled = set()
+    if COMPILED_LOG.exists():
+        compiled = set(COMPILED_LOG.read_text().strip().split("\n"))
+    
+    all_papers = list(PAPERS_DIR.glob("*.pdf")) + list(PAPERS_DIR.glob("*.txt"))
+    return [p for p in all_papers if p.stem not in compiled]
+
+def mark_compiled(paper_id: str) -> None:
+    with COMPILED_LOG.open("a") as f:
+        f.write(f"{paper_id}\n")
+
+def extract_text_from_pdf(pdf_path: Path) -> str:
+    """使用pdftotext从PDF提取文本（或任何可用工具）。"""
+    result = subprocess.run(
+        ["pdftotext", str(pdf_path), "-"],
+        capture_output=True, text=True
+    )
+    return result.stdout[:20000]  # 截断到上下文安全长度
+
+def run_compiler_loop(interval_minutes: int = 60) -> None:
+    """
+    持续编译新出现的论文。
+    设计为后台CRON任务运行：
+    
+    crontab条目：
+        */60 * * * * /path/to/python /path/to/compiler.py >> /var/log/research-compiler.log 2>&1
+    """
+    while True:
+        kg = KnowledgeGraph.load(GRAPH_PATH)
+        new_papers = get_uncompiled_papers()
+        
+        if not new_papers:
+            print(f"[{datetime.now().isoformat()}] No new papers. Sleeping {interval_minutes}m.")
+        else:
+            print(f"[{datetime.now().isoformat()}] Compiling {len(new_papers)} new papers...")
+            
+            for paper_path in new_papers:
+                paper_id = paper_path.stem
+                print(f"  Compiling: {paper_id}")
+                
+                try:
+                    if paper_path.suffix == ".pdf":
+                        text = extract_text_from_pdf(paper_path)
+                    else:
+                        text = paper_path.read_text()[:20000]
+                    
+                    node = compile_paper(text, paper_id, kg)
+                    kg.nodes[paper_id] = node
+                    mark_compiled(paper_id)
+                    print(f"    Done: {node.core_claim[:80]}...")
+                    
+                except Exception as e:
+                    print(f"    Error compiling {paper_id}: {e}")
+            
+            kg.save(GRAPH_PATH)
+            print(f"  Graph updated: {len(kg.nodes)} total nodes.")
+        
+        time.sleep(interval_minutes * 60)
+```
+
+## 你能问的问题，RAG无法回答
+
+一旦你拥有编译后的图谱而不是向量索引，你能提出的查询就根本不同了：
+
+```python
+def query_field_state(question: str, kg: KnowledgeGraph) -> str:
+    """
+    向领域当前状态提出结构化问题。
+    这些查询在向量RAG中是不可能的或不可靠的。
+    """
+    # 构建图谱当前状态的结构化摘要
+    contradictions = []
+    for node in kg.nodes.values():
+        for other_id in node.contradicts:
+            if other_id in kg.nodes:
+                contradictions.append(
+                    f"{node.paper_id} contradicts {other_id}: "
+                    f"{node.core_claim} vs {kg.nodes[other_id].core_claim}"
+                )
+    
+    superseded = [
+        f"{node.paper_id} → superseded by {node.superseded_by}"
+        for node in kg.nodes.values()
+        if node.superseded_by
+    ]
+    
+    open_questions = []
+    for node in kg.nodes.values():
+        for q in node.open_questions:
+            open_questions.append(f"({node.paper_id}) {q}")
+    
+    graph_summary = f"""
+FIELD STATE SUMMARY:
+- {len(kg.nodes)} papers compiled
+
+ACTIVE CONTRADICTIONS:
+{chr(10).join(contradictions[:10]) or 'None identified'}
+
+SUPERSEDED WORK:
+{chr(10).join(superseded[:10]) or 'None'}
+
+OPEN QUESTIONS:
+{chr(10).join(open_questions[:15]) or 'None'}
+"""
+    
+    response = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=1024,
+        messages=[{
+            "role": "user",
+            "content": f"""Given this compiled state of the research field:
+
+{graph_summary}
+
+Answer this question:
+{question}
+
+Base your answer on the graph structure, not the content of individual papers."""
+        }]
+    )
+    
+    return response.content[0].text
+
+# 示例查询：
+# "Which papers make claims that are currently unresolved contradictions?"
+# "What are the most cited open questions across the compiled papers?"
+# "Which early papers have been superseded by later work in the same area?"
+# "What mechanism claims have been tested on synthetic tasks vs. only benchmarks?"
+```
+
+这些问题在向量索引中没有好的答案。"哪些论文互相矛盾"不是一个语义相似性查询——它需要理解声明之间的逻辑关系，而编译器将这些关系显式编码了。
+
+## 重新编译问题
+
+编译器比喻有一个重要的局限性：源代码编译后不会改变，但研究声明会变。2024年声称X的论文可能因为2025年证明X只在条件Y下成立的论文而被重新解释。
+
+这意味着图谱需要对现有节点进行周期性重新编译，而不仅仅是增量添加新节点。autoresearch方法通过将图谱更新作为变异而非追加来处理这一点：
+
+```python
+def recompile_node(
+    node: KnowledgeNode,
+    kg: KnowledgeGraph,
+    new_context_ids: list[str],
+) -> KnowledgeNode:
+    """
+    给定可能影响其状态的新论文，重新编译现有节点条目。
+    定期对超过30天的所有节点运行。
+    """
+    new_papers_context = "\n\n".join(
+        f"[{pid}] {kg.nodes[pid].core_claim}"
+        for pid in new_context_ids
+        if pid in kg.nodes
+    )
+    
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=512,
+        messages=[{
+            "role": "user",
+            "content": f"""Review this compiled paper entry given new developments.
+
+EXISTING ENTRY [{node.paper_id}]:
+Claim: {node.core_claim}
+Extends: {', '.join(node.extends)}
+Contradicts: {', '.join(node.contradicts)}
+Superseded by: {node.superseded_by or 'none'}
+
+RECENT PAPERS (last 30 days):
+{new_papers_context}
+
+Update the entry if any new paper:
+1. Supersedes this claim (state the paper ID)
+2. Contradicts this claim (add to contradicts list)
+3. Supports or extends this claim (add to extends list)
+
+If no update is needed, output: NO_CHANGE
+Otherwise output: SUPERSEDED_BY: <id> | CONTRADICTS_ADD: <id> | EXTENDS_ADD: <id>"""
+        }]
+    )
+    
+    update_text = response.content[0].text.strip()
+    if update_text == "NO_CHANGE":
+        return node
+    
+    # 应用更新（简化解析器）
+    updated = KnowledgeNode(**vars(node))  # 复制
+    for directive in update_text.split("|"):
+        directive = directive.strip()
+        if directive.startswith("SUPERSEDED_BY:"):
+            updated.superseded_by = directive.split(":")[1].strip()
+        elif directive.startswith("CONTRADICTS_ADD:"):
+            pid = directive.split(":")[1].strip()
+            if pid not in updated.contradicts:
+                updated.contradicts.append(pid)
+        elif directive.startswith("EXTENDS_ADD:"):
+            pid = directive.split(":")[1].strip()
+            if pid not in updated.extends:
+                updated.extends.append(pid)
+    
+    return updated
+```
+
+## 为什么这改变了研究实践
+
+实际收益是不对称的。前期成本更高：将200篇论文编译成结构化图谱比索引它们需要更多的LLM调用。但下游查询在结构上变得更丰富。
+
+对于博士研究者来说，相关的使用场景是：
+
+**避免基于已被取代的基础。** 编译器会显示你引用过的论文何时被取代。如果你在2023年的一个结果上构建，图谱会告诉你2025年的论文是否证明了该结果不能推广。向量RAG不追踪这个——当语义相关时它只会检索2023年的论文。
+
+**发现真正悬而未决的问题。** 编译器汇总所有节点的`open_questions`字段，并识别哪些问题在多篇论文中反复出现。这些是学界承认但尚未解决的问题。这是研究议程选择的直接输入。
+
+**理解矛盾结构。** 哪些结果是有争议的，哪些是已经定论的呢？矛盾图谱使这些变得显式。如果一个结果出现在许多论文的`extends`中而`contradicts`中一个都没有，那就是定论。如果一个结果出现在多篇后续论文的`contradicts`中，那就是有争议的。向量相似性无法区分这些情况。
+
+编译器模式比向量索引需要更多工作来设置。它在跨越数年的研究中才有回报——在这类使用场景中，一个领域的结构比检索任何单独文档的能力更重要。
+
+---
+
+*Karpathy的`autoresearch`代码库于2026年4月初被公开提及。上文中的知识图谱结构和重新编译设计是对核心模式的扩展，针对学术研究工作流程进行了调整。所有LLM调用均使用Anthropic Python SDK（`claude-opus-4-6`、`claude-sonnet-4-6`）。`compile_paper`函数是承载核心功能的部分——上文展示的查询模式依赖于它向图谱中编码的内容。*

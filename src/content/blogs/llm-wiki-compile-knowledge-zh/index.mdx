@@ -1,0 +1,166 @@
+---title: "LLM 维基：编译你的语料库，而不是反复检索"
+description: "Karpathy 在 2026 年 4 月提出的 LLM 维基模式，将模型视为将语料库编译成相互链接的 markdown 图谱的编译器。它何时能胜过 RAG。"
+publishDate: "2026-04-19"
+tags: [LLM, RAG, knowledge-management, context-engineering, agent-memory, karpathy, compile-vs-retrieve]
+category: engineering
+language: zh
+draft: true
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+---
+
+过去一年我看过的大多数检索增强生成系统，说白了，都是失忆的。流程就是嵌入文档、存储向量，然后在查询时嵌入问题、提取 top-k 块、粘贴到提示里。每次查询都走这一遍。模型对你的语料库永远学不到任何东西。关于同一章节的两个问题会独立地检索出相同的段落，而第三个本可以从模型上周读过的内容中受益的问题，却没有任何途径获知。每次查询都是新人的第一天。
+
+Andrej Karpathy 在 2026 年 4 月中旬引爆的"LLM 维基" gist，点出了另一种选择。不要在查询时检索语料库，而是在前端将它*编译*成结构化、相互链接的 markdown 文件集，让模型随时间维护。LLM 的角色从"查询时阅读器"转变为"提前作者"：它一次性（或周期性地）阅读源材料，生成规范笔记、交叉链接它们，并保持结果更新。查询时，维基本身就是上下文。模型再也不需要重读原始论文。
+
+这在抽象层面并非新想法——Obsidian 用户手工做了十年，每个有内部 wiki 的研究实验室都在努力保持它的时效性。新的是编译步骤现在足够便宜，可以自动化了。一篇需要人类半天才能提炼成好笔记的 200 页论文，可以在几分钟的模型时间内编译成结构化的 wiki 页面。在这个成本下，计算逻辑变了。有趣的问题不再是"RAG vs. 长上下文"，而是"一次编译 vs. 反复检索"。
+
+## 编译步骤不是摘要
+
+读到"LLM 维基"时的诱惑是听到"对每个文档做摘要"。这是错误的框架，它丢失了关键点。摘要在一种特定的无益方式上是lossy的：它保留了每个来源的中心主张，但丢失了跨文档结构——共享实体、矛盾、引用图谱、术语漂移。恰恰是这些让 wiki 有用的东西，而摘要无法产生，因为它一次只看一个文档。
+
+wiki 编译步骤有四个任务，称其为"摘要"会抹去其中三个：
+
+1. **提取** — 从每个来源中拉出结构化事实：主张、方法、结果、定义、实体、引用。
+2. **规范化** — 合并同一事物的不同名称实体。一篇论文中的"MoE router"和另一篇中的"gating network"是同一概念；维基只有一个页面。
+3. **链接** — 显式写出交叉引用。每次页面提到"Kimi MoBA"时，链接到 MoBA 页面。每次 MoBA 页面引用 block attention 时，链接到 block attention 页面。
+4. **压缩** — 删除不再需要的 prose。源论文在磁盘上，如果你需要回头看的话；维基页面保留对下游推理重要的事实。
+
+做得好，输出不是一堆摘要。它是一个用 markdown 表达的知识图谱，节点内容密集，边显式，名称稳定。维基*就是*编译产物；原始论文是源代码。
+
+## 编译 vs 检索的边界实际在哪里
+
+诚实的问题是：这个模式何时胜过 RAG？答案不是"总是"。它取决于语料库的三个属性。
+
+**语料库变化多频繁？** 如果ground truth每周漂移——内部工单、股票价格、新闻源——编译是个赔本买卖。你会花一半算力重新编译。RAG 在查询时重读源，自然处理高变动。维基模式只有当下层事实足够稳定、以至于将编译成本分摊到多次查询能回本时才合理。教科书、精选研究库、公司设计文档——适合。Slack 存档——不适合。
+
+**查询多大程度涉及跨文档结构？** RAG 在单个相关块包含问题大部分所需内容时很强。在答案需要跨多个文档综合时很弱——当需要比较五篇论文如何处理同一问题时，或者需要追踪引用链中的定义时。维基模式的结构性优势恰恰在这里：已经预计算了跨文档视图的规范页面。
+
+**你有多在意跨会话的*相同*答案？** 生产 RAG 可以做成确定性的，但许多部署容忍了它们没打算容忍的漂移——语料库更新时不同的分块顺序、模型采样温度不同时不同的检索种子、嵌入索引增长时不同的 top-k。维基通过将检索折叠成固定产物来回避这个问题。问同样的问题两次，得到同样的底层事实两次。对于一致性很重要的领域（法律、医疗、支撑其他研究的研究笔记），这种保证比在 RAG 堆栈中维持要严格得多。
+
+如果你的语料库稳定、跨文档结构、你关心一致性，那就编译。否则，检索。
+
+## 一个最小编译循环，勾勒
+
+核心循环足够简单，你可以在百行内描述出来，在小语料库上观察它工作。下面的轮廓略过了几个现实世界的部分（路径、并发、更丰富的规范化），但展示了重要的结构：一个仅追加的*主张存储*和一个从中派生的*维基*，每次重新生成。
+
+```python
+from pathlib import Path
+import json
+
+WIKI = Path("wiki")
+INDEX_PATH = WIKI / "_index.json"       # 规范实体注册表
+CLAIMS_PATH = WIKI / "_claims.jsonl"    # 仅追加，每个主张一行
+
+def compile_source(source_path: Path, model) -> None:
+    """将一个源文档纳入维基。"""
+    WIKI.mkdir(parents=True, exist_ok=True)
+    source_text = source_path.read_text()
+    index = load_json(INDEX_PATH, default={"entities": {}})
+
+    # 步骤 1: 提取结构化事实 + 提议的实体
+    extracted = model.extract(
+        source=source_text,
+        known_entities=list(index["entities"].keys()),
+        schema={
+            "entities":   [{"name": str, "kind": str, "definition": str}],
+            "claims":     [{"subject": str, "predicate": str, "object": str,
+                            "evidence": str}],
+            "citations":  [{"source": str, "to": str}],
+        },
+    )
+
+    # 步骤 2: 针对注册表规范化提议的实体
+    alias_map = {}  # 提议的名称 -> 规范名称
+    for ent in extracted["entities"]:
+        canonical = resolve_alias(ent["name"], index["entities"], model)
+        alias_map[ent["name"]] = canonical
+        if canonical not in index["entities"]:
+            index["entities"][canonical] = {"kind": ent["kind"],
+                                             "definition": ent["definition"],
+                                             "aliases": []}
+        elif ent["name"] != canonical:
+            aliases = index["entities"][canonical]["aliases"]
+            if ent["name"] not in aliases:
+                aliases.append(ent["name"])
+
+    # 步骤 3: 用规范主语/宾语重写主张，然后追加
+    source_id = str(source_path)
+    with CLAIMS_PATH.open("a") as f:
+        for c in extracted["claims"]:
+            c["subject"] = alias_map.get(c["subject"], c["subject"])
+            c["object"]  = alias_map.get(c["object"],  c["object"])
+            c["source"]  = source_id
+            f.write(json.dumps(c) + "\n")
+
+    # 步骤 4: 从完整主张存储重新生成每个页面
+    all_claims = [json.loads(line) for line in CLAIMS_PATH.read_text().splitlines()]
+    for ent_name, meta in index["entities"].items():
+        page = WIKI / f"{slug(ent_name)}.md"
+        related = [c for c in all_claims
+                   if c["subject"] == ent_name or c["object"] == ent_name]
+        page.write_text(render_page(ent_name, meta, related, links=index))
+
+    # 步骤 5: 持久化规范注册表
+    save_json(INDEX_PATH, index)
+
+def resolve_alias(name, registry, model):
+    """询问模型 `name` 是否是已知规范实体的别名。"""
+    candidates = near_matches(name, registry)  # 例如：模糊匹配候选列表
+    if not candidates:
+        return name
+    return model.classify(
+        question=(
+            f"'{name}' 与以下之一是同一概念吗: {candidates}? "
+            f"如果是，返回规范名称。如果否，返回 '{name}'。"
+        ),
+        allowed_answers=candidates + [name],
+    )
+```
+
+这里有五个承重部件，在"对每个文档做摘要"的朴素实现中一个都不出现：
+
+1. **索引是规范名称的单一来源。** 没有它，模型会欣然地在三次连续运行中发明"混合块注意力"、"MoBA"和"块注意力 MoE"作为三个独立的页面。一页三个别名才是重点。
+2. **`resolve_alias` 是一个独立的模型调用，针对现有注册表运行，而不是自由生成。** 原因是模型在有完整源文本 conditioning 时，总是想要引入源的偏好术语。你需要一个第二遍，只 conditioning 注册表，来拒绝那个。
+3. **主张在存储*前*规范化，而不是之后。** 这就是为什么轮廓在追加到主张存储前对每个主张的主语和宾语应用 `alias_map`。否则，"MoBA"页面和"混合块注意力"页面各自只会看到碰巧使用了自己表面形式的主张。
+4. **页面从*完整*主张存储重新生成，而不是只从当前源的提取。** 一个源贡献几个新主张；围绕那些主张的页面是每个触碰过该实体的源累积的视图。
+5. **提取 schema 是严格的。** 自由形式的提取产生自由形式的混乱。类型化的实体、类型化的主张、类型化的引用——模型更难发明一个没有主语和宾语的主张。
+
+在一个中等规模的研究语料库上运行这个循环——比如说，一百篇关于长上下文注意力的论文——产生的东西与 RAG 索引非常不同。你最终会得到大约四十到六十个规范页面（MoBA、MLA、滑动窗口注意力、RingAttention、GQA、MoE routers、KV cache、旋转嵌入等），每个都有紧凑的定义、带引用证据的主张列表，以及密集的链接字段。后续论文廉价地向这个图添加新边；大部分成本在最初的三十篇论文，因为那是规范实体被命名的地方。
+
+## 这个模式遇到的失败模式
+
+失败模式并不微妙，提前知道它们是大部分工作。
+
+**规范化漂移。** 在长运行中，相同概念分裂成两个页面，因为规范器遗漏了别名，然后两个页面开始积累不同的主张。一旦发生，合并它们是 nontrivial 的——你必须重写每个反向链接。缓解：运行一个定期的*合并遍*，按嵌入距离聚类页面，让模型判断是否有配对应该折叠。这很贵，但只需要每周运行一次。
+
+**重写时的链接腐坏。** 当你更新一个页面时——比如一篇新论文与之前的主张矛盾——你需要决定更新是否使反向链接失效。大部分时间不会，但偶尔会（例如：你合并了两个页面，现在每个链接到失败者的页面需要指向成功者）。符号链接层或重定向文件是便宜的修复；每次更新重写每个反向链接是贵的。
+
+**编译步骤吃自己的尾巴。** 诱人的架构是：使用维基本身作为编译新源的上下文。这在早期页面的错误被烘焙进后续页面作为"引用主张"时出问题，现在纠正原始错误需要追踪每个下游页面。建立它。在实践中，分两个阶段编译：第一阶段只使用源文档和实体注册表；第二阶段可以使用维基页面，但只能用于链接，不能用于添加新主张。这种分离很重要。
+
+**虚假引用。** 最危险的失败模式，因为在阅读时无法发现。如果提取步骤产生带有看似合理但错误的引用的主张，维基比没有维基更差——它将虚构洗白成看起来像结构化的知识。缓解：每个主张的 `evidence` 字段必须是源文档的逐字引用，单独的验证器运行检查引用是否实际出现在源文件中。引用很便宜验证；改述的"证据"几乎不可能验证。
+
+## 为什么这不同于"智能体记忆"
+
+读到以上内容，一个合理的问题是：这不就是智能体记忆的另一种风味吗？我在乎的区别是，智能体记忆（如通常部署的）是会话范围的——它跟踪智能体做了什么，它从用户那里学到了什么，它做了什么决定。LLM 维基是*语料库范围的*——它跟踪关于源材料什么是真的，独立于任何特定对话。
+
+这些是不同的工程问题有不同的需求。智能体记忆需要快速、可遗忘、按用户。维基内容需要持久、规范、共享。将两者混为一谈的系统会把用户特定的主张写入规范知识库，这是最快的毒化它的方法。
+
+最干净的架构将两者分开：一个所有智能体读取的语料库范围维基，和一个与它相邻的每用户记忆。智能体在查询时的工作变成"这个问题，哪些维基页面是承重的，我的记忆中有什么相关？"——这比"给定这个问题，从原始语料库检索相关块并综合"要小得多。
+
+## 这对上下文工程的走向暗示了什么
+
+这里以及 2026 年一些相邻提案中可见的更广泛模式是，领域正在从*上下文作为检索文本*和*上下文作为编译产物*转变。检索是"模型不知道你的语料库"和"模型有无限上下文"之间的桥梁。通过编译时知识结构——维基、技能库、程序记忆、类型化知识图谱——你获得长上下文的好处（模型看到相关结构）而不支付长上下文的账单（你在读取 2,000 个 token 的精心策划的维基页面，而不是 200,000 个 token 的原始论文）。
+
+这一切都不替代当精度重要时对原始源的需求。法律智能体仍然需要实际合同，不是摘要。研究智能体仍然需要实际方程，不是改述。但对于庞大的中间地带——"这个语料库集体对 X 了解什么？"——编译产物胜出。关键的是，它胜出得越多，它编译的时间越长。RAG 是平的；维基是复利的。
+
+六个月后的好维基的衡量标准不是任何单个页面有多准确。是链接图谱有多密。如果你的维基边数是节点数的两倍，平均每个主张有两个支持引用，你有一个知识产物，将比构建它的模型更长寿。如果它有松散的页面漂浮而没有链接，你有一个打扮成摘要文件夹的，你不妨使用 RAG。
+
+---
+
+**参考文献**
+
+- Andrej Karpathy — *LLM Wiki* gist（2026 年 4 月原始）。主要来源是 Karpathy 自己的 gist；通过他的 GitHub（[github.com/karpathy](https://github.com/karpathy/)）获取规范版本。
+- Anthropic — *上下文工程*（工程博客索引）。[anthropic.com/engineering](https://www.anthropic.com/engineering)
+- 相关本地帖子：[编译时知识 vs RAG](/en/blog/compile-time-knowledge-vs-rag/)、[编译 vs 检索：智能体记忆](/en/blog/compile-vs-retrieve-agent-memory/)、[超越提示的上下文工程](/en/blog/context-engineering-beyond-prompts/)
+- 模型上下文协议 — 与维基风格知识库自然组合的工具接口。[modelcontextprotocol.io](https://modelcontextprotocol.io/)
