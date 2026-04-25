@@ -1,0 +1,81 @@
+---
+title: "KGMark: Watermarking Knowledge Graphs as a Diffusion Process"
+description: "The first watermarking framework designed specifically for dynamic knowledge graphs, using clustering alignment and redundant embedding to survive both structural edits and temporal evolution."
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper
+tags: [paper, knowledge-graphs, watermarking, diffusion-models, ICML-2025]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=GKZySvM2t9"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+KGMark reframes knowledge graph watermarking as a diffusion process — embedding a fingerprint that spreads across graph structure and persists even when nodes are reordered, edges are added, or the graph evolves over time.
+
+---
+
+## Why This Is Worth Your Time
+
+Watermarking images and text is a solved-ish problem. Watermarking structured knowledge graphs is not.
+
+The core difficulty: a knowledge graph is both **spatial** (topology matters — which nodes connect to which) and **temporal** (the graph changes as new facts are added or removed). Most existing watermarking methods assume static data. Apply them to a KG and a single node insertion can destroy the mark entirely.
+
+KGMark, from Hongrui Peng et al., is the first paper I'm aware of that tackles both dimensions simultaneously. It won't be the last, but it sets the baseline.
+
+---
+
+## Core Method (3-Minute Version)
+
+**What it tries to solve:** Embed a detectable, robust watermark into a knowledge graph such that downstream users — or auditors — can recover the fingerprint even after the graph undergoes spatial perturbations (node/edge reordering, subgraph extraction) or temporal perturbations (graph evolution over time).
+
+**The intuition:** Instead of hiding a watermark in individual nodes or edges, KGMark treats the watermark as something that **diffuses outward** through the graph — like dye spreading through water. This way, no single structural change destroys the mark.
+
+**Two key mechanisms:**
+
+1. **Clustering-based alignment.** The graph is partitioned into clusters (communities of related entities). The watermark is aligned to these clusters so that structural reordering — swapping nodes, rewiring edges — doesn't misalign the embedded pattern. The watermark anchors to cluster-level structure, not individual node IDs.
+
+2. **Redundant embedding across time steps.** The same watermark signal is embedded multiple times across different temporal snapshots of the graph. If a later edit erases the mark in one snapshot, it survives in others. This is the temporal robustness trick.
+
+The diffusion framing is worth pausing on: it implies the watermark is generative rather than destructive — you're not replacing data, you're adding a pattern that overlays naturally on the existing structure.
+
+---
+
+## Key Results
+
+No concrete numerical results were reported in the source materials available for this curation.
+
+The paper's contributions are framed as **framework contributions** — a new problem formulation, two novel techniques (clustering alignment + redundant embedding), and a baseline evaluation setup for dynamic KG watermarking.
+
+---
+
+## Limits and Unanswered Questions
+
+- **No concrete numbers:** Without benchmark numbers, it's hard to assess how much graph modification KGMark can survive. What's the trade-off between watermark strength and graph fidelity?
+
+- **Downstream transparency:** The paper claims the watermark is "transparent" to downstream users, but this deserves scrutiny. If a KG with an embedded watermark is fine-tuned into a new model, does the mark transfer? Does it degrade the model's utility?
+
+- **Adversarial attacks:** The evaluation likely covers random perturbations. A motivated adversary who knows a KG is watermarked — can they reverse-engineer the embedding and strip it?
+
+- **Scalability:** Real-world KGs (Wikidata, Freebase) have millions of nodes. It's unclear how the clustering alignment scales.
+
+---
+
+## Further Reading
+
+If you're interested in the intersection of knowledge graphs and ownership/attribution, these are worth tracing:
+
+- The broader watermarking literature for LLMs and generative models — the core tension (robustness vs. fidelity) shows up here too.
+- Dynamic graph representation learning — KGMark borrows intuition from this space, and the two communities will likely cross-pollinate.
+- Graph provenance tracking — related but under-explored; who "owns" a derived KG?
+
+---
+
+**Original title:** KGMark: A Diffusion Watermark for Knowledge Graphs  
+**Authors:** Hongrui Peng et al. | **Venue:** ICML 2025 (OpenReview)  
+**Curation date:** 2026-04-25  
+**Reading difficulty:** ⭐⭐⭐☆☆  
+**Recommendation:** 🔥🔥🔥☆☆
