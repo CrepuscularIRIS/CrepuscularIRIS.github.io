@@ -1,0 +1,207 @@
+---
+title: "AI Scientist v2：当智能体开始写论文"
+description: "一篇机器生成的论文通过了 ICLR 2026 的同行评审。它揭示了一个更值得追问的问题：哪些研究环节可以被自动化，哪些不行。"
+publishDate: "2026-04-12"
+tags: [AI-agents, research-automation, scientific-method, LLM, evaluation, academia]
+category: research
+language: zh
+draft: false
+hIE: kouka
+hero_image: /assets/hIE/kouka/188823-beatless-kouka-mecha-mecha_musume-redjuice-thighhighs-wallpaper.jpg
+---
+
+一篇投稿至 ICLR 2026 研讨会的论文，在没有人类署名的情况下通过了同行评审。产出它的是 AI Scientist v2——由 Sakana AI 开发的这个系统，自主运行了完整的科研流水线：文献检索、假设生成、实验实现、结果分析、手稿撰写。评审者像对待任何投稿一样对这篇论文进行了评估。
+
+这一研讨会接收是一个里程碑，但"AI 取代研究者"的叙事框架，恰恰错过了它真正值得关注的地方。AI Scientist v2 不是科研判断力的替代品——它是一个诊断工具，揭示了科研流程中哪些环节已被自动化（执行层），哪些变得更加透明（假设—实验—结果循环），以及哪些环节从根本上抗拒自动化（知道哪些问题值得问）。
+
+## AI Scientist v2 实际上在做什么
+
+系统架构是一套带有工具调用能力的 LLM Agent 流水线，围绕一个迭代精炼循环组织。v1 设计（2024 年发表）使用固定流水线：生成想法 → 写代码 → 运行实验 → 写论文。v2 的关键突破是引入**树搜索**（tree search）探索假设空间：系统不再押注单一想法并执行它，而是探索一棵可能的研究方向树，通过小规模实验评估每个分支，并将算力分配给最有潜力的分支。
+
+```
+想法生成 (LLM)
+    ↓
+可行性过滤 (LLM + 工具)     ← 在成本升高前剪枝
+    ↓
+实现 (代码编写 Agent)
+    ↓
+实验运行器 (沙箱子进程)
+    ↓
+结果分析器 (LLM + 统计检验)  ← 解读数值结果
+    ↓
+分支评估器 (新颖性 + 显著性评分)
+    ↓
+树搜索：扩展有潜力的分支，剪掉弱势分支
+    ↓
+论文撰写 (结构化输出 Agent)
+    ↓
+自我评审 (LLM 扮演评审人)
+    ↓
+修订循环
+```
+
+v2 最重要的工程贡献是**分支评估器**：一个组合评分函数，结合估计新颖性（嵌入空间中与检索到的相似论文的距离）和估计显著性（相对于基线方差的实验效应量）。该分数决定在树搜索中扩展哪些分支，防止系统将全部算力押注在一条可能走不通的方向上。
+
+一个最小化的分支评估逻辑：
+
+```python
+import numpy as np
+from dataclasses import dataclass
+
+@dataclass
+class BranchEvaluation:
+    novelty_score: float      # 0-1: 1 = 最大新颖
+    significance_score: float  # 0-1: 1 = 效应明显超过噪声
+    expected_value: float      # 用于树扩展决策的组合分数
+
+def evaluate_branch(
+    hypothesis: str,
+    result: dict,
+    paper_embeddings: np.ndarray,  # N 篇相似论文的嵌入
+    hypothesis_embedding: np.ndarray,
+    baseline_variance: float,
+) -> BranchEvaluation:
+    """
+    评估研究分支以决定树搜索扩展。
+    
+    novelty_score: 假设距离现有工作的程度
+                   (嵌入空间中的余弦距离)
+    significance_score: 实验结果超出噪声的清晰程度
+                        (以基线方差归一化的效应量)
+    """
+    # 新颖性：论文嵌入空间中与最近邻的余弦距离
+    # 归一化到单位球，使点积等于 [-1, 1] 范围内的余弦相似度
+    paper_norms = np.linalg.norm(paper_embeddings, axis=1, keepdims=True)
+    hyp_norm = np.linalg.norm(hypothesis_embedding)
+    paper_unit = paper_embeddings / (paper_norms + 1e-8)
+    hyp_unit = hypothesis_embedding / (hyp_norm + 1e-8)
+    similarities = paper_unit @ hyp_unit          # [-1, 1] 余弦相似度
+    max_similarity = float(similarities.max())
+    # 将余弦相似度 [−1, 1] 映射到新颖性 [0, 1]: similarity=1 ⟹ novelty=0
+    novelty_score = (1.0 - max_similarity) / 2.0
+    
+    # 显著性：Cohen's d — 以条件内噪声归一化的效应量
+    effect_magnitude = abs(result["delta_metric"])
+    effect_noise = result["std_over_seeds"]        # 跨种子的指标标准差
+    cohens_d = effect_magnitude / (effect_noise + 1e-8)
+    significance_score = min(1.0, cohens_d / 2.0)  # d=2 → score=1 (大效应)
+    
+    # 新颖性和显著性等权重 (可调)
+    alpha = 0.5
+    expected_value = alpha * novelty_score + (1 - alpha) * significance_score
+    
+    return BranchEvaluation(
+        novelty_score=novelty_score,
+        significance_score=significance_score,
+        expected_value=expected_value,
+    )
+```
+
+分支评估器是系统科学判断力编码最集中的地方，也是系统局限性最显眼的地方。新颖性评分衡量的是与检索到的论文的距离，但检索并不完美：一个真正新颖的假设可能因为嵌入空间未能捕捉正确的相似性而得分偏低。显著性评分衡量的是效应量，但效应量不等于科学价值：在一个没有意义的指标上有大效应，不是真正的贡献。
+
+## 被接收的研讨会论文：评审者看到了什么
+
+ICLR 2026 研讨会的接收，暴露了在当前条件下同行评审的一次校准失败。评审者按照标准准则给论文打分：新颖性、严谨性、清晰度、显著性。他们不知道这是机器生成的。他们的评分将这篇论文放在了已接收论文的下四分位——该研讨会的接收门槛相对较低——但它确实过了线。
+
+论文的内容是神经架构搜索中的一个狭窄的实证结果：在基准任务上的小幅改进，附带支持机制声明的消融实验。写作连贯，实验方法正确，与基线的比较公正。
+
+缺失的部分：没有任何迹象说明为什么这个实验值得运行。论文的"动机"部分读起来像是对先前工作的合格综述，但没有真正的驱动性问题。贡献在狭义上是真实的——数字支持了声明——但没有任何论据说明为什么这个领域应该关心*这个*问题、*这个*领域、*这个*时间点。
+
+这不是 AI Scientist 实现的缺陷。它反映的是系统所优化的目标。分支评估器评的是新颖性（与现有论文的距离）和显著性（测量效应的大小）。它不评**重要性**，因为重要性无法仅从实验结果计算出来。重要性需要理解这个领域在哪些问题上卡住了，哪些结果会改变从业者的工作方式，哪些方向已经被穷尽了而不仅仅是未被充分探索。
+
+## 自动化层及它揭示的真相
+
+AI Scientist v2 的存在澄清了一个问题：学术研究中哪些部分从来就是机械的，哪些部分一直在做真正的智力工作。
+
+**已被 v2 自动化的：**
+
+- 文献检索与摘要
+- 从先前工作空白中重构假设
+- 实验实现（Python 代码、训练循环、评估）
+- 统计分析与结果格式化
+- 结构化学术文体生成
+- 回复评审意见（v2 包含修订循环）
+
+这些能力并非微不足道。博士生在上面每项都花费了大量时间。这些可以被自动化的事实说明，它们在相当程度上是在执行一个习得的模板，而非在运用判断力。
+
+**尚未被自动化的（原因揭示）：**
+
+- 选择哪些问题值得攻克
+- 判断一条研究线是已被穷尽，还是只是还没找到正确方向
+- 认识到一个令人惊讶的结果否定了你的先验信念，而非证实了它
+- 判定一个现有基准设计不佳，解决它并不构成真正的进展
+- 足够深入地理解社区规范，知道哪些结果是从业者会真正采纳的
+
+这些需要一种或许可以称为**科学品味**的东西——一个经过校准的、关于值得问的问题空间的先验，它来自对一个研究社区实时辩论、失败和开放问题的深度沉浸。这种东西是通过阅读、讨论、失败的实验、在前沿花费的时间建立的——而不是通过在论文上训练建立的。
+
+## 对研究实践的影响
+
+无论全自动论文是否会成为常态，AI Scientist v2 以三种具体方式改变了研究实践。
+
+**自动化的文献综述将成为标准。** 系统的文献摄入——持续监控 arXiv、分类、摘要、交叉链接——即使没有下游的假设生成，也立即可以作为组件使用。构建流水线来维护自己细分领域的结构化、自动更新知识库的研究者，将比依赖人工阅读的人拥有显著的信息优势。
+
+```python
+# 最小化文献监控流水线
+import anthropic
+from pathlib import Path
+
+client = anthropic.Anthropic()
+
+def ingest_paper_into_knowledge_base(
+    paper_text: str,
+    paper_id: str,
+    kb_path: Path,
+) -> None:
+    """
+    读取一篇新论文并更新结构化知识库。
+    提取：核心贡献、方法论、实验设置、
+          声称的局限性、与现有条目的关系。
+    """
+    existing_entries = "\n\n".join(
+        f.read_text() for f in kb_path.glob("*.md")
+    )
+    
+    response = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=2048,
+        messages=[{
+            "role": "user",
+            "content": f"""用这篇新论文更新研究知识库。
+
+现有 KB 条目（摘要）:
+{existing_entries[:8000]}  # 为上下文而截断
+
+新论文 (ID: {paper_id}):
+{paper_text[:12000]}
+
+输出一个结构化的 Markdown 条目，覆盖：
+1. 核心贡献（1-2 句话，具体且精确）
+2. 它与现有 KB 条目的关系（它扩展了哪篇、矛盾了哪篇、取代了哪篇？）
+3. 实验设置（数据集、基线、指标）
+4. 关键数字（直接保留结果表，不做摘要）
+5. 声称的局限性
+6. 它开辟了什么（哪些之前不可行的实验现在变得可行了？）
+"""
+        }]
+    )
+    
+    (kb_path / f"{paper_id}.md").write_text(response.content[0].text)
+```
+
+**假设生成作为思维辅助工具。** AI Scientist 风格系统短期内最有价值的应用不是自主写论文——而是辅助假设生成。在某个细分领域深耕多年的研究者拥有系统所缺乏的深层先验。但系统可以枚举出研究者先验可能过早过滤掉的各种假设。将系统的生成步骤运行在你当前的研究问题上，然后用你的领域知识评估它的输出，能捕获那些专家直觉本来会排除的真正新颖的方向。
+
+**评估设计问题变得至关重要。** 如果假设生成和实验执行都被自动化了，研究的约束瓶颈就变成了评估设计——知道你的实验设置是否真的在检验假设，以及你测量的指标是否是你真正关心的东西的正确代理。这恰恰是 AI Scientist v2 无法在内部培养的技能。它在评估框架内优化；它无法评估评估框架本身。
+
+## 研讨会接收不是正确的基准
+
+"机器生成的论文通过了同行评审"这一叙事，把同行评审当成了一个真实质量信号。它不是。同行评审是一个过滤器，它校准的前提是人类研究带宽限制了投稿供给。当投稿供给不再受人类带宽约束时，这种校准就失效了。
+
+AI 生成研究的正确基准不是"评审者接受了吗？"而是"它的结果改变了从业者的工作方式吗？"这个门槛要高得多。大多数人类署名的研讨会论文也达不到这个标准——但人类研究者面临的带宽约束强制了某种分类。自主系统没有这种约束：它们可以每 GPU 小时生成一篇研讨会论文，然后同时投往所有会议。
+
+真正重要的：这些论文中的结果是否包含关于世界的真正新信息，而不是格式良好的、狭隘基准上的实证观察。这个问题有答案，但答案需要与研究社区互动，需要纵向跟踪哪些结果被后续工作建立在之上，需要任何当前自动化系统都无法运用的领域判断力。
+
+AI Scientist v2 是一个真实的技术成就。它也是一个诊断工具：它精确地标定出了学术发表中哪些部分一直按模板进行，哪些部分实际上需要科学判断。这个边界比大多数研究者在读到研讨会论文之前所预测的要窄得多。
+
+---
+
+*参考文献：Sakana AI，"The AI Scientist v2，" 2025（v1：Lu et al., 2024, arXiv:2408.06292）。ICLR 研讨会接收情况见 2026 年 4 月的报道；树搜索和分支评估的技术细节系根据 v1 架构和撰写时已公开的 v2 描述推断。`ingest_paper_into_knowledge_base` 示例使用了 Anthropic Python SDK（claude-opus-4-6）。*

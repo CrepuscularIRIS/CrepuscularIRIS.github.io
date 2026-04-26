@@ -1,0 +1,304 @@
+---
+title: "EEG 基础模型：迈向生成式脑解码"
+description: "基于 Transformer 的基础模型在大规模 EEG 语料库上预训练，正在取代依赖大量校准的传统分类器，为非侵入式 BCI 带来质变。"
+publishDate: "2026-04-11"
+updatedDate: "2026-04-11"
+tags: [BCI, EEG, Neural-Decoding, Neuroscience, Deep-Learning, Foundation-Models]
+category: research
+draft: false
+language: zh
+hIE: kouka
+hero_image: /assets/hIE/kouka/444647-animal_ears-beatless-cleavage-kouka-nyaa__28nnekoron_29-thighhighs.jpg
+---
+
+过去十年里的大部分时间，非侵入式脑机接口始终困在一个恼人的约束中：每个用户、每次使用，都需要漫长的校准。P300 拼写器可能要花 30 分钟训练，系统才能可靠地解码新用户的脑信号。运动想象分类器在不同session之间会漂移。侵入式植入物能做到的事和头皮 EEG 头戴设备能做到的事之间，差距依然巨大——根本原因并非头皮 EEG 缺乏信息，而是经典机器学习方法无法跨个体泛化。
+
+标准 EEG 解码器的架构设计就反映了这一困境。用某个被试的数据训练的 EEGNet 或 ShallowConvNet，直接迁移到另一个被试上就行不通了。运动想象时 alpha 振荡的空间模式在不同个体之间、电极配置之间、甚至不同日期之间差异太大。历史上解决这个问题的办法是：从目标用户那里收集更多数据，而不是提升跨被试泛化能力。
+
+基础模型正在改变这个局面。让 BERT 在 NLP 任务之间迁移的同一套扩展思路——在大规模、多样化数据上预训练，再用少量标注数据微调——正在被移植到 EEG 上。结果表明，非侵入式 BCI 正在经历一个真正的拐点。
+
+## EEG 为什么困难
+
+在讨论基础模型之前，有必要精确地说明：EEG 解码与其他序列建模任务的本质区别在哪里。
+
+**信噪比**：头皮 EEG 采集到的电势已经穿透了颅骨和头皮，高频内容被衰减，来自大片皮层区域的信号混在一起。64 通道 EEG 在 1 秒时间窗内，每个通道的有用信号带宽可能只有 50–200 Hz，还混杂着大量肌电伪迹、眼电活动和工频噪声。
+
+**跨个体变异性**：功能脑区的空间布局因人而异。记录某个被试运动想象信号效果最好的那个电极，放到另一个被试身上可能正好落在不同的功能区。这意味着对被试 A 有效的特征提取器，往往对被试 B 失效。
+
+**非平稳性**：EEG 特性在同一 session 内会变化（疲劳、注意力波动），跨 session 也会变化（电极位置漂移、认知状态改变）。用上午的数据训练的模型，到下午可能已经显著退化。
+
+**标注稀缺性**：采集带真实标签的 EEG 数据成本高、规模受限。每个被试每次实验最多只能采集几百个试次，否则参与者的疲劳会使数据质量急剧下降。这为监督学习方法造成了根本性的瓶颈。
+
+基础模型最直接地解决了最后一个问题。在大规模无标注 EEG 语料库上预训练，使模型能够学习脑信号的一般化表征，而无需每个被试的标注数据。
+
+## 基础模型的方法
+
+**BIOT**（Cross-Data Biosignal Foundation Model，2023）是生物信号领域基础模型的一次早期尝试。它将生物信号输入处理为 token 序列——将时间序列窗口切分为 patch，类似于 Vision Transformer 处理图像 patch 的方式——然后在多样化的 EEG、ECG、PPG 数据集上用掩码重建目标进行预训练。
+
+核心洞见在于：将生物信号的时间 patch 视为类似 word token 的模态，从海量无标注数据中学习"这段脑信号片段的含义"的一般化表征，然后在特定下游任务上用少量标注样本微调。
+
+**LaBraM**（Large Brain Model，Jiang et al.，2024）采用类似思路，但专注于 EEG。它在超过 2,500 名被试和 9,000 万个 EEG 片段上预训练，学习预测被遮挡的脑活动 patch。预训练后，在异常检测、事件类型分类和情绪识别任务上取得了具有竞争力甚至领先的结果，所需标注样本量远少于任务专属模型。
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from einops import rearrange
+
+class EEGPatchEmbedding(nn.Module):
+    """
+    Converts multichannel EEG time series into a sequence of patch embeddings.
+    
+    Input: (batch, channels, time) — raw EEG signals
+    Output: (batch, n_patches, embed_dim) — token sequence for transformer
+    """
+    def __init__(
+        self,
+        n_channels: int = 64,
+        patch_len: int = 64,      # Time steps per patch (at 256 Hz → 250ms)
+        embed_dim: int = 768,
+        max_freq: int = 128,      # For frequency-domain patch features
+    ):
+        super().__init__()
+        self.patch_len = patch_len
+        
+        # Channel-specific temporal convolutions (spatial filter per channel)
+        self.channel_conv = nn.Conv2d(
+            in_channels=1,
+            out_channels=embed_dim // 4,
+            kernel_size=(1, patch_len),
+            stride=(1, patch_len // 2),
+        )
+        
+        # Across-channel spatial mixing
+        self.spatial_mix = nn.Sequential(
+            nn.Linear(n_channels * (embed_dim // 4), embed_dim),
+            nn.LayerNorm(embed_dim),
+            nn.GELU(),
+        )
+        
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: (B, C, T)
+        B, C, T = x.shape
+        
+        # Apply temporal convolutions per channel
+        x_4d = x.unsqueeze(1)  # (B, 1, C, T)
+        feats = self.channel_conv(x_4d)  # (B, embed_dim//4, C, n_patches)
+        
+        n_patches = feats.shape[-1]
+        
+        # Reshape: for each patch, collect all channel features
+        feats = rearrange(feats, 'b d c p -> b p (c d)')
+        
+        # Spatially mix across channels
+        patches = self.spatial_mix(feats)  # (B, n_patches, embed_dim)
+        return patches
+
+
+class EEGFoundationModel(nn.Module):
+    """
+    Simplified EEG foundation model with masked autoencoding pre-training.
+    Based on the architecture pattern from LaBraM/BIOT.
+    """
+    def __init__(
+        self,
+        n_channels: int = 64,
+        patch_len: int = 64,
+        embed_dim: int = 768,
+        n_heads: int = 12,
+        n_layers: int = 8,
+        mask_ratio: float = 0.75,
+    ):
+        super().__init__()
+        self.mask_ratio = mask_ratio
+        self.embed_dim = embed_dim
+        
+        self.patch_embed = EEGPatchEmbedding(n_channels, patch_len, embed_dim)
+        
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=embed_dim,
+            nhead=n_heads,
+            dim_feedforward=embed_dim * 4,
+            dropout=0.1,
+            activation='gelu',
+            batch_first=True,
+        )
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
+        
+        # Reconstruction head for masked autoencoding
+        self.decoder = nn.Linear(embed_dim, patch_len * n_channels)
+        
+        # Learnable [CLS] token for downstream classification
+        self.cls_token = nn.Parameter(torch.randn(1, 1, embed_dim))
+        
+    def random_masking(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Apply random masking to patch tokens for MAE pre-training."""
+        B, N, D = x.shape
+        n_keep = int(N * (1 - self.mask_ratio))
+        
+        noise = torch.rand(B, N, device=x.device)
+        ids_shuffle = torch.argsort(noise, dim=1)
+        ids_restore = torch.argsort(ids_shuffle, dim=1)
+        
+        # Keep only unmasked patches
+        ids_keep = ids_shuffle[:, :n_keep]
+        x_masked = torch.gather(x, 1, ids_keep.unsqueeze(-1).expand(-1, -1, D))
+        
+        # Create mask: 1 = masked, 0 = visible
+        mask = torch.ones(B, N, device=x.device)
+        mask[:, :n_keep] = 0
+        mask = torch.gather(mask, 1, ids_restore)
+        
+        return x_masked, mask, ids_restore
+    
+    def forward_pretrain(self, x: torch.Tensor) -> dict:
+        """Pre-training forward pass with masked autoencoding."""
+        patches = self.patch_embed(x)         # (B, N, D)
+        patches_masked, mask, ids_restore = self.random_masking(patches)
+        
+        encoded = self.encoder(patches_masked) # (B, n_keep, D)
+        
+        # Simplified decoder: reconstruct all patches
+        # (In practice, add mask tokens back before decoding)
+        reconstructed = self.decoder(encoded)  # (B, n_keep, patch_len * C)
+        
+        return {"reconstructed": reconstructed, "mask": mask}
+    
+    def forward_finetune(self, x: torch.Tensor) -> torch.Tensor:
+        """Fine-tuning forward pass using [CLS] token for classification."""
+        patches = self.patch_embed(x)
+        
+        # Prepend [CLS] token
+        cls = self.cls_token.expand(x.shape[0], -1, -1)
+        tokens = torch.cat([cls, patches], dim=1)
+        
+        encoded = self.encoder(tokens)
+        cls_output = encoded[:, 0, :]  # Take [CLS] token
+        return cls_output  # Feed to task-specific head
+
+
+# Usage: fine-tune on motor imagery with few labeled examples
+def create_motor_imagery_classifier(n_classes: int = 4):
+    backbone = EEGFoundationModel(n_channels=64, embed_dim=512, n_layers=6)
+    
+    # Task-specific head
+    classifier = nn.Sequential(
+        nn.LayerNorm(512),
+        nn.Linear(512, 128),
+        nn.GELU(),
+        nn.Dropout(0.3),
+        nn.Linear(128, n_classes)
+    )
+    
+    return nn.Sequential(backbone, classifier)
+```
+
+## 从分类到生成式解码
+
+最激动人心的前沿不是分类，而是生成。生成式模型不再将 EEG 时间窗映射到一个离散标签（左手、右手、休息），而是尝试重建大脑正在处理的连续刺激。
+
+**脑到图像解码**在 MindEye（Scotti et al.，2023）及相关工作中看到了飞跃式进展，主要使用的是 fMRI。方法思路是：训练一个对比模型，将 fMRI 表征与 CLIP 图像 embedding 对齐，然后用对齐后的表征来检索或生成被试感知到的图像。MindEye2 将其扩展到跨被试泛化，效果提升显著。
+
+自然的问题是：类似方法能否用于 EEG？EEG 空间分辨率更低，但获取成本也低得多（不需要 MRI 扫描仪）。2024–2025 年多个团队的工作表明，通过对比预训练，EEG 到图像生成是可行的：
+
+```python
+import torch
+import torch.nn as nn
+
+class EEGCLIPAlignment(nn.Module):
+    """
+    Aligns EEG representations with a pre-trained vision encoder (CLIStyle).
+    Enables retrieval and generation from EEG without per-class labels.
+    """
+    def __init__(self, eeg_encoder: nn.Module, clip_dim: int = 512):
+        super().__init__()
+        self.eeg_encoder = eeg_encoder
+        
+        # Project EEG features to CLIP embedding space
+        self.eeg_proj = nn.Sequential(
+            nn.Linear(512, 512),  # Match eeg_encoder output dim
+            nn.GELU(),
+            nn.Linear(512, clip_dim),
+            nn.LayerNorm(clip_dim),
+        )
+        
+        # Temperature parameter for contrastive loss
+        self.temperature = nn.Parameter(torch.tensor(0.07))
+        
+    def forward(
+        self,
+        eeg: torch.Tensor,          # (B, C, T)
+        clip_features: torch.Tensor  # (B, clip_dim) — from frozen CLIP image encoder
+    ) -> dict:
+        # Get EEG representation via foundation model
+        eeg_repr = self.eeg_encoder.forward_finetune(eeg)  # (B, 512)
+        eeg_emb = self.eeg_proj(eeg_repr)  # (B, clip_dim)
+        
+        # Normalize embeddings
+        eeg_emb = F.normalize(eeg_emb, dim=-1)
+        clip_features = F.normalize(clip_features, dim=-1)
+        
+        # Contrastive loss (InfoNCE)
+        logits = torch.matmul(eeg_emb, clip_features.T) / self.temperature.exp()
+        
+        B = eeg.shape[0]
+        labels = torch.arange(B, device=eeg.device)
+        
+        loss = (
+            F.cross_entropy(logits, labels) +
+            F.cross_entropy(logits.T, labels)
+        ) / 2
+        
+        return {"loss": loss, "eeg_embeddings": eeg_emb}
+    
+    def decode_to_image(self, eeg: torch.Tensor, image_gallery: torch.Tensor) -> torch.Tensor:
+        """
+        Retrieve the closest image from a gallery given an EEG signal.
+        
+        Args:
+            eeg: (1, C, T) — single EEG epoch
+            image_gallery: (N, clip_dim) — CLIP embeddings of candidate images
+        Returns:
+            Index of most likely perceived image
+        """
+        eeg_repr = self.eeg_encoder.forward_finetune(eeg)
+        eeg_emb = F.normalize(self.eeg_proj(eeg_repr), dim=-1)
+        image_gallery = F.normalize(image_gallery, dim=-1)
+        
+        similarities = torch.matmul(eeg_emb, image_gallery.T)  # (1, N)
+        return similarities.argmax(dim=-1)
+```
+
+从 EEG 解码语音比图像检索更难，因为它需要连续输出而不是从候选库中检索。2023 年 Meta 的工作（Défossez et al.，2023；Benchetrit et al.，2023）表明，使用卷积网络和对比学习，可以从 MEG 中以非平凡的准确率解码语音包络和音素序列。扩展到头皮 EEG 仍是活跃的研究领域。
+
+## 零校准的承诺
+
+EEG 基础模型在实践上最重要的意义不是它们的峰值性能，而是校准需求的降低。经典运动想象解码器需要每个类别 30–100 个试次才能达到新用户的可接受准确率。而基础模型仅用每个类别 5–20 个试次微调，就能匹配甚至超越从零训练的全监督模型的性能。
+
+这在临床部署中至关重要。ALS 患者使用 EEG 通讯设备时，可能存在严重的运动控制障碍并迅速疲劳。一个需要 40 分钟校准才能拼出一个字的系统毫无用处；一个 5 分钟内就能适应的系统才是真正有用的。
+
+零校准的极限——模型在没有任何适应数据的情况下直接泛化到全新用户——在大多数复杂任务上尚未实现，但轨迹清晰。LaBraM 报告了在情绪识别和 EEG 异常检测等任务上，即使不进行任何微调，也有意义地向留出被试迁移的效果。
+
+## 仍然困难的地方
+
+基础模型并没有解决 EEG 解码的所有问题。以下根本性挑战依然存在：
+
+**语义特异性的局限**：用重建目标预训练的基础模型学会了表达脑信号的统计结构，但没有学到信号模式到语义内容的锚定映射。区分两个内部语音音素需要真实标注——基础模型给了你学习这种映射的好特征，但你仍然需要一些标注数据。
+
+**空间分辨率的物理上限**：再好的算法也克服不了 EEG 空间分辨率的物理限制。侵入式记录可以获取的亚厘米皮层柱信息，在头皮 EEG 中天然就是缺失的。基础模型能提取更多信息，但无法凭空造出不存在的信息。
+
+**个体解剖差异**：即使有基础模型，有非典型解剖结构的个体——中风存活者、先天异常者、术后患者——跨被试泛化仍然更困难，而这个群体往往恰恰是临床意义上最重要的目标人群。
+
+**内部言语问题**：从 EEG 解码想象（未说出口）的言语仍然极其困难。神经关联比外显言语更弱，个体间变异性更大，即使在侵入式记录中表征也很不清晰。基础模型会有帮助，但这个问题很可能不仅需要更好的算法，还需要更好的信号采集手段。
+
+## 走向何方
+
+三种趋势的交汇——大规模预训练模型、自监督学习、不断增长的多中心 EEG 数据集——正在为非侵入式 BCI 在未来三年取得的进步创造条件，其幅度可能超过过去十年之和。
+
+最有前景的短期应用是那些对残余误差有一定容忍度、且即使不完美的解码也比替代方案好得多的场景：严重瘫痪患者的通讯设备、癫痫和睡眠障碍的被动监测、安全关键环境中的认知负荷监测。
+
+更长期的轨迹是：如果基础模型的扩展规律像迁移到 NLP 和视觉那样迁移到 EEG，将会是质的不同：一个从极少量标注数据中学习脑信号含义、随着与你相处的经验持续适应、无需逐任务校准就能泛化到多种任务上系统。这不是科幻小说——这是 LaBraM 和 BIOT 所代表趋势的逻辑终点。
+
+---
+
+*参考文献：BIOT: Cross-Data Biosignal Foundation Model（Yang et al., NeurIPS 2023）；Large Brain Model for Learning Generic Representations with Tremendous EEG Data in BCI（Jiang et al., ICLR 2024）；MindEye2: Shared-Subject Models Enable fMRI-To-Image With 1 Hour of Data（Scotti et al., 2024）；Decoding speech from non-invasive brain recordings（Défossez et al., 2023）；Brain LLM: Representing Brain Signals via Large Language Models（arXiv 2023）*

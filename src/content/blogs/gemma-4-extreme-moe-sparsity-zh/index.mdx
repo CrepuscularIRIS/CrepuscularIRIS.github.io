@@ -1,0 +1,235 @@
+---
+title: "极端 MoE 稀疏性：少数激活专家的逻辑"
+description: "为什么生产级 MoE 模型每个 Token 只激活极少数专家——以及解释极端稀疏性何时值得的架构数学。"
+publishDate: "2026-04-12"
+tags: [MoE, architecture, efficiency, Google-DeepMind, inference, sparsity, Gemma]
+category: technical
+language: zh
+draft: false
+hIE: methode
+hero_image: /assets/hIE/methode/445955-beatless-bodysuit-dress-katou_hiromasa-lacia-methode-snowdrop.jpg
+---
+
+2026年4月初，Google DeepMind 发布 Gemma 4：一个 260 亿参数的混合专家模型，拥有 128 个专业专家——但推理成本却接近一个 4B 以下 dense 模型。关键在于极端的激活稀疏性：每个 Token 位置只有少数专家被激活，其余则处于空闲状态。**总参数量决定知识容量；激活参数量决定推理成本。**
+
+model card 中报告的每 Token 专家确切数量可能因层而异，但架构设计理念很清晰：激活的专家数量远低于以往 MoE 部署中常见的 2/8 或 4/16 比例。理解这为什么有效（以及何时有效），需要回到专家在 MoE 层中实际在做什么。
+
+## 专家学到了什么，以及为什么稀疏性重要
+
+对 MoE 专家的标准心智模型——"每个专家专精不同内容类型，比如数学与代码"——大部分是错的。对训练好的 MoE 模型进行仔细探测研究后发现，专家专业化是细粒度的、组合式的，而非粗糙的、分类式的。
+
+训练好的 MoE 层中，单个专家往往响应特定的**句法和语义模式**，粒度在子 Token 级别：否定模式、数字计算、实体边界、从句结构转换。这种专业化更像词汇音系学，而非学科分类。这很重要，因为它意味着你不需要同时激活很多专家——你需要的是**当前 Token 上下文对应的正确专家**。
+
+形式化论证：如果 Token 在专家专业化上的分布是稀疏的（大多数 Token 只有少数几个强相关专家），那么高激活比例就是在浪费算力，去加载那些贡献近乎为零的专家。**最优激活数量等于 Token 分布在专家上的平均支集大小。**
+
+对于自然语言，这个支集看起来很小——在 128 个专家的模型中，经验上 top-2 专家通常占总路由权重的 65-80%。专家 3-128 分食剩余的 20-35%。只激活 top-2 就能以很少的算力捕获大部分信号。
+
+## 路由数学
+
+在标准 MoE Transformer 层中，前馈子层被路由器加 $N$ 个专家网络替代：
+
+$$\text{FFN}_{\text MoE}(x) = \sum_{i=1}^{k} g_i(x) \cdot E_i(x)$$
+
+其中 $g_i(x)$ 是 top-$k$ 路由权重（来自所有 $N$ 个专家的 softmax），$E_i$ 是专家 FFN 网络。对于极端稀疏配置（$k \ll N$），即 $N=128$ 时 $k=2$ 或 $k=8$。
+
+路由器计算：
+
+$$\text{scores} = W_r x \in \mathbb{R}^{128}$$
+$$g_i(x) = \frac{\exp(\text{score}_i)}{\sum_{j \in \text{top-}k} \exp(\text{score}_j)} \cdot \mathbf{1}[i \in \text{top-}k(\text{scores})]$$
+
+路由器每个 Token 付出 $O(d_{\text{model}} \times N)$，与 $k$ 无关——所有 $N$ 个分数必须在选择 $k$ 之前全部计算。但在实践中这个成本是次要的：被选中的专家 FFN 每个 Token 成本通常是 $O(k \times d_{\text{model}} \times d_{\text{ffn}})$，而典型配置下 $d_{\text{ffn}} \gg N$（$d_{\text{ffn}}$ 通常是 $d_{\text{model}}$ 的 4-14 倍，而 $N=128$）。路由器开销在边界有意义，但不决定 FLOPs 预算。关键在于：路由器成本是**固定的**，与 $k$ 无关——使得极端稀疏的每 Token 成本更低，且不需要等比例增加路由开销。
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class MoEConfig:
+    d_model: int
+    d_ffn: int           # Per-expert FFN dimension
+    n_experts: int       # Total experts (e.g. 128)
+    top_k: int           # Active experts per token (e.g. 2 or 8 for extreme sparsity)
+    load_balance_coeff: float = 0.01  # Auxiliary load balancing loss weight
+
+
+class ExpertFFN(nn.Module):
+    """Single expert feedforward network."""
+    def __init__(self, d_model: int, d_ffn: int):
+        super().__init__()
+        self.w1 = nn.Linear(d_model, d_ffn, bias=False)
+        self.w2 = nn.Linear(d_ffn, d_model, bias=False)
+        self.w3 = nn.Linear(d_model, d_ffn, bias=False)  # SwiGLU gate
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # SwiGLU activation (used in Gemma family)
+        return self.w2(F.silu(self.w1(x)) * self.w3(x))
+
+
+class GemmaStyleMoE(nn.Module):
+    """
+    Sparse MoE layer with 2/128 active ratio (Gemma 4 style).
+    Demonstrates the compute profile of extreme sparsity.
+    """
+    def __init__(self, cfg: MoEConfig):
+        super().__init__()
+        self.cfg = cfg
+        
+        # Router: maps d_model → n_experts scores
+        # This computation runs for EVERY token, regardless of k
+        self.router = nn.Linear(cfg.d_model, cfg.n_experts, bias=False)
+        
+        # All 128 experts — only 2 will be called per token
+        self.experts = nn.ModuleList([
+            ExpertFFN(cfg.d_model, cfg.d_ffn) 
+            for _ in range(cfg.n_experts)
+        ])
+    
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """
+        x: (batch, seq_len, d_model)
+        returns: (output, aux_loss) where aux_loss encourages load balance
+        """
+        B, T, D = x.shape
+        x_flat = x.view(B * T, D)  # (B*T, d_model)
+        
+        # Router: compute all 128 scores — O(d_model * 128) per token
+        router_logits = self.router(x_flat)          # (B*T, 128)
+        router_probs = F.softmax(router_logits, dim=-1)  # (B*T, 128)
+        
+        # Select top-k=2 experts per token
+        top_k_weights, top_k_indices = torch.topk(
+            router_probs, self.cfg.top_k, dim=-1
+        )  # (B*T, 2), (B*T, 2)
+        
+        # Normalize weights among selected experts
+        top_k_weights = top_k_weights / top_k_weights.sum(dim=-1, keepdim=True)
+        
+        # Dispatch: route each token to its 2 selected experts
+        output = torch.zeros_like(x_flat)
+        
+        for k_idx in range(self.cfg.top_k):
+            expert_ids = top_k_indices[:, k_idx]      # (B*T,) — which expert
+            expert_weights = top_k_weights[:, k_idx]  # (B*T,) — how much weight
+            
+            # Group tokens by their assigned expert for efficient batching
+            for expert_id in range(self.cfg.n_experts):
+                token_mask = (expert_ids == expert_id)
+                if not token_mask.any():
+                    continue  # Expert not selected by any token in this batch
+                
+                expert_input = x_flat[token_mask]     # (n_tokens_for_expert, D)
+                expert_out = self.experts[expert_id](expert_input)
+                
+                # Weighted accumulation
+                output[token_mask] += expert_weights[token_mask].unsqueeze(-1) * expert_out
+        
+        # Auxiliary load-balancing loss: penalize routing all tokens to same expert
+        # Without this, a few experts dominate and most never train
+        avg_load = router_probs.mean(dim=0)            # (128,) — average probability per expert
+        ideal_load = torch.ones_like(avg_load) / self.cfg.n_experts
+        aux_loss = self.cfg.load_balance_coeff * F.mse_loss(avg_load, ideal_load)
+        
+        return output.view(B, T, D), aux_loss
+```
+
+## KV Cache 算术
+
+极端稀疏性还有一个讨论较少的好处：注意力层的 KV Cache 大小。KV Cache 是自回归推理的内存瓶颈，不是 FFN 计算。拥有 128 个专家的 260 亿参数 MoE 模型，其**注意力层**参数量大致相当于一个 3.8B dense 模型（因为注意力层不参与 MoE 路由——只有 FFN 层参与）。KV Cache 成本与注意力参数量成正比。
+
+对于 batch size=1、序列长度 8192、float16：
+
+$$\text{KV cache size} = 2 \times \text{n\_layers} \times \text{n\_kv\_heads} \times \text{head\_dim} \times \text{seq\_len} \times 2 \text{ bytes}$$
+
+稀疏 MoE 模型（估算）：36 层、8 个 KV head、256 head dim、8192 token：
+$$= 2 \times 36 \times 8 \times 256 \times 8192 \times 2 \text{ bytes} \approx 2.4 \text{ GB}$$
+
+而 dense 260 亿模型，KV head 数量是 8 倍（64 个 KV head、256 head dim）：
+$$= 2 \times 36 \times 64 \times 256 \times 8192 \times 2 \text{ bytes} \approx 19.2 \text{ GB}$$
+
+稀疏 MoE 模型的 KV Cache 小了 **8 倍**，尽管总参数量相当。这才是极端稀疏性在推理时的真正收益所在：主要不是 FLOPs，而是**内存**——在相同硬件上实现更长上下文和更大 batch size。
+
+## 极端稀疏性何时失效
+
+极端稀疏性并非普遍最优。有几种已被记录的失效模式。
+
+**训练期间的专家坍缩**：128 个专家竞争路由时，早期训练中一小部分可能因为随机初始权重恰好在早期 batch 上表现更好而迅速主导。路由器强化这种选择，偏好的专家训练更多、变得更强、吸引更多路由——一个正反馈循环导致大多数专家训练不足。**辅助负载均衡损失至关重要**；没有它，稀疏配置会坍缩为实际只使用 2-3 个专家，无论 $N$ 是多少。
+
+**低 batch size 下的专家死区**：在推理 batch size=1 时，每个 Token 只激活 $k$ 个专家。如果负载分配不佳，有些专家可能数千个 Token 都不会被调用，这意味着它们的权重仍需驻留在 VRAM 中作为闲置容量。这与 KV Cache 优势相反：非活跃专家权重即使每个 Token 大多数专家处于空闲状态，仍占用 GPU 内存。
+
+实际含义：极端 MoE 稀疏性在高吞吐服务（大批量、众多并发请求将不同 Token 路由到不同专家）中表现良好，在低延迟单请求服务（专家权重大多未被利用）中表现不佳。
+
+```python
+def compute_moe_serving_cost(
+    n_experts: int,
+    top_k: int, 
+    d_model: int,
+    d_ffn: int,
+    batch_size: int,
+    seq_len: int,
+    dtype_bytes: int = 2  # float16
+) -> dict:
+    """
+    Compute serving cost analysis for a MoE configuration.
+    Shows why extreme sparsity wins at high batch size but loses on memory at low batch size.
+    """
+    expert_param_count = n_experts * 3 * d_model * d_ffn  # 3 matrices per SwiGLU expert
+    active_expert_params = top_k * 3 * d_model * d_ffn
+
+    
+    # Memory: ALL expert weights must be in VRAM, regardless of activation
+    total_expert_memory_gb = expert_param_count * dtype_bytes / 1e9
+    
+    # FLOPs: only active experts compute
+    # 2 * d_model * d_ffn for each active expert, * 2 directions (w1+w3, w2)
+    flops_per_token = top_k * 2 * 2 * d_model * d_ffn
+
+    total_flops = flops_per_token * batch_size * seq_len
+    
+    # Utilization: what fraction of loaded weights are actually used?
+    weight_utilization = top_k / n_experts
+    
+    return {
+        "total_expert_memory_gb": total_expert_memory_gb,
+        "active_params_per_token": active_expert_params,
+        "flops_per_token": flops_per_token,
+        "total_flops": total_flops,
+        "weight_utilization": weight_utilization,
+        "memory_per_compute_ratio": total_expert_memory_gb / (total_flops / 1e12),
+    }
+
+# Extreme sparsity: 2/128 active ratio
+sparse_cost = compute_moe_serving_cost(
+    n_experts=128, top_k=2, d_model=3584, d_ffn=14336,
+    batch_size=32, seq_len=2048
+)
+print(f"Extreme sparse (2/128):")
+print(f"  Weight utilization: {sparse_cost['weight_utilization']:.1%}")
+print(f"  Active params/token: {sparse_cost['active_params_per_token']:,}")
+print(f"  Memory for experts: {sparse_cost['total_expert_memory_gb']:.1f} GB")
+
+# Mistral-style: 2/8
+mistral_cost = compute_moe_serving_cost(
+    n_experts=8, top_k=2, d_model=4096, d_ffn=14336,
+    batch_size=32, seq_len=2048
+)
+print(f"\nMistral-style (2/8):")
+print(f"  Weight utilization: {mistral_cost['weight_utilization']:.1%}")
+print(f"  Active params/token: {mistral_cost['active_params_per_token']:,}")
+print(f"  Memory for experts: {mistral_cost['total_expert_memory_gb']:.1f} GB")
+```
+
+## 设计哲学
+
+2/128 的有趣之处不只是数字——而是它嵌入的架构哲学。Dense 模型假设所有参数与每个 Token 都相关。标准 2/8 MoE 允许按 Token 路由，但仍然激活 25% 的容量。**Gemma 4 的 2/128 推向理论极端**：几乎所有容量与任何给定 Token 都无关，模型应该能识别出那一小部分真正重要的专家。
+
+这是对**专业化深度**而非广度的押注。128 个窄专家各自处理一小部分语言现象——如果干净利落——可能比 8 个宽专家每个以更低精度处理 12.5% 的现象更具表达力。这个赌注能否兑现，取决于这些现象是否可分解——它们是否真的不会以需要单一专家同时处理多种现象的方式相互交织。
+
+训练动态从经验上回答了这个问题。大型 MoE 模型的路由熵模式表明：是的，大多数 Token 与少量专家"角色"强相关，角色簇之间的重叠有限。这个架构利用的是输入到函数映射中真实的稀疏性。
+
+悬而未决的是：2/128 是否是正确的工作点，还是 4/256 或 8/512 能在更高的专业化深度上捕获这些收益。路由器（在所有 $N$ 个专家上运行）的计算扩展限制了 $N$ 能增长到多大、而不至于让路由器成本主导计算预算。当前证据表明 128 处于高效 regime 之内；512 是否能保持这些特性是一个活跃的研究问题。
+
+---
+
+*参考：Gemma 4 模型发布，Google DeepMind，2026年4月8日。MoE 路由分析改编自 Switch Transformer（Fedus et al., 2022）和 Mixtral of Experts（Jiang et al., 2024）。负载均衡辅助损失设计遵循 ST-MoE（Zoph et al., 2022）。*

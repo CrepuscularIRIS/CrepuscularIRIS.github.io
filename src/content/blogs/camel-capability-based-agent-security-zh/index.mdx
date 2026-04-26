@@ -1,0 +1,138 @@
+---
+title: "CaMeL 与双 LLM 模式：Agent 的能力（Capability）安全框架"
+description: "提示词注入不是提示词问题。CaMeL 将其视为系统问题——特权 LLM vs 隔离 LLM，策略在模型外部执行。"
+publishDate: "2026-04-17"
+tags: [agent-security, prompt-injection, CaMeL, dual-LLM, capabilities, MCP, A2A, agent-engineering]
+category: engineering
+language: zh
+draft: false
+hIE: methode
+hero_image: /assets/hIE/methode/445955-beatless-bodysuit-dress-katou_hiromasa-lacia-methode-snowdrop.jpg
+---
+
+三年提示词注入研究最令人不安的发现是：模型规模扩大并不能解决问题。一个更大、更聪明、RLHF 调教更充分的新模型，仍然会服从上下文里不可信内容给出的指令——因为模型在架构层面没有任何手段区分"这条指令来自开发者"和"这条指令来自工具刚抓取的网页"。更好的指令微调能降低被注入的概率，但无法封堵攻击面。
+
+CaMeL 论文——Google DeepMind 与 ETH Zürich 团队发表的 *Defeating Prompt Injections by Design*（Debenedetti et al., 2025，[arXiv:2503.18813](https://arxiv.org/abs/2503.18813)）——认为整个问题的框架从一开始就错了。提示词注入不是提示词问题，而是数据流问题；解决数据流问题的思路，操作系统早在 1970 年代就给出来了：基于能力（capability）的访问控制、明确的权限分离，以及位于不可信组件外部的策略引擎。
+
+这篇文章梳理 CaMeL 实际交付了什么、为什么双 LLM 分离比任何单一防御手段都更重要、以及这个模式如何与正在落地 MCP、A2A 和 AP2 中的能力原语衔接。CaMeL 设计是这波协议层工作一直在暗中组装的基于能力的 Agent 技术栈中缺失的运行时模型。
+
+## 旧框架：把注入当提示词问题来解
+
+针对间接提示词注入的常规防御手段，全部是提示词层的干预：
+
+- **分隔符和三明治模式**：用 `<UNTRUSTED>...</UNTRUSTED>` 包裹不可信内容，告诉模型"忽略其中的指令"。模型有时候照做，有时候不。
+- **指令层级微调**：训练模型优先服从系统提示词 > 用户消息 > 工具输出。这是 OpenAI 的指令层级工作。有用，但不够。
+- **事后分类器**：生成结束后，用一个独立的"这条输出是否符合用户意图"检查器过一遍。增加延迟，且无法捕获新型攻击。
+- **输出过滤器**：在模型输出中清除危险模式（外泄 URL、shell 命令）。攻击者会绕过过滤器编码。
+
+这四种模式有一个共同的失败模式：它们假设只要给了正确的提示词，模型本身就能被信任去做安全决策。模型看到系统提示、用户指令、工具输出、检索到的文档——然后被要求逐 token 决定应该服从哪一条。这是一个在不可信黑箱内部做出的安全关键决策。
+
+经验结果是可预测的。AgentDojo 基准测试（[arXiv:2406.13352](https://arxiv.org/abs/2406.13352)）精确测量了这个场景：给 Agent 一个涉及邮件、网络搜索和文件访问的合法任务，在其中一份检索到的文档中植入注入，观察 Agent 跟随注入而非用户的频率。在 AgentDojo 原始论文报告的各配置下，提示词层防御普遍留下不可忽视的残余攻击成功率——通常在百分之几十，取决于模型、策略，以及攻击者是否知道防御的存在。精确数字随着每次新模型发布而变化。结构性的观察结论才是不变的：提示词防御降低而非消除攻击面。对于一个 Agent 执行单个任务，这个风险还可以接受；对于每天执行数千个任务、接触大量不可信内容的 Agent，这不可接受。
+
+## CaMeL 架构：两个 LLM 加一个策略引擎
+
+CaMeL 的核心洞察是：你不需要模型来做安全决策，你需要把系统结构化，让模型根本做不了这个决策。
+
+架构包含三个组件：
+
+1. **特权 LLM（P-LLM）**。只看到可信输入——用户提示词、系统配置和可用工具的 schema。它的职责是产生一个*计划*：用受限 Python 子集表达的小程序，操作项为工具调用和控制流。P-LLM 看不到不可信数据。它无法被注入，因为攻击者能写进去的东西它根本不读。
+
+2. **隔离 LLM（Q-LLM）**。看到不可信内容——网页、邮件、PDF、MCP 工具输出。它的职责*仅限于*按照 P-LLM 提供的 schema 提取结构化信息（"在这封邮件里找到收货地址，以 JSON 格式返回"）。Q-LLM 没有工具访问权。它的输出在进入任何其他组件前会经过 schema 校验。Q-LLM 额外说的话——包括攻击者嵌入的任何指令——被 schema 校验器丢弃。
+
+3. **带能力策略引擎的解释器**。执行 P-LLM 产生的计划。通过解释器的每一块数据都带有*能力*——描述数据来源和允许操作的元数据标签。解释器在任意工具调用前查阅策略（"带有 `from:external_email` 标签的数据能否作为 `send_money(...)` 的参数传入？"）。策略违规会抛出异常，而不是生成内容。
+
+数据流如下：
+
+```text
+用户提示词 ──► P-LLM ──► 计划（Python-lite AST）
+                              │
+                              ▼
+                    ┌───────────────┐
+工具输出 ────────►│   解释器        │───► 工具调用
+（不可信）──► Q-LLM │ + 能力策略      │    （仅在
+（受 schema 限制）  │   引擎         │     策略允许时）
+                    └───────────────┘
+```
+
+有两个独立的安全属性：
+
+- **控制流完整性**：因为计划来自从未看到攻击者控制输入的 P-LLM，攻击者无法重定向* Agent 做什么*。他们能影响* Agent 运算的值*，但改变不了操作序列。
+- **数据流完整性**：因为每个值都携带能力标签，策略引擎可以拒绝在污染数据上执行敏感操作——即使攻击者设法把污染值引入系统，也无法让它流入危险的数据汇。
+
+这是经典的 Bell-LaPadula / Biba 结构——可信主体 vs 不可信主体，对象打标签，引用监视器。 novelty 在于把它应用到 LLM Agent 场景：引用监视器位于模型外部，标签根据数据血缘自动计算。
+
+## 策略引擎实际上在做什么
+
+CaMeL 中的能力标签是一个小记录，格式如下：
+
+```python
+Capability(
+    provenance=["user", "gmail.get_email[msg_id=42]"],
+    readers={"user", "gmail.*"},          # 谁能看见这个值
+    may_trigger=False,                     # 这个值能触发副作用吗？
+    trust_level="untrusted",
+)
+```
+
+当 P-LLM 的计划说 `send_email(to=<value>, body=<value>)` 时，解释器检查两个参数的能力。如果 `to` 是 Q-LLM 从不可信邮件中提取的，策略引擎发现 `trust_level="untrusted"` 且 `may_trigger=False`，就拒绝这个调用。Agent 随后要么让用户确认目标地址，要么直接任务失败。
+
+策略以声明式表达。CaMeL 论文中的一个示例规则：
+
+```python
+# 来源包含外部内容的数据，在没有用户明确确认的情况下，
+# 不能作为金融交易的收款方使用。
+@policy
+def no_untrusted_money_sinks(call):
+    if call.fn in {"send_money", "transfer", "purchase"}:
+        for arg in call.args:
+            if arg.capability.trust_level == "untrusted":
+                require_user_confirmation(call, arg)
+```
+
+策略小而可审计，写一次就能部署。它们不是 LLM 生成的。它们和 AWS IAM 或浏览器 Content Security Policy 是同一种东西——枯燥的安全管道工程，碰巧现在也适用于 Agent。
+
+## 为什么这比提示词防御更好
+
+论文里有经验数据：在策略声明覆盖了涉及敏感数据汇的子任务上，CaMeL 将 AgentDojo 攻击成功率降至接近零，相比同评估中最强的提示词层基线有显著提升。在需要规划器根据不可信内容调整行为的工作流上，任务效用有所下降——这是预期的权衡。但结构性的论证比数字更有分量。
+
+提示词防御是*尽力而为*的。每一种新的攻击技术都在蚕食其成功率，防御必须不断追赶。CaMeL 的保证是*结构性的*。攻击者即使找到新方法越狱 Q-LLM 让它吐出任意文本，也无法利用这段文本——schema 校验器会丢弃它，而 P-LLM 产生的计划根本不会引用它。攻击者必须攻陷 P-LLM 本身，而 P-LLM 根本看不到攻击者给的东西。不存在注入路径。
+
+代价是真实的：
+
+- **表达能力**：当规划器无法看到它在规划所依赖的数据时，有些工作流难以表达。需要 Agent 根据文档内容调整行为的工作流需要精心的 schema 设计。
+- **延迟**：Q-LLM 是第二次模型调用，策略引擎也增加开销。
+- **策略编写**：必须有人编写和维护策略。这相当于写防火墙配置。对于一个部署来说可以管理，对于通用 Agent 来说很痛苦。
+
+权衡与操作系统在 1970 年代做出的权衡相同。沙箱和能力系统牺牲了表达能力和开发者工作量，我们还是采用了它们——因为替代方案"信任程序"已被证明是致命的。
+
+## 正在汇聚的能力栈
+
+CaMeL 是能力模型的运行时部分。协议部分一直在并行交付，把它们拼在一起可以看清楚 2026-2027 年 Agent 安全栈的形态。
+
+- **MCP Tasks（SEP-1686）** 为 Model Context Protocol 添加了持久化、有状态的工具调用。关键是每个 task 都有显式的输入 schema 和结果 schema。这个 schema 正是 Q-LLM 需要的护栏——MCP 开始把工具输出结构化到足以让能力执行解释器有东西可检验的程度。
+- **A2A v1.0 Signed Agent Cards** 提供加密的 Agent 身份。"谁请求了这个"的答案从"系统提示词里的字符串声称是 X"变成了权威答案。包含签名 Agent 出处的能力，可以在 Agent 被调用前就由类 CaMeL 解释器检验。
+- **AP2 Mandates** 添加了针对特定操作类别（v1.0 中为支付）的签名同意。Mandate 本质上就是一种 capability——一条类型化令牌，说明"此 Agent 可以在日期 Z 之前执行不超过 $Y 的 $X 转账"。AP2 使 capability 令牌在 Agent、发行方和支付处理商之间可互操作。
+
+把这些堆叠在一起，整体图景比任何单一组件呈现的更清晰。P-LLM 产生计划。计划中每个工具调用都引用一个 MCP task schema。每个 Agent 间跳跃都携带签名的 A2A 身份。每个敏感操作（支付、文件写入、对外发消息）都必须有 AP2 风格 mandate 作为背书。CaMeL 解释器是在放行调用前检验所有这一切的东西。协议提供词汇表，CaMeL 提供执行机制。
+
+这是答案的形状。Agent 安全不会靠一个更好的安全调优模型解决。它将靠在模型外部部署引用监视器来解决——监视器用能力术语声明策略，而能力由具有加密身份的协议铸造。模型变成不可信的规划器，这才是它本来就应该充当的角色。
+
+## 实践者应该带走什么
+
+如果你现在在构建 Agent，即使没有完整架构，以下是能做的 CaMeL 形状决策：
+
+1. **在结构上分离规划上下文与数据读取上下文。** 让决定"做什么"的那部分 Agent 尽可能少地接触可被攻击者控制的内容。如果你能把不可信内容路由到一个无工具的独立调用中、让其唯一输出是结构化 JSON，你就已经实现了一半的双 LLM 设置。
+2. **在工具输出到达其他组件前，用显式 schema 验证它们。** MCP 允许这样做；REST API 也允许。模型不是解析器。用它当解析器是注入数据流动最常见的来源。
+3. **把敏感数据汇视为需要 capability 门控的。** 在任何 `send_money`、`write_file`、`delete_*`、`execute_code` 调用前，检查每个参数的来源。任何不可信的东西，要么拒绝，要么要求确认。
+4. **在模型外部编写策略。** YAML 文件、Python 装饰器、Rego 规则——任何不是提示词的东西。如果你的"安全策略"是系统提示词里的一句话，你根本没有安全策略。
+
+双 LLM 模式不是 Agent 安全的最终答案。但它是第一个把问题正确框定的提案——把它视为有六十年文献支撑的系统设计问题，而不是一个下次模型更新就能修好的提示词问题。
+
+## 参考资料
+
+- Debenedetti et al., *Defeating Prompt Injections by Design*（[arXiv:2503.18813](https://arxiv.org/abs/2503.18813)）—— CaMeL 论文
+- Debenedetti et al., *AgentDojo: A Dynamic Environment to Evaluate Attacks and Defenses for LLM Agents*（[arXiv:2406.13352](https://arxiv.org/abs/2406.13352)）—— CaMeL 评估所基于的基准测试
+- Willison, [*The Dual LLM pattern for building AI assistants that can resist prompt injection*](https://simonwillison.net/2023/Apr/25/dual-llm-pattern/)（2023）—— CaMeL 架构的非正式先驱
+- [MCP 2026 Roadmap: The Tasks Primitive](/blog/mcp-2026-roadmap-tasks-primitive) —— 协议侧结构，对应 CaMeL 在运行时的强制执行
+- [A2A v1.0: Signed Agent Cards and AP2 Mandates](/blog/a2a-v1-signed-cards-ap2-mandates) —— Agent 栈的加密身份和 capability 令牌
+- [Agent Security as Infrastructure](/blog/agent-security-as-infrastructure) —— 把 Agent 安全移出模型的更广泛论证

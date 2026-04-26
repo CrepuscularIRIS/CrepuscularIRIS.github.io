@@ -1,0 +1,256 @@
+---
+title: "AlphaEvolve打破Ramsey纪录：算法发现进入工程化时代？"
+description: "DeepMind的AlphaEvolve刷新了五个Ramsey数下界，并改进了Strassen保持50余年的矩阵乘法算法——这意味着什么。"
+publishDate: "2026-04-13"
+category: bundle
+hIE: lacia
+hero_image: /assets/hIE/lacia/lacia-1920x1200-869498.jpg
+tags: ["deepmind", "alphaevolve", "mathematics", "algorithm-discovery", "evolutionary-search"]
+language: zh
+draft: false
+---
+
+2026年4月2日，DeepMind宣布其AlphaEvolve系统刷新了五个Ramsey数下界纪录，并发现了比Strassen算法更高效的4×4矩阵乘法分解方案——后者已保持五十余年未被动摇。这不是一个没人看的排行榜上的分数提升：Ramsey理论是组合数学中最难的分支之一，Strassen算法是全球每门算法课程必教的内容。
+
+社区反应泾渭分明。数学家指出，下界不是证明，构造仍需形式化验证；ML研究者称之为"纯数学的AlphaGo时刻"。两种声音都忽略了底层正在发生的变化：算法发现正在变成一个工程问题。
+
+## AlphaEvolve实际在做什么
+
+AlphaEvolve不是定理证明器。它不产出证明——它产出**构造**：证明某个界可达的具体数学对象。对Ramsey数而言，是找到特定的图着色方案；对矩阵乘法而言，是找到特定张量分解。
+
+架构将进化搜索与Gemini 3.1结合，由Gemini担任变异算子。传统进化算法使用随机变异：翻转一位、交换两个元素、加高斯噪声。AlphaEvolve将随机变异替换为**学习型变异**——LLM根据问题结构和当前 fitness 景观来提议对候选解的修改。
+
+```python
+from dataclasses import dataclass, field
+from typing import Callable
+
+@dataclass(frozen=True)
+class Candidate:
+    """进化搜索中的候选解。"""
+    representation: str      # 例如邻接矩阵的字符串表示
+    fitness: float           # 例如达成的Ramsey数下界
+    generation: int
+    parent_id: str | None = None
+
+@dataclass
+class AlphaEvolveLoop:
+    """简化的AlphaEvolve搜索循环。
+
+    核心洞察：变异不是随机的——它是一个LLM调用，
+    以问题结构和搜索历史为条件。
+    """
+    population: list[Candidate] = field(default_factory=list)
+    fitness_fn: Callable[[str], float] = lambda x: 0.0
+
+    def mutate_with_llm(
+        self,
+        candidate: Candidate,
+        problem_context: str,
+        search_history: list[Candidate],
+    ) -> str:
+        """
+        不做随机扰动，而是请Gemini提议一个修改。
+
+        提示词包含：
+        - 当前候选解的结构
+        - 之前变异成功或失败的原因
+        - 问题的数学约束
+
+        这就是LLM的模式识别取代暴力搜索的地方。
+        """
+        prompt = f"""
+        Problem: {problem_context}
+        Current solution (fitness={candidate.fitness}):
+        {candidate.representation}
+
+        Recent improvements came from:
+        {self._summarize_improvements(search_history[-10:])}
+
+        Propose a modification that increases fitness.
+        Output only the modified solution.
+        """
+        # 实际使用：调用Gemini 3.1 API
+        return self._call_llm(prompt)
+
+    def _summarize_improvements(
+        self, history: list[Candidate]
+    ) -> str:
+        """从成功的变异中提取模式。"""
+        improvements = []
+        for i in range(1, len(history)):
+            if history[i].fitness > history[i-1].fitness:
+                improvements.append(
+                    f"Gen {history[i].generation}: "
+                    f"+{history[i].fitness - history[i-1].fitness:.4f}"
+                )
+        return "\n".join(improvements) if improvements else "No improvements yet."
+
+    def _call_llm(self, prompt: str) -> str:
+        raise NotImplementedError("Requires Gemini API access")
+```
+
+搜索循环本身是标准的进化计算：维护种群、选择最优、变异、评估、重复。非标准之处在于变异质量随LLM能力缩放——更强的模型产生更好的变异。这在基础模型能力和数学发现之间建立了直接联系。
+
+## Ramsey结果的纵向坐标
+
+Ramsey理论问的是：结构必须有多大才能保证某个有序子结构存在？经典问题是：$R(s, t)$ 的最小顶点数量是多少，使得$K_n$（$n \geq R(s,t)$）的任意2-着色必然包含红色$K_s$或蓝色$K_t$？
+
+精确Ramsey数的计算是出了名的困难。Erdős有一个著名比喻：如果外星人要求算出$R(5,5)$的值，否则毁灭地球，我们应该倾尽资源去计算它；但如果它们问的是$R(6,6)$，我们应该直接准备战争。
+
+AlphaEvolve没有计算精确值。它改进的是**下界**——找到具体的着色方案，证明$R(s,t) > n$对五组不同的$(s,t)$对成立。这很重要：Ramsey数下界在历史上一直需要人类洞察来构造，这些具体案例之前的最佳构造来自于数十年的组合数学工作。
+
+AlphaEvolve的方案与此前计算攻击的关键差异：
+
+| 方案 | 变异策略 | 可扩展性 | 可解释性 |
+|------|---------|---------|---------|
+| 随机搜索 | 均匀随机 | 小规模实例以外很差 | 无 |
+| 模拟退火 | 温度控制随机 | 中等 | 低 |
+| 遗传算法 | 交叉+随机变异 | 中等 | 低 |
+| SAT求解器 | 系统回溯 | 对小的$n$好 | 高（提供证明证书）|
+| **AlphaEvolve** | **LLM引导的变异** | **随模型能力缩放** | **中等（构造，非证明）** |
+
+可扩展性列是关键。其他所有方法都有一个固定的变异策略，不会随时间改进。AlphaEvolve的变异质量随底层LLM改进而改进。当Gemini 4到来时，同一搜索框架无需任何算法修改就能找到更好的解。
+
+## Strassen与五十年壁垒
+
+Strassen算法（1969年）用7次乘法而非8次完成2×2矩阵乘法。这被扩展到更大矩阵的递归分解，但核心洞察——2×2矩阵的特定张量分解——五十余年间未曾改变。DeepMind的AlphaTensor在2022年找到了更大矩阵的改进分解，但4×4的情况一直顽固未动。
+
+AlphaEvolve对4×4情况的改进之所以重要，是因为矩阵乘法是深度学习几乎所有计算的原语。矩阵乘法的常数因子改进会直接转化为每个模型的训练成本下降。
+
+```python
+def strassen_complexity(n: int) -> dict:
+    """比较n×n矩阵乘法的乘法次数。
+
+    标准算法：O(n^3) 次乘法
+    Strassen：O(n^log2(7)) ≈ O(n^2.807) 次乘法
+    AlphaEvolve：对特定大小的改进常数因子
+    """
+    import math
+
+    standard = n ** 3
+    strassen_exponent = math.log2(7)  # ≈ 2.807
+    strassen = n ** strassen_exponent
+
+    # 对于4×4，AlphaEvolve找到了一种分解
+    # 所需的标量乘法次数少于递归Strassen
+    # Strassen递归对4×4：7^2 = 49 次乘法
+    # AlphaEvolve 4×4：47次乘法（报告的改进）
+
+    return {
+        "matrix_size": n,
+        "standard_mults": int(standard),
+        "strassen_mults": int(strassen),
+        "improvement_ratio": standard / strassen,
+        "note": (
+            "AlphaEvolve对小n改进了常数因子，"
+            "这很重要，因为大矩阵乘法在硬件上被分解为小块操作。"
+        ),
+    }
+```
+
+实际意义：GPU张量核在小矩阵块（通常4×4、8×8或16×16）上运行。针对这些块大小的改进分解可以在硬件微码层面实现，为每个神经网络中的每个GEMM操作带来加速。Strassen递归开销与硬件块大小之间的差距，一直是真正优化机会的所在。
+
+## 为什么LLM引导搜索对数学有效
+
+AlphaEvolve的成功提出了一个问题：为什么一个在文本上训练的LLM能产生有用的数学变异？
+
+三个假说，按我的置信度排序：
+
+**假说一：结构模式迁移。** 数学构造有结构——对称性、递归模式、模关系。在数百万数学文本上训练的LLM已经内化了这些结构模式。当被要求"修改这个图着色以改进Ramsey界"时，模型调用的是关于什么使着色有效的隐性知识：颜色类之间的平衡、避免特定子图模式、代数构造原理。
+
+**假说二：压缩搜索空间。** 随机变异探索的是所有可能修改的完整空间。LLM引导的变异探索的是一个**压缩子空间**——在给定问题上下文中"看起来合理"的修改集合。这个子空间比完整空间指数级更小，却不成比例地包含有用的修改。LLM充当了变异空间上学习到的先验。
+
+**假说三：隐式定理证明。** LLM不仅仅提议"合理"的随机修改——它隐式地推理为什么某些修改应该改进fitness。这是最强的声明，也是最难验证的。如果为真，意味着LLM执行的是类似于数学推理的东西，而非仅仅是模式匹配。AlphaEvolve论文没有得出定论来区分这些假说。
+
+我倾向于假说二是主要机制，兼有假说一的元素。LLM提供了比随机变异好得多的搜索空间先验，仅此一点就足以解释结果，无需调用隐式定理证明。
+
+## 验证问题
+
+AlphaEvolve的构造是**可验证的**——你可以通过穷举子图来验证某个特定图着色是否达到了声称的Ramsey界。但可验证不等于**有洞见**。找到Ramsey构造的人类数学家通常理解**为什么**它有效——构造的什么结构属性阻止了单色完全图。AlphaEvolve的构造是不透明的。
+
+这在**已证明**（界确实达到了）和**已理解**（为什么界能达到）之间制造了鸿沟。数学界的反应是谨慎乐观的：结果有效，但它们没有像人类证明那样推进理解。
+
+```python
+def verify_ramsey_construction(
+    adjacency_matrix: list[list[int]],
+    s: int,
+    t: int,
+) -> dict:
+    """
+    验证一个Ramsey下界构造。
+
+    给定K_n的2-着色（编码为值为0/1的邻接矩阵），
+    检查是否存在单色K_s（颜色0）或K_t（颜色1）。
+
+    若验证通过：证明R(s,t) > n
+    """
+    from itertools import combinations
+
+    n = len(adjacency_matrix)
+
+    # 检查所有s子集是否存在单色K_s（颜色0）
+    for subset in combinations(range(n), s):
+        if all(
+            adjacency_matrix[i][j] == 0
+            for i, j in combinations(subset, 2)
+        ):
+            return {
+                "verified": False,
+                "reason": f"Found monochromatic K_{s} in color 0",
+                "witness": subset,
+            }
+
+    # 检查所有t子集是否存在单色K_t（颜色1）
+    for subset in combinations(range(n), t):
+        if all(
+            adjacency_matrix[i][j] == 1
+            for i, j in combinations(subset, 2)
+        ):
+            return {
+                "verified": False,
+                "reason": f"Found monochromatic K_{t} in color 1",
+                "witness": subset,
+            }
+
+    return {
+        "verified": True,
+        "bound": f"R({s},{t}) > {n}",
+        "construction_size": n,
+    }
+```
+
+这个函数的时间复杂度是$O\binom{n}{\max(s,t)}$——指数级，但在AlphaEvolve操作的规模上是可行的。关键点：相对于发现，验证是廉价的。困难的部分是找构造，而不是检查它。
+
+## 这对算法发现意味着什么
+
+AlphaEvolve的结构性启示不在于Ramsey数或矩阵乘法本身，而在于**发现循环**：
+
+1. 定义一个捕获"更好"含义的fitness函数
+2. 用已知构造播种种群
+3. 让LLM引导的进化搜索探索空间
+4. 用传统方法验证结果
+
+这个循环适用于任何满足以下条件的场景：
+- 解可以表示为结构化字符串（图、程序、张量分解）
+- Fitness可以高效计算
+- 搜索空间有可利用的结构（不是纯粹随机的）
+
+适用的场景：排序网络、纠错码、电路设计、编译器优化通道、调度算法、密码学构造。不适用的场景（目前）：fitness评估本身就很昂贵的场景（如需要完整训练运行），或者搜索空间对LLM没有可利用结构的场景。
+
+竞争动态很直接：拥有更强基础模型的实验室将发现更好的算法，因为变异质量随模型能力缩放。这创造了一个飞轮：更好的模型 → 更好的算法 → 更高效的训练 → 更好的模型。DeepMind有望凭借Gemini产品线驱动AlphaEvolve来利用这个飞轮，而AlphaEvolve反过来可能发现对Gemini自身训练基础设施的改进。
+
+## 一个不舒服的问题
+
+如果LLM引导的搜索持续在找构造方面优于人类数学家，数学家的角色是什么？
+
+乐观的答案：人类提供**问题定义**和**理解**。AlphaEvolve可以找到Ramsey构造，但它不能解释为什么这个构造有效，也不能说明它对Ramsey图结构意味着什么。人类对于将构造转化为定理、将定理转化为理解仍然不可或缺。
+
+悲观的答案：理解是一种奢侈。如果目标是实用的算法发现——找到更好的矩阵乘法、更好的排序网络、更好的纠错码——理解它们为什么有效是第二位的，重要的是它们确实有效。工程依靠的是经过验证的构造，而非人类直觉。
+
+现实的答案可能两者兼有。对于应用型算法发现（编译器优化、硬件特定计算原语），AlphaEvolve式的系统将日益占主导。对于纯粹数学，人类理解仍然不可替代——但"纯粹"和"应用"之间的边界正在移动。
+
+五十年后，Strassen算法的故事可能不是"五十年来第一次被改进"。而是：五十年是最后一个人类作为算法主要发现者的时代。
+
+---
+
+*相关阅读：[DeepMind Aletheia & AlphaEvolve](/blog/deepmind-aletheia-alphaevolve) 介绍了形式验证架构。[Adaptive Graph of Thoughts](/blog/adaptive-graph-of-thoughts) 探索了与AlphaEvolve变异策略共享"学习型搜索"原则的DAG推理结构。*

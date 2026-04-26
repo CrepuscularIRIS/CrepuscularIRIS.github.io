@@ -1,0 +1,83 @@
+---
+title: "Common Corpus"
+description: "A 2T-token fully open and legally clean pre-training corpus that could replace copyrighted data in LLM training pipelines."
+publishDate: "2026-04-26"
+updatedDate: "2026-04-26"
+category: "paper"
+hIE: "methode"
+hero_image: "/assets/hIE/methode/445955-beatless-bodysuit-dress-katou_hiromasa-lacia-methode-snowdrop.jpg"
+tags: [paper, data, open-source, llm, pretraining, copyright, multilingual]
+language: "en"
+draft: false
+sources: ["https://openreview.net/forum?id=0wSlFpMsGb"]
+confidence: "medium"
+status: "draft"
+---
+
+# Common Corpus: A 2T-Token Ethical Pre-Training Dataset That Bypasses Copyright Altogether
+
+**Original title**: Common Corpus: The Largest Collection of Ethical Data for LLM Pre-Training  
+**Authors**: Langlais et al. | **Published**: OpenReview, 2026  
+**Link**: [OpenReview](https://openreview.net/forum?id=0wSlFpMsGb)
+
+---
+
+## One-Line Summary
+
+Common Corpus drops **~2 trillion tokens** of openly licensed text — books, government archives, scientific papers, code — into the open, giving the research community a copyright-free drop-in replacement for the proprietary corpora that currently power frontier LLM training.
+
+---
+
+## Why This Is Worth Your Time
+
+Two things make this paper stand out.
+
+First, the copyright problem is not theoretical. Several high-profile lawsuits (Google, OpenAI, Anthropic all named as defendants) have made it clear that training on scraped web text carries serious legal tail risk. A dataset this size that demonstrably sidesteps that risk is not a nice-to-have — it's infrastructure the entire open-source AI ecosystem has been waiting for.
+
+Second, the geographic diversity angle is underappreciated. Most large pre-training corpora skew heavily English because English content dominates the open web. Common Corpus explicitly includes **low-resource European languages** that almost never appear in The Pile, C4, or RefinedWeb. That changes who can build capable models in those language communities.
+
+---
+
+## Core Method (3-Minute Version)
+
+The authors take the opposite approach of general web crawlers. Instead of grabbing everything and then litigating later, they start from a curated list of sources known to be legally clean:
+
+- Government publications (US federal, EU, open data portals)
+- Academic papers released under permissive open-access licenses
+- Open-source code repositories
+- Public-domain books and out-of-copyright works
+- Wikimedia and similar clearly-licensed content
+
+They then apply standard deduplication and quality filtering — nothing exotic in the pipeline itself. The key contribution is the **provenance discipline**: every token can be traced to a source with a known, permissive license. This isn't just "we tried our best" provenance — it's a dataset built from the ground up to be auditable.
+
+The structure mirrors The Pile or C4: domain-weighted sections where code, academic text, and books each contribute proportional slices of the total token count.
+
+One honest caveat: at web-scale, no one fully documents every filtering decision. The paper is transparent about its intent but doesn't provide a complete audit trail of every data decision — which is a limitation worth noting.
+
+---
+
+## Key Results
+
+| Dimension | Detail |
+|---|---|
+| **Total tokens** | ~2 trillion |
+| **Languages** | High-resource European + low-resource languages rarely seen in mainstream corpora |
+| **Code** | Large volume with diversity across domains and time periods |
+| **License** | Fully open / permissively licensed — no copyright risk |
+
+No concrete benchmark numbers (e.g., perplexity vs. The Pile) are provided in the source. The paper presents this as a dataset release; downstream evaluation by the community will determine its competitive standing.
+
+---
+
+## Limits and Unanswered Questions
+
+- **No published benchmarks.** It's unclear how models trained on Common Corpus compare to those trained on The Pile, C4, or RedPajama on standard benchmarks. The paper releases data, not a trained model.
+- **Low-resource coverage depth.** The paper claims inclusion of low-resource languages, but the actual token volume per language is not specified. "Included" and "included meaningfully" are different things.
+- **Reproducibility of the pipeline.** The data collection pipeline details (exact deduplication thresholds, quality heuristics) are described at a high level but not fully reproducible from the paper alone.
+- **Temporal coverage.** Code and academic data have natural recency cutoffs based on licensing windows. The corpus's coverage of post-2024 knowledge is unclear.
+
+---
+
+**Curated**: 2026-04-26  
+**Confidence**: medium  
+**Status**: draft

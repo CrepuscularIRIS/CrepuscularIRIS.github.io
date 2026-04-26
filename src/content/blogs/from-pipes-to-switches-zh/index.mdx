@@ -1,0 +1,179 @@
+---
+title: "从管道到开关：神经网络路由"
+description: "层级抽象是一个历史偶然。神经网络应该路由信息，而不是管道化处理它。"
+publishDate: "2026-04-12"
+updatedDate: "2026-04-12"
+category: research
+tags:
+  - architecture
+  - routing
+  - deep-learning
+  - paradigm
+  - attention
+language: zh
+draft: false
+hIE: kouka
+hero_image: /assets/hIE/kouka/444647-animal_ears-beatless-cleavage-kouka-nyaa__28nnekoron_29-thighhighs.jpg
+---
+
+2015 年，He 等人提出的残差网络解决了一个真实问题：极深网络中的梯度消失。解法是在层之间增加一条 bypass（旁路）——直接从第 $l$ 层连到第 $l+1$ 层，让梯度绕过变换 $f_l$ 直接流动。
+
+这个旁路是有用的。但它所创造的思维框架，已经成了一座设计牢笼。
+
+## 管道模型的三个错误假设
+
+自 ResNet 以来，神经网络架构的主导心智模型是**管道**：信息从第 1 层进入，依次穿过每一层，在最后一层以预测输出。整个系统的默认假设是：处理是顺序的，信息沿固定变换序列单向流动。残差连接只是这个管道的"补丁"——它们缓解了梯度问题、允许增加深度，但从未动摇这个根本假设。
+
+这个假设在架构层面是错误的。
+
+ResNet 推理视觉输入时会发生什么？前几层提取方向边缘；中间层检测纹理和物体部件；深层编码语义类别。生成预测时，最终 softmax 需要深层提供的类别级信息。**它不需要重新处理第 2 层的边缘信息**——这些信息对第 6 层构建纹理表示有用，但到第 48 层时已经无关了。
+
+管道却强制这样做。每次残差相加都让中间表征累积：
+
+$$h_{L} = h_0 + \sum_{l=0}^{L-1} f_l(\text{LN}(h_l))$$
+
+最终表征是每一层贡献的线性叠加，且权重相等。**第 40-48 层重要的语义表征，被第 2-20 层的边缘和纹理表征稀释了。**
+
+这就是 **PreNorm 稀释问题**：任意层对最终表征的贡献是 $\frac{1}{L}$，无论该层的计算实际上有多重要。
+
+## 数据处理不等式
+
+信息论论证简洁有力。对任意马尔可夫链 $X \to H_1 \to H_2$，数据处理不等式指出：
+
+$$I(X; H_2) \leq I(X; H_1)$$
+
+信息在中间处理阶段只能损失，不能增加。管道是一串马尔可夫步骤：关于输入的信息随深度只能减少。
+
+这不一定是致命的——训练良好的模型会将输入压缩为对输出最大预测力的表征，同时丢弃任务无关的方差。但它有一个关键推论：**管道的后续层只能利用早期层保存下来的东西。** 如果第 20 层未能保存第 40 层需要的特征，第 40 层无法恢复它。
+
+**开关网络（Switch Network）**打破了这个约束。它不是沿固定序列传播信息，而是根据当前计算需求从任意层检索信息：
+
+$$h_{out} = \sum_{i \in \text{selected}} \alpha_i \cdot h_i$$
+
+其中 $\alpha_i$ 是内容依赖的注意力权重，selected 集是所有先前层输出的稀疏子集。每条路径上数据处理不等式仍然成立——但开关可以选择对当前计算最有益的那一层，绕过沿其他路径积累的信息损失。
+
+## 架构演进
+
+这个领域朝类开关网络方向演进已有十年，只是未必总是这样描述。
+
+**DenseNet（2016）** 将"连接所有先前层"显式化——每一层接收所有更早层的拼接输出。这是均匀权重的开关：每层都可平等访问。这个做法效果出奇地好，但随着深度增加在计算上变得不可行——拼接使表征维度随深度线性增长。
+
+**Transformer 中的自注意力**是 token 级的开关：每个位置以内容依赖权重关注所有其他位置。对序列建模很强大，但没有解决深度维度的问题——每层仍然只处理紧邻前一层的输出。
+
+**混合专家（MoE）** 是宽度级的开关：对给定层，每次输入只激活专家网络的子集。这在层**内**路由计算，但没有解决跨**层**的路由问题。
+
+**Kimi 的分块注意力残差**（AttnRes，2026）认真对待了深度级开关。在每个分块内，每一层可以关注块内所有前面的层，而不只是紧邻的前一层。权重是学习得到的、内容依赖的、按结构稀疏的：
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class BlockAttentionResidual(nn.Module):
+    """
+    Depth-level switch: each layer attends to all previous layers
+    within the current block, rather than only the preceding layer.
+    """
+    def __init__(self, d_model: int, block_size: int, n_heads: int = 8):
+        super().__init__()
+        self.block_size = block_size
+        self.head_dim = d_model // n_heads
+        self.n_heads = n_heads
+
+        self.q_proj = nn.Linear(d_model, d_model)
+        self.k_proj = nn.Linear(d_model, d_model)
+        self.v_proj = nn.Linear(d_model, d_model)
+        self.out_proj = nn.Linear(d_model, d_model)
+        self.scale = nn.Parameter(torch.ones(1) * 0.1)
+
+    def forward(self, current: torch.Tensor, history: list[torch.Tensor]) -> torch.Tensor:
+        """
+        current: (batch, seq, d_model) — current layer representation
+        history: list of (batch, seq, d_model) — previous layers in block
+        """
+        if not history:
+            return current
+
+        B, T, D = current.shape
+        H = len(history)
+
+        # Current layer queries
+        q = self.q_proj(current).view(B, T, self.n_heads, self.head_dim)
+
+        # Stack historical layers as keys/values
+        hist_stack = torch.stack(history, dim=2)           # (B, T, H, D)
+        k = self.k_proj(hist_stack.view(B * T * H, D)).view(B, T, H, self.n_heads, self.head_dim)
+        v = self.v_proj(hist_stack.view(B * T * H, D)).view(B, T, H, self.n_heads, self.head_dim)
+
+        # Attention over depth dimension
+        scores = torch.einsum('bthd,btkhd->bthk', q, k) / (self.head_dim ** 0.5)
+        weights = F.softmax(scores, dim=-1)                # (B, T, heads, H)
+
+        # Weighted aggregation across history
+        aggregated = torch.einsum('bthk,btkhd->bthd', weights, v)
+        aggregated = aggregated.view(B, T, D)
+        output = self.out_proj(aggregated)
+
+        return current + self.scale * output
+```
+
+与标准残差的关键区别在于 `history` 参数：不是 $h_{l+1} = h_l + f(h_l)$（直接加上紧邻前一层），而是计算块内所有层上的注意力加权聚合。权重是输入依赖的——第 10 层对某些输入可能大量加权第 3 层，对另一些输入可能大量加权第 8 层。
+
+## 稀疏性约束
+
+层间全连接会重蹈 DenseNet 的问题：内存随深度二次增长。深度级开关变得可行的关键设计选择是**分块稀疏**。
+
+MoBA（用于序列注意力）和 AttnRes（用于深度注意力）使用了相同的技巧：将层划分为大小为 $B$ 的分块，在块内允许密集注意力，块间使用标准残差。复杂度从 $O(L^2)$ 降至 $O(L \cdot B)$，其中 $B \ll L$。
+
+分块大小是表达力和成本之间的权衡超参数。Moonshot AI 在 Kimi Linear 48B 上的实验表明，分块大小 4 是帕累托最优选择：它捕获了几乎全部完整 AttnRes（块大小等于总层数）的精度提升，同时仅增加了约 8% 的内存开销。
+
+```python
+# Ablation: block size vs. MMLU-Pro accuracy and memory overhead
+# (reproduced from AttnRes technical report)
+block_size_results = {
+    1:  {"mmlu_pro": 50.2, "memory_overhead": 1.0},  # Standard residual
+    2:  {"mmlu_pro": 50.8, "memory_overhead": 1.3},
+    4:  {"mmlu_pro": 51.0, "memory_overhead": 1.15}, # Pareto optimal
+    8:  {"mmlu_pro": 50.6, "memory_overhead": 1.08},
+    16: {"mmlu_pro": 49.8, "memory_overhead": 1.02},
+}
+```
+
+这个非单调关系（性能在分块大小 4 处达到峰值然后下降）很有意思。太大的分块允许跨差异太大的层之间进行注意力，导致 key 缺乏信息量；太小的分块不能提供足够的跨层上下文。分块大小 4 似乎恰好匹配了模型中"处理阶段"的自然尺度——大约每个分块对应一个阶段。
+
+## 路由作为新的原语
+
+更深的转变发生在概念层面。当管道是基本抽象时，设计问题是：**多少层，每层应该做什么变换？** 层深度是表征容量的代理，在训练稳定性限制内越深通常越好。
+
+当开关是基本抽象时，设计问题变了：**什么应该连接到什么，稀疏程度如何？** 路由连接的图拓扑是主要架构选择，而非深度。深度仍然重要（路由图中的节点越多 = 容量越大），但路由模式决定了哪些计算可以影响哪些其他计算。
+
+这种重新框架对架构搜索、初始化和训练都有影响。在管道中，可以独立初始化每层的权重，然后训练它们学习变换。在开关中，路由权重需要仔细初始化——将所有内容路由到单一路径的开关已经退回到了管道。良好的开关初始化应该让路由权重广泛分布，然后允许它们逐步特化。
+
+```python
+def initialize_switch_weights(model: nn.Module, uniform_init_scale: float = 0.1):
+    """
+    Initialize routing/query projections with near-uniform attention,
+    so training starts with broad routing and specializes over time.
+    """
+    for name, param in model.named_parameters():
+        if 'q_proj' in name or 'k_proj' in name:
+            # Small uniform initialization → near-uniform softmax at start
+            nn.init.normal_(param, mean=0.0, std=uniform_init_scale)
+        elif 'scale' in name:
+            # Residual scaling starts small so switch output is a small perturbation
+            nn.init.constant_(param, 0.1)
+```
+
+## 对未来架构的含义
+
+当前一代的开关网络——MoE、AttnRes、MoBA——都是**部分开关**。它们在受限范围内路由：层内（MoE）、层块内（AttnRes）、token 块内（MoBA）。全连接开关——任意层可以关注任意其他层、任意位置可以关注任意其他位置、跨任意深度——在现有硬件和训练方法下仍然计算上不可行。
+
+但趋势是明确的。深度学习架构的历史就是不断放宽约束的历史：从固定感受野到学习到的注意力，从固定深度到动态深度路由，从固定宽度到混合专家。每次放宽都伴随着成本，最终都通过硬件改进和工程智慧得到管理。
+
+管道会让位于开关，不是因为管道错了，而是因为管道是一个更通用设计空间中的特例——恰好容易训练。随着训练方法改进和硬件成本下降，这个特例约束会被放松，就像早期 CNN 固定感受野的约束被自注意力放松了一样。
+
+**未来五年真正重要的架构，是那些认真对待路由问题、而非接受顺序处理为既定前提的架构。**
+
+---
+
+*相关阅读：Moonshot AI AttnRes 论文（arXiv:2603.15031）；MoBA（ICLR 2025）；DenseNet（Huang et al., 2017）。*

@@ -1,0 +1,133 @@
+---
+title: "Code Mode：当两个 MCP 工具击败两千个"
+description: "Cloudflare 将数千个 MCP 工具定义压缩为 search 和 execute 两个接口。这个模式之所以可扩展，原因是模型本来就知道怎么写代码。"
+publishDate: "2026-04-17"
+tags: [mcp, agents, cloudflare, tool-use, context-engineering, code-execution, agent-architecture]
+category: engineering
+language: zh
+draft: false
+hIE: methode
+hero_image: /assets/hIE/methode/669371-ass-beatless-bodysuit-dress-kouka-lacia-maid-mariage-mecha_musume-methode.jpg
+---
+
+MCP（Model Context Protocol）的第一波采纳解决了发现问题——Agent 如何知道有哪些工具可用、参数是什么、如何调用？答案很简单：全部塞进上下文窗口。服务器暴露的每个工具都变成一份 JSON Schema，注入系统提示词。模型读取 Schema，选择工具，发出结构化调用。服务器只有五到十个工具时，这套机制运转良好。当生产环境开始暴露数百个工具时，它就不行了。
+
+到了 2026 年初，一个连接到公司内部 MCP 集群的典型 Agent，在看到任何用户消息之前，context 里已经塞了 500 到 2500 个工具定义。Cloudflare 自家的 SDK 作为 MCP 服务器暴露时，如果简单枚举会轻松超过 2500 个函数。每个 token 都要在每轮推理时付费，而且模型还必须在所有这些定义中推理出该选哪五个。工具爆炸已经成了新的上下文窗口危机。
+
+Cloudflare 在 2026 年初发布的 Code Mode 给出了结构性的回答：不再列出工具，而是暴露两个：`search` 和 `execute`。第一个让 Agent 可以查询类型化的 API 规范——OpenAPI 文档、SDK surface 或 schema registry——用代码而非自然语言来查询。第二个让它可以对该 API 直接运行 TypeScript 代码。Agent 的输出不再是结构化工具调用——而是一个程序。服务器在沙盒中运行程序并返回结果。模型实际上是在用人类开发者的方式使用 SDK：读取需要的类型，编写使用它们的代码，提交代码。
+
+## 工具列表的上下文成本
+
+理解 Code Mode 不是风格偏好而是算术必要，看 token 数量即可。一个最小的 MCP 工具定义包含工具名、描述和一个参数的 JSON Schema。文档完善的工具加上实际的参数 Schema，通常落在几百个 token 的量级；实践中常见的粗略估计在 400–800 token 区间，但会因详细程度不同而变化。即使取低端，200 个工具就消耗约 80K 的上下文预算；2000 个工具则逼近百万 token。上文窗口超过 1M 的大模型，在这种规模上并不能清晰推理——长上下文精度在远未达到标称上下文上限时，就已经在这种"大海捞针"类基准测试中开始衰退。
+
+成本不仅在于每轮渲染。模型在每个自回归步骤中都必须对工具目录进行注意力计算。幻觉工具调用——捏造名称、捏造参数、捏造字段类型——随着目录扩大而愈发频繁，因为模型有很多看起来相似的选项可以混淆。这是工具增强型 Agent 规模化时的已知失败模式，虽然确切的比例关系更多取决于目录的语义重叠度而非原始规模。
+
+天真的修复方案是根据用户查询动态加载工具。这可行，但把复杂性推给了路由器：一个单独的模型或检索系统必须决定暴露哪些工具，而它的失败会与 Agent 的失败叠加。Code Mode 方案反其道而行。Agent 自己完成路由——因为 Agent 本来就知道怎么用代码表达路由。
+
+## 两工具接口
+
+Code Mode 服务器的表面积极小。以下是伪代码草图——它展示的是形状，而非可直接投入生产的服务器；实际的 Cloudflare 实现通过其 Agents SDK 暴露这些工具，而非通过定制的 `FastMCP` 封装。
+
+```typescript
+// Pseudocode — API shape, not a runnable server.
+const server = new McpServer('code-mode-server')
+
+server.tool('search', {
+  description: 'Inspect a typed API spec (e.g. an OpenAPI object or SDK surface) by running a small TypeScript expression against it. Returns the selected symbols, signatures, and docstrings.',
+  inputSchema: {
+    expression: {
+      type: 'string',
+      description: 'A TypeScript expression over the spec object — e.g. `api.paths.filter(p => p.tags.includes("cache"))`.'
+    }
+  }
+}, async ({ expression }) => {
+  return await querySpec(expression)   // evaluates against the preloaded spec
+})
+
+server.tool('execute', {
+  description: 'Execute TypeScript against the SDK. Return value of the last expression is returned to the caller.',
+  inputSchema: {
+    code: { type: 'string', description: 'TypeScript source. Top-level await is allowed.' },
+    timeoutMs: { type: 'number', default: 15000 }
+  }
+}, async ({ code, timeoutMs }) => {
+  return await runInSandbox(code, { timeoutMs })
+})
+```
+
+`search` 工具是对类型化 spec 对象的**代码驱动**查询——而非自然语言向量化搜索。Agent 用与编写应用代码相同的方式表达查询：过滤路径、查找类型、在 schema 中追踪引用。`execute` 工具在预加载了 SDK 的独立 V8 上下文中运行代码。Agent 的 context 中没有 SDK 方法的 schema。它在推理时通过内省 spec 来发现它们。
+
+一次典型的交互如下（同样是伪代码——`search` 表达式的确切形状取决于 spec 的暴露方式）：
+
+```
+User: "Purge the cache for images.example.com but only for files modified in the last hour."
+
+Agent → search({ expression: `api.namespaces.cache.methods.filter(m => /purge|list/.test(m.name))` })
+Server → [
+  { name: "cache.purge", signature: "(zoneId: string, opts?: PurgeOpts) => Promise<...>", doc: "..." },
+  { name: "cache.list",  signature: "(zoneId: string, filter?: Filter) => Promise<Entry[]>", doc: "..." },
+  ...
+]
+
+Agent → execute({ code: `
+  const zone = await zones.findByName("images.example.com")
+  const oneHourAgo = Date.now() - 3600_000
+  const entries = await cache.list(zone.id, { modifiedAfter: oneHourAgo })
+  const urls = entries.map(e => e.url)
+  await cache.purge(zone.id, { urls })
+  return { purged: urls.length, sampleUrls: urls.slice(0, 5) }
+`, timeoutMs: 15000 })
+
+Server → { purged: 142, sampleUrls: ["https://...", ...] }
+```
+
+Agent 从未在系统提示词中看到 `zones.findByName`、`cache.list` 或 `cache.purge` 的工具定义。它通过内省 spec 按需发现了它们，然后在一个程序中将它们组合起来。往返次数是两个：一个 spec 查询，一个 execute。
+
+## 为什么模型擅长这个
+
+Code Mode 背后反直觉的主张是：对模型来说写代码比在 2000 个工具中做选择更容易。这一主张在经验上是成立的，原因值得明说。
+
+**模型见过的代码量远多于结构化工具调用。** GPT-4、Claude Opus 和 Gemini Pro 在预训练阶段各自吸收了数十 TB 的公开源代码。工具调用语法只出现在后训练数据中，相较之下要薄得多。在有疑问时，模型会回落到它们见过的代码模式——而在 Code Mode 中这恰恰是你想要的。
+
+**代码是可组合的。** 一次工具调用就是一次叶子操作。真实任务需要组合——获取列表、过滤、对结果循环、对每个结果调用另一个函数。在工具调用模式下，这变成多轮对话：Agent 调用、获取结果、思考、再次调用。在 Code Mode 中，这是一个程序。处理 50 条记录的循环在旧模式下需要 50 次工具调用，在新模式下一次 `execute` 搞定。
+
+**错误处理是原生的。** 模型已经知道 try/catch。它知道怎么 `await Promise.all` 做并发。它知道怎么链 `.filter(...).map(...)`。这些控制结构不需要编码在工具的参数 schema 中——它们是语言自带的。
+
+**发现是廉价的。** 当 Agent 不知道一个方法名时，它不会瞎猜。它对 spec 对象查询 `search`，获取候选签名，然后用它们。这和人类开发者使用 IntelliSense 的工作流完全一样。幻觉方法调用减少了，因为模型在发出使用它的代码之前已经看过真正的签名——从 spec 中读出来的。
+
+代价是沙盒化。在生产 SDK 上运行任意 Agent 生成的 TypeScript 是一个需要认真对待的安全边界。Cloudflare 的实现使用隔离的 Workers——每次 `execute` 在自己的 V8 isolate 中运行，网络和存储能力由策略限制。这个模式的自托管版本需要一个更紧的沙盒：gVisor、Firecracker microVM，或带 WASI 的 WebAssembly。沙盒现在是整个 Agent 的信任边界，而非工具 schema。
+
+## Code Mode 取代了什么
+
+Code Mode 并非取代所有 MCP 工具服务器。它取代的是特定的一类：暴露大型可组合 SDK 的服务器。对于这类服务器，两工具模式在上下文成本、组合成本和错误处理上都是严格更好的。对于暴露少量高级能力的服务器——`query_database(sql)`、`send_email(to, subject, body)`——传统的工具调用接口仍然够用。
+
+决策边界大致是：如果你的服务器暴露超过 30 个工具，或者你的工具是组成性构建块而非端到端能力，Code Mode 胜出。低于这个规模，保留更简单的接口。
+
+一个有用的心智模型：工具调用接口是 RPC。Code Mode 是一个嵌入式脚本环境。RPC 适合粗粒度、少量调用的场景。脚本适合细粒度、频繁调用的场景。Agent 工作负载正在向后者漂移——随着模型组合能力越来越好，它们需要更细粒度的原语来组合。
+
+## 对 Agent 架构的影响
+
+Code Mode 对构建 Agent 系统的方式有二级效应。
+
+**上下文窗口变成代码，而非配置。** Agent 的"技能库"不再是一份 JSON Schema 列表。它是一个 TypeScript 模块目录，Agent 可以 import 并使用。这直接映射到 Claude Skills 和 Codex skills 已经工作的方式——技能是一段代码，Agent 通过阅读源码来学习它，而非查阅 schema。
+
+**工具创作变成 API 设计。** 当工具是 schema 时，"好的工具设计"意味着清晰的描述和简单的参数。Code Mode 提高了门槛：你的 SDK 现在需要对语言模型友好。一致的命名、可预测的返回形状、可组合的原语、好的错误信息——让 SDK 对人类友好的因素，同样让它对 Agent 友好。
+
+**可观测性转向代码执行。** 不再记录每次工具调用及其参数，而是记录程序及其 stdout、stderr 和返回值。通过在 REPL 中重放程序来调试损坏的 Agent 运行。这比旧的方案有更好的可观测性表面——程序是可检查的，而工具调用序列不是。
+
+**多 Agent 协作简化。** 如果每个 Agent 都讲 Code Mode，那么一个 Agent 可以把一个程序作为消息递给另一个 Agent。"来，运行这个，告诉我结果。"协作变成代码审查：编排器在授权执行前阅读 Worker 的提议程序。这比通过共享黑板传递结构化工具调用的协议更容易推理。
+
+## 仍需改进的地方
+
+Code Mode 发布时存在尖锐的边缘问题。spec 对象必须结构良好——如果 Agent 的查询表达式碰到了 API 中别扭或文档不足的角落，它就找不到需要的东西。设计 spec 表面使代码驱动查询返回有用结果，是一项真正的工程任务，不是事后补救；它更接近 API 文档设计而非搜索引擎优化。版本管理也很棘手：当 SDK 变化时，旧的 Agent 程序可能静默崩溃。传统工具 schema 至少通过类型暴露破坏性变化；API 形状一旦变化，代码的护栏就没那么宽容了。
+
+跨服务器组合是另一个缺口。如果 Agent 想运行同时触及 Cloudflare SDK 和比如 Snowflake SDK 的代码，Code Mode 服务器必须托管两者或接受 import 机制。两者都不简单；都引入供应链问题。MCP 演化的下一年将决定 Code Mode 服务器是走向联邦化还是继续孤立。
+
+对于 MCP 生态整体，Code Mode 是一个强制函数。它暴露了 MCP 原始规范中隐含的假设——工具是粗粒度的、可发现的、有限的。对于大型 SDK，这些假设没有一个成立。协议现在必须容纳一个"工具"就是一个语言运行时的世界。
+
+## 参考资料
+
+- Cloudflare engineering blog, "Code Mode: the better way to use MCP" (2026-02-20): https://blog.cloudflare.com/code-mode/
+- Model Context Protocol specification: https://modelcontextprotocol.io/specification
+- Cloudflare Workers isolates documentation: https://developers.cloudflare.com/workers/runtime-apis/
+- Cloudflare Agents SDK: https://developers.cloudflare.com/agents/

@@ -1,0 +1,242 @@
+---
+title: "Gemma Scope 2：生产规模的可解释性工具"
+description: "Google DeepMind 开源的 110 PB 可解释性工具包——SAE、Transcoder，以及 skip-transcoder 如何揭示长程推理机制。"
+publishDate: "2025-12-19"
+updatedDate: "2026-04-11"
+tags: [interpretability, deepmind, gemma, mechanistic-interpretability, safety, llm]
+category: technical
+draft: false
+hIE: methode
+hero_image: /assets/hIE/methode/445955-beatless-bodysuit-dress-katou_hiromasa-lacia-methode-snowdrop.jpg
+---
+
+机械可解释性——试图逆向工程神经网络实际计算过程的研究方向——长期以来在资源上受到一种特定制约。在大模型激活值上训练稀疏自编码器，需要运行数百万次前向传播、存储海量激活数据集，而且你想理解多少层就得做多少层。对于大厂外面的研究者来说，这意味着要么只能用小规模开源模型，要么接受一个现实：研究发现可能无法迁移到真正需要对齐的前沿系统上。
+
+2025 年 12 月，Google DeepMind 发布的 Gemma Scope 2 改变了这个等式。它不是一篇论文，也不是一个基准测试——而是一套预计算基础设施：覆盖 Gemma 3 全系列（从 270M 到 27B 参数）每一层的 SAE 和 Transcoder，在约 **110 PB** 数据上训练，所有工具的参数量总计超过一万亿。整套工具包以 Apache 2.0 许可证发布。
+
+这意味着什么？它让严肃的机械可解释性研究不再需要几十万美元量级的算力预算就能开展。
+
+## 稀疏自编码器在做什么
+
+先快速回顾核心工具：Sparse Autoencoders（SAE）。
+
+Transformer 在每一层的残差流是一个高维向量（典型模型 768 或 1024 维甚至更多）。但表示几何研究发现，这些向量实际上是更多"特征"的叠加——激活空间中的方向，对应人类可解释的概念，比如"这是 Python 代码""主语正在执行某个动作"或"上下文涉及欺骗"。
+
+标准 PCA 或探针可以找到其中一些方向，但叠加效应使特征纠缠在一起。SAE 通过学习一个稀疏的过完备字典来解决这个问题：
+
+```
+residual_stream = Σᵢ fᵢ(x) · eᵢ
+```
+
+其中 `fᵢ(x)` 是一个标量激活值（通常 ≥ 0，因为用了 ReLU），`eᵢ` 是一个学习到的特征方向。稀疏性约束——对任何给定输入，大部分 `fᵢ(x)` 应该为零——迫使字典找到只对特定、连贯语义模式激活的方向。
+
+```python
+import torch
+import torch.nn as nn
+
+class SparseAutoencoder(nn.Module):
+    """
+    Minimal SAE for decomposing transformer residual streams.
+    
+    The real Gemma Scope SAEs use JumpReLU activations and Matryoshka training;
+    this shows the core structure.
+    """
+    def __init__(self, d_model: int, n_features: int, l1_coeff: float = 1e-3):
+        super().__init__()
+        self.d_model = d_model
+        self.n_features = n_features
+        self.l1_coeff = l1_coeff
+        
+        # Encoder: residual stream → sparse feature activations
+        self.W_enc = nn.Parameter(torch.randn(d_model, n_features) * 0.01)
+        self.b_enc = nn.Parameter(torch.zeros(n_features))
+        
+        # Decoder: sparse features → residual stream reconstruction
+        self.W_dec = nn.Parameter(torch.randn(n_features, d_model) * 0.01)
+        self.b_dec = nn.Parameter(torch.zeros(d_model))
+        
+        # Normalize decoder columns to unit sphere (important for interpretability)
+        with torch.no_grad():
+            self.W_dec.data = nn.functional.normalize(self.W_dec.data, dim=1)
+    
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        """x: (..., d_model) → feature activations: (..., n_features)"""
+        pre_acts = x @ self.W_enc + self.b_enc
+        return torch.relu(pre_acts)  # Sparsity via ReLU
+    
+    def decode(self, f: torch.Tensor) -> torch.Tensor:
+        """f: (..., n_features) → reconstructed residual: (..., d_model)"""
+        return f @ self.W_dec + self.b_dec
+    
+    def forward(self, x: torch.Tensor) -> dict:
+        f = self.encode(x)
+        x_hat = self.decode(f)
+        
+        # Reconstruction loss + sparsity penalty
+        recon_loss = (x - x_hat).pow(2).mean()
+        sparsity_loss = f.abs().mean()
+        total_loss = recon_loss + self.l1_coeff * sparsity_loss
+        
+        return {
+            "loss": total_loss,
+            "features": f,
+            "reconstructed": x_hat,
+            "l0": (f > 0).float().sum(-1).mean(),  # Average features active
+        }
+
+
+# Using Gemma Scope 2 SAEs via the HuggingFace hub
+# pip install transformer_lens sae_lens
+
+from sae_lens import SAE
+
+# Load pre-trained SAE for Gemma 3 layer 12 (residual stream)
+sae, cfg_dict, _ = SAE.from_pretrained(
+    release="gemma-scope-2-27b-pt-res",
+    sae_id="layer_12/width_16k/average_l0_71",
+)
+
+# Get activations from the model
+import transformer_lens
+model = transformer_lens.HookedTransformer.from_pretrained("google/gemma-3-27b")
+
+tokens = model.to_tokens("The proof proceeds by contradiction. Assume")
+logits, cache = model.run_with_cache(tokens)
+
+# Extract residual stream at layer 12
+residual = cache["resid_post", 12]  # (1, seq_len, d_model)
+
+# Decompose into sparse features
+feature_acts = sae.encode(residual)  # (1, seq_len, n_features)
+print(f"Average features active per token: {(feature_acts > 0).float().mean(-1).mean():.1f}")
+
+# Find the most active features on the final token
+final_token_acts = feature_acts[0, -1, :]  # (n_features,)
+top_features = final_token_acts.topk(10)
+print("Top 10 active features:")
+for idx, val in zip(top_features.indices, top_features.values):
+    print(f"  Feature {idx.item()}: {val.item():.3f}")
+```
+
+## Transcoder：映射 MLP 计算
+
+SAE 分解的是残差流在每一层"包含"什么。Transcoder 回答的是另一个问题：MLP 对这些特征做了什么变换？
+
+MLP 模块计算 `output = W_out · ReLU(W_in · x + b_in) + b_out`，这是一个从残差流到增量的非线性函数，最终加回残差流。Transcoder 学习对这个函数的稀疏近似，表示为"特征 → 特征"转换之和：
+
+```
+MLP(x) ≈ Σᵢ g_i(x) · v_i
+```
+
+其中 `g_i(x)` 在输入特征 `i` 存在时激活，`v_i` 是这在输出中产生的方向。这样你就得到了一个可读的电路描述："当模型在上下文中检测到特征 X 时，第 L 层的 MLP 向残差流添加特征 Y。"
+
+这类电路分析正是 Anthropic 在 GPT-2 中识别出"间接对象识别"电路的方法（Wang et al., 2022）——一组特定的注意力头和 MLP 神经元，实现了一种算法，用来判断哪个代词指向哪个命名实体。Gemma Scope 2 的 Transcoder 使这种分析在 Gemma 3 全系列（27B 模型）规模下变得可操作。
+
+## 新增：Skip-Transcoder
+
+Gemma Scope 2 最具技术趣味的新增是 skip-transcoder。标准 Transcoder 捕获第 L 层 MLP 如何变换该层内的特征。但对于在第 5 层出现并影响第 15 层计算的特征——跳过中间所有层——又该如何解释？
+
+这种信息流中的"跳跃连接"现象与模型中字面上的残差连接无关——它指的是语义特征在许多层中持续存在、几乎不被变换，然后突然成为远处下游计算的输入。
+
+Skip-transcoder 被训练来近似 `f(x_L1) ≈ x_L2`——学习非相邻层 L1 和 L2 之间激活值的变换。当学到的变换是稀疏且可解释的，就能揭示哪些特征在 L1 到 L2 之间的各层中因果传播。
+
+这对理解多步推理有直接意义：
+
+```python
+# Conceptual code illustrating skip-transcoder analysis
+from gemma_scope import SkipTranscoder, load_model
+
+model = load_model("gemma-3-27b")
+skip_tc = SkipTranscoder.from_pretrained("gemma-scope-2-27b", source_layer=8, target_layer=20)
+
+problem = "Let n be a prime number greater than 3. Show that n² - 1 is divisible by 24."
+
+tokens = model.tokenize(problem)
+activations_l8 = model.get_activations(tokens, layer=8)
+activations_l20 = model.get_activations(tokens, layer=20)
+
+# Find which features at layer 8 causally contribute to layer 20
+skip_features = skip_tc.encode(activations_l8)  # (seq_len, n_features)
+reconstructed_l20 = skip_tc.decode(skip_features)
+
+# Features with high activation in the skip-transcoder
+# represent information being "carried" from layer 8 to 20
+skip_residual = reconstructed_l20 - activations_l8.mean(dim=0)
+dominant_skip_features = skip_features.mean(0).topk(20)
+
+# These features represent semantic content being preserved 
+# across layers 8-20 — likely mathematical/logical structure
+# in this case that helps at the reasoning layers
+```
+
+## 跨层 Transcoder 与因果流
+
+跨层 Transcoder 将这一思想推广到任意层对，学习变换 `(layer_a, layer_b) → 稀疏近似`。这使得对特定计算进行系统性因果信息流映射成为可能。
+
+对于 CoT 忠实性研究——即模型的可见推理步骤是否实际导致了其结论——这一点尤为重要。通过比较"模型生成正确 CoT 然后得到正确答案"与"模型生成看似合理但错误的 CoT"的 skip-transcoder 推导信息流，你可以追问：决定最终答案的信息在哪一层出现？它是否与生成的 CoT 步骤相关？
+
+Anthropic 在 CoT 忠实性方面早期研究（Lanham et al., 2023）用激活修补技术表明，模型有时会通过绕过其陈述链式推理的路径得出结论。跨层 Transcoder 使这类分析更加系统化和细粒度。
+
+## Matryoshka 训练创新
+
+Gemma Scope 2 的 SAE 采用 Matryoshka 表示学习训练。具体来说：一组 16K 学习特征中应包含一个有意义的 4K 子集，捕获最重要的信息；而这个 4K 子集中又嵌套一个 1K 子集，捕获其中最重要的，以此类推。
+
+形式上，在训练过程中加入辅助损失，要求特征字典的较小子集也实现良好的重建：
+
+```python
+class MatryoshkaSAE(nn.Module):
+    """
+    SAE with nested representation learning.
+    Smaller feature subsets must also reconstruct the residual stream.
+    """
+    def __init__(self, d_model: int, n_features: int, 
+                 nest_sizes: list[int] = [1024, 4096, 16384]):
+        super().__init__()
+        assert n_features == max(nest_sizes)
+        self.nest_sizes = sorted(nest_sizes)
+        
+        self.W_enc = nn.Parameter(torch.randn(d_model, n_features) * 0.01)
+        self.b_enc = nn.Parameter(torch.zeros(n_features))
+        self.W_dec = nn.Parameter(torch.randn(n_features, d_model) * 0.01)
+        self.b_dec = nn.Parameter(torch.zeros(d_model))
+    
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        return torch.relu(x @ self.W_enc + self.b_enc)
+    
+    def forward(self, x: torch.Tensor) -> dict:
+        f = self.encode(x)
+        
+        total_loss = 0.0
+        # Loss for each nested subset
+        for k in self.nest_sizes:
+            # Use only the first k features (Matryoshka nesting)
+            f_k = f[..., :k]
+            x_hat = f_k @ self.W_dec[:k] + self.b_dec
+            
+            recon_loss = (x - x_hat).pow(2).mean()
+            sparsity_loss = f_k.abs().mean()
+            
+            # Higher weight for smaller nests (they need to work harder)
+            weight = self.nest_sizes[-1] / k
+            total_loss = total_loss + weight * (recon_loss + 1e-3 * sparsity_loss)
+        
+        return {"loss": total_loss, "features": f}
+```
+
+实际意义：在分析时可以自由选择不同粒度。Top 1K 特征给出模型"在想什么"的粗粒度地图——高级语义类别。完整的 16K 特征则在该类别内提供细粒度区分。这让探索性分析更快（用粗粒度特征定位有趣的层/ token），让详细分析变得可操作（深入研究特定特征）。
+
+## 为什么这套基础设施重要
+
+Gemma Scope 2 作为研究工具很有用，但更广泛的意义在于它证明了一种可解释性流程可以作为标准实践。
+
+目前，训练和评估 SAE 本身就是一个小研究项目。大多数学术团队无法负担在前沿模型上训练高质量 SAE 的算力。Gemma Scope 2 为 Gemma 3 消除了这个障碍，而且引用原版 Gemma Scope（针对 Gemma 2）的 40+ 篇论文表明社区会用它。
+
+更重要的是，它展示了一个可行的答案来回应：追求安全研究的实验室如何在模型能力越来越强的情况下保持有意义的白盒可见性？答案不一定是要让所有人访问模型权重——而是提供预计算的可解释性工具，可以在不需要白盒访问训练过程的情况下识别令人担忧的行为。
+
+局限在于：Gemma Scope 2 针对事后分析优化，而非部署期间的实时监控。SAE 前向传播带来显著开销。对于生产监控——即你希望在发生时标记令人担忧的激活——你需要的要么是快得多的 SAE，要么是完全不同的工具。从"分析时可解释性"到"部署时监控"的差距是一个开放的工程问题。
+
+Gemma Scope 2 具体解决了什么问题：让研究社区能以低成本、快速度研究最先进的开源模型实际上在计算什么——逐层、任意输入。这是有限的，但确实迈出了实质性一步。
+
+---
+
+*参考文献："Gemma Scope 2: Helping the AI Safety Community Deepen Understanding of Complex Language Model Behavior"（DeepMind 技术论文，2025 年 12 月）；"Interpreting Neural Networks with Sparse Autoencoders"（Cunningham et al., 2023）；"Scaling and evaluating sparse autoencoders"（Gao et al., Anthropic 2024）；"Towards Monosemanticity: Decomposing Language Models With Dictionary Learning"（Elhage et al., Anthropic 2022）；"Measuring Faithfulness in Chain-of-Thought Reasoning"（Lanham et al., 2023）*

@@ -1,0 +1,193 @@
+---
+title: "TRIBE v2：合成神经科学的基础模型"
+description: "Meta FAIR 的三模态大脑编码模型，能在不给任何人做扫描的情况下，预测 fMRI 对新刺激的响应。"
+publishDate: "2026-04-12"
+tags: [bci, fmri, neuroscience, foundation-models, meta-fair, brain-encoding]
+category: research
+language: zh
+draft: false
+hIE: kouka
+hero_image: /assets/hIE/kouka/188823-beatless-kouka-mecha-mecha_musume-redjuice-thighhighs-wallpaper.jpg
+---
+
+每项 fMRI 研究都有一个绕不开的瓶颈：需要受试者躺在扫描仪里几个小时，在严格控制的条件下观看刺激材料。成本高，不可扩展，同一刺激的有效样本量极小。已发表的大多数神经科学发现仅基于不到 20 名受试者。
+
+Meta FAIR 在 ICLR 2026 上展示的 TRIBE v2（Tri-modal Brain Encoding，三模态大脑编码），从一个出人意料的方向突破了这个瓶颈：不是降低扫描成本，而是问——一个在足够多 fMRI 数据上训练的基础模型，能否在不进行扫描的情况下，预测出全新的脑部扫描图像。
+
+该架构在空间分辨率上覆盖了 **72 万个 voxels**（70000 个）、**720 名受试者**、**1115 小时的 fMRI 数据**。它对未见图像、音频和文本的神经响应的预测，可以与专门针对个人训练的回归模型相抗衡。这不是脑编码性能的边际改进，而是质的飞跃：可扩展的合成神经科学。
+
+## 大脑编码问题
+
+脑编码和解码是一对逆问题。解码问的是：给定神经激活，是什么刺激引起的？编码问的是：给定一个刺激，会产生什么激活？两者都有科学价值；编码可以说更为根本，因为它提供了输入到大脑的映射模型。
+
+标准的大脑编码流程，是在刺激特征和 voxel 响应之间拟合一个线性回归（或略微非线性变体）：
+
+```python
+from sklearn.linear_model import Ridge
+import numpy as np
+
+# fmri_responses: (n_trials, n_voxels)
+# stimulus_features: (n_trials, n_features) — e.g., CLIP embeddings
+def fit_encoding_model(stimulus_features, fmri_responses, alpha=1000.0):
+    """Fit a ridge regression encoding model for one subject."""
+    model = Ridge(alpha=alpha)
+    model.fit(stimulus_features, fmri_responses)
+    return model
+
+def predict_response(model, new_stimulus_features):
+    return model.predict(new_stimulus_features)
+```
+
+这在同一个人身上、对训练分布内的刺激类型上效果还算不错。问题出在规模化时：
+
+1. **无法跨被试泛化**：在 A 身上训练，在 B 身上失效
+2. **无法跨模态迁移**：图像编码模型无法迁移到音频
+3. **数据饥饿**：为每个 voxel 拟合回归需要每人几百对刺激-响应
+4. **无法合成**：无法预测没有收集过类似数据的刺激的响应
+
+TRIBE v2 逐一解决了这四个问题。
+
+## 架构：7 万 voxels 上的三模态编码
+
+TRIBE v2 的架构是一个 transformer，将三种模态的刺激嵌入——视觉（CLIP ViT-G）、听觉（EnCodec）、语言（LLaMA-3）——映射到 **7 万维的 voxel 预测向量**。
+
+核心洞察是：这些模态共享了皮层编码空间的很大一部分。视觉皮层显然对图像有响应，但也会在听到视觉场景的听觉描述时激活，在语言触发心理意象时激活。听皮层对音乐有响应，对文字歌词也有响应。一个将各模态视为独立的模型，无法捕捉真实脑响应的跨模态一致性。
+
+TRIBE v2 通过跨模态注意力层来处理这个问题——在投影到 voxel 空间之前，强制模型跨模态对齐表征：
+
+```python
+import torch
+import torch.nn as nn
+from torch.nn import MultiheadAttention
+
+class TriModalEncoder(nn.Module):
+    def __init__(self, d_model: int = 1024, n_heads: int = 16, n_voxels: int = 70000):
+        super().__init__()
+        # Per-modality projectors bring heterogeneous embeddings to d_model
+        self.visual_proj   = nn.Linear(1280, d_model)  # CLIP ViT-G dim
+        self.auditory_proj = nn.Linear(128, d_model)   # EnCodec dim
+        self.language_proj = nn.Linear(4096, d_model)  # LLaMA-3 dim
+
+        # Cross-modal fusion: modalities attend to each other
+        self.cross_modal_attn = MultiheadAttention(d_model, n_heads, batch_first=True)
+        self.norm = nn.LayerNorm(d_model)
+
+        # Voxel-space projection
+        self.voxel_head = nn.Sequential(
+            nn.Linear(d_model, d_model * 2),
+            nn.GELU(),
+            nn.Linear(d_model * 2, n_voxels)
+        )
+
+    def forward(self, visual=None, auditory=None, language=None):
+        # Build token sequence from available modalities
+        tokens = []
+        if visual is not None:
+            tokens.append(self.visual_proj(visual).unsqueeze(1))
+        if auditory is not None:
+            tokens.append(self.auditory_proj(auditory).unsqueeze(1))
+        if language is not None:
+            tokens.append(self.language_proj(language).unsqueeze(1))
+
+        x = torch.cat(tokens, dim=1)  # (batch, n_modalities, d_model)
+
+        # Cross-modal attention: each modality attends to others
+        x_attended, _ = self.cross_modal_attn(x, x, x)
+        x = self.norm(x + x_attended)
+
+        # Pool across modalities and project to voxel space
+        x_pooled = x.mean(dim=1)
+        return self.voxel_head(x_pooled)  # (batch, n_voxels)
+```
+
+这是 TRIBE v2 设计的简化版。完整架构还包括更深的跨模态堆栈、通过学习嵌入实现的被试特定条件化，以及处理不同覆盖范围被试缺失 voxels 的皮层掩码策略。
+
+## 训练数据挑战
+
+训练一个可靠的 7 万 voxel 预测模型需要的不仅是规模，而是**对齐的规模**。720 名被试和 1115 小时的 fMRI 数据来自三个主要来源：Natural Scenes Dataset（Allen 等）、HCP-Aging，以及 Meta FAIR 专门收集的包含音频和语言刺激的语料库。
+
+对齐的难点：voxel 坐标无法在受试者之间干净地映射。个体解剖学差异意味着"被试 A 的 voxel (38, 72, 51)"和"被试 B 的 voxel (38, 72, 51)"可能响应完全不同的特征。TRIBE v2 通过基于表面的对齐步骤来处理这个问题——在训练前将每个被试的皮层表面配准到公共 MNI 模板，以表面测地距离对齐代替体积坐标对齐。
+
+结果是：训练数据集中，给定表面位置的每个 voxel 在不同被试之间代表近似相同的解剖功能——不完美，但足以让基础模型学习跨被试模式。
+
+## 合成神经响应能做什么
+
+TRIBE v2 的实际输出是一个函数：给定任意图像、音频片段或文本段落，预测人群平均的 fMRI 响应，以及 720 名训练被试中任意被试的条件化响应。
+
+这使得此前不可能或成本极高的研究工作流成为可能：
+
+**大规模刺激预筛选**：在 20 名被试上运行 fMRI 研究之前，在所有 720 名虚拟被试上合成响应，识别出在目标脑区显示最强效果的刺激。仅对高信号刺激的子集进行实际扫描。
+
+**规模化假说生成**：能预测脑响应的模型可以生成最大程度激活目标脑区的刺激——一种逆向合成。问"什么图像最能激活梭状回面部区域？"然后在编码模型上做基于梯度的优化：
+
+```python
+def synthesize_optimal_stimulus(
+    model: TriModalEncoder,
+    target_voxels: list[int],
+    n_steps: int = 1000,
+    lr: float = 0.01
+) -> torch.Tensor:
+    """
+    Find the image embedding that maximally activates target_voxels.
+    Start from noise; optimize the CLIP embedding space.
+    """
+    # Initialize with random embedding in CLIP space
+    visual_embed = torch.randn(1, 1280, requires_grad=True)
+    optimizer = torch.optim.Adam([visual_embed], lr=lr)
+
+    for step in range(n_steps):
+        optimizer.zero_grad()
+        predicted_response = model(visual=visual_embed)  # (1, n_voxels)
+
+        # Maximize activation in target voxels
+        target_activation = predicted_response[0, target_voxels].mean()
+        loss = -target_activation  # Gradient ascent
+
+        loss.backward()
+        optimizer.step()
+
+        if step % 100 == 0:
+            print(f"Step {step}: activation = {target_activation.item():.4f}")
+
+    return visual_embed.detach()
+```
+
+合成的嵌入可以用 CLIP 条件生成模型反演到像素空间图像。结果是一种专门用于激活特定神经回路的刺激——无需招募被试即可探测皮层的功能组织。
+
+**跨模态比较**：由于 TRIBE v2 联合处理视觉、听觉和语言刺激，你可以直接问"这张图像和它的文字描述是否激活了同一区域？"或"视觉皮层的哪些部分对音乐和对应的心理意象有相似的响应？"此前这些比较需要独立研究和仔细对齐；TRIBE v2 让它们变成了共享表征上的直接对比。
+
+## 性能和验证
+
+在 Natural Scenes Dataset 的留出被试上，TRIBE v2 在所有 voxels 上实现了 **中位 R² = 0.32**——即模型解释了单个 voxel 对新图像响应的 32% 方差。作为对比，针对每个留出被试单独训练的特定被试线性回归模型在同一数据集上达到约 **0.38 R²**。
+
+0.06 的差距是有意义的，但并不令人意外。TRIBE v2 对一个新被试做零样本预测，没有使用该被试的任何数据；回归模型则掌握数百次试次。更有意思的是准确率的皮层分布：TRIBE v2 在早期视觉皮层（V1-V4）显著优于回归，在高级联想区域则表现不如。对于可预测的回路，基础模型的泛化能力优于特定被试拟合；对于特异性的高级表征，个体数据仍然胜出。这与一个学习了皮层层级原则表征的模型的预期相符。
+
+## 可解释性视角
+
+TRIBE v2 同时也是一个表征分析工具。由于模型通过结构化的跨模态嵌入编码刺激，你可以通过分析输出相对于输入特征的梯度，来探查哪些特征驱动了特定脑区的响应：
+
+```python
+def voxel_feature_attribution(model, stimulus_embed, target_voxel: int):
+    """Compute which input features most drive a target voxel's response."""
+    stimulus_embed = stimulus_embed.detach().requires_grad_(True)
+    response = model(visual=stimulus_embed)
+    voxel_activation = response[0, target_voxel]
+    voxel_activation.backward()
+    return stimulus_embed.grad  # Attribution map in embedding space
+```
+
+这将 TRIBE v2 与语言模型的机械可解释性方法联系起来。如果你能将一个神经元的激活归因于特定的输入特征，你就在问与稀疏自编码器方法对 LLM 问的同样的问题：这个单元在**计算什么**？区别在于 fMRI voxels 具有已知解剖位置和数十年功能注释的先验，提供了 LLM 内部特征所缺乏的真实标签验证。
+
+## 局限与后续方向
+
+TRIBE v2 的预测受限于用于被试间对齐的皮层模板。个体差异较大的区域——前颞叶、前额叶皮层、个体特定的脑沟模式——系统性地预测不足。该模型对规范皮层区域（视觉、听觉、躯体感觉皮层）最有用，因为这些区域的跨被试功能解剖更为一致。
+
+合成响应也是群体统计量，而非个体预测。一个 720 被试平均的对新图像的响应是一个真实且有用的量，但它不能替代为特定临床或研究目的扫描特定个人。TRIBE v2 是用于假说生成和群体水平分析的工具，而非个体被试建模。
+
+自然的下一步是整合更丰富的个体差异协变量——年龄、性别、神经病史、认知测试分数——作为条件化信号。一个不仅能预测群体平均响应，还能基于可测量的被试特征预测个体差异的模型，将为大多数研究应用弥合合成与真实 fMRI 数据之间的差距。
+
+对 BCI 领域而言，含义更远但真实存在。脑编码的基础模型最终可以指导 BMI 系统中电极的放置，通过预预测哪些皮层位置为给定解码目标携带最高质量信号，来减少手术校准负担。这个应用是 5 年后还是 15 年后更难说。但方向是明确的——用习得的皮层组织模型来减少个体被试的数据收集负担。
+
+---
+
+*参考文献："TRIBE v2: A Tri-modal Brain Encoding Foundation Model at 70,000 Voxels"（Meta FAIR，ICLR 2026，2026 年 3 月 26 日）。Natural Scenes Dataset：Allen 等，2022。*

@@ -1,0 +1,301 @@
+---
+title: "Brain-OF：一个模型统一 fMRI、MEG 与 EEG"
+description: "Brain-OF 通过稀疏 MoE 架构将三种神经影像模态统一在单一基础模型中。这对 BCI 意味着什么？"
+publishDate: "2026-04-13"
+tags: ["bci", "foundation-models", "eeg", "fmri", "meg", "neuroscience", "moe"]
+language: zh
+draft: false
+hIE: lacia
+hero_image: /assets/hIE/lacia/lacia-1920x1200-869498.jpg
+---
+
+脑机接口领域有一个根深蒂固的碎片化问题：fMRI 模型无法处理 EEG，EEG 模型无法适配 MEG，每换一个采集设备就得重新训练一个模型、搭一套预处理流程、备一批标注数据。跨模态迁移——用数据丰富的模态（fMRI）来提升数据稀缺模态（EEG）的性能——喊了多年，实际进展却极为有限。
+
+**Brain-OF**（Brain Omnifunctional Foundation Model）向前迈出了实质性的一步。它用稀疏 MoE 架构将 fMRI、MEG、EEG 信号映射到一个共享语义空间，实现了跨成像类型的模态不变表征。一个主要用 fMRI 数据训练的模型，可以解码它从未见过的 EEG 信号；一个在 MEG 上校准的模型，可以零样本泛化到 fMRI 而无需重训练。
+
+据我所知，这是第一个将神经影像模态视为**词元类型**而非**模型类型**的架构。
+
+## 跨模态对齐的核心难题
+
+根本挑战在于：fMRI、MEG、EEG 测量的物理量不同，时空分辨率也天差地别。
+
+| 模态 | 信号类型 | 时间分辨率 | 空间分辨率 | 典型记录方式 |
+|------|---------|----------|----------|------------|
+| fMRI | BOLD 血氧动力学响应 | ~0.5 Hz（TR=2s）| ~2mm 体素 | 3D 体积成像 |
+| MEG | 神经元电流产生的磁场 | ~1000 Hz | ~5-10mm（溯源后）| 306 通道传感器 |
+| EEG | 头皮电位 | ~256-5000 Hz | ~10-20mm | 32-256 通道电极 |
+
+这些不是细微差异。fMRI 以毫米精度捕捉「哪里」有活动，但积分时间是秒级；EEG 以毫秒精度捕捉「何时」有活动，但空间模糊到厘米级；MEG 介于两者之间。对齐这些信号，就像把一张长曝光高分辨率照片和一段 1000fps 低分辨率视频拼在一起——它们记录的是同一事件，但坐标系根本不同。
+
+以往的做法是每种模态单独训练编码器，再把输出对齐到一个共享嵌入空间（对比学习）。这在有配对数据时可行——同时采集的 fMRI-EEG 记录，来自同一被试执行相同任务。但配对数据成本极高、极为稀缺，大多数神经影像数据集只有单一模态。
+
+## Brain-OF 的架构
+
+Brain-OF 的核心设计决策：用共享 transformer 主干网 + 模态特定路由的稀疏 MoE，再加上一个「任意分辨率神经信号采样器」（Any-Resolution Neural Signal Sampler），在信号进入 transformer 之前先归一化时间维度。
+
+```python
+import torch
+import torch.nn as nn
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class ModalityConfig:
+    """Configuration for each neuroimaging modality."""
+    name: str
+    sampling_rate_hz: float
+    n_channels: int
+    spatial_dims: tuple[int, ...]  # voxel grid or sensor layout
+
+MODALITY_CONFIGS = {
+    "fmri": ModalityConfig("fmri", 0.5, 1, (91, 109, 91)),  # MNI voxels
+    "meg":  ModalityConfig("meg", 1000.0, 306, (306,)),       # sensor array
+    "eeg":  ModalityConfig("eeg", 256.0, 64, (64,)),          # electrode array
+}
+
+
+class AnyResolutionSampler(nn.Module):
+    """Normalizes heterogeneous temporal resolutions to a fixed token rate.
+    
+    The core problem: fMRI has 1 sample per 2 seconds, EEG has 256 per second.
+    A 10-second recording produces 5 fMRI volumes but 2,560 EEG samples.
+    
+    Solution: resample to a fixed number of temporal tokens regardless of
+    input rate, using learned interpolation rather than naive downsampling.
+    """
+    
+    def __init__(self, n_temporal_tokens: int = 64, d_model: int = 768):
+        super().__init__()
+        self.n_temporal_tokens = n_temporal_tokens
+        self.query_tokens = nn.Parameter(
+            torch.randn(1, n_temporal_tokens, d_model)
+        )
+        self.cross_attn = nn.MultiheadAttention(
+            embed_dim=d_model, num_heads=8, batch_first=True
+        )
+        self.norm = nn.LayerNorm(d_model)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, variable_time_steps, d_model) — already channel-encoded
+        Returns:
+            (batch, n_temporal_tokens, d_model) — fixed-length representation
+        """
+        B = x.shape[0]
+        queries = self.query_tokens.expand(B, -1, -1)
+        
+        # Cross-attention: learned queries attend to variable-length input
+        # This replaces naive resampling with content-aware temporal compression
+        out, _ = self.cross_attn(queries, x, x)
+        return self.norm(out + queries)
+```
+
+采样器使用可学习的查询词元，通过交叉注意力机制来attend 长度可变的输入信号。对于 fMRI（10 秒内 5 个时间点），每个查询词元attend 所有 5 个体素；对于 EEG（10 秒内 2560 个采样点），每个查询词元有选择地attend 相关的时间窗口。模型学会每种模态下「该attend 什么」，而不是依赖固定的重采样规则。
+
+## 稀疏 MoE 实现模态路由
+
+时间维度归一化后，所有模态输出形状一致：`(batch, n_temporal_tokens, d_model)`。稀疏 MoE 层根据模态和内容将词元路由到不同的专家。
+
+```python
+class ModalityAwareMoE(nn.Module):
+    """Sparse Mixture of Experts with modality-aware routing.
+    
+    Key design: some experts specialize in specific modalities,
+    others are shared across modalities. The router learns which
+    experts to activate based on both content and modality type.
+    """
+    
+    def __init__(
+        self,
+        d_model: int = 768,
+        n_experts: int = 16,
+        n_active: int = 4,
+        n_modalities: int = 3,
+    ):
+        super().__init__()
+        self.n_active = n_active
+        
+        # Expert FFN layers
+        self.experts = nn.ModuleList([
+            nn.Sequential(
+                nn.Linear(d_model, d_model * 4),
+                nn.GELU(),
+                nn.Linear(d_model * 4, d_model),
+            )
+            for _ in range(n_experts)
+        ])
+        
+        # Router: content + modality embedding → expert selection
+        self.modality_embed = nn.Embedding(n_modalities, d_model)
+        self.router = nn.Linear(d_model * 2, n_experts)  # concat(content, modality)
+    
+    def forward(
+        self,
+        x: torch.Tensor,
+        modality_id: int,
+    ) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, seq_len, d_model)
+            modality_id: 0=fMRI, 1=MEG, 2=EEG
+        Returns:
+            (batch, seq_len, d_model)
+        """
+        B, T, D = x.shape
+        
+        # Modality conditioning
+        mod_emb = self.modality_embed(
+            torch.tensor(modality_id, device=x.device)
+        ).unsqueeze(0).unsqueeze(0).expand(B, T, -1)
+        
+        # Route based on content + modality
+        router_input = torch.cat([x, mod_emb], dim=-1)
+        logits = self.router(router_input)  # (B, T, n_experts)
+        
+        # Top-k expert selection (sparse activation)
+        topk_vals, topk_idx = logits.topk(self.n_active, dim=-1)
+        weights = torch.softmax(topk_vals, dim=-1)  # (B, T, n_active)
+        
+        # Weighted sum of active expert outputs
+        out = torch.zeros_like(x)
+        for k in range(self.n_active):
+            expert_idx = topk_idx[:, :, k]  # (B, T)
+            weight = weights[:, :, k].unsqueeze(-1)  # (B, T, 1)
+            
+            for e_idx in range(len(self.experts)):
+                mask = (expert_idx == e_idx)  # (B, T)
+                if mask.any():
+                    expert_out = self.experts[e_idx](x[mask])
+                    out[mask] += weight[mask] * expert_out
+        
+        return out
+```
+
+路由机制产生了一种emergent 特化模式：训练过程中，某些专家持续激活 fMRI 词元（学习血氧动力学响应函数），另一些持续激活 EEG 词元（学习频谱分解模式），还有一部分在所有模态下都激活（学习模态不变语义特征）。最后一组——共享专家——正是跨模态迁移发生的地方。
+
+## 为什么共享表征是可行的
+
+跨模态神经表征的理论基础来自一个神经科学原理：三种模态测量的都是同一底层神经活动的副产物。fMRI 测量的是代谢余波（血流变化），MEG 测量的是磁场，EEG 测量的是电位。测量物理不同，信号源相同。
+
+如果 Brain-OF 学到的表征捕捉的是「源」活动而非「测量」特征，这些表征就应该能跨模态迁移。稀疏 MoE 架构鼓励这一点：模态特定专家处理测量特性（fMRI 的血氧延迟、EEG 的容积传导），共享专家捕捉底层神经状态。
+
+Brain-OF 工作的实验证据支持这一观点。在视觉解码任务上评估：
+- 纯 fMRI 模型（训练测试均在 fMRI 上）：基线性能
+- 纯 EEG 模型（训练测试均在 EEG 上）：约 60% 的 fMRI 性能（预期内——EEG 空间分辨率更低）
+- Brain-OF 在 fMRI 上训练，零样本迁移到 EEG：约 **75%** 的 fMRI 性能
+
+零样本迁移结果是这篇工作的核心亮点：一个从未见过 EEG 数据的模型，超越了直接用 EEG 训练的模型。从高分辨率 fMRI 数据中学到的共享表征，提供了比有限数据直接训练 EEG 更好的归纳偏置。
+
+## 「任意分辨率」问题的细节
+
+fMRI 与 EEG 的时间分辨率差距横跨三个数量级：0.5 Hz 对 256+ Hz。对这个差距的简单处理——将 EEG 下采样到 fMRI 速率，或将 fMRI 上采样到 EEG 速率——都会破坏信息。
+
+将 EEG 下采样到 0.5 Hz 会丢弃使 EEG 有价值的频谱内容。Alpha 节律（8-12 Hz）、Beta 振荡（13-30 Hz）、Gamma 波段活动（30-100+ Hz）——全部消失，剩下的是慢皮层电位，能携带一些信息，但丢失了 EEG 区别于 fMRI 的时间动态。
+
+将 fMRI 上采样到 256 Hz 制造的是虚假的时间分辨率。血氧动力学响应函数的时间常数约 6 秒。任何插值方案都无法从一个被血流物理学低通滤波的信号中恢复亚秒级神经动态。
+
+Brain-OF 的交叉注意力采样器同时避免了这两种失败模式。对于 EEG，学习到的查询可以attend 不同频段在不同时窗的内容——一个查询可能捕捉到 t=2.3s 时的一次 gamma 爆发，另一个可能捕捉到整个 10 秒窗口内的持续 alpha 去同步化。对于 fMRI，查询attend 可用的体素，并学会在语义上有意义的方式（在表征空间中而非时间中）进行插值。
+
+```python
+class SpectralChannelEncoder(nn.Module):
+    """Encode raw neural signals into a format suitable for the sampler.
+    
+    For EEG: Short-Time Fourier Transform → spectral features per channel
+    For fMRI: Spatial embedding of voxel activations
+    For MEG: Sensor-space encoding with spatial priors
+    """
+    
+    def __init__(self, modality: str, d_model: int = 768):
+        super().__init__()
+        self.modality = modality
+        config = MODALITY_CONFIGS[modality]
+        
+        if modality == "eeg":
+            # STFT-based: preserve spectral content
+            self.n_freqs = 40  # frequency bins
+            self.proj = nn.Linear(config.n_channels * self.n_freqs, d_model)
+        elif modality == "fmri":
+            # Spatial: flatten voxels into patches
+            self.patch_size = 8  # 8x8x8 voxel patches
+            n_patches = 1  # simplified; real impl uses 3D patching
+            self.proj = nn.Linear(self.patch_size ** 3, d_model)
+        elif modality == "meg":
+            # Sensor-space with spatial topology
+            self.proj = nn.Linear(config.n_channels, d_model)
+        
+        self.norm = nn.LayerNorm(d_model)
+    
+    def forward(self, raw_signal: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            raw_signal: modality-specific raw recording
+                EEG:  (batch, n_channels, time_samples)
+                fMRI: (batch, x, y, z, time_volumes)
+                MEG:  (batch, n_sensors, time_samples)
+        Returns:
+            (batch, variable_time_steps, d_model)
+        """
+        if self.modality == "eeg":
+            # STFT: (batch, channels, freqs, time_windows)
+            spec = torch.stft(
+                raw_signal.reshape(-1, raw_signal.shape[-1]),
+                n_fft=80, hop_length=32, return_complex=True,
+            ).abs()
+            B, C = raw_signal.shape[:2]
+            T_win = spec.shape[-1]
+            spec = spec.reshape(B, C, -1, T_win)
+            # (batch, time_windows, channels * freqs)
+            spec = spec.permute(0, 3, 1, 2).reshape(B, T_win, -1)
+            return self.norm(self.proj(spec))
+        
+        elif self.modality == "fmri":
+            # Simplified: treat each volume as one time step
+            B = raw_signal.shape[0]
+            T = raw_signal.shape[-1]
+            # Flatten spatial dims per volume
+            vols = raw_signal.reshape(B, -1, T).permute(0, 2, 1)
+            return self.norm(self.proj(vols[:, :, :self.patch_size**3]))
+        
+        elif self.modality == "meg":
+            # (batch, time, sensors) → project
+            x = raw_signal.permute(0, 2, 1)  # (B, T, sensors)
+            return self.norm(self.proj(x))
+        
+        raise ValueError(f"Unknown modality: {self.modality}")
+```
+
+## 对 BCI 领域的实际影响
+
+Brain-OF 的实际影响来自三个方向。
+
+**数据效率。** BCI 领域的慢性问题是数据稀缺。采集神经数据成本高昂——fMRI 约 500 美元/小时，EEG 需要精细的设置和校准，临床人群（卒中患者、ALS 患者）只能耐受较短的记录时间。一个能跨模态迁移知识的基础模型，使有效数据集规模成倍扩大。人类连接组项目中的每个 fMRI 数据集，都成了 EEG 解码的相关训练数据。
+
+**临床部署。** fMRI 是脑区定位的金标准，但需要价值数百万美元的扫描仪和一动不动的患者。EEG 便携，临床系统成本 1 万至 5 万美元。如果 Brain-OF 能通过迁移学习从 EEG 信号中提取 fMRI 级别的空间信息，就将临床 BCI 的门槛从「医院专用」降低到「床边可用」。
+
+**跨被试泛化。** 零样本迁移原则不仅适用于跨模态，还适用于跨被试。Brain-OF 的共享表征在抽象层面捕捉神经状态，超越了个人解剖差异。这与语言模型跨说话人工作的原理相同——语义内容是共享的，即便声学实现不同。如果 Brain-OF 学到了神经活动的「语义层」，新被试就能以最少甚至无需校准的方式使用该系统。
+
+## 与 PRISM 和 BrainWhisperer 的关联
+
+两个同期工作强化了 Brain-OF 的方向。
+
+**PRISM**（ICLR 2026）证明人类大脑处理视觉刺激的方式更接近文本语义而非像素级特征。其「脑→语言→图像」管道——fMRI 解码 → 文本描述 → 图像重建——在噪声条件下优于直接的「脑→图像」管道。这支持了 Brain-OF 将语言对齐语义空间作为神经解码目标的做法。如果大脑本身以类似语言的格式表征视觉体验，那么将神经表征与 LLM 嵌入空间对齐，就不仅仅是方便的工程选择，而是一个结构上恰当的建模决策。
+
+**BrainWhisperer** 通过将微电极阵列信号与预训练的 Whisper ASR 模型集成，实现了跨被试的零样本神经语音解码。该方法与 Brain-OF 形成互补：Brain-OF 统一的是跨「模态」（fMRI/MEG/EEG），BrainWhisperer 统一的是跨「被试」（同模态下的颅内记录）。两者都利用预训练基础模型（Brain-OF 用 LLM，BrainWhisperer 用 ASR）作为对齐目标。
+
+方向收敛是明确的：BCI 领域正从定制的、被试特定、模态特定的解码器，走向将神经信号视为现有大模型的又一种词元模态的基础模型。我之前探讨过的问题在这里直接适用——如何将连续神经信号离散化为词元，决定了下游模型能访问哪些信息。
+
+## 仍然缺失的部分
+
+Brain-OF 有一些值得明确指出的局限。
+
+**fMRI 迁移中的时间动态。** 当 Brain-OF 从 fMRI 迁移到 EEG 时，能改善空间解码（哪个脑区激活），但在时间解码（何时激活）上表现吃力。fMRI 训练数据根本不包含亚秒级时间信息。零样本 EEG 性能达到 fMRI 基线的 75%，在空间任务上很强，但在需要时间精度的任务（如 P300 检测、运动想象计时）上可能明显下降。
+
+**实时推理。** 交叉注意力采样器和 MoE 路由带来的延迟，可能对需要亚 50ms 响应时间的实时 BCI 应用构成障碍。该架构优先考虑精度而非延迟——适合离线分析，但尚不适用于闭环神经假肢。
+
+**侵入式记录。** Brain-OF 覆盖了三种主要非侵入式模态，但未涉及颅内记录（ECoG、单单元阵列）。Neuralink 最近演示的 ALS 患者「原声」恢复，使用的是高密度颅内阵列，产生的信号与头皮 EEG 本质不同。将 Brain-OF 扩展到侵入式记录是一个开放问题。
+
+尽管存在这些空白，Brain-OF 仍然迄今为止最清晰的证明：「基础模型范式」——一次训练，随处迁移——同样适用于神经信号，就像适用于文本和图像一样。BCI 领域花了两十年时间为特定被试、模态和任务构建定制解码器。那个时代正在落幕。
+
+---
+
+*相关阅读：[EEG 基础模型与生成式解码](/blog/eeg-foundation-models-generative-decoding) 涵盖了更早期的 EEG 特异性基础模型工作。[EEG-语言跨模态 SSL](/blog/crossmodal-ssl-eeg-language) 探索了 EEG 与语言表征之间的对比对齐。[词元化是瓶颈](/blog/tokenization-bottleneck-byte-level-models) 讨论了信号离散化如何影响下游模型能力。*

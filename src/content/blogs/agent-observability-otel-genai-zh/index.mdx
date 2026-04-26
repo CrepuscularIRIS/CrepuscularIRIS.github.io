@@ -1,0 +1,108 @@
+---
+title: "Agent 可观测性：Trace Shape 问题"
+description: "OpenTelemetry GenAI 把 LLM 调用伪装成 HTTP 调用。这种类比的破绽，恰好揭示了 agent 可观测性的本质差异。"
+publishDate: "2026-04-17"
+tags: [observability, opentelemetry, agents, tracing, otel-genai, llm-ops, agent-engineering]
+category: engineering
+language: zh
+draft: false
+hIE: methode
+hero_image: /assets/hIE/methode/669371-ass-beatless-bodysuit-dress-kouka-lacia-maid-mariage-mecha_musume-methode.jpg
+---
+
+当一个自主 agent 做出了你不想看到决策时，你第一个伸手去拿的就是 trace。这种预期——来自十年微服务调试经验——是 trace 能告诉你哪个服务调用了哪个、传了什么参数、以什么顺序、以及时间花在了哪里。OpenTelemetry 的 GenAI 语义约定将同样的模型扩展到 LLM 和 agent 工作负载：`gen_ai.system`、`gen_ai.operation.name`、`gen_ai.request.model`，外加 token 计数和成本。表面上，一次 LLM 调用看起来就像一次 HTTP 调用：一个 span、属性、一段耗时、一个状态码。
+
+但类比失效的地方，恰好就是 agent 可观测性真正不同的地方。一次失败的 HTTP 调用有一组小的、充分理解的失败模式——超时、5xx、schema 不匹配——每一种都指向一个局部修复。但一次失败的 LLM 调用可能在语法上完全成功（200、有效 JSON、非空输出），却在语义上完全错误，而 trace 的形状从未被设计成能暴露这种错误。agent 可观测性中真正有趣的工作，发生在"调用返回了"和"调用是正确的"之间的空隙里。
+
+这篇文章梳理了三个微服务风格 tracing 处理得很差的失败模式，OpenTelemetry GenAI 约定对在哪里错在哪里，以及一个 agent trace 实际上需要记录什么才能真正用于调试。
+
+## 微服务 Tracing 假设了什么
+
+分布式 tracing 假设了一些在 HTTP 微服务场景下大体成立的事情：
+
+- 一个请求可以被唯一标识，沿着一条确定性路径穿过服务，有清晰的"开始"/"结束"边界。
+- 有趣的失败模式局部化在某个 span 里——某个服务超时了、某个数据库返回了错误、某个下游 API 抛了 500。
+- 因果关系穿过服务边界流动，由 `traceparent` header 和父子 span 关系捕获。
+- 重新运行相同输入产生相同输出（除去刻意的不确定性）。
+
+LLM 调用在每一个点上都有违反，而且这些违反对调试有影响。同一个 prompt 在不同运行中产生不同输出（而且不只是采样原因——提供商侧的更新会静默改变行为）。"有趣的失败"很少局部化在某个 span 里——问题在于模型在三个 span 之前就幻觉出了一个函数名，然后整个下游链路都是建立在这个幻觉之上的、形式良好的垃圾。真正重要的因果关系是**语义层面**的（这个输出引用了那个输入）而不是**时间层面**的（这个 span 发生在那个 span 之后）。
+
+这不是 OpenTelemetry 的错。这些约定是在它们成长的世界里被设计出来的。问题在于在它们之上 agent 可观测性还需要什么额外的结构。
+
+## 失败模式一：成功的幻觉
+
+一个 agent 调用了一个工具，附带了函数名和参数。Trace 显示一个干净的 span：`tools/call`，名称 `get_user_profile`，参数 `{"user_id": "u_8a7f2"}`，耗时 47ms，状态 `success`。下游 span 显示工具返回了 404。然后 agent 调用了另一个工具。用户抱怨 agent 找不到他们的 profile。
+
+Trace 没有显示：用户真实的 ID 是 `u_8a7e2`，少了一个 `f`，agent 在从上一轮对话转录时写错了一半。404 不是服务故障——服务运行完美。幻觉发生在 LLM 内部，距离工具调用三步之前，在结构上与一次正确调用完全无法区分，直到工具真正去查这个 ID。
+
+OpenTelemetry GenAI 将 prompt 和 completion 捕获为 span 属性（或者根据配置，作为独立的 `gen_ai.content.prompt` 事件）。它没有捕获的是 completion 内部值的**来源追溯**。没有办法原生地说"这个 `user_id` token 来自输入中 token X、Y、Z 上的注意力"。Token 级别的来源归因对模型自身来说就很难暴露，OTel 也没有被设计成去请求它。
+
+实际的工程解法是让 harness（而非模型）负责来源追溯。当模型生成了一个工具参数时，harness 可以要求它必须是从输入上下文中逐字复制过来的值，拒绝任何参数是新生成的工具调用。这和参数化 SQL 查询的防御方式相同——通过剥夺模型"发明"数值的能力来消除一类失败。Trace 然后携带一个属性——`agent.tool.argument_source: "input.message[3].user_id"`——幻觉出来的参数在 harness 层就被捕获，而不是三个调用之后才发现。
+
+## 失败模式二：跨 Session 的因果链
+
+用户报告说，一个 agent 在周一和周二被问了同一个问题，给出的答案有微妙的不同。周一的 trace 和周二的 trace 都是干净的——相同的 prompt、相同的工具、相同的模型、没有错误。差异来自周日的第三条 trace：agent 在那天更新了一个被模型当作长期记忆使用的文件。周二的答案反映了周日的更新；周一的没有，因为 agent 运行在周日之前。
+
+这是跨 session 的因果关系，微服务 tracing 对此毫无概念。Spans 之间没有一种关系叫"这个答案依赖于上周另一条 trace 写入的记忆"。OpenTelemetry 的 `link` 机制——将一个 span 通过引用附加到其他 span——是正确的原语，但很少被用于这个目的，部分原因是没有约定来规定哪条先前的 trace 是相关的。
+
+Agent 可观测性的修复方案是：将每一次记忆读写都记录为一个显式的 span，并用一个稳定的标识符标记记忆制品（文件路径、key、embedding ID），然后将当前 span 链接到它所读取的记忆的最新的写入 span。这要求 harness 在存储层维护一个记忆修订图，这是大多数 agent 堆栈所缺乏的独立组件。代价是真实的：每次记忆读取额外一次存储写入，加上查找最新写入者所需的索引。回报是"为什么这个答案变了？"变成了一次图遍历，而不是一次法医式的猜测。
+
+OTel GenAI 约定对长期记忆保持沉默。没有 `gen_ai.memory.*` 命名空间，没有记忆修订 ID 的约定，没有定义从读取到其写入者的链接方式。这是当前标准相对于生产 agent 系统实际需求最大的缺口之一。填补它需要要么扩展约定，要么一个领域特定的上层覆盖（Langfuse、Phoenix、Arize 在这上面做法各异）。标准的缺失意味着 trace 数据在各观测平台之间不可移植——而这恰恰是 OTel 被创造出来要解决的问题。
+
+## 失败模式三：正确但昂贵的代价
+
+一个 agent 正确地解决了一个多步骤任务。Trace 是干净的：47 次 LLM 调用、12 次工具调用、没有错误、总耗时 8 分钟。月度的成本报告显示这个单一任务吃掉了 14 美元的 API 积分，而上周一个类似任务只花了 0.60 美元。Trace 本身——按其现有设计——无法让这次成本飙升变得可读。
+
+微服务场景下的成本主要与 CPU 和带宽有关，这两者大致与 spans 和耗时成正比——所以它们会反映在 trace 形状本身。LLM 场景下的成本主要由 token 决定，而 token 在 span 耗时中完全不可见。一次耗时 200ms 的 span 可能花 0.002 美元也可能花 0.20 美元，取决于上下文长度、输出长度和模型层级。OTel GenAI 确实捕获了 token 计数（`gen_ai.usage.input_tokens`、`gen_ai.usage.output_tokens`），最新修订版中也有成本属性，但这些都是 per-span 的。它们不能自然地聚合成"这个子任务对整体成本贡献了多少？"——而 span 耗时是天然聚合成关键路径分析的。
+
+这里有帮助的 trace 结构是反映**agent 的**任务分解、而不是 **LLM 的**调用结构。如果一个 agent 有规划子任务、执行子任务和验证子任务，spans 应该相应地嵌套，成本属性在每一层向上汇总。这正是 `gen_ai.agent.*` 约定正在开始处理的事情——`gen_ai.agent.id`、`gen_ai.agent.name`、反映 agent 边界而非仅仅 LLM 调用边界的 span 层级——但这些约定仍在成熟中。当下的生产部署经常在其之上自行添加 per-agent span 分组。
+
+## OTel GenAI 做对了什么
+
+上述批评不应掩盖这些约定做对的地方。最大的正确决策是将 prompt 和 completion 排除在默认 span 属性之外（它们作为独立事件发送，需要主动选择加入）。这避免了在采样和存储的 trace 中默认放入可能含 PII 内容的隐私和存储灾难。OTel 从早期约定中 HTTP body 捕获的教训中学到了东西，这个教训被干净地迁移过来了。
+
+第二个正确决策是命名空间结构。`gen_ai.system`（如 `anthropic`、`openai`、`gemini`）、`gen_ai.request.model`、`gen_ai.operation.name`（`chat`、`text_completion`、`embeddings`、`tool.execute`）——这些正是当某个东西出问题时你想要的过滤属性。它们使得"显示过去一小时内 `production-coding-agent` 系统的所有工具失败"这类查询成为可能，而无需进行各平台的查询改写。
+
+第三个正确决策是明确承认约定仍在演化中。GenAI 子组为每个属性发布了清晰的"实验性"/"稳定"状态，修订节奏反映了该领域有多新。这是一个正确的姿态，适用于底层技术在约定起草和合并之间就已经发生了重大变化这一领域。
+
+## 一个 Agent Trace 应该捕获什么
+
+退一步看，一个对生产调试有用的 agent trace 需要至少以下几层：
+
+**调用层。** 每次 LLM 调用、工具调用和外部 HTTP 请求，包含模型、参数、token 计数、延迟、成本。OTel GenAI 这块做得很好。这是地板。
+
+**决策层。** agent 做出的每个分支点——选了哪个工具、委托给了哪个子 agent、走了哪条重试路径。Span 层级应该反映 agent 对自身工作的心智模型，而不是原始 LLM 调用模式。这是今天各平台特定扩展所在的层级。
+
+**来源追溯层。** 对于下游调用中使用的每个值，它来自哪里？是从输入逐字复制的？由模型生成的？从记忆中检索的？通过模板构造的？OTel 没有标准化这个，但它正是能捕获"成功的幻觉"的层级。
+
+**记忆层。** 每次长期状态的读写，包含稳定的制品 ID 和从读取到最近一次对应写入的链接。这是上面提到的跨 session 因果关系。在当前标准中基本缺失。
+
+**成本层。** Token 计数和美元成本沿 agent 任务分解层级向上聚合，而非仅仅在调用层面。这对于成本回归检测必不可少——"为什么这个任务突然贵了 20 倍？"的调查需要它。
+
+一个同时捕获这五层的 trace 堆栈是可以调试的。只捕获第一层的堆栈则不能。今天大多数生产 agent 可观测性处于中间某个位置，各平台以互不兼容的方式填补缺失的层级。
+
+## 收敛问题
+
+有趣的结构性问题是：agent 可观测性最终是否会收敛到 OTel + 扩展，还是会分裂成各平台特定的堆栈（Langfuse、Phoenix、Arize、Helicone、Datadog LLM），只能通过有损的导出格式互通。微服务类比提供了参考：分布式 tracing 在 OTel 成为通用语之前分裂了多年（Zipkin、Jaeger、Datadog APM、NewRelic）。收敛的压力来自那些运行多平台堆栈、无法负担维护 N 条 tracing 管道的团队。
+
+Agent 堆栈已经是多提供商的。一次单独的 Claude Code 会话可能调用 Anthropic 做规划、OpenAI 做 Codex 审查、Gemini 做长上下文研究深潜，外加任意包装在 MCP 服务器中的工具。OTel 风格标准的理由和当年 HTTP 服务一样强烈：没有人能负担得起维护各平台独立可观测性管道，也没有单一平台的堆栈能覆盖完整执行路径。
+
+反对意见——也是为什么采用速度比 HTTP 服务 OTel 更慢的原因——是 agent 可观测性有更多的领域特定结构（记忆、来源追溯、成本、决策），而 GenAI 约定仍在摸索如何以可移植的方式表达这些。标准是一个移动目标，平台们在标准稳定之前就已经在构建生产工具了。这和 2015 年容器编排中上演的动态相同——创新跑在标准化前面了数年，然后才发生收敛。
+
+## 结语：按第一性原理追踪，而非类比
+
+为 agent 系统添加可观测性时，常见的诱惑是把它当作"带额外元数据的微服务"。这能让你达到地板——调用记录、token 计数、基本成本——但错过了那些在生产中真正代价高昂的失败模式：静默幻觉、跨 session 因果关系、被干净 trace 掩盖的成本回归。
+
+一个有用的 agent trace 以 agent 对工作的**分解**为结构来构建，每条生成的值都有显式的来源追溯，跨 session 的记忆修订链接，以及与 agent 心智模型匹配的成本汇总。OTel GenAI 在调用层和决策层的正确原语上收敛，在记忆层和来源追溯层滞后，在成本聚合问题上保持沉默。生产团队需要在标准追上来之前填补这些空白，而且最好以面向未来的方式来做——面向标准终将追上来的那一天。
+
+一个通用教训是，随着自主系统成熟，我们将一再看到这个模式：从上一代基础设施借用可观测性原语能让你走完大半路程，但真正咬人的失败模式是上一代从未有过的。微服务从来不需要调试一次"成功的幻觉"。Agent 堆栈必须。
+
+---
+
+**参考资料**
+
+- OpenTelemetry GenAI 语义约定：[opentelemetry.io/docs/specs/semconv/gen-ai/](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
+- 长上下文经济学相关讨论：[KV-Cache Compression and Long-Context Economics](/blog/kv-cache-compression-long-context-economics)
+- 多 agent 失败模式相关讨论：[When More Agents Hurts: Multi-Agent Cognitive Budget](/blog/scaling-agent-systems-cognitive-budget)
+- Agent 的持久化执行：[Durable Agents: Fibers and Crash-Proof Autonomy](/blog/durable-agents-crash-proof-autonomy)
+- 本文隐含的跨提供商审查模式：[Cross-Provider Agent Review: The Claude-Codex Pattern](/blog/cross-provider-agent-review)

@@ -1,0 +1,58 @@
+---
+title: "RLZero"
+description: "First zero-shot language-conditioned RL that needs no task labels or test-time training, just offline unlabeled data and a pretrained agent."
+publishDate: "2026-04-26"
+updatedDate: "2026-04-26"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+tags: [paper, reinforcement-learning, zero-shot, language-conditioned, offline-RL]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=eyH8QLn2Qx"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+RLZero achieves zero-shot policy inference from arbitrary natural language instructions using only unlabeled offline interactions and a pretrained agent — no task labels, no test-time training.
+
+## Why This Is Worth Your Time
+
+The standard pipeline for getting a language-conditioned robot to follow instructions looks like this: label a dataset, fine-tune, repeat for every new task. It's a human annotation bottleneck disguised as a research problem.
+
+Sikchi et al. cut the Gordian knot. Their insight: if you already have a pretrained RL agent and a pile of unlabeled interaction data, you don't need a single labeled task to generalize to new language commands. Language becomes a retrieval key over behavior — not over annotations.
+
+This matters because the cold-start problem in RL has always been: how do you get useful behavior before you have any useful data for that specific task? RLZero's answer is more elegant than test-time adaptation or expensive human labeling. It reframes zero-shot language conditioning as an offline imagination problem.
+
+## Core Method (3-Minute Version)
+
+RLZero proposes a three-step cycle: **imagine → project → imitate**.
+
+First, **imagine**: the agent predicts what behavior a given natural language instruction would produce — not by looking up a label, but by reasoning about which offline interactions match the instruction semantically.
+
+Second, **project**: those imagined behaviors are mapped into the agent's latent policy space — the compressed representation where the pretrained RL agent already encodes "how to act."
+
+Third, **imitate**: the agent fine-tunes its policy by imitating the projected behaviors. Crucially, all three steps happen offline using the agent's existing interaction history. No new environment rollouts, no in-domain labels.
+
+The result is a language-conditioned policy that generalizes to unseen instructions without ever being trained on them. The pretrained agent provides the behavioral substrate; the unlabeled data provides the behavioral variety; language provides the query interface.
+
+## Key Results
+
+- Zero-shot policy inference from arbitrary natural language instructions using only unlabeled offline interactions
+- Proposes a three-step imagine-project-imitate framework
+- Eliminates need for costly in-domain supervision or test-time training
+- No concrete benchmark numbers provided in the available source
+
+## Limits and Unanswered Questions
+
+The source note is truncated — the full results table, ablations, and limitation section are not visible. Concrete numbers (success rates, comparison baselines) cannot be assessed from the available excerpt. I'd want to see: how does RLZero compare on held-out instruction distributions? Does the imagine step degrade with ambiguous or compositional instructions? And crucially — is the "imagined behavior" actually aligned with the instruction intent, or is there a systematic projection error that compounds?
+
+## Further Reading
+
+This line of work sits at the intersection of offline RL, language-conditioned policies, and zero-shot generalization:
+
+- **Offline RL foundations**: IQL (Kostrikov et al., 2022) established the offline RL baseline that RLZero builds on
+- **Language-conditioned RL without labels**: SayCan (Brohan et al., 2022) and MOO (Mandlekar et al., 2023) explore grounded instruction following
+- **Zero-shot behavior retrieval**: The imagination step has resonance with RLGPT-style sequence modeling approaches to policy extraction

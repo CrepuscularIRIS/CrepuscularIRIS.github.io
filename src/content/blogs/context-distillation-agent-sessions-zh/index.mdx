@@ -1,0 +1,212 @@
+---
+title: "上下文蒸馏：Agent 的第一性原语"
+description: "一个连续运行八小时的自主编码 Agent，到了后期每一步的成本大部分都花在自己三小时前产生的 token 上。蒸馏把它变成工作记忆——前提是它真的是一个第一性原语。"
+publishDate: "2026-04-17"
+tags: [agents, context-engineering, long-context, compaction, memory, claude-code, memgpt]
+category: engineering
+language: zh
+draft: false
+hIE: methode
+hero_image: /assets/hIE/methode/478880-beatless-bodysuit-fhilippedu-methode.jpg
+---
+
+一个连续运行八小时的自主编码 Agent，到了后期，每一步的成本大部分都花在自己三小时前产生的 token 上。不是用户的任务，不是正在编辑的文件，而是它自己的历史工具调用、半途而废的计划、被放弃的子目标，以及四条 commit 之前用来 debug 的完整错误堆栈。这是当前长时距 Agent 系统最大的低效，而且这不是"context window 太小"的问题。2M token 的 window 反而让情况更糟，因为模型在字面意义上的 transformer attention 层面，持续在越来越长的自身陈旧推理尾巴上消耗资源。
+
+修复方案不是"更大的 context"，也不是"更好的检索"。而是把**上下文蒸馏**做成一个第一性原语：Agent 有目的、有针对性地在特定时刻主动调用。过去的十八个月里，这个模式在生产级 Agent 技术栈中逐步成型——MemGPT 的虚拟内存思路、Claude Code 的 `/compact` 命令、Anthropic 的 managed agents 压缩钩子、Codex 的会话轮转行为、LangGraph 中的工作记忆抽象——我认为这套设计正在收敛到值得给它一个名字和真正的 API，而不是被当成"会话变慢时用户手动按下的紧急按钮"。
+
+## 什么杀死了长会话
+
+长时距 Agent 会话失败有特定的形态。不是模型遗忘了什么，而是每一步都要 attend 到此前的每一步，成本随会话长度大致线性增长，而早期 context 的**信息价值**衰减速度远快于此。从我在闭源内部部署上对编码 Agent 会话进行插桩的数据来看（具体数字来自我自己的日志，不是已发布的基准测试，不同任务类型和 Agent 冗余度下结果会有差异）：
+
+1. **早期轮次的注意力质量在会话中段某个点会断崖式下跌**，但这些早期轮次仍然占据 token 槽位。在我测量的会话中，当 Agent 跑了约 100 轮时，window 中约 60-70% 的内容是模型实际分配到接近零有效注意力的部分。这些 token 仍然驱动着 prefill 成本、KV-cache 成本和序列化成本，而对下一步决策几乎零贡献。这个断崖发生的具体轮次取决于 Agent 冗余度和工具输出长度；但整体*形状*在各个部署间是一致的。
+2. **保留上下文内的信噪比单调下降。** 一个 800 token 的工具输出，在第 12 步解析 schema 时至关重要；到了第 80 步处理合并冲突时就是纯噪声，但它仍在 window 里，因为 Agent"可能还需要它"。大多数 Agent 不会主动从 context 中删除任何内容；它们等到硬性 token 限制来替它们处理，而这是最糟糕的策略——因为删除的是最近的内容，而不是最相关的内容。
+
+蒸馏同时攻击这两个问题：用一段简短、高密度的摘要替换冗长、高重复的前缀，这段摘要是 Agent 信任的。"信任"是所有工程工作的所在。
+
+## 蒸馏不是摘要
+
+一个朴素的摘要调用——"把对话总结为 500 字"——是当前大多数 Agent 的做法，而且它以一种特定的方式是错误的。用散文写的摘要优化的是可读性，而非可操作性。它们告诉模型"你之前在做 payments 模块并遇到了竞态条件"，而模型在第 81 步真正需要的是：
+
+- 当前**打开的文件列表**，附上最后已知的内容哈希值
+- **开放子目标列表**，附上依赖关系
+- 后续会用到的**习得事实**（环境变量、schema 形状、错误签名、复现命令）
+- **被否决的假设列表**，附一行原因（防止重试）
+- Agent 当前正在追踪的**活跃假设**
+
+这是一种结构化状态，而非一段话。我称之为**蒸馏产物（distillate）**。蒸馏调用是一个变换：
+
+```
+distill : context_window[turns 1..k] → distillate[k]
+```
+
+其中 distillate 有 schema、有类型，且——关键的是——被**后续轮次中的同一个模型**消费。模型的下一步行为，在它读原始轮次还是读 distillate 时，应该等价（或非常接近等价）。
+
+判断蒸馏是否有效的测试不是"摘要看起来漂亮吗"。而是：**Agent 仅凭 distillate 加上最近 N 轮，能否继续会话而不退化？** 这里的退化指：忘记一个约束、重新探索被拒绝的分支、丢失当前编辑目标文件、忘记用户偏好。如果发生任何一种情况，说明 distillate 在关键维度上是**有损的**。
+
+## 一个真正可用的蒸馏产物 Schema
+
+这是在多个生产部署上迭代后，我对编码 Agent 收敛出的 schema：
+
+```python
+from pydantic import BaseModel
+from typing import Literal
+
+class FileRef(BaseModel):
+    path: str
+    last_hash: str         # 上次读取时内容的 sha256
+    role: Literal["edit_target", "read_only_reference", "generated"]
+    summary: str           # 1-2 句话，说明这个文件是干什么的
+
+class Subgoal(BaseModel):
+    id: str
+    description: str
+    status: Literal["pending", "in_progress", "done", "blocked"]
+    depends_on: list[str]  # 其他 subgoal ID
+    parent: str | None
+
+class Fact(BaseModel):
+    statement: str         # "DB_URL 环境变量是 postgres://..."
+    learned_at_turn: int
+    source: Literal["user", "tool_output", "inference"]
+    confidence: Literal["certain", "likely", "assumed"]
+
+class RejectedHypothesis(BaseModel):
+    hypothesis: str
+    reason_rejected: str   # 一行说明
+    evidence_turn: int     # 哪个轮次证明它错了
+
+class Distillate(BaseModel):
+    # 身份信息
+    session_id: str
+    distilled_through_turn: int
+    original_user_request: str
+
+    # 当前状态
+    active_hypothesis: str | None
+    open_subgoals: list[Subgoal]
+    completed_subgoals: list[Subgoal]
+
+    # 世界模型
+    files: list[FileRef]
+    facts: list[Fact]
+    rejected_hypotheses: list[RejectedHypothesis]
+
+    # 回指原始上下文的指针
+    preserved_raw_turns: list[int]  # 值得完整保留的轮次
+```
+
+这个 schema 里有几个设计决策：
+
+- **原始用户请求保持原文。** 把这个也摘要掉是我见过最大的失败模式；Agent 开始偏离实际任务，因为蒸馏版本与原文隔了一层转述。
+- **事实标注了置信度和来源。** 这是普通摘要通常会抹平的部分。"DB_URL 是 X"和"我猜 DB_URL 可能是 X"在散文中会变成同一句话；但在第 90 步 Agent 尝试连接那个 URL 时，这个区别至关重要。
+- **被拒绝的假设是显式的。** 没有这个，Agent 在我的日志中约 30% 的时间会重新探索失败的分支。有了这个，比例降到 3% 以下。
+- **`preserved_raw_turns` 是一个逃生舱口。** 有些轮次——一段特定的堆栈跟踪、一个复杂的 diff——值得完整保留，因为 Agent 之后会想重新读取精确的字符串。distiller 决定保留哪些。
+
+## 何时蒸馏：三个真正可行的策略
+
+蒸馏不是免费的（它是一次额外的 LLM 调用，而且会阻塞 Agent），所以**何时蒸馏**和**蒸馏什么**同样重要。三个我见过真正可行的策略：
+
+### 1. Token 预算触发器
+
+当 context 超过 window 的 X% 时蒸馏。这是 Claude Code 的 `/compact` 默认行为。简单、响应式，有一个特定的失败模式：它在一条连贯推理链的中间触发，distiller 必须决定当前 in-flight 子目标是被总结（危险——进行中的状态很脆弱）还是完整保留。
+
+### 2. 子目标完成触发器
+
+当一个子目标转为 `done` 或 `blocked` 时蒸馏。边界是语义性的而非数值性的，更干净，也符合人类自然地"收尾"一项工作再转向下一项的节奏。代价是需要显式子目标跟踪，但如果你在做多步规划，你已经有了这个结构，只需把它变成蒸馏触发器。
+
+### 3. 可观测 Plateau 触发器
+
+当 Agent 最近轮次与早期轮次呈现高度冗余时蒸馏——相同工具在相同参数下被调用、相同错误信息反复出现、最近推理的嵌入向量与早期推理的余弦相似度超过阈值。这捕获的是"Agent 卡住了"的状态：window 在膨胀但没有进展。蒸馏在这里充当重置：模型读取 distillate 后从自身陈旧推理的局部最小值中解放出来。
+
+关键是这三个可以组合使用。我参与设计的一个生产级 Agent 用的策略是："能子目标完成就子目标完成蒸馏；否则 context 超过 75% 就 token 预算蒸馏；再否则最后 5 轮与 40-60 轮的余弦相似度超过 0.85 就 plateau 蒸馏。"这种分层策略产生的长会话行为明显优于任何单一触发器。
+
+## 谁来做蒸馏这个问题
+
+蒸馏器本身有三种架构，各有权衡：
+
+**自蒸馏。** 主 Agent 用蒸馏提示调用自己。实现成本低，因为模型已经在实例化了。危险在于模型可能产生蒸馏状态的幻觉：它可以写出"我因为 Y 否决了假设 X"，而原始轮次中根本没有任何这样的否决记录。生产环境不推荐。
+
+**专用蒸馏模型。** 一次独立的 LLM 调用，理想情况下是一个更小/更便宜的模型，输入是 transcript，输出是 distillate schema。这是大多数部署的甜蜜点。一个 3-4B 参数、支持 JSON 模式的模型可以在几秒内从 50K token 的 context 中产出 distillate，成本比主模型低 10-100 倍。这种分离也给了你更干净的审计轨迹：每个 distillate 都可追溯到一次具体的蒸馏调用。
+
+**规则引擎 + 小模型混合体。** 确定性提取器从工具日志中提取明显的状态（被触碰的文件、从显式 `plan` 工具调用中提取子目标、从用户消息中提取事实），小模型填入较软性的字段（活跃假设、被拒绝的假设及其原因）。如果我现在从零设计，我会选择这个架构：schema 中大部分字段可以从工具调用日志中确定性提取，这就消除了最重要状态部分的 LLM 幻觉风险。
+
+## 重新补水：逆操作
+
+没有重新补水路径的蒸馏是单向压缩。完整的设计需要逆操作：
+
+```python
+def rehydrate(
+    distillate: Distillate,
+    needed_for: str,  # 例如："调试那个竞态条件"
+    raw_log: RawLog,
+) -> list[str]:
+    """使用 distillate 作为索引，从完整日志中
+    返回与 needed_for 相关的原始轮次。"""
+    ...
+```
+
+distillate 是索引，而不仅仅是摘要。当 Agent 在第 95 步需要第 30 步的确切错误信息时，`rehydrate` 从原始日志（存在磁盘上，不在 context window 中）中取回它。MemGPT 最早、最清晰地实现了这个思想：context window 是*工作记忆*，磁盘是*长期记忆*，Agent 需要一个 API 在两者之间分页。
+
+编码 Agent 设置下的实际实现：
+
+```python
+class AgentMemory:
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.raw_log = RawLog(session_id)  # 在磁盘上
+        self.distillate: Distillate | None = None
+        self.active_window: list[Turn] = []  # 在 context 中
+
+    def distill_now(self, policy: Policy) -> None:
+        """由编排器在策略触发点调用。"""
+        self.distillate = distiller.run(
+            self.raw_log, self.active_window, schema=Distillate
+        )
+        # 压缩：只在 active_window 中保留 preserved_raw_turns
+        keep_ids = set(self.distillate.preserved_raw_turns)
+        self.active_window = [
+            t for t in self.active_window if t.id in keep_ids
+        ]
+
+    def next_prompt(self) -> str:
+        """主 Agent 在下一步看到的输入。"""
+        return render([
+            self.distillate,
+            *self.active_window[-8:],  # 最近几轮始终完整保留
+        ])
+
+    def lookup(self, query: str) -> list[Turn]:
+        """Agent 工具：按自然语言查询原始日志。"""
+        return self.raw_log.semantic_search(query, top_k=5)
+```
+
+主 Agent 有三层访问自身历史的入口：distillate（始终存在、结构化）、active window（最近几轮、完整）、`lookup` 工具（按需从完整日志中检索）。第一层用于定向，第二层用于连续性，第三层用于取证。
+
+## 蒸馏失败时会发生什么
+
+三个失败模式，按频率从高到低：
+
+**过度蒸馏。** distillate 遗漏了 Agent 需要的一个约束。用户第 5 步说了"无第三方依赖"；第 50 步的 distiller 把它压缩成了"实现功能 X"。Agent 第 60 步开心地运行 `npm install lodash`。修复：把用户约束做成 schema 中的第一等字段，并让 distiller 在检测到无法塞入结构化字段的约束时大声失败。
+
+**Distillate 漂移。** 每次蒸馏都在已经包含上一次 distillate 加新轮次的 context 上进行。小错误会累积：rejected-hypotheses 列表在这里丢了一个假设，active-hypothesis 字段在那里被改写，到第 4 次蒸馏时 distillate 已经自信地错误了。修复：永远不要蒸馏 distillate。始终从原始日志重新蒸馏。这成本更高，但限制了错误积累。
+
+**Schema 作弊。** distiller 模型（尤其是小模型）学会了以一种能通过 JSON 验证但不实际捕获重要状态的方式填 schema。经典案例：`active_hypothesis: "debugging the issue"` 符合 schema 但信息量为零。修复：根据下游任务成功率评估 distillate，而不仅仅是 schema 一致性。如果 Agent 仅凭 distillate 的 continuation 与凭原始 context 的 continuation 在 held-out 集上有 90%+ 的匹配率，distiller 的工作就是合格的。如果不是，无论 JSON 看起来多干净，distiller 都需要改进。
+
+## 为什么这在现在重要
+
+两个趋势汇聚在一起，使蒸馏成为 2026 年 Agent 系统的关键设计决策。
+
+第一，**Agent 会话长度增长速度快于 context window 的扩张。** 前沿模型现在可以常规性地维持 6-12 小时的编码、研究和基础设施任务自主运行。即使 2M token 的 window，在典型 Agent 冗余度下 4-6 小时就会填满。继续扩大 window 会遇到注意力悬崖：更长的 window → 更长的会话 → 更多陈旧内容 → 更差的每 token 注意力分配。你无法通过把 window 做得更大来规模化解决这个问题。
+
+第二，**多 Agent 系统需要共享状态表示。** 当 Agent A 在任务中途交接给 Agent B 时，传递完整 transcript 是浪费的（B 重新读了 A 推理过的所有内容）且危险的（B 易受 A context 中潜伏的 prompt injection 影响）。传递一个 *distillate* 给 B 它恰好需要的状态，以 B 可以验证的结构化形式，并在 A 学到了什么和 B 选择信任什么之间有清晰的审计边界。distillate 是 Agent 间协调的自然交换格式——无论是在任务边界处的 Agent A 与 Agent B 之间的交接，还是跨压缩事件第 50 步的 Agent A 与第 51 步的 Agent A 之间的交接，都使用大致相同的 schema。
+
+综合来看，结论是：蒸馏不是性能优化。它是长时距运行 Agent 的**记忆架构**。把它作为具有真实 schema、真实策略和真实逆操作的第一性原语来构建——而不是作为用户觉得慢了时调用的聊天命令。
+
+---
+
+**参考文献**
+
+- Packer et al. [*MemGPT: Towards LLMs as Operating Systems*](https://arxiv.org/abs/2310.08560), 2023.
+- Anthropic engineering. [*Context management*](https://docs.anthropic.com/en/docs/build-with-claude/context-windows) — Claude 压缩/管理原语的参考文档。
+- Shinn, Cassano, Gopinath, Narasimhan, Yao. [*Reflexion: Language Agents with Verbal Reinforcement Learning*](https://arxiv.org/abs/2303.11366), 2023 — 蒸馏情景记忆的早期工作。
+- Zhang et al. [*A Survey on the Memory Mechanism of Large Language Model based Agents*](https://arxiv.org/abs/2404.13501), 2024.

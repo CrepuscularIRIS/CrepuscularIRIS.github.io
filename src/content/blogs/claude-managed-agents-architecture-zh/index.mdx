@@ -1,0 +1,192 @@
+---
+title: "Claude Managed Agents：Session、Harness 与 Sandbox"
+description: "Anthropic 2026年4月推出的托管 Agent 基础设施，将此前所有 Agent 框架混为一谈的三个组件解耦了——这套分解究竟带来了什么。"
+publishDate: "2026-04-15"
+tags: [agents, anthropic, infrastructure, agent-engineering, managed-agents, architecture, harness]
+category: engineering
+language: zh
+draft: false
+hIE: methode
+hero_image: /assets/hIE/methode/445955-beatless-bodysuit-dress-katou_hiromasa-lacia-methode-snowdrop.jpg
+---
+
+2026年4月8日，Anthropic 发布了 Claude Managed Agents 公开测试版。发布两小时内收获 39,000+ 点赞和 200万次浏览——这些数字反映的不是解决方案有多好，而是 Agent 基础设施问题被搁置了多久。
+
+营销层面的描述是"用于部署自主 AI Agent 的托管基础设施"。架构层面的描述更精确：**将此前所有 Agent 框架混为一谈的三个关注点解耦**，让每个组件都能独立扩展、独立调试、独立替换。
+
+这三个组件是：**Session**（一切发生过程的持久记录）、**Harness**（驱动 Agent 运行的主循环）、**Sandbox**（代码执行的环境）。能否正确处理这三个组件，决定了一个 Agent 是"演示里能跑"，还是"凌晨 3 点出问题也能撑住"。
+
+## 为什么原来会纠缠在一起
+
+在大多数 Agent 框架中——包括早期 Claude Code Agent 的实现、LangGraph 的早期部署，以及大多数"入门套件"式 Agent——三个组件都跑在同一个进程里。Session 在内存中（可能是个 Python list，也可能是个 JSON 文件）。Harness 就是主循环。Sandbox 也在同一进程，偶尔加几个 subprocess 调用。
+
+这种设计撑到一定规模就会出问题，失败模式完全可以预见：
+
+**崩溃导致 Session 丢失。** 容器一死，Session 就跟着没了。对话历史、中间结果、未完成的工作状态全部丢失。Agent 无法从断点恢复，只能从零开始。
+
+**调试黑盒化。** Harness、Sandbox、Session 全搅在一个执行体里。出问题时，你根本无法定位是哪个组件引入的失败——是模型推理时拿到了错误的状态？是工具调用返回了错误结果？还是 Session 被污染了？
+
+**扩展耦合。** 扩展 Agent 就意味着扩展整个系统。如果有 50 个并发 Agent，就需要 50 个容器，每个都跑完整的技术栈，包括模型服务的 Harness——哪怕其中 40 个都在等待工具调用结果。用户为根本不存在的并发度付费。
+
+Anthropic 设计文档的原话是："容器崩溃意味着 Session 数据丢失，调试不可能实现，扩展需要为每个 Agent 配置专用容器，空闲时段大量资源被浪费。"
+
+## 三组件模型
+
+### Session：只追加的事件日志
+
+Session 是外部化、持久化、只追加的事件日志，记录 Agent 执行过程中发生的一切。每条用户消息、助手回复、工具调用和工具结果都是日志中的一条事件。日志完全独立于 Harness 之外——容器重启、网络故障、Harness 崩溃，它都不受影响。
+
+Harness 通过 `getEvents()` 接口读取 Session 状态——返回事件流的按位置切片。这是一个刻意的设计选择，确保 Harness 相对于 Session 是无状态的：Harness 不维护 Session 的缓存视图，每次都从持久化日志中按需读取。
+
+这一设计的实际意义：标准的长时间上下文管理方案（压缩、摘要、裁剪）会对"保留哪些 token"做出不可逆的决策。Session 日志则将这类决策全部推迟。Harness 可以通过选择如何切分事件流来实现任意上下文管理策略，而且策略可以在不触动底层 Session 数据的情况下随时改变。
+
+```python
+from dataclasses import dataclass
+from typing import Literal
+
+
+@dataclass(frozen=True)
+class SessionEvent:
+    """Session 日志中的一条不可变事件。"""
+    event_id: str
+    timestamp: str
+    event_type: Literal["user_message", "assistant_response", "tool_call", "tool_result"]
+    content: str
+    metadata: dict  # 工具名、错误信息等
+
+
+def build_context(
+    events: list[SessionEvent],
+    strategy: Literal["full", "sliding_window", "summary_compressed"],
+    max_tokens: int = 100_000,
+) -> list[dict]:
+    """从事件日志组装模型上下文。
+
+    Harness 调用此函数；Session 存储原始事件。
+    上下文组装策略可以随时改变，不影响日志。
+    """
+    if strategy == "full":
+        return [{"role": _role(e), "content": e.content} for e in events]
+    elif strategy == "sliding_window":
+        # 保留最近 N 个 token 的事件
+        return _sliding_window(events, max_tokens)
+    elif strategy == "summary_compressed":
+        # 旧事件做摘要，保留近期事件原文
+        return _compress_with_summary(events, max_tokens)
+```
+
+### Harness：无状态执行循环
+
+Harness 是模型与真实世界之间的所有中间层。它驱动 Agent 循环：读取 Session 状态、调用模型、将工具调用路由到正确的基础设施、将结果写回 Session。
+
+关键设计属性：**无状态**。任何 Harness 实例都可以接手任何 Session，从上次中断的地方继续。Harness 不持有任何本地状态——所有状态都已在 Session 日志中。
+
+这使得水平扩展变得直接。当 50 个 Agent 在运行，其中 40 个在等待工具结果时，处理这 40 个 Agent 的 Harness 容器可以被释放并重新分配。没有粘性 Session，没有内存状态需要保留。新任务到达时，任意 Harness 实例都可以读取 Session 日志并继续执行。
+
+Anthropic 在 2026 年 3 月——托管平台正式上线之前——就发布了 Harness 的结构设计文档。"Harness 工程"这个说法就源自那篇文档，并已成为行业标准术语。托管平台并没有发明 Harness 模型——它把这个模型落地成了基础设施，让任何开发者不需要自己构建就能使用。
+
+```python
+import anthropic
+from typing import Iterator
+
+
+class AgentHarness:
+    """无状态 Agent 执行循环。
+
+    不持有任何 Session 状态——读写都通过外部 Session 日志。
+    任意实例都可以继续任意 Session。
+    """
+
+    def __init__(self, client: anthropic.Anthropic, session_store: "SessionStore"):
+        self.client = client
+        self.sessions = session_store
+
+    def run_turn(self, session_id: str, user_message: str) -> str:
+        """执行一个 Agent 回合。相对于 Session 完全无状态。"""
+        # 从外部日志读取当前状态
+        events = self.sessions.get_events(session_id)
+        self.sessions.append(session_id, "user_message", user_message)
+
+        context = build_context(events, strategy="sliding_window")
+
+        # 持续调用模型，直到没有更多工具调用
+        while True:
+            response = self.client.messages.create(
+                model="claude-opus-4-6-20260801",
+                max_tokens=8096,
+                messages=context,
+                tools=self._get_tools(),
+            )
+
+            self.sessions.append(session_id, "assistant_response", response.content)
+
+            if response.stop_reason != "tool_use":
+                return response.content[-1].text
+
+            # 路由工具调用 — Sandbox 负责执行
+            for block in response.content:
+                if block.type == "tool_use":
+                    result = self._dispatch_tool(session_id, block.name, block.input)
+                    self.sessions.append(session_id, "tool_result", result)
+
+            # 用工具结果刷新上下文
+            context = build_context(self.sessions.get_events(session_id))
+```
+
+### Sandbox：结构性不可信
+
+Sandbox 是 Claude 生成的代码实际运行的环境。Managed Agents 的关键属性是：Sandbox 是**结构性不可信的**——不只是通过策略锁定，而是通过架构实现隔离。
+
+凭据永远不会出现在 Sandbox 中。Git 访问令牌在初始化时注入，但放置在 Agent 无法触及的位置之外。MCP 连接服务的 OAuth 令牌存放在安全保险库中，经过一个凭据代理层转发，Sandbox 代码无法直接访问。生成代码的模型运行在 Harness 中，而不是 Sandbox 中——因此即使生成的代码具有对抗性，也无法读取模型上下文或 Session 日志。
+
+Managed Agents 文档明确说明了这一安全逻辑："窄范围 token 作用域是不够的：它基于一个假设——Claude 拿着有限 token 就做不了什么，而 Claude 正变得越来越聪明。结构性方案使得这些 token 根本不可能出现在目标环境中。"
+
+这是一个值得注意的安全属性。大多数 Agent 沙箱化是基于权限的——Agent 之所以无法访问某些资源，是因为它被拒绝了权限。随着模型能力增强，基于权限的安全性会逐步失效，因为能力足够强的模型可能找到访问受限资源的意外路径。而基于架构的安全——token 根本不出现在模型运行的环境中——不会随着能力提升而退化。
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   Managed Agent Stack                │
+│                                                     │
+│  ┌──────────────┐    ┌──────────────────────────┐   │
+│  │   Session    │    │       Harness             │   │
+│  │   (durable   │◄───│  (stateless, any instance │   │
+│  │   event log) │    │   can continue session)   │   │
+│  └──────────────┘    └──────────┬───────────────┘   │
+│                                 │ tool calls         │
+│                    ┌────────────▼───────────────┐   │
+│                    │          Sandbox            │   │
+│                    │  (untrusted by construction │   │
+│                    │   credentials never here)   │   │
+│                    └────────────────────────────┘   │
+└─────────────────────────────────────────────────────┘
+```
+
+## 解耦带来了什么
+
+三组件模型不仅仅是架构更干净。它直接解决了纠缠式设计中的每一种失败模式：
+
+**Session 不受 Harness 崩溃影响。** Session 日志存在于外部存储。Harness 容器宕机不会丢失任何对话状态。任意 Harness 实例都可以接手 Session 继续执行。这使得长时间运行的 Agent——跨小时甚至跨天的那种——在结构上就是可靠的，而不是脆弱的。
+
+**调试变得可操作。** Session 事件可以事后查询。出问题时，可以逐事件重放 Session，定位是哪次工具调用产生了意外结果，并追溯模型推理时实际收到了什么上下文。Session 日志就是 Agent 执行的审计轨迹。
+
+**扩展变得直接。** Harness 容器是无状态的——平台可以根据需求动态分配和释放。Anthropic 的定价也反映了这一点：每 Session 小时 0.08 美元，空闲时间（等待工具结果、等待用户输入）不计入费用。用户为有效执行付费，而非容器运行时间。
+
+## MCP 集成与工具层
+
+Managed Agents 集成 MCP 作为外部工具连接层。架构是：Harness 通过专用代理调用 MCP 工具，由代理处理凭据注入。MCP 工具服务器永远不会收到原始凭据——它收到的是一个 Session 作用域的令牌，在 Session 期间有效，并限定在 Agent 所需的具体资源范围内。
+
+对于构建 MCP 工具服务器的开发者而言，这改变了安全模型：你的工具服务器不需要处理凭据管理。代理层负责 token 交换，服务器收到的是已认证、已限域的请求。
+
+更广泛的 MCP 生态也能干净地融入 Session/Harness/Sandbox 模型。MCP 服务器由 Harness 调用，结果写入 Session 日志，Agent 的代码执行发生在 Sandbox 中。即使工具表面持续扩展，三层分离依然保持完好。
+
+## 对 Agent 系统设计的影响
+
+Managed Agents 的发布本身就是一个架构宣言：Agent 系统脆弱的根本原因不在于模型能力，而在于组件纠缠。同一个 Agent，通过正确分离了 Session、Harness 与 Sandbox 的基础设施运行，可靠性和可调试性都显著优于通过纠缠式技术栈运行的同一个 Agent。
+
+Anthropic 公布的数据支撑这一结论：在结构化文件生成任务中，Managed Agents 相比标准提示循环的任务成功率提升了**最高 10 个百分点**，在最难的问题上提升幅度最大。最难的问题恰好是基础设施故障最容易叠加的地方——而这正是结构性可靠性最不可或缺的地方。
+
+对于正在构建 Agent 基础设施的团队来说，Session/Harness/Sandbox 解耦这一模式值得直接应用，即使你并不使用 Managed Agents。这个模式独立于托管层。正确分离带来的收益不需要 Anthropic 的运行时也能实现。
+
+---
+
+*Claude Managed Agents 于 2026 年 4 月 8 日进入公开测试版。文档地址：[docs.anthropic.com/managed-agents](https://docs.anthropic.com)。架构细节来自 Anthropic 工程博客：["Scaling Managed Agents: Decoupling the brain from the hands"](https://www.anthropic.com/engineering/managed-agents)。*

@@ -1,0 +1,192 @@
+---
+title: "持久化 Agent：Fibers 与 crash-proof 自主执行"
+description: "Cloudflare 的 Fibers 通过记录每一个非确定性事件让 Agent 可恢复。一旦看穿这个模式，不依赖 Cloudflare 也能做到。"
+publishDate: "2026-04-17"
+tags: [agents, durable-execution, cloudflare, resilience, state-management, workflow-engines, orchestration]
+category: engineering
+language: zh
+draft: false
+hIE: methode
+hero_image: /assets/hIE/methode/445955-beatless-bodysuit-dress-katou_hiromasa-lacia-methode-snowdrop.jpg
+---
+
+一个自主 Agent 正在执行一个三小时的任务，期间接收到上游 LLM 提供商的 504 错误。重试成功了，但 worker 进程在重试期间被杀死——OOM kill、容器驱逐、部署滚动、节点重启。Agent 重启了。它对过去三小时毫无记忆，重新执行整个任务，重新发起每一条 LLM 调用，重新获取每个工具结果，重新产生每一笔费用。
+
+这就是 Agent 失忆问题，任务越长问题越严重。每十分钟检查点的 Agent 只浪费几分钟。跑了几个小时、在接近完成时崩溃的 Agent，白白浪费几小时。
+
+**持久化执行**（Durable execution）是运营层面的答案。这一思路来自工作流引擎——Temporal、Restate、AWS Step Functions、Azure Durable Functions——核心思想很简单：把每一个非确定性事件记录到持久化日志中，重启时引擎重放日志、还原程序状态，无需重新执行副作用。Agent 写的代码和平时一样，运行时负责持久化。
+
+---
+
+## Fibers 带来了什么
+
+Cloudflare 在 2026 年初通过其 Agents SDK 将这一通用思路封装为 **Fibers**，针对 Agent 场景做了优化。Fiber 是一个持久化执行单元——用 `runFiber(...)` 启动，用 `stash(...)` 持久化中间结果，崩溃后通过 `onFiberRecovered(...)` 恢复。与 Temporal 风格的对每个非确定性调用自动重放不同，Fibers 采用**检查点快照 + 恢复钩子**：Agent 开发者决定哪些值需要持久化，Fibers 保证这些值在 worker 失败后存活。在底层，Fibers 是 Agent Durable Object SQLite 表中的行（例如 `cf_agents_runs`），而不是每个 fiber 独占一个数据库。
+
+Cloudflare 并非这个领域的唯一玩家——Temporal 有基于事件溯源的全确定性重放，Restate 有类似语义，DBOS 有 Postgres 后端版本，LlamaIndex 在 2025 年加入了工作流韧性。各家在让用户承担多少持久化契约上有所不同。Temporal 让你自动重放，代价是严格的确定性工作流规范。Fibers 让你显式检查点，代价是恢复逻辑由 Agent 作者负责。两种都合理；权衡在于谁负责幂等性证明。
+
+---
+
+## "持久化"到底意味着什么
+
+"持久化"（persistent）和"持久化执行"（durable）之间的区别很重要。持久化 Agent 把状态保存到某处——数据库、文件、KV 存储——重启时重新加载。持久化执行 Agent 保证**任意时刻崩溃都可恢复**，包括函数执行中途的崩溃。持久化 Agent 丢失两次保存之间的所有工作。持久化执行 Agent 不丢失任何已完成工作。
+
+具体机制取决于你站在哪一阵营。**事件溯源阵营**（Temporal、Restate、DBOS）将每个非确定性事件——LLM 调用、HTTP 请求、定时器、随机数——记录到持久化日志中，恢复时从头重放 Agent 代码。执行到已记录的事件时，运行时返回保存的结果而非重新执行。执行追上崩溃点后继续向前。
+
+**检查点恢复阵营**（Cloudflare Fibers，以及大多数自研实现）要求作者持久化关键的中间值并定义恢复方式。没有自动重放，只有在恢复时触发的钩子，从 stash 中还原状态。少了一点魔法，多了一些代码，但工作流主体不受确定性约束。
+
+两个阵营在用户可见的属性上殊途同归：崩溃不丢失任何已完成工作。只是通过不同的不变量来实现。事件溯源阵营的契约是"你的工作流主体必须是确定性的"；检查点阵营的契约是"你决定何时持久化什么"。本文主要讨论的通用模式——也是最干净地推广到 Agent 代码的模式——是事件溯源版本：
+
+```typescript
+async function researchTask(topic: string) {
+  const subtopics = await llm.generate(`Break down: ${topic}`)  // 已记录
+  const results = await Promise.all(
+    subtopics.map(async (st) => {
+      const searchHits = await web.search(st)                   // 已记录
+      const analysis = await llm.analyze(st, searchHits)       // 已记录
+      await store.put(`research/${st}`, analysis)               // 已记录
+      return analysis
+    })
+  )
+  return synthesize(results)
+}
+```
+
+如果这个函数跑了一小时、在半途崩溃，下次调用时前半部分会被瞬间重放——每个 `llm.generate`、`web.search` 和 `store.put` 调用都从日志中返回已记录的结果。然后 Agent 继续执行后半部分。用户感受到的只是短暂延迟，而不是三小时的重新来过。
+
+运行时必须在语言层面强制执行这个契约。在 Temporal 中，这是通过区分"工作流代码"（确定性、可重放的）和"活动代码"（被记录的那些）来实现的。在 DBOS 中，是通过 Postgres 后端函数的装饰器来实现的。在 Cloudflare Fibers 中，契约更宽松：你 stash 你想保留的值，然后写一个处理恢复的钩子。机制不同；不变量——"崩溃不丢失任何已完成工作"——三者是相同的。
+
+---
+
+## 三个不变量（事件溯源阵营）
+
+事件溯源持久化执行依赖运行时和用户共同维护的三个不变量。这些适用于 Temporal、Restate、DBOS，以及任何自研的日志重放架构。Fibers 通过放弃重放绕过了第一个不变量——作者显式 stash 状态——但仍然需要处理另外两个。
+
+**确定性。** 顶层工作流代码必须是确定性的。同样的已记录输入，必须产生同样的决策序列。如果代码写 `if (Math.random() > 0.5)`，重放就会失败，因为随机值在两次运行中不同。Temporal 通过沙盒化的工作流上下文解决这个问题，将 `Math.random`、`Date.now`、`setTimeout` 替换为已记录的版本。DBOS 用显式包装器处理。在 Fibers 中，确定性不是问题，因为根本没有重放——但恢复钩子必须正确处理部分完成的状态。
+
+**幂等性。** 日志无法记录的副作用——写入外部系统、发送邮件——必须幂等。运行时记录尝试；成功后，记录结果。如果副作用实际发生了，但日志条目从未写入（崩溃发生在外部调用返回和日志提交之间的时间窗口），重放会重试。外部系统必须容忍第二次尝试而不产生重复效果。唯一请求 ID、upsert 和事务性 outbox 模式是标准工具。
+
+**日志增长有界。** 日志随每个非确定性事件增长。对于一个长时间运行的 Agent，每分钟进行几十次 LLM 调用，日志在几小时内就能达到很大体积。运行时必须定期做快照——将日志压缩为单个状态 blob，然后开启新日志。大多数生产级工作流引擎自动做这件事；在自研实现中，这是人们最容易忘记的部分。
+
+我见过的所有持久化执行生产 bug 都违反了这三个不变量之一。把当前时间戳写进推理过程（"现在是下午 3:04，所以……"）的 Agent 会破坏确定性。没有幂等性 key 就发送 Slack 消息的 Agent 每次重放或崩溃恢复都会重复发帖。积累无界状态而不做快照的 Agent 会因为日志膨胀而陷入停顿。
+
+---
+
+## Fibers 的独特之处
+
+Fibers 的新意不在持久化执行——这个模式已存在近二十年。新意是与 Cloudflare Agents SDK 和 Durable Objects 的深度集成：Fibers 是每个 Agent Durable Object SQLite 表中的行（例如 `cf_agents_runs`），与运行 Agent 的计算资源共置。一个 Agent 可以运行多个 fiber；每个 fiber 是一个有记录的持续执行，包含 stash 的状态和一个恢复钩子。
+
+把 fiber 存储在 Agent 自己的 Durable Object SQLite 中，比大多数工作流引擎的模式更锐利——后者使用共享的远程后端（Postgres、Cassandra、DynamoDB）服务所有工作流。共享后端意味着每个工作流争夺写带宽，每次持久化事件都要付出网络跳成本。Durable Object SQLite 是单写者、进程内、本地 worker 的，写操作是本地文件 I/O 而非网络往返。实际效果是持久化中间状态成本很低——低到可以激进地使用——而无需运维一个独立的工作流后端。
+
+代价是 fiber 依赖其 Durable Object 的位置。对于大多数 Agent 工作负载这不是问题——你本意就是让 Agent 在状态附近运行。对于跨区域工作负载，你需要不同的模型。Temporal 的全局命名空间和 DBOS 的 Postgres 后端各有各的解法。Fibers 在当前版本中尚未解决这个。
+
+另一个 Fibers 特有的功能是对暂停 Agent 的处理。当一个 fiber 在等待一个长时间运行的外部事件（人工审批、一个 12 小时的定时器）时，Cloudflare 可以释放计算资源、只计存储费。事件到达时，Agent 在一个 worker 上被唤醒，恢复钩子运行，stash 的状态被还原，执行继续。在 Temporal 中这是原生定时器和信号模型；在 AWS Lambda 中你需要用 EventBridge + DynamoDB，管道要复杂得多。
+
+---
+
+## 不依赖 Cloudflare 的最小化持久化 Agent
+
+你不需要 Fibers 也能实现持久化 Agent。这个模式不依赖 Cloudflare 的 SDK 就能移植。配方：
+
+1. 一个只追加日志（SQLite、Postgres WAL、Kafka，或任何日志存储）
+2. 包装每个非确定性调用的逻辑，在执行前检查日志
+3. 让 Agent 函数从头重启并重放的方式
+
+以下是 Python 中的最小化草稿，后端用 SQLite。这只是示意——把外部调用（`llm_generate`、`web_search` 等）当作占位符。
+
+```python
+import sqlite3
+import json
+from typing import Callable, Any
+
+class Journal:
+    def __init__(self, path: str, fiber_id: str):
+        self.db = sqlite3.connect(path)
+        self.db.execute("""
+            CREATE TABLE IF NOT EXISTS events (
+                fiber_id TEXT,
+                step_key TEXT,
+                result TEXT,
+                PRIMARY KEY (fiber_id, step_key)
+            )
+        """)
+        self.fiber_id = fiber_id
+
+    def step(self, key: str, fn: Callable[[], Any]) -> Any:
+        """已记录的步骤：若已缓存则返回缓存结果，否则执行并缓存。
+
+        注意：`fn()` 返回和 INSERT 提交之间存在一个失败窗口。
+        在该窗口内崩溃会导致 `fn` 在重放时再次运行。
+        若 `fn` 有外部副作用，需向 `fn` 传入幂等性 key，
+        让外部系统做去重。缺少这一层时，代码是"可恢复的"，
+        但不是严格意义上的"crash-proof"。
+        """
+        row = self.db.execute(
+            "SELECT result FROM events WHERE fiber_id=? AND step_key=?",
+            (self.fiber_id, key)
+        ).fetchone()
+        if row is not None:
+            return json.loads(row[0])
+        result = fn()
+        self.db.execute(
+            "INSERT INTO events VALUES (?, ?, ?)",
+            (self.fiber_id, key, json.dumps(result))
+        )
+        self.db.commit()
+        return result
+
+# 用法（外部调用为占位符）
+def research_agent(topic: str, journal: Journal):
+    outline = journal.step(
+        key="outline",
+        fn=lambda: llm_generate(f"Break down: {topic}", idempotency_key="outline")
+    )
+
+    sections = []
+    for i, section_title in enumerate(outline):
+        hits = journal.step(
+            key=f"search_{i}",
+            fn=lambda: web_search(section_title)
+        )
+        analysis = journal.step(
+            key=f"analyze_{i}",
+            fn=lambda: llm_analyze(section_title, hits, idempotency_key=f"analyze_{i}")
+        )
+        sections.append(analysis)
+
+    return journal.step(
+        key="synthesize",
+        fn=lambda: llm_synthesize(sections, idempotency_key="synthesize")
+    )
+```
+
+首次运行时，每个 `journal.step` 执行并缓存。崩溃后，下次调用会重放——`outline` 从缓存立即返回，每个 `search_i` 和 `analyze_i` 从缓存返回，执行追上最后一个未完成的步骤。Agent 代码不变；`step` 包装器负责持久化。
+
+这个玩具版本缺少的部分，正是真实工作流引擎为你处理的。`fn()` 返回和日志提交之间存在一个失败窗口——幂等性 key 掩盖了这个问题，但你仍然需要外部系统真正做去重。你仍然需要在日志变大后做压缩，为长生命周期工作流做 schema 演进，以及在 SQLite 文件本身损坏时做恢复逻辑。如果你自己实现，每个问题都会以不同的名字重新出现。问题在于你是把它当作设计选择而明知故犯，还是作为一系列事后复盘补丁而意外为之。
+
+---
+
+## 何时不值得用持久化
+
+持久化执行不是免费的。它给每个已记录调用增加延迟（写操作），增加运行时的复杂性（确定性强制、重放），以及程序员的认知负担（幂等性规范）。对于短生命周期的 Agent——任务在一分钟内完成的——持久化是过度设计。崩溃后重启任务即可，浪费的工作量微乎其微。
+
+盈亏平衡点大致在：崩溃的预期成本超过日志记录的预期开销。对于 LLM 重度 Agent，单次调用的成本通常由模型提供商的账单主导，而非日志写操作，所以开销占比可以忽略不计。对于廉价的短任务 Agent，开销占比更大。
+
+一个有用的经验法则：如果你的 Agent 预期 wall-clock 运行时间超过基础设施的 MTBF——在通用云节点上是 30 分钟，在专用硬件上是几小时——你就需要持久化。如果几秒钟就跑完了，不需要。大多数生产 Agent 工作负载稳稳落在"需要"区间，这也是为什么每个严肃的 Agent 平台都在向这种模式收敛的原因。
+
+---
+
+## 更大的趋势
+
+Fibers 是更宏大趋势中的一个数据点。2025 年的 Agent 运行时——LangChain、AutoGen、CrewAI——把持久化当作事后想法。你可以自己加上检查点，如果你关心的话，但默认是 stateless 函数执行。2026 年的 Agent 运行时——Fibers、LangGraph 内置持久化、Claude Skills 会话状态、OpenAI 新 Agents SDK 配合 Manifest 沙箱——把持久化当作原生特性。默认变成"你的 Agent 抗崩溃"。可退出，而非可加入。
+
+这与 2000 年代 web 应用走过的成熟曲线相匹配：从每个请求都死掉的 CGI 脚本，到带会话管理的有状态应用服务器，再到替你处理崩溃恢复的托管平台。Agent 在走同样的轨迹，只是被压缩了。到 2026 年底，预期每个主流 Agent 框架都会把持久化执行作为一等公民提供。能撑过下一轮基础设施动荡的生产 Agent，将是那些把抗崩溃当作设计约束、而非扩展性顾虑的。
+
+---
+
+## 参考资料
+
+- Cloudflare Agents SDK, Fibers (`runFiber`, `stash`, `onFiberRecovered`): https://developers.cloudflare.com/agents/
+- Temporal documentation, "Workflow determinism": https://docs.temporal.io/workflows
+- Restate durable execution primer: https://restate.dev/
+- DBOS durable execution library: https://dbos.dev/
+- AWS Step Functions "express vs standard" model: https://docs.aws.amazon.com/step-functions/

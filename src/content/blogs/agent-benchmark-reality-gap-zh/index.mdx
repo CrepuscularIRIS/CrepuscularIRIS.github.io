@@ -1,0 +1,230 @@
+---
+title: "智能体评测排行榜的真相缺口：为什么数据会说谎"
+description: "SWE-bench 和 MLE-bench 测量的只是能力的极窄切片，与生产环境表现的相关性很弱。评测应该是什么样子的。"
+publishDate: "2026-04-13"
+tags: [agents, evaluation, benchmarks, SWE-bench, MLE-bench, autonomous-systems, agent-engineering]
+category: research
+language: zh
+draft: false
+hIE: kouka
+hero_image: /assets/hIE/kouka/181339-beatless-kouka-redjuice-thighhighs.jpg
+---
+
+这些数字看起来很亮眼。SWE-bench Verified 报告智能体能解决 50-60% 的真实 GitHub issue。MLE-bench 展示智能体在 Kaggle 竞赛中的表现足以与人类选手竞争。从这些数字到"智能体现在可以干软件工程了"这一步，推论断裂了。
+
+这不是在说这些基准测试设计得糟糕。它们在方法论上很严谨，在各自声明的范围内具有合理的代表性，维护得也很好。问题出在推论上——而且这个推论正在被反复做出：投资人做出，招聘经理做出，决定在生产系统中给自主智能体多少信任的团队做出。
+
+基准测试表现和生产表现之间的差距是结构性的，不是偶然的。它来自基准测试运作方式的特性，而不是可以通过补丁修复的实现缺陷。理解这个差距的结构，能告诉你该信任哪些基准测试，以及可以做出哪些声明。
+
+## SWE-bench 实际测量的是什么
+
+SWE-bench 从开源仓库中提取 GitHub issue，要求智能体生成补丁。评测是二元的：生成的补丁是否通过了仓库现有的测试套件？Issue 经过筛选以确保可解决性和测试覆盖率。
+
+这是一个对真实能力的原则性测量：为指定的 issue 生成能通过预先存在测试的代码修改。事实就是这样。其余的都是推论。
+
+站不住脚的推论：
+
+**1. 这些 issue 采自可解决分布的尾部，而不是主体部分。**
+
+基准测试的 issue 筛选标准是：存在一个能通过测试的补丁，且 issue 描述足够清晰可以操作化。在生产环境中，30-40% 的 issue 是不明确的，需要澄清问题，或者涉及不在 issue 文本中的约束（业务逻辑、组织惯例、向后兼容需求）。这些 issue 不会出现在 SWE-bench 中，因为它们无法被自动验证。
+
+**2. 测试套件作为神谕，提供了生产环境中不存在的强监督。**
+
+SWE-bench 智能体可以确定地知道自己的补丁是否正确：运行测试。在生产软件开发中，测试覆盖 40-80% 的行为（对于测试良好的代码库——通常远低于此）。在生产代码库中生成补丁的智能体，没有神谕可以检查其工作。SWE-bench 的评测机制提供的信号在部署机制中是不存在的。
+
+```python
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass(frozen=True)
+class BenchmarkCondition:
+    """基准测试评测环境的属性。"""
+    has_test_oracle: bool           # 能否自动验证正确性？
+    issue_underspecification_rate: float  # 任务描述模糊的比例
+    context_completeness: float     # 任务描述中相关上下文的比例
+    evaluation_scope: str           # 正在测量什么
+    
+@dataclass(frozen=True)
+class ProductionCondition:
+    """生产部署环境的属性。"""
+    has_test_oracle: bool
+    issue_underspecification_rate: float
+    context_completeness: float
+
+swe_bench = BenchmarkCondition(
+    has_test_oracle=True,          # 测试告诉你补丁是否正确
+    issue_underspecification_rate=0.05,  # 经过筛选以确保清晰
+    context_completeness=0.9,      # Issue 文本 + 仓库通常足够
+    evaluation_scope="针对可验证的、描述清晰的 issue 生成补丁",
+)
+
+production_reality = ProductionCondition(
+    has_test_oracle=False,         # 测试覆盖子集；其余部分没有神谕
+    issue_underspecification_rate=0.35,  # 真实 issue 经常描述不清
+    context_completeness=0.55,     # Slack 上下文、口头上下文、组织惯例缺失
+)
+
+# 基准测试条件和生产条件之间的差距，就是推论中的差距。
+# 在 swe_bench 条件下训练/评测的智能体，对于以下情况没有信号：
+# - 当 issue 模糊时该怎么做
+# - 当测试不覆盖被修改的行为时如何验证正确性
+# - 如何整合不在仓库中的组织上下文
+```
+
+**3. 基准测试仓库是智能体熟悉的领域。**
+
+热门开源仓库在智能体训练数据中。智能体见过这些仓库的代码，见过这些仓库的 issue，可能还见过类似的补丁。在 Django 或 NumPy 上工作的智能体处于分布之内。在你的内部单体仓库上工作的智能体则不是。
+
+从 SWE-bench 仓库到内部代码库的分布迁移是实质性的。风格惯例不同。业务领域上下文缺失。约束补丁空间的历史决策没有文档化。基准测试仓库上的表现告诉你的，是基准测试分布的能力，而非通用软件工程能力。
+
+## MLE-bench 实际测量的是什么
+
+MLE-bench 将智能体置于 Kaggle 竞赛环境中，根据人类参赛者评估表现。这在几个方面比 SWE-bench 更具挑战性：任务需要 ML 知识，搜索空间更大，评测是定量的。
+
+这个测量是真实的：竞赛条件下的竞争性 ML 任务表现。推论问题：
+
+**1. Kaggle 竞赛筛选出能泛化到基准测试指标的技术。**
+
+Kaggle 竞赛靠集成、重度超参调优和目标泄露利用来获胜——而非良好的泛化能力。能在竞赛测试集上最大化 AUC 的技术，与能在部署中可靠工作的技术系统性不同。一份高分的 Kaggle 方案是基准测试优化能力的证据，不是生产 ML 工程能力的证据。
+
+在 Kaggle 竞赛中获得铜牌的智能体，展示的是它能运行超参扫描、集成预测，以及将预处理管道调优到固定排行榜。它没有展示任何关于设计数据收集策略、识别评测指标错位、或向非技术利益相关者解释模型行为的能力。
+
+**2. 竞赛任务有已知的良好解决方案模板。**
+
+对于大多数 Kaggle 竞赛类型（表格分类、时间序列预测、图像分类），存在成熟的解决方案模板，这些模板出现在训练数据中。解决表格二分类任务的智能体可能见过数百份类似的 notebook。基准测试测量的是模板应用能力，而非问题解决能力。
+
+```python
+def decompose_ml_task_capability(
+    benchmark_score: float,
+    task_type: str,
+) -> dict:
+    """
+    基准测试分数中，有多少比例归因于模板应用，
+    有多少归因于真正的问题解决能力？
+    
+    这种分解是不确定的，但对解读分数很重要。
+    """
+    TEMPLATE_SATURATION = {
+        "tabular_classification": 0.75,  # 约 75% 的竞赛上限可通过模板达到
+        "nlp_classification": 0.70,
+        "image_classification": 0.65,
+        "time_series_forecasting": 0.80,
+        "graph_learning": 0.45,       # 模板较少；需要更多真正的搜索
+        "reinforcement_learning": 0.30, # 低模板饱和度；需要真正的搜索
+    }
+    
+    template_fraction = TEMPLATE_SATURATION.get(task_type, 0.60)
+    template_ceiling = template_fraction  # 归一化到 [0, 1] 排行榜百分位
+    
+    return {
+        "raw_score": benchmark_score,
+        "estimated_template_fraction": min(benchmark_score / template_ceiling, 1.0),
+        "estimated_genuine_search_fraction": max(
+            (benchmark_score - template_ceiling) / (1.0 - template_ceiling), 0.0
+        ),
+        "note": "仅为估计；对任何特定任务的分解是不确定的",
+    }
+```
+
+## 基准测试没有覆盖的能力维度
+
+SWE-bench 和 MLE-bench 都测量理想条件下的任务完成：完整上下文、清晰目标、自动评测。生产环境中重要的能力维度没有被捕捉：
+
+**主动上下文引出**：知道规范何时不完整，以及该问什么问题。在生产环境中，智能体需要检测"我没有足够信息来有信心地继续"，并在继续之前提出正确的澄清问题。基准测试提供了充分上下文；这个能力从未被锻炼。
+
+**置信度校准**：知道何时输出解决方案，何时标记不确定性。过度自信的智能体在模糊任务上继续给出低质量解决方案，比选择放弃的智能体造成更大损害。基准测试测量成功率；不测量校准或适当的放弃。
+
+**多轮任务精炼**：生产软件工程涉及与评审者、用户和其他工程师的迭代。SWE-bench 是单轮的（生成一个补丁，评测它）。根据反馈精炼工作的能力是一个独立的能力，单轮基准测试无法评估。
+
+**长时一致性**：跨越多个会话、需要在断开连接的步骤之间保持上下文、或依赖于数周前做出的决策的任务。SWE-bench 和 MLE-bench 都不测量单会话之外的任何东西。
+
+**工具故障处理**：当子进程返回意外错误、API 临时不可用、或文件与预期不符时会发生什么？基准测试在工具行为可预测的受控环境中运行。生产环境则不是。
+
+## 好的评测应该是什么样子的
+
+基准测试到生产的差距不是不可避免的——它是可以通过不同选择来改变的特定函数。
+
+**测量模糊规范处理，而不仅仅是任务完成。** 注入带有故意模糊组件的任务。智能体通过在继续之前问正确的澄清问题为一个模糊 issue 生成高质量补丁，这展示的是生产中重要的能力。智能体通过猜测产生相同补丁则不是。
+
+**分离神谕依赖和神谕自由的评测。** 在两种条件下测试智能体：一种是可以运行测试验证正确性的（神谕存在），另一种是被修改的代码路径不被现有测试覆盖的（神谕缺失）。神谕缺失的表现是预测生产行为的数据。
+
+**在准确率旁边测量校准。** 智能体应该为自己的解决方案产生置信度分数。良好的校准意味着高置信度解决方案比较低置信度解决方案更可靠。在生产中，表达均匀置信度的未校准智能体是危险的，无论其平均成功率如何。
+
+```python
+from scipy.stats import spearmanr
+import numpy as np
+
+def measure_calibration(
+    agent_confidences: list[float],  # 智能体每个任务的自我报告置信度
+    task_outcomes: list[bool],        # 每个任务是否成功
+    n_bins: int = 10,
+) -> dict:
+    """
+    测量智能体置信度预测其实际成功率的程度。
+    良好校准的智能体说 80% 置信度，应该 80% 的时间成功。
+    """
+    bins = np.linspace(0, 1, n_bins + 1)
+    calibration_curve = []
+    
+    for i in range(n_bins):
+        bin_mask = [
+            bins[i] <= conf < bins[i+1] 
+            for conf in agent_confidences
+        ]
+        bin_confidences = [c for c, m in zip(agent_confidences, bin_mask) if m]
+        bin_outcomes = [o for o, m in zip(task_outcomes, bin_mask) if m]
+        
+        if len(bin_outcomes) >= 3:  # 最少样本数
+            calibration_curve.append({
+                "mean_confidence": np.mean(bin_confidences),
+                "actual_success_rate": np.mean(bin_outcomes),
+                "n_samples": len(bin_outcomes),
+            })
+    
+    # 置信度和成功率之间的相关性（良好校准 → 高相关性）
+    if len(calibration_curve) >= 3:
+        corr, p_value = spearmanr(
+            [b["mean_confidence"] for b in calibration_curve],
+            [b["actual_success_rate"] for b in calibration_curve],
+        )
+    else:
+        corr, p_value = 0.0, 1.0  # 数据不足
+    
+    # 期望校准误差（ECE）：越低越好
+    ece = (
+        np.mean([
+            abs(b["mean_confidence"] - b["actual_success_rate"])
+            for b in calibration_curve
+        ])
+        if calibration_curve else float("nan")
+    )
+    
+    return {
+        "calibration_correlation": corr,
+        "expected_calibration_error": ece,
+        "calibration_curve": calibration_curve,
+        "interpretation": (
+            "良好校准" if ece < 0.10 else
+            "中等校准" if ece < 0.20 else
+            "校准不良"
+        ),
+    }
+```
+
+**使用内部（留出）仓库。** 至少部分智能体评测应该在不在训练数据中的代码库上进行。这在操作上更难，但能给出更干净的信号来区分泛化 vs. 记忆。
+
+**测量工具故障恢复。** 有意注入工具故障（返回错误的命令、不存在的文件、超时的 API），测量智能体是否优雅恢复、是否适当标记问题、还是静默失败。
+
+## 基准测试数字的正确读法
+
+基准测试结果很好地回答了一个具体问题："在受控条件下（上下文完整、评测自动化），这个智能体能完成多少比例的描述清晰的任务？"这是一个有用的问题。答案告诉你生产表现的上限（生产表现通常较低，往往低得多）。
+
+基准测试结果回答不好的是："这个智能体能做软件工程吗？"或"我能信任它在生产环境中吗？"这些是不同的问法，需要不同的评测——包括模糊规范处理、置信度校准、神谕缺失表现和工具故障恢复。
+
+最能充分利用自主智能体价值的团队，是在规模化部署之前先开发自己的评测基础设施的团队。SWE-bench 上 10% 的提升是基准测试分布的一个特征。在你自己的留出任务集上 10% 的提升，通过校准和模糊规范处理来测量，是关于你的部署的声明。
+
+排行榜测量了它测量的东西。确保你在测量你在乎的东西。
+
+---
+
+*SWE-bench: Jimenez et al. (2024), "SWE-bench: Can Language Models Resolve Real-World GitHub Issues?" MLE-bench: Chan et al. (2024), "MLE-bench: Evaluating Machine Learning Agents on Machine Learning Engineering." 校准方法遵循 Guo et al. (2017) "On Calibration of Modern Neural Networks." 神谕缺失评测设计借鉴了软件测试中留出测试集方法论的概念。*

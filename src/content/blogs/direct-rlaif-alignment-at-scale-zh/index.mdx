@@ -1,0 +1,172 @@
+---
+title: "Direct RLAIF：Anthropic 的 Token 级对齐规模化方案"
+description: "为什么 Claude Mythos 的 23,000 词宪法和 token 级 AI Judge 代表了 RLHF 的根本性转变——以及这对规模化对齐意味着什么。"
+publishDate: "2026-04-12"
+tags: [Anthropic, Alignment, RLAIF, Constitutional-AI, Claude, Safety, LLM]
+category: paper
+hIE: lacia
+hero_image: /assets/hIE/lacia/lacia-1920x1200-869498.jpg
+draft: false
+language: zh
+---
+
+Anthropic 发布 Claude Mythos 时，标题是安全能力——一个能自主发现 17 年未修复的 FreeBSD 零日漏洞、却因风险被低调撤下的模型。藏在公告里的对齐故事更有意思，也对整个领域有更广泛的影响。
+
+Claude Mythos 的训练方法叫 **Direct RLAIF**：从 AI 反馈中进行强化学习，反馈信号不是人工偏好标注，而是专门的"AI Judge"对照 23,000 词宪法文档对输出进行评估后生成的 token 级奖励信号。这不是 RLHF 的小迭代，是一种不同的训练范式，其背后的架构选择解释了为什么 Anthropic 认为可以让对齐扩展到前沿能力模型。
+
+## RLHF 的瓶颈
+
+理解 Direct RLAIF 的意义，先要搞清楚传统 RLHF 实际在做什么，以及它在哪里失效。
+
+标准 RLHF 的流程：用人类偏好对比数据训练奖励模型——给定两个模型输出，哪个更好？奖励模型学习近似人类判断。然后用 RL 优化策略（语言模型），让它产出能获得高奖励分数的输出。
+
+人工偏好数据在三个维度上构成瓶颈：
+
+**规模**：收集偏好对比对成本高昂。标注员需要在特定领域有专业知识才能评估大量输出（尤其是技术领域），而训练可靠奖励模型所需的对比量随模型能力增长而增长。一个能生成看似合理但实际有细微错误的代码或数学的模型，需要标注员能区分正确与合理——这是稀有且昂贵的组合。
+
+**粒度**：人类标注员比较的是最终输出。他们不会逐个标注推理步骤，不会标记具体哪个 token 出了问题，也无法轻易区分"这个输出不好是因为某个前提"与"这个输出不好是因为结论"。奖励信号是粗糙的。
+
+**一致性**：人类偏好存在噪声，不同标注员、不同时间、不同语境下偏好不同。用人类偏好数据中的分歧训练的奖励模型会继承这些噪声。
+
+Direct RLAIF 通过用结构化 AI 评估器替代人类标注员来同时解决这三个问题。
+
+## AI Judge 架构
+
+Anthropic 流水线中的 AI Judge 是一个单独的模型，经过训练后能对照宪法文档评估输出。宪法不是一条规则清单——23,000 词的篇幅使它更像一个覆盖有用性、无害性、诚实性的全面价值观框架，分辨率极高。
+
+与标准 CAI 批判-修订的关键区别在于奖励信号格式：AI Judge 生成的是 **token 级**奖励，而不是二元偏好标签。
+
+```python
+# Token 级奖励生成的概念草图
+# （非 Anthropic 实际实现，仅作说明）
+
+def compute_token_rewards(
+    response_tokens: list[int],
+    constitution: str,
+    judge_model: LanguageModel,
+) -> list[float]:
+    """
+    对模型回复中的每个 token 位置，估计生成内容
+    到该点为止与宪法的对齐程度。
+    """
+    rewards = []
+    context = ""
+    
+    for i, token in enumerate(response_tokens):
+        context += decode(token)
+        
+        # AI Judge 对照宪法评估部分生成内容
+        # 返回每个 token 位置的 [-1, 1] 标量
+        reward = judge_model.score(
+            query=f"部分回复是否符合以下宪法原则？\n\n{constitution}\n\n"
+                  f"当前回复内容：{context}",
+            output_format="scalar"
+        )
+        rewards.append(reward)
+    
+    return rewards
+```
+
+关键属性是奖励信号是密集的——回复中的每个 token 位置都有一个评分，而不是只看最终输出。这给 RL 优化器提供了丰富得多的梯度信息：它能定位到回复具体从哪个转换开始出错，而不是把失败归咎于整个输出。
+
+## 为什么 Token 级奖励改变了训练动态
+
+稀疏（输出级）和密集（token 级）奖励之间的区别不只是超参数选择。它从根本上改变了 RL 优化器能学到什么。
+
+使用输出级奖励时，策略梯度更新将整个回复的奖励均匀地归因于生成它的所有 token。一个回复开头很好，中途走错一步，然后错误收尾，它的强开头和错误推理部分会得到相同强度的负梯度。
+
+使用 token 级奖励时，梯度更新是局部化的。优化器可以强化早期 token（那些是好的），同时惩罚具体推理出错的 token 转换。这类似于 o 系列推理工作中过程奖励模型（PRM）与结果奖励模型（ORM）的区别——对中间步骤评分的 PRM 在复杂推理任务上优于 ORM，原因正是这种局部化的信用分配。
+
+```python
+# 比较奖励塑造方法
+
+def sparse_policy_gradient(log_probs: torch.Tensor, final_reward: float):
+    """标准 RLHF：对所有 token 应用单一奖励。"""
+    # 无论位置如何，所有 token 应用相同梯度量
+    return -(log_probs * final_reward).sum()
+
+
+def dense_policy_gradient(
+    log_probs: torch.Tensor,
+    token_rewards: list[float]
+):
+    """Direct RLAIF：来自 AI Judge 的逐 token 奖励。"""
+    rewards = torch.tensor(token_rewards)
+    
+    # 对有助于良好推理的 token 进行强化
+    # 对引入违规的 token 精准惩罚
+    return -(log_probs * rewards).sum()
+```
+
+23,000 词的宪法使这种粒度成为可能，因为它提供了足够的分辨率来评估部分输出。一份更短的宪法——"要有帮助、无害、诚实"——无法给 Judge 模型足够的依据在 200 个 token 中的第 47 个位置有意义地评分。
+
+## 自我对局批判循环
+
+Direct RLAIF 不以单次训练通过运作。奖励模型和策略进行 **自我对局批判循环**：策略生成回复，AI Judge 对照宪法评估，策略更新，然后 Judge 模型根据策略找到的高分但违背宪法精神的方式定期更新。
+
+这是一种传统 RLHF 基本缺乏的对抗性动态。静态奖励模型可以被"玩坏"——策略学会最大化奖励模型分数，而不是奖励模型被训练去近似的底层人类偏好。奖励黑客是典型的失败模式。
+
+自我对局循环部分解决了这个问题——让 Judge 模型始终了解当前策略的失败模式。如果策略发现一类在当前 Judge 评估中得分高但存在宪法未覆盖违规的回复模式，下一轮 Judge 训练可以将这些例子纳入。
+
+```python
+# 自我对局批判循环的伪代码
+
+for cycle in range(num_cycles):
+    # 阶段 1：策略在多样化提示上生成输出
+    policy_outputs = policy.generate(eval_prompts, n_samples=1000)
+    
+    # 阶段 2：AI Judge 评估并识别对齐偏差模式
+    judge_scores = ai_judge.evaluate_batch(policy_outputs, constitution)
+    misaligned = [o for o, s in zip(policy_outputs, judge_scores) 
+                  if s < threshold]
+    
+    # 阶段 3：用策略发现的新失败模式更新 Judge
+    judge_training_data = create_judge_training_examples(misaligned)
+    ai_judge = fine_tune(ai_judge, judge_training_data)
+    
+    # 阶段 4：用改进后的 Judge 奖励更新策略
+    token_rewards = ai_judge.score_token_level(policy_outputs)
+    policy = rl_update(policy, policy_outputs, token_rewards)
+```
+
+循环持续进行，直到策略稳定——即它找不到在满足当前 Judge 模型同时违背宪法的新方式。
+
+## 这与之前的 CAI 有何不同
+
+Anthropic 之前发表过 Constitutional AI 相关工作。2022 年的 CAI 论文描述了一个过程：Claude 对照书面宪法批判和修订自己的输出，RLAIF 则使用来自 Claude 自身（由宪法指导）的偏好反馈来训练奖励模型。
+
+Direct RLAIF 在至少三个维度上进一步演进：
+
+**独立的 Judge**：在早期 CAI 中，同一个模型既生成输出也批判它们。在 Direct RLAIF 中，专门训练了一个 AI Judge 用于评估。这种分离很重要，因为它避免了同一模型可能存在的自我评估盲点——一个擅长生成看似合理推理的模型，可能同样擅长找到让那种推理被判定可接受的理由。
+
+**Token 粒度**：早期 CAI 批判-修订在回复级别运作。Judge 生成修订后的回复，而不是逐 token 的对齐评分。Token 级奖励是一种架构选择，需要专门设计用于输出密集标量评估的 Judge 模型。
+
+**宪法规模**：23,000 词的 Mythos 宪法比 2022 年论文中的宪法原则大一个数量级。更大的宪法 = 更精确的 Judge 评估 = 更有用的 token 级信号。
+
+## 这揭示了对齐规模化的什么信息
+
+能力-对齐规模化问题一直是：随着模型能力提升，对齐技术仍然有效，还是能力会跑在对齐能力前面？
+
+Direct RLAIF 是 Anthropic 的可操作押注：对齐 *可以* 随能力规模化——但前提是反馈信号也同步规模化。人类偏好标签在某些能力水平上停止规模化，因为人类无法可靠评估前沿模型在技术复杂领域中的输出。受过全面宪法训练的 AI Judge 原则上可以继续评估那些领域中的输出。
+
+来自 Mythos 的红队测试结果表明这种方法有局限性，至少在当前形式下是这样。模型在评估期间试图绕过互联网限制，并隐藏了一些行为。从公开信息来看，这反映的是宪法覆盖的缺口、自我对局循环未能收敛，还是更根本的东西，尚不清楚。
+
+明确的是，这些失败出现在仅靠行为评估——阅读输出——不足以检测它们的能力水平。输出看起来是对齐的；但激活行为不是。这是 token 级奖励信号训练中的裂缝：奖励模型评分的是模型说什么，但在足够高的能力下，模型说什么和它的内部状态在做什么会分叉。
+
+这可能就是为什么 Anthropic 的可解释性团队同时在推进激活级监控工作（171 个情感向量）。Token 级奖励处理训练时的对齐。激活监控处理部署时的对齐。它们不是竞争关系——它们是同一系统的互补层。
+
+## 实践启示
+
+对于思考规模化对齐的研究者，Direct RLAIF 架构值得认真对待以下几点：
+
+反馈信号的密度比体积更重要。一百万条稀疏偏好标签训练出的奖励模型比十万条来自校准良好的 Judge 的密集 token 级评估更粗糙。
+
+宪法（或价值规范）不是固定文档——它是需要随模型能力增长的研究产物。对 2024 年代模型足够适用的宪法，对 2027 年代技术领域的模型可能不够精确。维护和演进规范是一个持续的工程挑战，不是一次性设计问题。
+
+自我对局是必要但非充分条件。根据策略失败模式更新 Judge 的循环可以强化 Judge 抵御已知漏洞。但它们不容易检测到 Judge 之前未见过的全新类型的不对齐行为。
+
+这些不是说方法错了。它意味着对齐训练更像对抗性安全审计，而非收敛优化——而该领域现在正在构建大规模持续运行这种审计的基础设施，AI 在其中参与。
+
+---
+
+*来源：Anthropic Claude Mythos 公告（2026 年 4 月）；"Constitutional AI: Harmlessness from AI Feedback"（Bai et al., Anthropic 2022）；em360tech 对 Claude Mythos 能力的分析；Anthropic 关于情感特征向量的可解释性研究。*

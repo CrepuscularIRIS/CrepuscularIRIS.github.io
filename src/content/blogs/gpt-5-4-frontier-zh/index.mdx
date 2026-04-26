@@ -1,0 +1,258 @@
+---
+title: "推理分钟数：LLM 计算的新经济学"
+description: "OpenAI 用推理预算替代了 Token 限额。这一转变揭示了推理时计算实际上是如何运作的。"
+publishDate: "2026-04-13"
+updatedDate: "2026-04-13"
+tags: ["openai", "gpt-5-4", "reasoning", "inference-scaling", "compute-economics"]
+language: zh
+draft: false
+hIE: lacia
+hero_image: /assets/hIE/lacia/lacia-1920x1200-869498.jpg
+sources: ["https://alphacoders.com/download.php?id=869498&file=page"]
+---
+
+OpenAI 悄悄改变了 GPT-5.4 的收费方式。Pro 用户不再按 Token 计费，而是获得"推理分钟数"——大约每 5 小时窗口 40 分钟的推理时间。营销话术说的是"简化"。技术层面的解读更有意思：OpenAI 承认了一个事实——前沿推理的主要成本不再是 Token 生成，而是*思考*本身。
+
+这不是一次账单变动。它是一次架构层面的坦白。
+
+## 推理分钟数实际在计量什么
+
+按 Token 计费假设成本与输出长度线性相关。对于自回归生成——模型一次生成一个 Token，每个 Token 都需要一次前向传播——这个假设大致成立。生成 1,000 个 Token 的成本大约是生成 100 个 Token 的 10 倍。
+
+推理模型打破了这个假设。GPT-5.4 的 o 系列推理模式在提交答案之前会进行内部搜索。模型不只是生成下一个 Token——它会探索多条解决路径，评估它们正确的可能性，然后选择最优解。这种内部搜索在输出中不可见，却占据了大部分算力预算。
+
+简单问题（"法国的首都是什么？"）只需要极少的内部搜索。复杂数学证明需要大量搜索——在产生单个输出 Token 之前可能需要数千次内部评估步骤。按 Token 计费，两者输出长度相似，成本也相似。按推理分钟数计费，证明的成本是 100 倍，因为*思考*时间是 100 倍。
+
+```python
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class InferenceProfile:
+    """推理时计费下不同查询类型的成本配置。"""
+    query_type: str
+    output_tokens: int
+    reasoning_steps: int     # 内部搜索评估次数
+    reasoning_time_ms: int   # 思考的墙上时钟时间
+    generation_time_ms: int  # Token 输出的墙上时钟时间
+    
+    @property
+    def thinking_ratio(self) -> float:
+        """思考时间占总时间的比例。"""
+        total = self.reasoning_time_ms + self.generation_time_ms
+        return self.reasoning_time_ms / total if total > 0 else 0.0
+
+# GPT-5.4 推理模式的近似配置
+PROFILES = [
+    InferenceProfile("factual_lookup",     50,    10,    200,    500),
+    InferenceProfile("code_generation",   200,   500,   5000,   2000),
+    InferenceProfile("math_proof",        150,  5000,  60000,   1500),
+    InferenceProfile("multi_step_agent",  300, 10000, 120000,   3000),
+]
+
+for p in PROFILES:
+    print(
+        f"{p.query_type:25s} "
+        f"tokens={p.output_tokens:4d}  "
+        f"think_ratio={p.thinking_ratio:.1%}  "
+        f"reasoning_steps={p.reasoning_steps:6d}"
+    )
+# factual_lookup            tokens=  50  think_ratio=28.6%  reasoning_steps=    10
+# code_generation           tokens= 200  think_ratio=71.4%  reasoning_steps=   500
+# math_proof                tokens= 150  think_ratio=97.6%  reasoning_steps=  5000
+# multi_step_agent          tokens= 300  think_ratio=97.6%  reasoning_steps= 10000
+```
+
+对于推理密集型任务，模型将 97%+ 的算力用于*思考*，用于*生成输出*的不到 3%。按 Token 计费只收了那 3% 的钱。按推理分钟数计费，才是为那 97% 买单。这是诚实的定价模型。
+
+## 模型内部的搜索树
+
+"推理"在计算上是什么样子？o 系列模型的内部架构没有公开文档。但从学术先驱和推理时扩展研究中，我们可以约束设计空间。一种合理的计算模式——未确认，但与观察到的行为一致——类似于 **Token 空间上的蒙特卡洛树搜索（MCTS）**。
+
+模型维护一棵搜索树，每个节点是一个部分解，每条边是一个可能的下一步推理。在每个节点上，模型：
+
+1. **选择**一个有前景的分支（使用学到的价值函数）
+2. **扩展**它，生成下一步推理
+3. **评估**扩展后的节点（这条路径是否导向正确答案？）
+4. **回溯**评估结果以更新父节点
+
+这与 AlphaGo 博弈搜索的算法骨架相同，只是适配到了自然语言推理。"推理时间"就是遍历这棵树的时间——扩展节点、评估位置、从死胡同回退。
+
+```python
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class ReasoningNode:
+    """内部推理搜索树中的一个节点。"""
+    state: str                      # 部分推理链
+    value: float                    # 到达正确答案的估计概率
+    visit_count: int = 0
+    children: list["ReasoningNode"] | None = None
+    parent: Optional["ReasoningNode"] = None
+    
+    @property
+    def ucb_score(self) -> float:
+        """树搜索选择的置信上界。"""
+        import math
+        if self.visit_count == 0:
+            return float("inf")
+        parent_visits = self.parent.visit_count if self.parent else 1
+        exploitation = self.value
+        exploration = math.sqrt(math.log(parent_visits) / self.visit_count)
+        c = 1.41  # 探索常数
+        return exploitation + c * exploration
+
+
+def reasoning_search(
+    query: str,
+    model_fn,        # 生成下一步推理
+    value_fn,        # 评估部分解质量
+    max_iterations: int = 1000,
+    confidence_threshold: float = 0.95,
+) -> str:
+    """简化的 MCTS 风格推理循环。
+    
+    真实实现在专用推理硬件上运行，
+    采用批量树遍历。这里只是捕捉算法结构。
+    """
+    root = ReasoningNode(state=f"Question: {query}\nReasoning:", value=0.0)
+    
+    for _ in range(max_iterations):
+        # SELECT：用 UCB 分数遍历树
+        node = root
+        while node.children:
+            node = max(node.children, key=lambda n: n.ucb_score)
+        
+        # EXPAND：生成可能的下一步推理
+        candidates = model_fn(node.state, n_candidates=3)
+        node.children = [
+            ReasoningNode(
+                state=f"{node.state}\n{step}",
+                value=0.0,
+                parent=node,
+            )
+            for step in candidates
+        ]
+        
+        # EVALUATE：评估每个扩展节点
+        for child in node.children:
+            child.value = value_fn(child.state)
+            child.visit_count = 1
+        
+        # BACKPROPAGATE：更新祖先节点的值
+        best_child = max(node.children, key=lambda n: n.value)
+        current = best_child
+        while current.parent:
+            current.parent.visit_count += 1
+            current.parent.value = max(
+                c.value for c in (current.parent.children or [current])
+            )
+            current = current.parent
+        
+        # TERMINATE：找到高置信度解
+        if best_child.value > confidence_threshold:
+            return best_child.state
+    
+    # 返回预算内找到的最优路径
+    best = root
+    while best.children:
+        best = max(best.children, key=lambda n: n.value)
+    return best.state
+```
+
+`max_iterations` 参数就是推理预算。更多迭代 → 更深搜索 → 更好答案 → 更多算力。推理分钟数直接限制了这个参数。40 分钟预算允许大约 100K-1M 次搜索迭代（取决于模型规模和硬件）——足够完成复杂证明，但不足以解决开放性研究问题。
+
+## 这如何改变应用格局
+
+按 Token 计费产生了一种特定的优化压力：最小化输出长度。应用被设计为请求简短回复、使用结构化输出格式、避免冗长的推理链。隐含假设：更短 = 更便宜。
+
+推理分钟数计费颠覆了这一点。成本由思考主导，而非输出。一个思考 60 秒然后输出 50 个 Token 的模型，和一个思考 60 秒然后输出 500 个 Token 的模型，成本相同。优化压力从"最小化输出"转向"最小化推理复杂度"。
+
+这改变了哪些应用在商业上可行：
+
+| 应用场景 | 按 Token 计费 | 按推理分钟计费 | 优胜者 |
+|---|---|---|---|
+| 简单问答聊天机器人 | 便宜 | 便宜 | 平局 |
+| 代码生成 | 中等 | 中等 | 平局 |
+| 数学推理 | 中等（推理 Token 被计费） | 昂贵（深度搜索） | 取决于深度 |
+| 长文档生成 | 昂贵（大量 Token） | 便宜（浅层推理） | 推理计费 |
+| Agent 工作流 | 中等 | 非常昂贵（深度规划） | Token 计费 |
+| 摘要生成 | 中等 | 便宜 | 推理计费 |
+
+受影响最大的是 **Agent 工作流**。一个自主 Agent 提前规划 20 个步骤、评估意外情况、推理失败模式，会消耗大量推理预算——即使它的输出只是一个 shell 命令。按 Token 计费，这笔成本被隐藏了——Agent 输出很短，看起来很便宜。按推理分钟数计费，真正的成本暴露了。
+
+## 确定性的算力代价
+
+这背后有一个更深层的原理：**确定性是昂贵的**。一个答案置信度 70% 的模型只需要最小化搜索——选择最可能的路径并提交。一个需要 99% 置信度的模型需要大量搜索——探索多条路径、验证一致性、排除失败模式。
+
+置信度与算力之间的关系遵循逆误差模式——每次加倍搜索迭代大约将剩余错误率减半。这意味着算力按 `1 / (1 - 置信度)` 扩展，在初期增长缓慢，但在接近确定性时会爆炸：
+
+```python
+import math
+
+def estimated_reasoning_cost(
+    base_difficulty: float,    # 0-1 规模，任务复杂度
+    target_confidence: float,  # 期望的答案置信度
+    base_compute: float = 1.0, # 50% 置信度的算力
+) -> float:
+    """根据期望置信度估算推理算力需求。
+    
+    模型：每次算力加倍（搜索迭代）大致将错误率减半。
+    这产生了逆误差扩展：成本 ~ 1 / (1 - 置信度)，而非对数增长。
+    
+    结果：从 50% 到 90% 的成本远低于从 90% 到 99%。
+    """
+    if target_confidence >= 1.0:
+        raise ValueError("有限算力无法达到 100% 置信度")
+    if target_confidence <= 0.5:
+        return base_compute * base_difficulty
+    
+    # 每次算力加倍，错误率减半
+    # error_rate = 1 - confidence
+    # doublings_needed = log2(0.5 / error_rate) = log2(0.5 / (1 - confidence))
+    error_rate = 1.0 - target_confidence
+    doublings = math.log2(0.5 / error_rate)
+    
+    return base_compute * base_difficulty * (2.0 ** doublings)
+
+# 示例
+for conf in [0.50, 0.80, 0.90, 0.95, 0.99, 0.999]:
+    cost = estimated_reasoning_cost(0.5, conf)
+    print(f"  confidence={conf:.1%}  relative_cost={cost:.1f}x")
+#   confidence=50.0%  relative_cost=0.5x
+#   confidence=80.0%  relative_cost=1.3x
+#   confidence=90.0%  relative_cost=2.5x
+#   confidence=95.0%  relative_cost=5.0x
+#   confidence=99.0%  relative_cost=25.0x
+#   confidence=99.9%  relative_cost=250.0x
+```
+
+从 90% 到 99% 置信度，算力成本增加 10 倍。从 99% 到 99.9% 又增加 10 倍。这就是为什么推理分钟数计费让某些应用变得贵得离谱：需要高确定性的任务（形式化证明、安全关键决策、金融分析）消耗的推理预算远超其产出。
+
+系统设计的实践启示：建立置信度感知路由。简单查询路由到快速模型、最小化推理。复杂查询路由到推理模型。高确定性要求的查询路由到扩展预算的推理模型。这些层级之间的成本差异可达 100 倍以上。
+
+## Anthropic 和 Google 的不同做法
+
+Anthropic 没有为 Claude 采用推理分钟数计费。他们的扩展思考功能将推理链作为可见输出暴露出来——思考 Token 与输出 Token 按相同费率计费，只是价格更高。这产生了不同的经济含义：用户可以*看到*推理过程，然后决定是否截断它。反馈回路更紧密。
+
+Google 的 Gemini 3.1 采用混合方案：根据模型对任务难度的估计，为每个查询分配推理预算。简单查询获得最小预算；复杂查询获得更多。用户不直接控制预算——模型自适应分配。这可能是最高效的方案，但给用户的控制权最少。
+
+三种定价模型反映了三种理念：
+
+- **OpenAI（推理分钟数）：** "你买的是思考时间。聪明地花。"
+- **Anthropic（可见思考 Token）：** "你看到推理过程了。用多少付多少。"
+- **Google（自适应分配）：** "我们来搞定需要多少思考。"
+
+对于在这些 API 上构建应用的开发者来说，定价模型的选择影响应用架构。OpenAI 的模型鼓励批处理（将推理预算分摊到多个查询上）。Anthropic 的模型鼓励流式处理（实时读取推理过程，如果答案已显而易见就提前停止）。Google 的模型鼓励发后即忘（让系统自行优化）。
+
+## 推理扩展定律
+
+底层观察：推理时算力的扩展性能与训练时算力一样，遵循对数规律。更多思考产生更好的答案，但有边际效益递减。"推理分钟数"这一说法，是 OpenAI 承认他们已经找到了推理扩展定律，并据此定价。
+
+这对行业有一个结构性影响。自 GPT-3 以来，训练扩展——在训练中投入更多 GPU——一直是主要的竞争轴心。推理扩展——在思考时投入更多算力——正在成为第二条轴心。一个训练数据少 10 倍、但在推理时多花 100 倍时间思考的模型，在推理任务上可以与一个大得多的模型匹敌。
+
+那些弄清楚了高效推理时搜索的实验室——更好的树搜索算法、更好的价值函数、更好的剪枝策略——将在每次 API 调用中积累成本优势。这就是定价变化的含义：它标志着 OpenAI 认为推理时算力是新的战场。
+
+---
+
+*相关阅读：[深度思考的推理时扩展](/blog/inference-time-scaling-deep-think) 覆盖了测试时算力扩展的理论基础。[T2 扩展：过度训练最优](/blog/t2-scaling-overtraining-optimal) 分析了训练-推理算力权衡。[Claude Opus 4.6 前沿分析](/blog/claude-opus-4-6-frontier) 审视了 Anthropic 对同一扩展问题的处理方式。*

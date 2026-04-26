@@ -1,0 +1,56 @@
+---
+title: "Learning Interestingness in Automated Mathematical Theory…"
+description: "Reframes automated math discovery as an RL problem and evolves LLM-based interestingness measures, a rare systems-level attack on open-ended scientific…"
+publishDate: "2026-04-26"
+updatedDate: "2026-04-26"
+category: paper
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+tags: [paper, automated-reasoning, reinforcement-learning, mathematical-discovery, LLM, open-ended-learning]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=RespmwOoCH"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+Tsoukalas et al. build **Fermat**, an RL environment where an agent discovers mathematical concepts and proves theorems — then evolve the scoring function itself, letting an LLM bootstrap what "interesting" means instead of hand-coding it.
+
+## Why This Is Worth Your Time
+
+Most automated theorem provers treat interestingness as a fixed heuristic: "a short proof is interesting," or "a result that conflicts with a conjecture is interesting." These are proxies, not tastes. The authors are asking something harder: can a system *develop* its own aesthetic for what counts as a good discovery?
+
+This is a genuinely rare move in the automated-reasoning literature. Most work optimizes for correctness (proving more theorems) or efficiency (proving them faster). This paper tries to optimize for *novelty* — and that's a different problem entirely, closer to open-ended learning than to traditional search.
+
+The choice to evolve interestingness measures rather than hard-code them also sidesteps a philosophical tar pit. You don't have to decide what interestingness *is*; you just need a selective pressure that *selects for it*. Whether that pressure comes from human feedback, downstream utility, or — as here — a learned critic is a design choice. Fermat takes the learned-critic path, and the results suggest the evolutionary search over LLM-generated scoring functions is a viable way to operationalize the intuition.
+
+## Core Method (3-Minute Version)
+
+**The environment: Fermat.** Think of Fermat as a symbolic sandbox: the agent takes actions that create or manipulate mathematical objects (defining a function, stating a conjecture, proving a lemma). Rewards come not from task completion but from an *interestingness function* that scores the discovered content. The RL loop is unusual — the state is the growing theory, the action space is symbolic, and the reward signal is the evolved measure.
+
+**The evolutionary twist.** Rather than hand-design the interestingness function, the authors prompt an LLM to propose candidate scoring functions, then run an evolutionary search over them. Each candidate function is evaluated by how well theories discovered under its guidance score on a held-out set of "desirable properties" (coverage, novelty, surprisingness). High performers are recombined and mutated, with the LLM proposing both the combination logic and the abstraction level. Function abstraction lets the system compose simple signals into richer ones.
+
+**The bootstrap.** Under the right selective pressure, interestingness measures that reward genuine novelty tend to dominate. The system doesn't "understand" math — it just learns to weight signals that correlate with discoveries humans find worth writing down.
+
+## Key Results
+
+- Fermat demonstrates an LLM-based evolutionary algorithm capable of synthesizing nontrivial interestingness measures from symbolic building blocks.
+- Theories discovered under evolved measures outperform those guided by hand-coded baselines (short-proof heuristics, surprise-counting, etc.) on elementary number theory and finite field domains.
+- The evolved measures exhibit structural diversity — they combine different signals rather than collapsing to a single dominant proxy.
+- **No concrete numbers** were extracted from the source note; the abstract reports qualitative improvements in discovery quality and breadth.
+
+## Limits and Unanswered Questions
+
+**Narrow domain coverage.** The evaluation lives in elementary number theory and finite fields — elegant proving grounds, but far from the full range of mathematics a working theorist cares about. Whether interestingness measures evolved here transfer to algebraic topology, combinatorics, or geometry is genuinely unclear.
+
+**No human-judgment comparison.** The paper doesn't compare evolved interestingness against the actual judgments of practicing mathematicians. "Interesting to an RL agent" and "interesting to a number theorist" may overlap only partially. Without that anchor, it's hard to know whether the system is discovering genuine mathematical novelty or gaming a proxy.
+
+**Neural and hybrid alternatives unexplored.** Learned interestingness critics from the neural network tradition (curiosity-driven exploration, novelty search) aren't compared. It's also unclear whether the LLM-generated scoring functions outperform simpler learned models trained directly on human preference data.
+
+**Reproducibility gap.** The abstract mentions open-sourcing Fermat, but no repository link or artifact citation was found in the source note. Verification pending.
+
+## Further Reading
+
+If the idea of evolved interestingness resonates, the curiosity-driven exploration literature ( Schmidhuber, 1991 onward) is the natural ancestor. For systems that combine LLMs with formal proof assistants, DeepMind's FunSearch and the HTPS family of neural theorem provers offer contrasting approaches to the same underlying challenge: making automated reasoning less brittle and more generative.

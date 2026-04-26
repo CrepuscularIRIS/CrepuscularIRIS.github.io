@@ -1,0 +1,224 @@
+---
+title: "Agent 生命周期编排：角色分离"
+description: "一个由5个Agent组成的系统，通过30分钟心跳、JSONL邮箱和明确的止损规则，避免单体Agent架构的失效模式。"
+publishDate: "2026-04-13"
+tags: [multi-agent, agent-systems, architecture, orchestration, mailbox-protocol, engineering]
+category: engineering
+hIE: lacia
+hero_image: /assets/hIE/lacia/lacia-futuristic-glow-909177.jpg
+language: zh
+draft: false
+---
+
+一个AI Agent接到复杂的多日项目，最终会在三种情况下之一失败：丢失上下文后开始与早期决策矛盾、在某个卡住的子任务上进入无限重试循环，或者产出的成果没有人审查——因为生产者和评审者是同一个实体。这三种失效不是Agent的bug——而是把执行、审查、规划塞进同一个上下文窗口所带来的结构性后果。
+
+解法不是更好的Prompt。是通过架构强制实现关注点分离。
+
+本文描述一个生产级5-Agent系统（OpenClaw），通过角色隔离、异步通信和明确的止损机制来解决每一种失效模式。该设计已自主运行数月，处理代码生成、质量审查、研究和内容交付，以30分钟为心跳周期。
+
+## 为什么是五个Agent
+
+这个数字不是随便定的。它来自于分析哪些职责必须相互隔离，以避免结构性的利益冲突。
+
+| Agent | 角色 | 核心职责 | 绝对不做什么 |
+|-------|------|---------|-------------|
+| **Orchestrator** | 规划/调度 | 任务分解、优先级排序、资源分配 | 实现、研究 |
+| **Builder** | 执行 | 代码实现、测试、构建验证 | 架构决策 |
+| **Reviewer** | 质量门控 | 代码审查、质量评估、PASS/FAIL判决 | 修复它发现的问题 |
+| **Researcher** | 证据收集 | 文献调研、数据收集、方案对比 | 最终决策 |
+| **Packager** | 交付/止损 | 打包交付物、止损决策、审计记录 | 研究、实现 |
+
+关键约束：**Reviewer 永远不会修复它发现的问题**。这是有意为之的。当发现问题的实体同时负责修复它时，会引入自我合理化循环——修复方案由产生它的同一上下文来评估，在结构上不可能捕捉到修复引入新问题或未真正解决根本原因的情况。
+
+在人类工程团队中，这就是为什么代码审查者不会向作者分支推送提交。同一原则适用于Agent系统，但更容易被违反——因为没有社会规范来阻止，只有架构。
+
+## 心跳模型
+
+系统以**30分钟心跳周期**运行。每个心跳周期，每个Agent：
+
+1. 读取自己的邮箱（`~/inbox/<agent>.jsonl`）
+2. 按顺序处理待处理消息
+3. 执行任何预定的定时任务
+4. 如无工作，向Orchestrator发送空闲报告
+5. Orchestrator汇总空闲信号，决定是否升级给人类
+
+```typescript
+interface HeartbeatCycle {
+  agent: string;
+  timestamp: string;
+  mailbox_messages: number;
+  cron_tasks_executed: string[];
+  status: "active" | "idle";
+  escalation: boolean;
+}
+
+// 每个Agent的心跳是独立的——没有共享时钟
+// 30分钟间隔由系统cron强制执行，不是由Agent控制
+```
+
+心跳模型解决了事件驱动架构的两个难题：
+
+**有界延迟。** 在纯事件驱动系统中，收到零消息的Agent会无限期休眠。心跳保证每个Agent至少每30分钟检查一次工作，为任务拾取提供了最坏情况延迟上界。
+
+**可观测性。** 空闲报告创建了自动心跳监控。如果一个Agent连续两个周期未发送空闲报告，Orchestrator就知道出问题了——Agent崩溃了、卡住了，或者陷入了意外的长任务。这与TCP keepalive是同一原则，应用于Agent协调。
+
+**无忙轮询。** Agent不轮询彼此状态。它们被动接收消息并响应。在两次心跳之间，Agent进程处于非活跃状态。这使资源消耗与实际工作量成正比，而非与系统中的Agent数量成正比。
+
+## 邮箱协议
+
+Agent间通信使用原子性JSONL文件。每个Agent有专属邮箱文件。写入者追加，读取者消费。
+
+```jsonl
+{"from":"orchestrator","to":"builder","type":"task_assignment","subject":"implement control-plane logging module","priority":"high","timestamp":"2026-04-10T10:00:00Z","body":"..."}
+{"from":"reviewer","to":"orchestrator","type":"review_verdict","subject":"control-plane logging","verdict":"PASS","confidence":0.92,"timestamp":"2026-04-10T10:45:00Z","body":"..."}
+{"from":"packager","to":"orchestrator","type":"idle_report","subject":"idle tick","timestamp":"2026-04-10T11:00:00Z","body":"no mailbox work this cycle"}
+```
+
+消息类型契约定义了通信拓扑：
+
+| 消息类型 | 发送方 | 接收方 | 用途 |
+|---------|--------|--------|------|
+| `task_assignment` | Orchestrator | Builder/Researcher | 分配工作 |
+| `review_request` | Orchestrator/Builder | Reviewer | 请求质量门控 |
+| `review_verdict` | Reviewer | Orchestrator | PASS/FAIL及置信度 |
+| `delivery_note` | Packager | Orchestrator | 交付确认 |
+| `idle_report` | 任意Agent | Orchestrator | 心跳信号 |
+| `research_dispatch` | Packager/Orchestrator | Researcher | 研究请求 |
+| `stop_loss` | Packager | Orchestrator | 终止卡住的任务 |
+
+为什么选JSONL而不是消息队列（Redis、RabbitMQ、Kafka）？
+
+**简单性。** 系统运行在单机上。消息队列增加运维复杂度（进程管理、持久化配置、监控），但这个规模下没有收益。JSONL文件可以用`cat`和`grep`调试，用Git版本控制，从崩溃中恢复只需从最后一个完整行读取。
+
+**原子性。** 借助`O_APPEND`，seek-and-write在POSIX上是原子的，防止并发写入者之间的偏移量交织。对于小写入（单行JSONL，远小于文件系统块大小），在Linux ext4/btrfs上这在实践中足够可靠。此规模下无需文件锁。
+
+**可审计性。** 邮箱文件是所有Agent间通信的完整有序记录。当调试系统为何做出某个决策时，可以重建导致该决策的完整消息序列——这比临时消息队列要容易得多。
+
+权衡：JSONL无法扩展到数百个Agent或每秒数千条消息。不需要。该系统每个周期处理五个Agent之间的数十条消息。此规模下，简单性与能力的比值是正确的。
+
+## 止损：何时退出
+
+自主Agent系统中最被低估的组件是知道何时停止。没有明确的止损规则，Agent会在卡住的任务上无限工作——烧Token、产出越来越低质量的输出、阻塞其他工作。
+
+Packager Agent充当系统的止损执行者。它监控任务状态，在满足以下任一条件时触发终止：
+
+```python
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+
+
+class StopLossReason(Enum):
+    STALE = "no_progress_24h"
+    LOOP = "two_consecutive_no_change"
+    ROI = "cost_exceeds_value"
+    REVIEW_FAIL = "three_consecutive_review_failures"
+
+
+@dataclass(frozen=True)
+class TaskState:
+    task_id: str
+    created_at: datetime
+    last_progress_at: datetime
+    consecutive_no_change: int
+    review_failures: int
+    estimated_tokens_spent: int
+    estimated_value: str  # "high" | "medium" | "low"
+
+
+def should_stop_loss(state: TaskState, now: datetime) -> StopLossReason | None:
+    """Determine if a task should be terminated."""
+    # 规则1：24小时无进展
+    if now - state.last_progress_at > timedelta(hours=24):
+        return StopLossReason.STALE
+
+    # 规则2：连续两个周期状态无变化
+    if state.consecutive_no_change >= 2:
+        return StopLossReason.LOOP
+
+    # 规则3：成本-价值不匹配
+    token_threshold = {
+        "high": 500_000,
+        "medium": 100_000,
+        "low": 25_000,
+    }
+    if state.estimated_tokens_spent > token_threshold.get(
+        state.estimated_value, 50_000
+    ):
+        return StopLossReason.ROI
+
+    # 规则4：反复审查失败表明根本方法有问题
+    if state.review_failures >= 3:
+        return StopLossReason.REVIEW_FAIL
+
+    return None
+```
+
+止损触发时，Packager：
+1. 将任务标记为`deferred`（而非`failed`——任务可能在后续用不同方法后变得可行）
+2. 将原因和当前状态记录到审计跟踪
+3. 通知Orchestrator重新优先级排序剩余工作
+4. 人类在下次会话摘要中看到止损记录，可以决定是否重新审视
+
+这个机制解决的是"好意努力的无限循环"——自主Agent系统中最常见的失效模式。没有止损的Agent就像没有break条件的while循环：如果终止条件永远不满足，它将永远运行。
+
+## 事件驱动 + 时间驱动混合架构
+
+系统同时以两种模式运行：
+
+**事件驱动：** Agent响应邮箱消息。任务分配触发实现。审查请求触发评估。这处理了标准工作流——一个Agent的输出触发另一个Agent的行动。
+
+**时间驱动：** Cron调度触发与邮箱无关的周期性任务。博客维护在周二和周五上午运行。安全扫描每天运行。依赖更新每周运行。
+
+混合之所以重要，是因为有些工作没有自然触发事件。"检查博客是否需要新内容"不是由任何Agent行动触发的——它由时间流逝触发。Cron干净地处理这个问题，而不需要系统人为制造合成事件。
+
+Cron任务可以生成邮箱消息。博客维护Cron读取最新交付物，识别内容缺口，通过邮箱向Researcher发送研究请求。这桥接了两种模式：时间触发初始行动，事件处理协调。
+
+## 与单体Agent系统的对比
+
+| 特性 | 单体Agent | 5-Agent (OpenClaw) |
+|------|-----------|---------------------|
+| 上下文整洁度 | 低（职责混杂） | 高（角色隔离） |
+| 错误隔离 | 无 | Reviewer门控 |
+| 止损 | 依赖Prompt | 结构保证 |
+| 可观测性 | 低（黑盒） | 高（邮箱审计日志） |
+| 可扩展性 | 上下文线性增长 | 按需添加Agent类型 |
+| 故障恢复 | 从头重启 | 从上一个邮箱状态恢复 |
+
+最后一行很重要。当单体Agent系统崩溃时，恢复意味着要么重启整个任务，要么手动重建上下文。在邮箱系统中，恢复意味着从最后处理的消息读取邮箱并恢复。状态在文件中，而非Agent的上下文窗口里。
+
+## 这个架构的代价
+
+角色分离不是免费的：
+
+**延迟。** 单体Agent可以在一轮中思考和行动。5-Agent系统至少需要三次邮箱交换才能完成一个任务（分配 → 实现 → 审查）。以30分钟心跳，最小延迟为90分钟。对于延迟敏感的工作，这太慢了。
+
+**Token开销。** 每个Agent在每次心跳时读取自己的上下文设置（系统Prompt、角色描述、当前状态）。五个Agent意味着每个周期五次上下文加载，即使某些Agent没有工作。空闲开销是待命的代价。
+
+**协调复杂度。** 五个Agent配合六种消息类型，构成了需要理解、监控和调试的协调面。单体Agent没有协调——它是自包含的。邮箱协议很简单，但在五个Agent下的"简单"仍然比单体Agent的"无"更复杂。
+
+这些代价在以下情况下是合理的：任务长期运行（数天到数周）、涉及多种工作类型（实现 + 审查 + 研究）、质量门控有益（审查步骤捕获Builder会漏掉的错误）。对于短期、定义良好的任务，单体Agent更好。
+
+## 实现注意事项
+
+**邮箱并发。** 五个Agent可能同时写入彼此邮箱，写冲突在理论上是可能的。实际上，由于Agent运行在非重叠的30分钟周期且每次写入是单行原子追加，冲突极为罕见。此规模下无需文件锁。
+
+**Agent身份。** 每个Agent作为独立Claude Code会话运行，有各自定义角色和约束的系统Prompt。系统Prompt是"宪法"——定义Agent能做什么和不能做什么。邮箱是"通信通道"——定义Agent下一步该做什么。
+
+**状态持久化。** 唯一的持久化状态是邮箱文件和跟踪任务状态的`TASKS.yaml`文件。无数据库、无缓存、无外部状态存储。一切都是纯文本文件，可检查、可编辑、可版本控制。
+
+**成本控制。** 每个Agent有每周期Token预算。Orchestrator预算最小（做路由决策，不生成代码）。Builder预算最大（编写实现）。Reviewer预算中等（读代码、写评估）。预算强制执行防止卡住Agent的失控成本——是止损机制之后的第二道防线。
+
+## 值得借鉴的模式
+
+即使不构建5-Agent系统，这个架构中有三个模式适用于任何多Agent设计：
+
+**生产与评估分离。** 生产输出的实体永远不应该评估自己的输出。适用于代码生成（Builder和Reviewer分离）、内容创作（写作者和编辑分离）、研究（假设生成和证据评估分离）。自我评估在结构上是有偏差的。
+
+**让通信可审计。** Agent用来通信的协议应当产生持久化、人类可读的记录。当出问题——必然会的——你需要重建决策链。结构化日志可以接受。JSONL邮箱更好。内存消息传递加无持久化是调试噩梦。
+
+**定义明确的停止条件。** 每个自主Agent循环需要一个不依赖Agent自身判断的停止条件。外部定时器、Token预算、周期计数器或人工检查点都可以。不行的做法：信任Agent知道它卡住了。按定义，卡住的Agent不知道自己卡住了。
+
+---
+
+*本文描述了OpenClaw Agent系统架构在作者个人AI OS中的部署。代码示例是生产实现的简化表示。该系统自2026年初以本文描述的5-Agent配置自主运行。*

@@ -1,0 +1,268 @@
+---
+title: "Context Engineering > Prompt Engineering"
+description: "提示词工程优化的是一次输入。上下文工程设计的是完整流水线——工具、记忆、检索——它们共同决定了模型看到了什么。"
+publishDate: "2026-04-13"
+tags: ["LLM", "Agent", "Context Engineering", "Prompt Engineering", "Architecture"]
+category: "bundle"
+hIE: lacia
+hero_image: /assets/hIE/lacia/lacia-1920x1200-869498.jpg
+language: zh
+draft: false
+---
+
+"提示词工程"这个词，从一开始就有点误导。它暗示决定输出质量的关键变量是人工写的那条指令——系统提示词、few-shot 示例、精心措辞的问题。但实际运行中，那条指令可能只占决定模型输出质量的 5%。剩下 95% 是上下文窗口里的一切：工具调用结果、检索到的文档、对话历史、注入的记忆、Schema 定义、之前 Agent 的输出。
+
+模型比我们都先想明白了这件事。Claude Opus 4.6 支持 100 万 token 的上下文窗口。GPT-5.4 支持 256K。Gemini 3 支持 200 万。这些不是增量改进——它们是架构宣言，在说：**智能发生在哪里，由上下文决定**。模型们在告诉我们：给我们更多上下文，不是更好的提示词。
+
+这个转变现在有了名字：**上下文工程（Context Engineering）**。理解它，会改变你构建 AI 系统的方式。
+
+## 上下文工程到底是什么意思
+
+提示词工程问的是："我该怎么措辞，模型才能给出好答案？"
+
+上下文工程问的是："模型需要看到什么信息、按什么顺序、以什么粒度，才能输出正确结果——以及，我如何构建能自动组装这一切上下文的流水线？"
+
+两者的区别是结构性的。提示词工程师修改措辞。上下文工程师构建系统。
+
+以一个修复 bug 的编码 Agent 为例。提示词可能是："修复 auth_handler.py 里失败的测试。"这很必要，但远远不够。真正决定成败的是上下文：
+
+```
+┌─────────────────────────────────────────────┐
+│ 系统提示词（角色、约束、风格）                │ ~500 tokens
+├─────────────────────────────────────────────┤
+│ 项目规范（.claude/rules/*.md）               │ ~2,000 tokens
+├─────────────────────────────────────────────┤
+│ 相关源码文件（自动检索）                      │ ~8,000 tokens
+├─────────────────────────────────────────────┤
+│ 测试输出（stderr + 堆栈跟踪）               │ ~1,500 tokens
+├─────────────────────────────────────────────┤
+│ Git diff（近期变更上下文）                   │ ~3,000 tokens
+├─────────────────────────────────────────────┤
+│ 记忆（之前的尝试、已知模式）                  │ ~1,000 tokens
+├─────────────────────────────────────────────┤
+│ 用户指令："修复失败的测试"                   │ ~20 tokens
+└─────────────────────────────────────────────┘
+```
+
+用户指令只占 20 tokens，总量约 16,000。工程挑战不在于写好这 20 tokens——而在于构建能正确组装剩下 15,980 tokens 的流水线。
+
+## 上下文的五个层次
+
+上下文工程可以分解为五个不同的设计问题，每个都有各自的工具链和失效模式。
+
+### 第一层：指令上下文（静态）
+
+系统提示词、角色定义、行为约束。这是大多数人理解的"提示词工程"。它很重要——语调、安全边界、输出格式——但这是最静态的一层。
+
+```python
+SYSTEM_PROMPT = """你是一位高级软件工程师，负责代码审查。
+规则：
+- 将安全问题标记为 CRITICAL
+- 给出修复建议，不要只指出问题
+- 引用具体行号
+- 如果不确定，明确说明
+"""
+```
+
+这里的陷阱是让这一层过载。根据我的经验，超过 ~2,000 tokens 的系统提示词就开始边际收益递减——指令之间会相互竞争注意力。保持这层轻薄，把动态内容移到其他层。
+
+### 第二层：知识上下文（检索）
+
+运行时拉取的文档、代码文件、API 文档和参考资料。这是 RAG 层——但上下文工程对它的处理方式与传统 RAG 不同。
+
+传统 RAG 检索 top-k 最相似的文本块。上下文工程问的是：模型要在这个**具体任务**上成功，到底需要知道什么？
+
+```python
+def build_knowledge_context(task: str, codebase_index) -> str:
+    """基于任务分析组装知识上下文。"""
+    
+    # 第一步：识别任务需要什么
+    required_files = analyze_task_dependencies(task)
+    
+    # 第二步：用任务感知排序进行检索
+    chunks = []
+    for file_path in required_files:
+        content = read_file(file_path)
+        # 小文件直接包含，大文件摘要
+        if count_tokens(content) < 2000:
+            chunks.append(f"# {file_path}\n{content}")
+        else:
+            chunks.append(f"# {file_path} (摘要)\n{summarize(content, task)}")
+    
+    # 第三步：添加模型会需要的交叉引用
+    related = find_related_symbols(required_files, codebase_index)
+    for symbol, location in related[:10]:
+        chunks.append(f"# 参考：{symbol} 位于 {location}")
+    
+    return "\n\n".join(chunks)
+```
+
+核心洞察：**检索质量比检索数量重要得多**。十份高度相关的文件，胜过一百个模糊相似的文本块。
+
+### 第三层：状态上下文（动态）
+
+当前世界状态：对话历史、工具执行结果、环境变量、运行中进程的输出。这是波动性最大的一层，也是最难管理的一层。
+
+```python
+import time
+
+class StateContext:
+    def __init__(self, max_tokens: int = 8000):
+        self.max_tokens = max_tokens
+        self.entries: list[dict] = []
+    
+    def add_tool_result(self, tool: str, result: str, relevance: float):
+        """添加工具结果，附带相关性评分以备后续裁剪。"""
+        self.entries.append({
+            "type": "tool_result",
+            "tool": tool,
+            "content": result,
+            "relevance": relevance,
+            "timestamp": time.time(),
+        })
+        self._prune()
+    
+    def _prune(self):
+        """超出预算时移除相关性最低的条目。"""
+        while self._total_tokens() > self.max_tokens:
+            # 无论相关性如何，保留近期条目
+            prunable = [e for e in self.entries if time.time() - e["timestamp"] > 60]
+            if not prunable:
+                break
+            prunable.sort(key=lambda e: e["relevance"])
+            self.entries.remove(prunable[0])
+```
+
+大多数 Agent 框架对状态上下文的管理很粗糙——它们无限追加工具结果，直到上下文窗口溢出，然后从头截断。这会破坏早期可能仍有价值的上下文。工程化的上下文系统会评分相关性并策略性地裁剪。
+
+### 第四层：记忆上下文（持久）
+
+来自之前会话的信息：学到的偏好、跨对话持续存在的项目特定知识。这是上下文工程与更广泛的 AI 记忆问题的交叉点。
+
+```python
+def load_memory_context(project_path: str, task: str) -> str:
+    """为当前任务加载相关记忆。"""
+    memory_dir = Path(project_path) / ".claude" / "memory"
+    
+    memories = []
+    for mem_file in memory_dir.glob("*.md"):
+        content = mem_file.read_text()
+        # 解析 frontmatter 中的类型和描述
+        meta = parse_frontmatter(content)
+        
+        # 评估与当前任务的相关性
+        if is_relevant(meta["description"], task):
+            memories.append(content)
+    
+    return "\n---\n".join(memories)
+```
+
+这里的失效模式是**过时记忆**。"认证模块使用 JWT"这条记忆，在团队迁移到会话令牌后就失效了。记忆系统需要验证机制——在注入记忆前，检查记忆中的事实是否仍与代码库匹配。
+
+### 第五层：元上下文（结构）
+
+其他四层是如何组装、排序和格式化的。这是大多数实践者完全忽略的一层。上下文的**结构**——什么放在前面、如何分隔区块、代码是行内还是围栏块——会实质性影响模型输出。
+
+根据我的测试（非正式基准）观察到的模式：
+
+- **近因偏差**：模型对上下文末尾的注意力更强。把最关键的信息放在最后。
+- **分隔符敏感度**：清晰的章节标题（`## 任务`、`## 上下文`、`## 约束`）比无结构的上下文显著提升指令遵循度。
+- **代码块封装**：用语言标签将代码包裹在围栏块中，可测量地提升代码生成质量。
+- **留白与否定**：在约束中加入"不要做什么"往往比单纯依赖正向指令有效得多。
+
+## 实践中的上下文工程：Agent 循环
+
+以下是这五层在生产级 Agent 中的组合方式：
+
+```python
+def build_agent_context(
+    task: str,
+    conversation: list[dict],
+    tool_results: list[dict],
+    project_path: str,
+) -> list[dict]:
+    """为 Agent 回合组装完整上下文。"""
+    
+    # 第一层：指令（静态，缓存）
+    system = load_system_prompt()
+    
+    # 第四层：记忆（持久，每个会话加载一次）
+    memory = load_memory_context(project_path, task)
+    if memory:
+        system += f"\n\n## 相关记忆\n{memory}"
+    
+    # 第二层：知识（按任务检索）
+    knowledge = build_knowledge_context(task, load_index(project_path))
+    
+    # 第三层：状态（动态，已裁剪）
+    state = format_tool_results(tool_results)
+    
+    # 第五层：元（结构化组装）
+    messages = [{"role": "system", "content": system}]
+    
+    # 知识上下文放前面——这是参考资料
+    if knowledge:
+        messages.append({
+            "role": "user",
+            "content": f"## 项目上下文\n{knowledge}"
+        })
+        messages.append({
+            "role": "assistant", 
+            "content": "我已查看项目上下文。请问您需要我做什么？"
+        })
+    
+    # 对话历史放中间
+    messages.extend(conversation)
+    
+    # 状态上下文放末尾——近期的、可操作的
+    if state:
+        messages.append({
+            "role": "user",
+            "content": f"## 近期工具结果\n{state}\n\n基于这些结果，请继续执行：{task}"
+        })
+    
+    return messages
+```
+
+这个排序是经过设计的：参考资料在前（第二层），对话历史在中间（第三层历史），可操作状态在末尾（第三层当前）。这同时利用了**首因效应**（早期上下文设定框架）和**近因偏差**（晚期上下文获得最强注意力）。
+
+## 为什么这在当下很重要
+
+三个 converging trends（收敛趋势）使上下文工程成为 2026 年的关键技能：
+
+**1. 上下文窗口实际上已经无限制了。** 有了 100 万 + token 的窗口，瓶颈不再是"能不能装下？"而是"该不该放进去？"这是策展问题，不是压缩问题。
+
+**2. 工具使用让上下文变得动态。** 每次工具调用都会向上下文注入新信息。一个在会话中运行了 20 个工具的 Agent，其上下文大部分是**生成的**，而非**编写的**。管理这些生成的上下文是首要工程挑战。
+
+**3. 多 Agent 系统成倍增加上下文复杂度。** 当 Agent A 的输出成为 Agent B 的输入时，上下文工程就变成了分布式系统问题。Agent B 需要从 Agent A 的工作中获得什么？如何防止跨 Agent 边界的上下文污染？
+
+## 提示词工程陷阱
+
+我在生产 AI 系统中看到的最常见失效模式，不是糟糕的提示词——而是**好的提示词搭配糟糕的上下文**。一条措辞完美的指令会失败，因为：
+
+- 检索到的文档不相关（第二层失效）
+- 之前步骤的工具结果包含错误并持续传播（第三层失效）
+- 过时的记忆注入了过时信息（第四层失效）
+- 关键上下文埋在一堆 50K token 窗口的中间（第五层失效）
+
+再多的提示词优化都修复不了这些问题。它们需要工程——构建检索流水线、状态管理器、记忆系统和上下文组装器，可靠地为每个任务生成正确的上下文。
+
+**模型已经足够好了。上下文决定它们能否成功。**
+
+## 实践要点
+
+1. **审计你的上下文，不是你的提示词。** 当模型输出糟糕时，打印它收到的完整上下文。问题几乎总是在上下文里，不在指令里。
+
+2. **为上下文窗口分配预算。** 给每一层分配 token 预算。常见分配：500 用于指令，8K 用于知识，4K 用于状态，1K 用于记忆，剩余用于对话。
+
+3. **评分并裁剪。** 上下文的每一部分都应该挣得它的 token。如果一份检索到的文档与当前任务无关，它是有害的——它稀释了真正重要内容的注意力。
+
+4. **测试上下文组装，不只是模型输出。** 为你的上下文流水线写单元测试。断言特定任务会检索到特定文件，过期条目会被裁剪，排序是正确的。
+
+5. **衡量上下文质量。** 跟踪上下文中相关 token 与不相关 token 的比例。80% 相关的上下文会显著优于 30% 相关的上下文，无论提示词质量如何。
+
+"只要写更好的提示词"的时代已经结束了。**上下文工程的时代已经开始。**
+
+---
+
+*相关阅读：[Beyond RAG: Karpathy's LLM Wiki Paradigm](/blog/karpathy-llm-wiki-beyond-rag) 探讨了为更好的上下文编译知识的一种方法。[MCP Goes Multi-Agent](/blog/mcp-agent-to-agent) 涵盖了使 Agent 之间上下文共享成为可能的协议层。*

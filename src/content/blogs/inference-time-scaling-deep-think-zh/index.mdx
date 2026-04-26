@@ -1,0 +1,292 @@
+---
+title: "推理时Scaling：模型如何学会思考"
+description: "OpenAI的o系列和推理模型将算力花在了推理阶段，以解决预训练无法解决的问题。本文从架构层面解析其工作原理。"
+publishDate: "2026-04-11"
+updatedDate: "2026-04-11"
+tags: [LLM, Reasoning, Architecture, Inference, OpenAI, DeepMind]
+category: technical
+language: zh
+draft: false
+hIE: methode
+hero_image: /assets/hIE/methode/669371-ass-beatless-bodysuit-dress-kouka-lacia-maid-mariage-mecha_musume-methode.jpg
+---
+
+关于语言模型进步的常见叙事是这样的：更大的模型、更多的数据、更高的基准分。Scaling Laws让这一切变得可预测。但对于复杂推理任务——奥赛数学、多步代码生成、长期规划——单纯的规模Scaling最终会触及天花板。模型变得更擅长补全看似合理的文本，而非真正解决难题。
+
+OpenAI从2024年底开始发布的o系列，代表了另一种思路：不再把算力全部压在训练阶段，而是在推理时投入更多计算。让模型在回答之前先思考。这种被称为**推理时Scaling**或**测试时计算**的转变，在传统Scaling已触及瓶颈的基准测试上带来了显著提升——其背后的机制值得深入理解。
+
+## 为什么标准自回归生成在推理任务上失效
+
+标准LLM逐个token生成，从左到右。每一步，模型会关注它已经看到的所有内容，然后预测下一个token。"推理"隐式地发生在残差流中，随着上下文累积而推进。这对大量任务都相当有效，但对于复杂逻辑问题存在结构性限制。
+
+人类解一道难题时，不会直接写出答案——他们会尝试一种方法，发现错了就回退，尝试别的，同时在脑子里维护中间结果，并根据已计算的内容修正结论。标准自回归生成没有这些行为的原生机制。它可以生成一串看起来像是在推理的token链，但使用的是与处理其他所有任务相同的"前向传播-预测"机制。没有回溯、没有假设检验、没有真正的验证。
+
+结果是，标准模型在需要持续多步推理的任务上表现脆弱。它们失败不是因为缺乏知识，而是因为架构没有给它们提供合适的"工具"来运用这些知识。
+
+## 思维链：第一步
+
+Wei等人（2022年）的洞察很简单：如果在prompt中包含展示逐步推理的示例，模型在推理任务上的表现会大幅提升。这不是因为你在教它们新知识，而是因为输出格式——推理步骤的序列——通过自身的上下文窗口为模型提供了更多"工作记忆"。
+
+```python
+# 不使用思维链
+prompt = "一家面包店做了48块饼干，卖掉了其中的3/4。还剩多少？"
+# 模型看到问题，直接预测答案
+
+# 使用思维链
+prompt = """一家面包店做了48块饼干，卖掉了其中的3/4。还剩多少？
+让我们逐步思考：
+1. 面包店一开始有48块饼干。
+2. 卖掉了其中的3/4：48 × 3/4 = 36块。
+3. 剩余饼干：48 - 36 = 12块。
+答案：12"""
+# 模型在确定答案前有空间进行推理
+```
+
+这是最简形式的推理时Scaling：在生成过程中使用额外的token来提升输出质量。但它仍然依赖于模型在单次前向传播中生成正确的推理。它不允许回溯或验证。
+
+## Best-of-N：最简单的Scaling方法
+
+下一步是生成多个候选答案并选择最佳。如果单次生成正确的概率为`p`，生成`N`个独立样本并选择最佳，这个概率会趋近于`1 - (1-p)^N`。对于单次生成正确率可能只有10%的难题，生成64个样本取最优，可以将准确率推到50%以上。
+
+```python
+import anthropic
+import asyncio
+
+client = anthropic.Anthropic()
+
+async def generate_candidate(problem: str, candidate_id: int) -> dict:
+    """生成一条推理链。"""
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=2048,
+        temperature=0.8,  # 候选之间有一定多样性
+        messages=[{
+            "role": "user",
+            "content": f"请逐步解答并展示所有步骤：\n\n{problem}"
+        }]
+    )
+    return {
+        "id": candidate_id,
+        "reasoning": response.content[0].text
+    }
+
+def verify_answer(problem: str, candidate: str) -> tuple[bool, str]:
+    """用模型本身验证候选解。"""
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=256,
+        temperature=0,  # 验证时确定性
+        messages=[{
+            "role": "user",
+            "content": f"""问题：{problem}
+
+候选解：
+{candidate}
+
+这个解在逻辑上正确吗？请仔细检查每一步。
+回复格式：CORRECT 或 INCORRECT，后跟简要解释。"""
+        }]
+    )
+    verdict = response.content[0].text
+    return verdict.startswith("CORRECT"), verdict
+
+def best_of_n(problem: str, n: int = 8) -> str:
+    """生成N个解，返回第一个通过验证的。"""
+    for i in range(n):
+        candidate = generate_candidate(problem, i)
+        is_valid, reason = verify_answer(problem, candidate["reasoning"])
+        if is_valid:
+            return candidate["reasoning"]
+    # 如果全部未通过验证，返回第一个候选
+    return generate_candidate(problem, 0)["reasoning"]
+```
+
+代价是成本：N倍的token，N倍的费用。Best-of-N还有个低效之处：它在验证之前先生成完整解。过程奖励模型（PRM）通过给推理中间步骤打分来改进这一点，允许提前终止坏的分叉。
+
+## 过程奖励模型方法
+
+OpenAI的"Let's Verify Step by Step"（Lightman等，2023）证明，训练一个对推理链中每个步骤而非仅对最终答案打分的奖励模型，可以显著提升推理时搜索的效率。与其生成完整解再选最优，不如用PRM引导生成过程朝高质量的中间步骤前进。
+
+PRM的训练信号需要人工标注者（或更强的模型）来标注推理链中哪些步骤正确、哪些错误。收集成本很高，但得到的奖励模型非常强大：它知道什么是好的推理步骤，而不仅仅是正确答案长什么样。
+
+有了PRM，就可以运行搜索策略，比如对推理步骤做束搜索：
+
+```python
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class ReasoningStep:
+    content: str
+    score: float
+    parent: Optional["ReasoningStep"] = None
+
+def score_step(problem: str, steps_so_far: str, new_step: str) -> float:
+    """
+    用LLM评判器近似PRM。
+    真正的PRM应该是微调分类器，而非prompt的LLM，
+    但这里用于说明接口。
+    """
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=64,
+        temperature=0,
+        messages=[{
+            "role": "user",
+            "content": f"""问题：{problem}
+目前推理：{steps_so_far}
+新步骤：{new_step}
+
+基于正确性和向解的推进程度，给这个步骤打0.0到1.0分。
+只回复一个数字。"""
+        }]
+    )
+    try:
+        return float(response.content[0].text.strip())
+    except ValueError:
+        return 0.5
+
+def beam_search_reasoning(
+    problem: str,
+    beam_width: int = 4,
+    max_steps: int = 10
+) -> str:
+    """
+    基于步骤级评分的简单推理束搜索。
+    """
+    initial = ReasoningStep(content="", score=1.0)
+    beams = [initial]
+
+    for step_num in range(max_steps):
+        candidates = []
+        for beam in beams:
+            # 为每个beam生成多个下一步候选
+            for _ in range(beam_width):
+                response = client.messages.create(
+                    model="claude-sonnet-4-6",
+                    max_tokens=256,
+                    temperature=0.7,
+                    messages=[{
+                        "role": "user",
+                        "content": f"问题：{problem}\n\n目前推理：\n{beam.content}\n\n只写下一步推理："
+                    }]
+                )
+                next_step = response.content[0].text
+                score = score_step(problem, beam.content, next_step)
+                candidates.append(ReasoningStep(
+                    content=beam.content + "\n" + next_step,
+                    score=score,
+                    parent=beam
+                ))
+
+        # 保留前beam_width个候选
+        beams = sorted(candidates, key=lambda x: x.score, reverse=True)[:beam_width]
+
+        # 检查是否有beam已达到结论
+        for beam in beams:
+            if "therefore" in beam.content.lower() or "answer:" in beam.content.lower():
+                return beam.content
+
+    return beams[0].content  # 返回最优beam的完整链
+```
+
+## o系列实际上做了什么
+
+OpenAI尚未公布o系列架构的完整技术细节，但从系统卡和公开基准来看，有几点是明确的：
+
+1. **私密思维链**：o系列模型生成"思考"token，这些token不会展示给用户。这些推理token与最终输出分开训练，允许模型探索如果原样展示会显得奇怪或不完整的思路。
+
+2. **基于推理质量的RL训练**：模型使用强化学习训练，奖励信号基于正确答案，而非人类对单个token的偏好标签。这与DeepMind的AlphaProof（2024年）工作相关，后者使用RL训练了一个能自主发现IMO问题证明的模型。
+
+3. **可变计算预算**："推理努力度"参数直接控制模型生成多少思考token。更高的努力度意味着在确定答案前进行更多探索——在难题上表现显著更好，但代价是延迟。
+
+## DeepMind的AlphaProof与自主科学推理
+
+DeepMind的AlphaProof（2024年）代表了推理时Scaling最极端的实践案例。在2024年国际数学奥林匹克竞赛中，AlphaProof解决了6道题中的4道——达到银牌水平的表现——其方法结合了用于生成证明候选的语言模型和用于检验证明的形式化验证系统（Lean）。
+
+这个架构本质上是推理时Scaling的逻辑推演：生成候选证明，形式化验证，如果验证失败，用失败模式的信息来指导下一个候选。"思考"的度量单位不是token而是实际耗时：AlphaProof每道题最多给了三天。
+
+```
+[自然语言问题]
+        ↓
+[LM：将形式化问题陈述翻译为Lean]
+        ↓
+[证明搜索循环]：
+    ↓
+    [LM：生成候选证明步骤]
+    ↓
+    [Lean：验证证明步骤]
+    ↓
+    [若出错：返回错误信息作为上下文，生成下一步]
+    ↓
+    [若全部步骤验证通过：返回完整证明]
+        ↓
+[完整形式化证明 → 自然语言解]
+```
+
+这是生成器-验证器模式的规模化应用。验证器不是学习模型，而是一个有正确性保证的外部形式系统。语言模型生成候选，形式系统提供硬反馈。
+
+## 这对应用意味着什么
+
+推理时Scaling的实际意义是显著的：
+
+**对于困难推理任务**：Best-of-N和束搜索方法已经可以通过标准API调用实现。如果你在用LLM做代码生成、复杂数据分析或多步推理，显式地采样多个完成结果并用评判模型选择最佳，通常值得付出4-8倍的成本增长。
+
+**对于延迟敏感的应用**：推理时计算用速度换准确度。一个能容忍30秒响应的应用，在难题上能得到比受限2秒响应的应用好得多的结果。o系列的设计让这个权衡变得显式。
+
+**对于构建验证器**：推理时Scaling的瓶颈通常不是生成——而是评估。一种可靠的候选输出评分或验证方式，能显著提升搜索过程的效率。对于有 ground-truth 验证的领域（代码执行、形式证明、单元测试），你基本上免费获得了一个PRM。
+
+```python
+def solve_with_tests(problem_description: str, test_cases: list[dict]) -> str:
+    """
+    用测试执行作为代码生成的 ground-truth 验证器。
+    这是带有硬验证器的推理时Scaling。
+    """
+    import subprocess
+    
+    for attempt in range(10):
+        response = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1024,
+            temperature=0.7 if attempt > 0 else 0,
+            messages=[{
+                "role": "user", 
+                "content": f"为以下问题编写Python代码：{problem_description}"
+            }]
+        )
+        code = response.content[0].text
+        
+        # 如果代码被markdown包裹，提取出来
+        if "```python" in code:
+            code = code.split("```python")[1].split("```")[0]
+        
+        # 用测试用例作为硬验证器
+        all_pass = True
+        for test in test_cases:
+            full_code = code + "\n" + test["test"]
+            result = subprocess.run(
+                ["python", "-c", full_code],
+                capture_output=True, text=True, timeout=5
+            )
+            if result.returncode != 0:
+                all_pass = False
+                problem_description += f"\n\n上一次尝试的测试用例失败：{test['test']}\n错误：{result.stderr}"
+                break
+        
+        if all_pass:
+            return code
+    
+    return code  # 如果全部失败，返回最后一次尝试
+```
+
+## 更深层的意义
+
+推理时Scaling并不替代预训练——它需要一个能力足够强的基座模型来生成合理的候选。但它以一种重要方式改变了计算与能力之间的关系。
+
+传统Scaling范式说：如果你想要模型解决更难的问题，就训练一个更大的模型。推理时Scaling说：如果你想要模型解决更难的问题，就给它更多思考时间，以及一种检验自己工作的方式。对于有可靠验证器的任务，这通常是更划算的路径。
+
+这个架构洞察不限于LLM。AlphaGo的MCTS、AlphaFold的结构放松流程，以及经典规划算法都使用相同的基本模式：生成候选、评估它们、用评估反馈引导下一轮生成。LLM的新颖之处在于，生成步骤足够灵活，可以将这种模式应用于开放域的自然语言任务。
+
+---
+
+*参考文献："Chain-of-Thought Prompting Elicits Reasoning in Large Language Models"（Wei等，2022）；"Let's Verify Step by Step"（Lightman等，2023）；OpenAI o1 System Card（2024）；DeepMind AlphaProof技术博客（2024）；"Scaling LLM Test-Time Compute Optimally Can be More Effective than Scaling Model Parameters"（Snell等，2024）*

@@ -1,0 +1,357 @@
+---
+title: "EEG 基础模型：零样本神经解码"
+description: "ICLR 2026 EEG 模型如何在不重训练的情况下跨被试泛化——拓扑编码与相对位置注意力机制详解。"
+publishDate: "2026-04-13"
+tags: [BCI, EEG, foundation-models, neural-decoding, transformers, neuroscience, deep-learning]
+language: zh
+draft: false
+hIE: lacia
+hero_image: /assets/hIE/lacia/lacia-futuristic-glow-909177.jpg
+---
+
+EEG 信号是深度学习公认的最棘手输入之一。每个被试的大脑都略有不同——电极放置位置差异、个体解剖结构差异、阻抗差异、同等刺激下的神经响应差异。在一个被试数据上训练的模型，在应用到另一个被试时通常会大幅退化。这一直是可扩展 BCI 系统的根本瓶颈：你无法部署一个每次使用都需要 30 分钟被试校准的临床系统。
+
+ICLR 2026 代的 EEG 基础模型——尤其是 DeeperBrain 和 ST-EEGFormer——直接解决了这个问题。两个模型在分类和解码任务上都实现了非平凡的跨被试零样本性能，这意味着与之前的 EEG 模型相比，架构上有本质不同。本文深入剖析其原理，因为这些设计选择既不显而易见，也对任何具有强烈个体差异的时间序列信号具有普遍适用性。
+
+## 为什么标准 Transformer 在 EEG 上失效
+
+用 Transformer 做 EEG 解码的朴素做法，是把每个时间步当做一个 token，加上标准的位位置编码，再跑一个分类头。这在跨被试泛化上会失败，原因有两个，值得精确说明。
+
+**原因一：通道位置不是语义 token。** 在 NLP 中，token 位置编码离散词汇表中的序列顺序。在 EEG 中，通道位置编码的是电极在头皮上的物理位置。第 14 通道（Oz，枕部中线）采集的是视觉皮层活动；第 1 通道（Fz，左额叶）采集的是前额叶活动。这些不是任意位置——它们是一个具有已知神经解剖学意义的物理坐标系中的位置。标准位置编码把它们当作没有空间结构的序列位置处理。
+
+当你把一个在 A 被试第 14 通道位置上训练的模型应用到 B 被试时（两人的电极阻抗、放置位置或帽尺寸不同），模型的位置编码不再对应同一个空间位置。仅此一点就能解释跨被试性能下降的很大一部分。
+
+**原因二：时间动力学在被试和实验会话间是非平稳的。** 事件相关电位（ERP）在不同被试的峰值潜伏期不同。P300 成分在一个被试中可能在 320ms 达峰，在另一个被试中可能在 380ms。标准时间编码不处理这个问题——它把每个时间步等同对待。
+
+## 有效的空间拓扑编码
+
+ST-EEGFormer 的核心贡献是用**拓扑感知的空间编码**替代标准位置编码，尊重 10-20 电极布局。它不给每个通道分配任意位置索引，而是分配从标准电极位置球面投影到 2D 空间地图的坐标。
+
+直觉是：头皮上物理相邻的通道应该有相似的表征，而且这种相邻结构应该在计算任何注意力之前就被编码进去。这使得模型的通道表征在不同被试间有意义——因为坐标系是解剖学的，而非任意的。
+
+```python
+import torch
+import torch.nn as nn
+import numpy as np
+from dataclasses import dataclass
+
+# 标准 10-20 电极位置的球面坐标 (theta, phi, 单位弧度)
+# 32 通道 montage 子集——完整表应包含全部 64 通道
+EEG_10_20_POSITIONS = {
+    "Fp1": (-0.31, 1.26), "Fp2": (0.31, 1.26),
+    "F7":  (-0.61, 0.93), "F3":  (-0.38, 0.65), "Fz": (0.0, 0.52), "F4": (0.38, 0.65), "F8": (0.61, 0.93),
+    "T3":  (-0.79, 0.0),  "C3":  (-0.52, 0.0),  "Cz": (0.0, 0.0),  "C4": (0.52, 0.0),  "T4": (0.79, 0.0),
+    "T5":  (-0.61, -0.93), "P3":  (-0.38, -0.65), "Pz": (0.0, -0.52), "P4": (0.38, -0.65), "T6": (0.61, -0.93),
+    "O1":  (-0.31, -1.26), "Oz":  (0.0, -1.26), "O2": (0.31, -1.26),
+}
+
+@dataclass(frozen=True)
+class EEGChannelConfig:
+    """Recording montage 的通道配置。"""
+    channel_names: tuple[str, ...]
+    
+    def get_spatial_coords(self) -> torch.Tensor:
+        """
+        返回 (n_channels, 2) 球面坐标 (theta, phi) 张量，
+        每个 montage 中的通道一个坐标。未知通道使用质心坐标。
+        """
+        coords = []
+        centroid = (0.0, 0.0)
+        for ch in self.channel_names:
+            if ch in EEG_10_20_POSITIONS:
+                coords.append(EEG_10_20_POSITIONS[ch])
+            else:
+                coords.append(centroid)  # 非标准通道的后备方案
+        return torch.tensor(coords, dtype=torch.float32)  # (n_channels, 2)
+
+
+class TopologyAwareChannelEncoding(nn.Module):
+    """
+    尊重 EEG 电极拓扑的空间位置编码。
+    
+    不使用习得的位置 embedding（没有跨被试含义），
+    而是利用每个电极的已知物理坐标生成 embedding，
+    使得空间相邻的通道具有相似表征。
+    
+    跨被试泛化的关键：坐标系是解剖的，而非任意的，
+    因此在不同被试间保持有意义的含义。
+    """
+    def __init__(self, d_model: int, channel_config: EEGChannelConfig):
+        super().__init__()
+        self.d_model = d_model
+        
+        # 固定空间坐标——不学习，这是解剖 ground truth
+        spatial_coords = channel_config.get_spatial_coords()  # (n_ch, 2)
+        self.register_buffer("spatial_coords", spatial_coords)
+        
+        # 空间坐标的傅里叶特征
+        # 多频率同时捕获局部和全局空间模式
+        n_freqs = 8
+        self.n_fourier_features = 4 * n_freqs  # 2 坐标 × (sin + cos) × n_freqs
+        freqs = 2 ** torch.arange(n_freqs, dtype=torch.float32)
+        self.register_buffer("freqs", freqs)
+        
+        # 傅里叶特征 → d_model 的投影（不是从原始 2D 坐标直接映射）
+        self.coord_projection = nn.Sequential(
+            nn.Linear(self.n_fourier_features, d_model // 2),
+            nn.GELU(),
+            nn.Linear(d_model // 2, d_model),
+        )
+    
+    def forward(self) -> torch.Tensor:
+        """
+        返回 (n_channels, d_model) 空间编码。
+        每个样本相同——这是通道级，而非样本级。
+        """
+        # 空间坐标的傅里叶编码
+        # 对每个坐标 (theta, phi)，计算多频率下的 [sin(f*coord), cos(f*coord)]
+        theta = self.spatial_coords[:, 0:1]  # (n_ch, 1)
+        phi = self.spatial_coords[:, 1:2]    # (n_ch, 1)
+        
+        # 每个维度 (n_ch, 2*n_freqs)
+        theta_features = torch.cat([
+            torch.sin(theta * self.freqs),
+            torch.cos(theta * self.freqs),
+        ], dim=-1)
+        
+        phi_features = torch.cat([
+            torch.sin(phi * self.freqs),
+            torch.cos(phi * self.freqs),
+        ], dim=-1)
+        
+        # (n_ch, 4*n_freqs) —— 全部傅里叶特征
+        spatial_features = torch.cat([theta_features, phi_features], dim=-1)
+        
+        # 傅里叶特征 → d_model 投影
+        # 模型学习哪些空间频率重要；
+        # 坐标系本身是固定的，基于解剖 ground truth。
+        return self.coord_projection(spatial_features)  # (n_ch, d_model)
+```
+
+## 时间编码器：处理潜伏期变异性
+
+第二个关键问题是时间维度：ERP 在不同被试的潜伏期存在变异。oddball 刺激的 P300 反应大约在 300ms 发生，但不同被试可以相差 ±80ms。一个学习到僵硬时间表征的模型不会泛化。
+
+ST-EEGFormer 的做法是使用**带相对位置编码的时间自注意力**，而不是绝对位置编码。表征学习的是相对于刺激 onset 发生了什么，而不是在某个固定绝对时间步发生了什么。这是空间拓扑编码的时间类比：不是固定"位置 30 代表 t=300ms"，而是用相对编码捕获"事件后 30 个时间步"。
+
+```python
+class EEGTemporalEncoder(nn.Module):
+    """
+    变 ERP 潜伏期的 EEG 时间编码。
+    
+    使用相对位置编码而非绝对编码：
+    模型学习相对于刺激标记的时间模式，
+    而非绝对时间位置。这可以在不同潜伏期的被试间泛化。
+    """
+    def __init__(
+        self,
+        d_model: int,
+        n_heads: int = 8,
+        max_seq_len: int = 512,   # 512 时间步 @ 256Hz ≈ 2 秒
+        dropout: float = 0.1,
+    ):
+        super().__init__()
+        self.d_model = d_model
+        self.n_heads = n_heads
+        self.head_dim = d_model // n_heads
+        
+        assert d_model % n_heads == 0, "d_model must be divisible by n_heads"
+        
+        # 相对位置偏置——每个注意力头独立学习
+        # 捕获"相隔 30 个时间步"的行为应该类似，
+        # 而不管这些步落在什么绝对时间上
+        self.relative_pos_bias = nn.Embedding(
+            2 * max_seq_len - 1,  # 双向相对位置
+            n_heads
+        )
+        
+        self.qkv_proj = nn.Linear(d_model, 3 * d_model)
+        self.out_proj = nn.Linear(d_model, d_model)
+        self.dropout = nn.Dropout(dropout)
+        self.norm = nn.LayerNorm(d_model)
+    
+    def get_relative_position_bias(self, seq_len: int) -> torch.Tensor:
+        """
+        计算注意力的相对位置偏置矩阵。
+        bias[i, j] = learned_bias[i - j + max_seq_len - 1]
+        """
+        positions = torch.arange(seq_len, device=self.relative_pos_bias.weight.device)
+        relative_positions = positions[:, None] - positions[None, :]  # (T, T)
+        # 移位到非负索引
+        relative_positions = relative_positions + (seq_len - 1)
+        # 限制到有效 embedding 范围
+        relative_positions = relative_positions.clamp(0, self.relative_pos_bias.num_embeddings - 1)
+        
+        bias = self.relative_pos_bias(relative_positions)  # (T, T, n_heads)
+        return bias.permute(2, 0, 1)  # (n_heads, T, T)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, seq_len, d_model) — 时间 EEG 特征
+        Returns:
+            (batch, seq_len, d_model) — 带相对时间注意力的编码
+        """
+        B, T, D = x.shape
+        residual = x
+        
+        qkv = self.qkv_proj(x).reshape(B, T, 3, self.n_heads, self.head_dim)
+        q, k, v = qkv.unbind(dim=2)  # 每个: (B, T, n_heads, head_dim)
+        
+        q = q.transpose(1, 2)  # (B, n_heads, T, head_dim)
+        k = k.transpose(1, 2)
+        v = v.transpose(1, 2)
+        
+        # 标准注意力分数
+        scale = self.head_dim ** -0.5
+        scores = torch.matmul(q, k.transpose(-2, -1)) * scale  # (B, n_heads, T, T)
+        
+        # 加入相对位置偏置——这是跨被试泛化的关键机制
+        rel_bias = self.get_relative_position_bias(T)  # (n_heads, T, T)
+        scores = scores + rel_bias.unsqueeze(0)        # broadcast over batch
+        
+        attn = torch.softmax(scores, dim=-1)
+        attn = self.dropout(attn)
+        
+        out = torch.matmul(attn, v)            # (B, n_heads, T, head_dim)
+        out = out.transpose(1, 2).reshape(B, T, D)
+        out = self.out_proj(out)
+        
+        return self.norm(out + residual)
+```
+
+## 组合 ST-EEGFormer 架构
+
+完整模型结合了空间拓扑编码、逐通道时间编码，以及跨通道注意力层来聚合通道间信息。贯穿整个设计的关键原则是：被试无关的表征（空间坐标、相对时间位置）作为结构骨架，而被试特异性变异被当作输入噪声处理，而非条件变量。
+
+```python
+class STEEGFormer(nn.Module):
+    """
+    空间-时间 EEG Transformer，用于零样本跨被试解码。
+    
+    架构概览：
+    1. 通道 embedding：原始时序数据逐通道线性投影
+    2. 拓扑编码：加入解剖空间 embedding
+    3. 时间编码：带相对位置的逐通道时间自注意力
+    4. 跨通道注意力：在空间拓扑上聚合通道信息
+    5. 分类头
+    
+    关键设计选择：空间和时间编码是被试无关的。
+    模型从不接收被试 ID——必须仅从训练数据多样性中
+    学习跨被试有效的表征。
+    """
+    def __init__(
+        self,
+        n_channels: int,
+        seq_len: int,        # 时间步数量
+        d_model: int = 256,
+        n_temporal_heads: int = 8,
+        n_spatial_heads: int = 8,
+        n_classes: int = 4,  # 例如 4 类运动想象
+        channel_config: EEGChannelConfig = None,
+        dropout: float = 0.1,
+    ):
+        super().__init__()
+        
+        # 1. 逐通道时间投影
+        # 每个通道独立从原始幅值投影到 d_model
+        self.channel_proj = nn.Conv1d(
+            in_channels=1,
+            out_channels=d_model,
+            kernel_size=25,      # 25 样本 @ 250Hz ≈ 100ms
+            padding=12,
+        )
+        
+        # 2. 空间拓扑编码
+        self.topology_enc = TopologyAwareChannelEncoding(d_model, channel_config)
+        
+        # 3. 时间编码器（逐通道运行）
+        self.temporal_encoder = EEGTemporalEncoder(
+            d_model=d_model,
+            n_heads=n_temporal_heads,
+            max_seq_len=seq_len,
+            dropout=dropout,
+        )
+        
+        # 4. 跨通道注意力
+        # 时间编码后，在空间维度上聚合信息
+        self.spatial_attention = nn.MultiheadAttention(
+            embed_dim=d_model,
+            num_heads=n_spatial_heads,
+            dropout=dropout,
+            batch_first=True,
+        )
+        self.spatial_norm = nn.LayerNorm(d_model)
+        
+        # 5. 分类头
+        # 输入: (B, n_channels * d_model) —— 展平的通道摘要
+        self.classifier = nn.Sequential(
+            nn.Linear(d_model * n_channels, d_model),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model, n_classes),
+        )
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, n_channels, seq_len) — 原始 EEG
+        Returns:
+            (batch, n_classes) — 类别 logits
+        """
+        B, C, T = x.shape
+        
+        # 1. 独立投影每个通道: (B, C, T) → (B, C, d_model, T)
+        channel_features = []
+        for ch_idx in range(C):
+            ch_signal = x[:, ch_idx:ch_idx+1, :]    # (B, 1, T)
+            ch_feat = self.channel_proj(ch_signal)    # (B, d_model, T)
+            channel_features.append(ch_feat)
+        channel_features = torch.stack(channel_features, dim=1)  # (B, C, d_model, T)
+        
+        # 2. 加入空间拓扑编码
+        spatial_enc = self.topology_enc()  # (C, d_model)
+        spatial_enc = spatial_enc.unsqueeze(0).unsqueeze(-1)  # (1, C, d_model, 1)
+        channel_features = channel_features + spatial_enc      # broadcast over B, T
+        
+        # 3. 逐通道时间编码：将每个 (B*C) 作为 batch 处理
+        BC = B * C
+        features_flat = channel_features.reshape(BC, self.channel_proj.out_channels, T)
+        features_flat = features_flat.transpose(1, 2)        # (BC, T, d_model)
+        features_flat = self.temporal_encoder(features_flat)  # (BC, T, d_model)
+        features_flat = features_flat.transpose(1, 2)        # (BC, d_model, T)
+        channel_features = features_flat.reshape(B, C, self.channel_proj.out_channels, T)
+        
+        # 4. 每个时间步的跨通道注意力
+        # 先池化时间维度，再做跨通道注意力
+        channel_summary = channel_features.mean(dim=-1)   # (B, C, d_model)
+        attn_out, _ = self.spatial_attention(
+            channel_summary, channel_summary, channel_summary
+        )
+        channel_summary = self.spatial_norm(attn_out + channel_summary)  # (B, C, d_model)
+        
+        # 5. 分类: 展平 (B, C, d_model) → (B, C*d_model)
+        return self.classifier(channel_summary.reshape(B, -1))
+```
+
+## "零样本"在这里到底意味着什么
+
+这些论文中的"零样本"指的是跨被试不重训练——不是 NLP 意义上的零样本（没有该类别的任何示例）。模型在 $S_{\text{train}}$ 上训练，在 $S_{\text{test}}$ 上评估，期间没有梯度更新。
+
+上述架构选择正是使这成为可能的原因：空间编码使用解剖坐标而非学习到的被试特异性 embedding，时间编码使用相对位置而非绝对位置，且模型在训练中见过足够多的被试多样性，使得个体差异被当作输入噪声处理。
+
+与被试内模型的性能差距仍然存在。对于 4 类运动想象，被试内模型通常达到 70-80% 准确率；ICLR 2026 基础模型在留出被试的零样本设置下达到 55-65%。当你允许几分钟的被试特异性适应（少样本微调）时，这个差距会缩小，性能接近被试内水平。
+
+对于临床部署，关键数字是：需要多少试次的被试特异性校准才能达到临床级性能？基础模型方法把这个数字从数千（完整被试内训练）减少到数十（在预训练基础模型上做少样本适应）。
+
+## 开放问题：现实世界的电极变异性
+
+拓扑感知编码假设电极位置遵循 10-20 标准。在实践中，临床和研究系统差异很大——帽尺寸不同、会话间阻抗变化、记录过程中电极漂移、高密度帽有标准 montage 中没有的位置。
+
+下一代 EEG 基础模型需要解决这个问题。一个方向：把电极位置当作连续坐标处理（如同上代码），而不是离散索引，并用来自多种帽配置的扰动坐标数据训练。这迫使模型学习对微小空间位移具有鲁棒性的表征，而不是假设精确的电极放置——这更接近临床部署的实际需求。
+
+BCI 领域一直在等待它的"ImageNet 时刻"——一个能大幅降低每个被试工程开销的基础模型。ICLR 2026 模型朝这个方向迈出了有意义的一步，但不是最终答案。
+
+---
+
+*本文架构参考了 ICLR 2026 DeeperBrain 和 ST-EEGFormer 的结果。上方 PyTorch 实现是对关键机制的教学重建——实际发表的实现在工程细节上有所不同。10-20 电极坐标使用了标准 montage 位置的球面投影。*

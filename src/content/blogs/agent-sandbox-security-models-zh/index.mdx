@@ -1,0 +1,265 @@
+---
+title: "AI Agent 沙箱的两种安全模型"
+description: "Gemini CLI 用容器隔离，Claude Code 用权限门控。两者的权衡揭示了我们在自主 Agent 面前真正害怕的是什么。"
+publishDate: "2026-04-13"
+tags: [agent-security, sandboxing, gvisor, claude-code, gemini-cli, autonomous-agents]
+category: engineering
+language: zh
+draft: false
+hIE: methode
+hero_image: /assets/hIE/methode/445955-beatless-bodysuit-dress-katou_hiromasa-lacia-methode-snowdrop.jpg
+---
+
+每一个自主编码 Agent，最终都需要执行 `rm -rf`、`pip install`，或者从互联网 `curl` 什么东西。这个问题不是"要不要允许"——一个不能修改文件或安装依赖的编码 Agent，就是个带语法高亮的聊天机器人。真正的问题是：当 Agent 做错事时，如何控制爆炸半径。
+
+2026 年 4 月，两个生产级别的方案浮出水面，它们编码了根本不同的威胁模型。
+
+Gemini CLI 引入了基于 gVisor（runsc）和实验性 LXC 容器的沙箱方案。Agent 的 shell 命令在受限系统调用表面的隔离运行时中执行。工作区以受控写权限 bind mount，网络操作走受限配置文件。如果 Agent 执行 `rm -rf /`，沙箱吸收损害。
+
+Claude Code 走了另一条路：权限门控。每一次工具调用（文件写入、bash 命令、网络请求）都经过白名单。用户配置哪些操作自动批准、哪些需要显式确认。Agent 运行在宿主机环境中，作用域限于工作目录——但没有权限就无法执行任何操作。
+
+这不是同一个想法的两种实现。它们是对不同问题的回答：是什么让自主 Agent 变得危险？
+
+## 容器模型：默认隔离
+
+Gemini CLI 的沙箱架构从一个悲观的假设出发：Agent 会尝试有害操作，可能来自模型推理 bug、对抗性提示，或规范博弈。正确的响应是让有害操作在物理上不可能——无论 Agent 的意图是什么。
+
+实现使用 Google 的 gVisor，一个在系统调用到达宿主机内核前拦截它的用户态内核。Agent 进程以为自己在正常 Linux 系统上运行，但每个操作都经过受限兼容层：
+
+```
+┌─────────────────────────────────────────────────┐
+│  Agent Process (Gemini CLI)                      │
+│  ┌───────────────────────────────────────────┐  │
+│  │  User code / shell commands                │  │
+│  └───────────┬───────────────────────────────┘  │
+│              │ syscall                           │
+│  ┌───────────▼───────────────────────────────┐  │
+│  │  gVisor Sentry (user-space kernel)         │  │
+│  │  - Intercepts all syscalls                 │  │
+│  │  - Enforces filesystem boundaries           │  │
+│  │  - Restricts network to allowlisted hosts  │  │
+│  │  - Blocks mount, ptrace, raw sockets       │  │
+│  └───────────┬───────────────────────────────┘  │
+│              │ filtered syscall                  │
+│  ┌───────────▼───────────────────────────────┐  │
+│  │  Host Kernel                               │  │
+│  └───────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────┘
+```
+
+关键属性：沙箱配置文件可以根据 Agent 的计划动态生成。当 Gemini CLI 的 Plan Mode 产生预期操作的有向无环图（DAG），沙箱生成器可以推断所需的最小权限集合。这个工作方式的简化模型：
+
+```python
+from dataclasses import dataclass, field
+from enum import Enum, auto
+from typing import FrozenSet
+
+class Permission(Enum):
+    FS_READ = auto()      # Read files within project directory
+    FS_WRITE = auto()     # Write files within project directory
+    NET_HTTPS = auto()    # Outbound HTTPS to allowlisted hosts
+    NET_DNS = auto()      # DNS resolution
+    EXEC_PYTHON = auto()  # Execute Python interpreter
+    EXEC_NODE = auto()    # Execute Node.js runtime
+    EXEC_SHELL = auto()   # Execute shell commands
+    PKG_INSTALL = auto()  # Package manager install operations
+
+@dataclass(frozen=True)
+class SandboxProfile:
+    """Dynamically generated from agent's execution plan."""
+    permissions: FrozenSet[Permission]
+    writable_paths: tuple[str, ...]  # Filesystem paths the agent can modify
+    network_allowlist: tuple[str, ...] = ()  # Hostnames for outbound access
+    max_disk_mb: int = 512
+    max_memory_mb: int = 2048
+    max_runtime_seconds: int = 300
+
+    def allows(self, perm: Permission) -> bool:
+        return perm in self.permissions
+
+def profile_from_plan(plan_dag: dict) -> SandboxProfile:
+    """Infer minimum sandbox permissions from an agent's execution plan.
+
+    Analyzes the plan DAG to determine which syscall categories,
+    filesystem paths, and network hosts the agent actually needs.
+    """
+    perms: set[Permission] = {Permission.FS_READ}  # Always allow reads
+    paths: list[str] = []
+    hosts: list[str] = []
+
+    for step in plan_dag.get("steps", []):
+        action = step.get("action", "")
+
+        if "write" in action or "create" in action or "edit" in action:
+            perms.add(Permission.FS_WRITE)
+            paths.extend(step.get("target_paths", []))
+
+        if "pip install" in action or "npm install" in action:
+            perms.add(Permission.PKG_INSTALL)
+            perms.add(Permission.NET_HTTPS)
+            hosts.extend(["pypi.org", "registry.npmjs.org"])
+
+        if "python" in action:
+            perms.add(Permission.EXEC_PYTHON)
+
+        if "test" in action or "build" in action:
+            perms.add(Permission.EXEC_SHELL)
+
+    return SandboxProfile(
+        permissions=frozenset(perms),
+        writable_paths=tuple(paths) if paths else ("./",),
+        network_allowlist=tuple(set(hosts)),
+    )
+```
+
+安全保证是结构性的：即使 Agent 的推理被破坏（提示注入、幻觉命令、对抗性工具使用），沙箱也能阻止其配置文件之外的操作。Agent 无法向未授权主机泄露数据，因为网络层会阻止。它无法修改项目目录之外的文件，因为文件系统挂载被限定了作用域。它无法提权，因为系统调用过滤器阻止了 `ptrace`、`mount` 和 capability 操作。
+
+## 权限模型：信任但验证
+
+Claude Code 的方案从不同假设出发：Agent 通常可信，但用户需要能见度和控制权。威胁模型不是"Agent 是对抗性的"——而是"Agent 可能犯错，而在宿主机环境中的错误代价高昂"。
+
+权限系统作为中间层，运行在 Agent 意图和工具执行之间：
+
+```
+Agent decides: "I need to write to config.yaml"
+    │
+    ▼
+Permission check: Is Write to config.yaml auto-approved?
+    │
+    ├── YES → Execute immediately, show in transcript
+    │
+    └── NO → Prompt user: "Claude wants to write config.yaml [Allow/Deny]"
+              │
+              ├── Allow → Execute
+              └── Deny → Agent adjusts approach
+```
+
+配置是显式的：
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(pnpm build)",
+      "Bash(pnpm test*)",
+      "Write(src/**)",
+      "Edit(src/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force*)",
+      "Bash(curl*|wget*)"
+    ]
+  }
+}
+```
+
+这里的关键属性与容器模型不同：Agent 运行在真实环境中。当它读取一个文件，读取的是实际文件。当它运行测试，针对实际代码库和实际依赖运行。没有 Agent 看到的和实际存在之间的偏差。沙箱开销——文件系统复制、系统调用拦截、网络代理——不存在。
+
+## 根本权衡
+
+两个模型针对不同的失败模式进行了优化：
+
+| 属性 | 容器（Gemini） | 权限（Claude Code） |
+|------|----------------|---------------------|
+| **Agent 错误的爆炸半径** | 限制在沙箱内 | 整个宿主机环境 |
+| **真实环境保真度** | 副本（可能偏离） | 精确（无偏差） |
+| **开销** | 显著（写时复制 FS、系统调用拦截） | 极小（权限检查是字符串匹配） |
+| **防止提示注入** | 强（系统调用级强制） | 弱（攻击者可在自动模式下批准） |
+| **支持长时间运行的工作流** | 受沙箱生命周期限制 | 原生支持（宿主机环境持久化） |
+| **所需用户信任** | 低（沙箱默认保护） | 高（用户必须正确配置） |
+
+容器模型的弱点是保真度。当 Agent 在沙箱内安装包时，不会持久化到宿主机。当它修改文件时，修改的是副本。沙箱会话结束时，Agent 的更改需要与真实文件系统调和——一种可能以 git 合并相同方式失败的合并操作，但没有同样完善的冲突解决工具。
+
+对于"修复这个失败的测试"这类任务，容器模型效果良好：Agent 在隔离环境中操作，产出补丁，补丁被原子应用。对于"设置这个项目的开发环境"这类任务，容器模型会跟你作对——Agent 需要对宿主机系统做持久化更改（安装工具、配置环境变量、修改 shell 配置），这些更改在沙箱拆除后不会保留。
+
+权限模型的弱点是对抗性鲁棒性。如果 Agent 的推理被隐藏在它读取文件中的提示注入破坏，Agent 会尝试执行注入的指令。权限系统会阻止未授权操作——但前提是权限配置正确。如果权限配置自动批准所有 Bash 命令（"我信任这个 Agent"工作流中很常见），就完全没有保护作用。
+
+## 哪个威胁模型是正确的？
+
+两个模型都不完整，未来的答案可能是两者结合。
+
+容器模型处理**能力失败**场景：Agent 犯错、执行破坏性命令、或遵循幻觉计划。沙箱吸收损害。这在 Agent 以最少人工监督运行时最为重要——CI/CD 管道、后台自动化、批处理。
+
+权限模型处理**判断失败**场景：Agent 做了它打算做的事，但那个意图不是你所需要的。看到每个操作并批准它让你能及早发现不对齐。这在交互式开发中最为重要——结对编程、探索性调试、功能实现。
+
+生产部署中浮现的模式是分层的：
+
+```python
+from dataclasses import dataclass
+from enum import Enum
+
+class IsolationLevel(Enum):
+    NONE = "none"          # Direct host access (trusted scripts)
+    PERMISSION = "perm"    # Permission gates on tool use
+    CONTAINER = "container" # Full sandbox isolation
+    NESTED = "nested"       # Container + permission gates inside
+
+@dataclass(frozen=True)
+class AgentSecurityPolicy:
+    """Security policy determined by task context."""
+    isolation: IsolationLevel
+    auto_approve_reads: bool = True
+    auto_approve_known_commands: bool = False
+    max_autonomous_steps: int = 50
+    require_plan_approval: bool = False
+
+def policy_for_context(
+    is_interactive: bool,
+    is_ci: bool,
+    touches_production: bool,
+    estimated_steps: int,
+) -> AgentSecurityPolicy:
+    """Select security policy based on execution context."""
+    if touches_production:
+        return AgentSecurityPolicy(
+            isolation=IsolationLevel.NESTED,
+            auto_approve_reads=True,
+            auto_approve_known_commands=False,
+            max_autonomous_steps=10,
+            require_plan_approval=True,
+        )
+
+    if is_ci:
+        return AgentSecurityPolicy(
+            isolation=IsolationLevel.CONTAINER,
+            auto_approve_reads=True,
+            auto_approve_known_commands=True,
+            max_autonomous_steps=200,
+            require_plan_approval=False,
+        )
+
+    if is_interactive:
+        return AgentSecurityPolicy(
+            isolation=IsolationLevel.PERMISSION,
+            auto_approve_reads=True,
+            auto_approve_known_commands=True,
+            max_autonomous_steps=estimated_steps,
+            require_plan_approval=estimated_steps > 20,
+        )
+
+    # Default: conservative
+    return AgentSecurityPolicy(
+        isolation=IsolationLevel.CONTAINER,
+        require_plan_approval=True,
+    )
+```
+
+交互式开发会话使用权限——你希望 Agent 在你的真实环境中，你在看着它。CI 管道使用容器——Agent 无人值守运行，沙箱成本相比生产事故可以忽略。生产关联任务两者都用——容器用于隔离，权限用于审计跟踪。
+
+## 更深层的问题
+
+容器隔离和权限门控之间的选择，揭示了我们对自主 Agent 真正担忧的是什么。
+
+如果你首先想到容器，你担忧的是**能力**——Agent 能做到你无法撤消的事。你的本能是限制物理上可能发生的事。这是安全工程师的条件反射，当 Agent 在人类注意力之外运作时，这是正确的。
+
+如果你首先想到权限，你担忧的是**对齐**——Agent 会做你不想做的事，但你会认识到错误正在发生。你的本能是保持能见度。这是开发者的条件反射，当你在实时与 Agent 协作时，这是正确的。
+
+两个方向上，Agent 都在变得更加有能力：无人监督时更危险，协作时更有用。沙箱架构需要相应地变得更加细致——不只是"隔离与否"，而是"隔离多少、对哪些操作、在什么监督下、当隔离本身引发问题时有什么恢复路径"。
+
+Gemini CLI 和 Claude Code 可能都会走向混合模型。问题是哪个团队先做到正确的分层。

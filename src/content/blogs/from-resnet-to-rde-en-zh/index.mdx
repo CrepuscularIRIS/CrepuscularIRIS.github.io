@@ -1,0 +1,261 @@
+---
+title: "从 ResNet 到 RDE：重新思考深度"
+description: "残差是一种退化的注意力形式。这样看的话，深度不再是流水线的一个阶段，而是一个内存地址——CDMN 的立论依据。"
+publishDate: "2026-04-17"
+tags: [deep-learning, architecture, memory-networks, first-principles, rope, rde, cdmn, attention]
+category: research
+language: zh
+draft: false
+hIE: kouka
+hero_image: /assets/hIE/kouka/188823-beatless-kouka-mecha-mecha_musume-redjuice-thighhighs-wallpaper.jpg
+---
+
+有一种范式我反复遇到却一直无法命名。我读过的神经网络架构论文——读了很多，因为我一直在寻找堆叠层的"正确"方式——都在同一个隐含框架内做优化：信息从底部进入，通过离散的层向上流动，从顶部输出。残差连接、密集连接、注意力机制，甚至 MoE 路由，都保留着这个*流水线*的基本形象。我直到最近才意识到：流水线本身是一个建模选择，而非自然法则。真正的问题不是"我们如何优化流水线中的流动？"而是"为什么要有流水线？"
+
+这篇文章是我尝试把这个论证写下来：把流水线替换为*内存地址空间*。我先将残差连接拆解为一种退化的注意力形式，再通过一个具体机制——旋转深度嵌入（Rotary Depth Embeddings, RDE）——抵达我一直所说的连续深度记忆网络（CDMN），并论证这一重构与 2025-2026 年间出现的 MoBA/注意力残差系列工作高度一致，同时与海马记忆系统存在惊人的精确对应。
+
+## 第一部分：层的暴政
+
+ResNet 的成功故事已经固化为一个条件反射：残差连接 = 梯度流动 = 好。在"为什么深层网络可以训练"这个机制层面，这句话是对的——但这个条件反射已经成了一个认知陷阱。它阻止你追问：层的抽象——信息必须在离散的、有序的阶段中被处理——到底有没有在提供真正的价值。
+
+具体来说：在一训练好的 ResNet-50 推理时，"第 34 层"意味着什么？它是第 33 层之后的一个函数。去掉它会降低准确率。但 Veit、Wilber、Belongie 在 NeurIPS 2016 年的论文 *Residual Networks Behave Like Ensembles of Relatively Shallow Networks* 揭示了两个相关现象，我认为值得认真对待：测试时丢弃单个层只会导致小幅的、平缓的性能下降，而对训练的梯度贡献主要来自远短于名义网络深度的路径。这不是严格有序流水线的行为。它更接近于一组共享权重的浅层子网络集成——也就是说，"深度"并没有履行它的名字所承诺的功能。它更像是分布式记忆，最终读出阶段从中查询。
+
+PyTorch 和 TensorFlow 中的计算图抽象强化了流水线的形象：你被迫声明一个 `Sequential` 或者一个有向无环的模块图，而 autograd 需要离散节点才能求导。框架塑造了架构的表达方式。一条数学上方便的流水线——`h_{l+1} = h_l + f(h_l)` 的雅可比是 `I + ∂f/∂h`，特征值聚集在 1 附近，容易分析——就被构建出来了，而表达力的问题被悄悄搁置。易处理性先于表达力，我们最终把易处理的角落误当成了整个设计空间。
+
+## 第二部分：残差是懒惰的注意力
+
+看这个问题最干净的方式是用注意力记号重写残差。
+
+```
+标准残差：
+    h_{l+1} = h_l + f(h_l)
+
+用显式权重重写：
+    h_{l+1} = α_l · h_l + β_l · f(h_l)
+    其中 α_l = 1, β_l = 1（硬编码，不学习）
+
+对比注意力：
+    h_out = Σ_i α_i · v_i,   α_i = softmax(q · k_i)
+```
+
+残差连接是注意力的一种退化形式：Query 被硬编码为"只看第 $l$ 层"，Key 集合恰好包含一个元素，权重冻结为 1。这不是比喻——这是对残差在一般加权求和算子所占据的子空间的精确陈述。
+
+这个视角暗示的失败模式是具体的：残差假设**紧邻的下一层总是恰好包含正确的信息**。经验上这是错误的。当第 10 层在推理物体边界时，它有时需要像素级边缘（第 1 层），有时需要语义概念（第 50 层）。它并不能可靠地需要第 9 层恰好包含的东西。强制的单源依赖是一个架构假设，而非习得行为，它以牺牲灵活性为代价。
+
+2025 年的 *MoBA*（Mixture of Block Attention）工作——Moonshot 推向了 ICLR，后来被整合进 Kimi-MoBA 变体——在这个框架下是一种折中。它允许信息在*一个块*内的层之间通过学习权重路由，但在块之间，标准残差流水线回来了。MoBA 是摆脱单源层依赖的第一步。*注意力残差*系列工作（2026 年）走得更远：它把硬编码的 `h_{l+1} = h_l + f(h_l)` 替换为跨所有先前层的学习聚合，把残差本身当作层历史的注意力小问题来处理。
+
+两者都是不完整的。它们仍然把深度当作有序索引。更大的动作是：不再把深度当作索引。
+
+## 第三部分：深度是一个内存地址
+
+这里有一个真正改变设计空间的重构。
+
+**旧本体论：**
+- 层 = 处理阶段。
+- 深度 = 时间。第 1 层发生在第 2 层之前。
+- 前向传播 = 顺序计算。
+
+**新本体论：**
+- 深度 = 内存地址。
+- 第 1 层和第 100 层都是可寻址的内存槽。
+- 前向传播 = 在以深度索引的内存上的一系列内容可寻址读写。
+
+我最有用的一组类比是从冯·诺依曼架构（程序和数据共享单一总线；指令顺序决定流动）转向哈佛架构（程序和数据存在于独立内存中，并行访问，由程序编排读写）。ResNet 是冯·诺依曼：第 $l$ 层的信息被 `f_l` 的输出字面地覆盖，残差提供一条泄漏路径。CDMN 是哈佛：第 $t$ 层的内容被写入由 $t$ 索引的内存位置，后续任何计算都可以发出查询，从任意地址检索，而不会被"上一步发生了什么"所瓶颈。
+
+这不只是哲学。 现代前沿 LLM 工作已经在向这个方向摸索。旋转位置编码（RoPE）用于推理时*上下文层级*检索——训练特定的注意力头模式将相对位置视为可检索状态的索引——正是我想在*深度*轴上应用的同样机制。如果位置嵌入是 token 维度的内存地址，那么深度嵌入就应该在深度维度扮演相同角色。
+
+因此有了提议的机制。
+
+## 第四部分：旋转深度嵌入（RDE）
+
+核心对象是一个嵌入，将连续深度坐标 $t \in [0, 1]$ 映射为作用于该深度状态向量的一个旋转。机制上与 RoPE 完全相同，但坐标是深度而非 token 位置。
+
+```python
+import torch
+import torch.nn as nn
+
+class RotaryDepthEmbedding(nn.Module):
+    """将深度坐标 t ∈ [0, 1] 编码为特征空间中的旋转。
+    这使得深度成为可检索的索引，而非顺序阶段。
+    """
+    def __init__(self, dim: int, base: float = 10000.0):
+        super().__init__()
+        assert dim % 2 == 0, "dim must be even for paired rotation"
+        self.dim = dim
+        inv_freq = 1.0 / (base ** (torch.arange(0, dim, 2).float() / dim))
+        self.register_buffer("inv_freq", inv_freq)
+
+    def forward(self, depth_coords: torch.Tensor):
+        # depth_coords: (B,) 每样本的标量深度。
+        # 返回 cos/sin，形状 (B, 1, dim/2)，可在 token 轴上广播。
+        angles = depth_coords.unsqueeze(-1) * self.inv_freq  # (B, dim/2)
+        cos = torch.cos(angles).unsqueeze(1)                 # (B, 1, dim/2)
+        sin = torch.sin(angles).unsqueeze(1)                 # (B, 1, dim/2)
+        return cos, sin
+
+    @staticmethod
+    def apply_rotation(x: torch.Tensor, cos: torch.Tensor, sin: torch.Tensor):
+        # x: (B, N, D); cos/sin: (B, 1, D/2) — 在 tokens 上广播。
+        x1, x2 = x[..., ::2], x[..., 1::2]
+        rotated = torch.stack([x1 * cos - x2 * sin,
+                               x1 * sin + x2 * cos], dim=-1)
+        return rotated.flatten(-2)
+```
+
+这样具体能带来两点：
+
+1. **深度距离以相位来度量，而非层计数。** 深度 $t_1$ 和 $t_2$ 处的两次计算有相对旋转 $\theta(t_2 - t_1)$，这意味着当它们的层索引相差很远时，仍可以"相位对齐"（因此可被匹配的查询检索到）。第 1 层和第 100 层如果映射需要的话，可以处于相同的深度相位。
+
+2. **深度变得可微分。** 你可以学习每个块在 $[0,1]$ 轴上的位置，而不是硬编码。这把"有多少层？"从超参数变成学习到的容量分配问题。
+
+完整的 CDMN 层将 RDE 与检索算子结合，而不是残差连接。数学层面上，更新公式从 `h_{l+1} = h_l + f(h_l)` 变为：
+
+```
+h(t) = h(t)  +  OutProj(  Σ_i  α_i(t)  v_i  )
+其中
+    α_i(t) = softmax_i(  RotateByPhase(q(t), θ_t)
+                       · RotateByPhase(k_i,   θ_{t_i}) / √d )
+    q(t)   = Q(h(t)),      k_i = K(landmark_states_i)
+    v_i    = V(landmark_states_i)
+    θ_t    = 深度坐标 t ∈ [0, 1] 的角度嵌入
+```
+
+作为最小参考实现（`伪代码——为可读性简化了形状处理`；生产版本会对地标做批处理、缓存旋转后的键、使用 Flash-Attention 内核）：
+
+```python
+class CDMNLayer(nn.Module):
+    def __init__(self, dim: int, num_landmarks: int = 8):
+        super().__init__()
+        self.dim = dim
+        self.rde = RotaryDepthEmbedding(dim)
+        # 学习到的内存槽，每个绑定到一个学习到的深度坐标。
+        self.landmark_depths = nn.Parameter(torch.linspace(0, 1, num_landmarks))
+        self.landmark_states = nn.Parameter(torch.randn(num_landmarks, dim) * 0.02)
+        self.q_proj = nn.Linear(dim, dim)
+        self.k_proj = nn.Linear(dim, dim)
+        self.v_proj = nn.Linear(dim, dim)
+        self.out_proj = nn.Linear(dim, dim)
+
+    def _rotate_single(self, x_vec: torch.Tensor, depth: torch.Tensor) -> torch.Tensor:
+        # x_vec: (*, D); depth: 标量张量 -> 返回 (*, D)
+        angles = depth.view(-1, 1) * self.rde.inv_freq       # (1, D/2)
+        cos, sin = torch.cos(angles), torch.sin(angles)       # (1, D/2)
+        x1, x2 = x_vec[..., ::2], x_vec[..., 1::2]
+        rot = torch.stack([x1 * cos - x2 * sin,
+                           x1 * sin + x2 * cos], dim=-1)
+        return rot.flatten(-2)
+
+    def forward(self, x: torch.Tensor, current_depth: torch.Tensor) -> torch.Tensor:
+        # x: (B, N, D); current_depth: [0, 1] 中的标量张量。
+        cos_q, sin_q = self.rde(current_depth.expand(x.size(0)))
+        q = RotaryDepthEmbedding.apply_rotation(self.q_proj(x), cos_q, sin_q)
+
+        # 每个地标按其*自己的*学习深度坐标旋转。
+        rotated_ks = torch.stack([
+            self._rotate_single(self.k_proj(self.landmark_states[i]),
+                                self.landmark_depths[i])
+            for i in range(self.landmark_states.size(0))
+        ], dim=0)                                             # (L, D)
+        v = self.v_proj(self.landmark_states)                 # (L, D)
+
+        # 缩放点积检索： (B, N, D) @ (D, L) -> (B, N, L)
+        attn = torch.softmax(q @ rotated_ks.T / (self.dim ** 0.5), dim=-1)
+        retrieved = attn @ v                                   # (B, N, D)
+        return x + self.out_proj(retrieved)
+```
+
+关键的结构性质：当前深度的状态被允许从由学习到的地标深度索引的内存中*检索*，而不是被迫只读其直接前驱。残差即懒惰注意力，转变为注意力即检索。
+
+## 第五部分：三层粒度
+
+没有粒度层级的 CDMN 会退化为一个巨大的注意力操作，在计算上不可行，经验上也不稳定。缓解措施——恰好映射了海马-皮层层级结构——是一个三级金字塔：
+
+- **粗粒度（地标层级，约 4–8 个槽）。** 语义路标：检测到边缘、零件被组装、物体被识别。类似于巩固后的皮层记忆。
+- **中粒度（块层级，O(√n) 个槽）。** 共享 RDE 坐标的自适应层块。类似于短期皮层回路。
+- **细粒度（token 层级，标准注意力）。** 逐 token 精度；精确信号得以存活的路径。类似于海马高分辨率痕迹。
+
+任何深度的查询都被允许从任何层级检索，但默认是粗到细：先检查地标（便宜），再检查块（中等），最后检查 token（昂贵）。这是"自适应粒度"机制，与海马文献中巩固（低成本、低保真回忆）和从 HPC 检索（高成本、高保真）的权衡完全对应。
+
+## 第六部分：架构批评的三个维度
+
+一旦你有了这个框架，对任何拟议架构的实际批评就归结为三个问题。我在审稿架构论文时发现这个框架很有用——它产生具体的异议，而不是模糊的审美反应。
+
+**维度一：交互阶数。** 架构原生编码的最高阶关系是什么？MLP 是一阶（隔离单元）。CNN 和注意力是二阶（成对）。真正的群层级现象——场景理解、多智能体协调、多区域神经整合——需要超图级交互，而没有任何标准架构能不借助事后胶水来编码它们。
+
+**维度二：均匀性假设。** 架构强制哪些轴必须被均匀处理？ResNet 强制均匀深度积累。标准注意力强制每层均匀成对交互。比"我如何训练这个？"更好的问题是："我在哪里支付了均匀性税？我的任务真的需要那个轴均匀吗？"
+
+**维度三：可分离性假设。** 哪些轴被迫分开处理？深度 vs 宽度，空间 vs 通道，模态 vs 模态。每一种分离都是一种承诺：跨轴信息不值得显式建模。有时这是对的。当它错了，它就非常错，而进步通常来自重新纠缠两个轴——视觉-语言模型中的跨模态注意力、ConvNeXt 风格设计中的通道-空间混合，以及更广泛意义上的超图卷积文献，都从不同角度具体说明了这一点。
+
+## 第七部分：海马对应
+
+神经科学类比不是装饰性的；这是我相信这个设计是正确的理由。
+
+海马体解决了生物大脑的内存地址问题。三个特征良好的子回路干净地映射到 CDMN 组件：
+
+| 神经回路 | 功能 | CDMN 类比 |
+|---|---|---|
+| 齿状回（DG） | 模式分离——使相似输入可区分 | 带稀疏、近正交码的输入编码层 |
+| CA3 循环网络 | 模式补全——从部分线索检索完整记忆 | 从地标槽的基于注意力的检索 |
+| CA1 时间细胞 | 序列/时间编码 | RoPE 风格的深度位置编码 |
+
+两个具体现象值得特别指出，因为它们暗示了具体的架构约束，而非模糊的灵感：
+
+**Theta 节律相位编码。** 海马 theta 振荡（4–8 Hz）将空间和记忆信息组织到相位窗口中，每个周期约 4±1 个可区分项目（与 Miller 定律一致）。这是相位编码离散记忆内容的直接神经证据——正是 RDE 在硅中的做法。
+
+**稀疏-密集互补学习。** DG-CA3 分工（稀疏正交化，然后密集自联想检索）对应一个具体的架构选择：稀疏输入编码不是性能优化；它是稳定检索的先决条件。没有在地标写入步骤中引入稀疏性的 CDMN 应该遭受灾难性检索干扰——一个可预测、可检验的失败模式。
+
+## 第八部分：与 MoBA、注意力残差和 Muon 的关系
+
+CDMN 不与近期的架构工作对立；它涵盖并外推了它们。
+
+- **MoBA** 允许块内稀疏路由。CDMN 说：让块边界本身可学习（通过 RDE），让路由跨越整个深度轴。
+- **注意力残差** 将硬编码的 `+ f(h_l)` 替换为学习到的聚合。CDMN 说：聚合是在可寻址深度的内存上的检索，而非在层索引上的加权和。
+- **Muon / Moonlight** 优化器关乎如何稳定地训练激进参数化的层。这些技术应该可以直接迁移到 CDMN，因为可微结构非常相似——你仍在训练一个具有平滑、条件良好雅可比的 网络，只是重塑了形状。
+
+历史弧线清晰可读：
+
+```
+固定 3×3 CNN（硬结构）
+    ↓
+ResNet（软 bypass：第 l+1 层可直接看到第 l 层）
+    ↓
+DenseNet（任意到任意，但无选择）
+    ↓
+MoBA / 注意力残差（块内学习选择）
+    ↓
+CDMN（连续选择；深度成为地址）
+```
+
+每一步都在软化一个硬约束。CDMN 软化最后一个：整数值层索引。
+
+## 第九部分：优先测试什么
+
+没有具体实验预测，这就是空谈。三个第一阶段实验，每个小到可以在单 GPU 上运行：
+
+1. **RDE 检索 vs. 标准残差，CIFAR-10 / ImageNet-32。** 将 ResNet-18 中的残差替换为 RDE 索引检索；报告收敛速度、最终准确率、梯度范数稳定性。预测：最终准确率相当，但达到 90% 终端性能的 epoch 数更少，因为深度索引检索消除了冗余的顺序处理。
+
+2. **深度相位对齐可视化。** 用 RDE 训练 ResNet-18，然后绘制学习到的深度坐标及其相对相位。预测：自然聚类为 3–5 个"深度 regime"，与三级粒度层级一致。
+
+3. **Long Range Arena 等长距离依赖任务上的地标消融。** 预测：带有少量精心放置地标的小型 CDMN，在信息必须在深度上长距离存活的任务上，与更深的标准 Transformer 性能相当。
+
+如果 H1 或 H2 失败，这个框架在根本层面就是错的，我需要重新审视。如果 H3 失败，内存即地址的隐喻是正确的，但具体机制是错的——需要一个不同的检索算子。
+
+## 结语：从管道到交换器
+
+我在论证的转变是从管道到交换器。流水线让数据通过有序阶段流动，接受串行依赖的代价；交换器让数据在一个空间中路由，任何点随时都可以从任何其他点被查询。ResNet 是打了补丁的管道（残差是旁通阀）；MoBA 是仍为串行的管道内部的局部交换器；CDMN 是深度轴与索引轴完全解耦的交换器。
+
+让你从一种架构走向另一种的元认知动作是：注意到每一次基础设施（autograd、计算图、工具链）让一种设计容易、另一种设计困难时，你在那个基础设施之上做的理论推理就继承了它的偏见。"残差有效"是真的。"残差是连接深度的*正确*方式"是一个强得多的论断，而它是我们因为不容易构建替代方案而接受的。现在替代方案可以构建了。它是否值得构建是一个有清晰实验预测的经验问题——这是这条思路诚实落脚的地方。
+
+---
+
+**参考文献**
+
+- Veit, Wilber, Belongie. [*Residual Networks Behave Like Ensembles of Relatively Shallow Networks*](https://arxiv.org/abs/1605.06431), NeurIPS 2016.
+- Su et al. [*RoFormer: Enhanced Transformer with Rotary Position Embedding*](https://arxiv.org/abs/2104.09864), 2021.
+- Moonshot / MoBA Team. [*MoBA: Mixture of Block Attention for Long-Context LLMs*](https://arxiv.org/abs/2502.13189), 2025.
+- MacDonald et al. *Hippocampal "Time Cells" Bridge the Gap in Memory for Discontiguous Events*. Neuron, 2011.
+- Yassa & Stark. *Pattern Separation in the Hippocampus*. Trends in Neurosciences, 2011.
+
+---
+
+*英文版：[From ResNet to RDE: Rethinking Depth](/blog/from-resnet-to-rde-en/).*

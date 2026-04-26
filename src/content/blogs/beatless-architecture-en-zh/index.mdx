@@ -1,0 +1,268 @@
+---
+title: "Beatless：个人 AI 任务编排系统"
+description: "一个带有预算控制的控制平面，支持多智能体路由、邮箱通信，以及保留证据的上下文压缩。"
+publishDate: "2026-04-15"
+tags: [beatless, agent-system, task-queue, architecture, workflow, control-plane, mailbox-protocol, context-management]
+category: engineering
+language: zh
+draft: false
+hIE: methode
+hero_image: /assets/hIE/methode/445955-beatless-bodysuit-dress-katou_hiromasa-lacia-methode-snowdrop.jpg
+---
+
+每次 AI 助手对话都有一个相同的结构性缺陷：会话结束，状态消失。你可以通过总结来继续，但总结会丢失细节——那个花了 20 分钟反复权衡的决定，变成了一行要点，推理过程和被否决的替代方案都被剥掉了。
+
+对于跨越多天、需要不同模型专业化能力、或需要可靠错误恢复的任务，单会话范式就会失效。Beatless 是一个个人任务编排系统，用来解决这个问题。它以任务而非对话作为工作的基本单元，将任务路由到专业化智能体，并管理从创建到执行再到独立审查的完整生命周期。
+
+当前版本 v4 新增了三个能力，将系统从任务路由器转变为自主控制系统：带预算的主动控制平面、轻量级智能体间邮箱协议、以及保留证据的上下文压缩。
+
+## 核心架构：任务作为事实来源
+
+核心设计决策是将所有状态存储在结构化 YAML 中，而非对话历史。任务文件是单一事实来源：
+
+```yaml
+meta:
+  schema_version: 4
+  shift_id: SHIFT-20260407-1329
+
+tasks:
+  - id: BT-RESEARCH-20260407-001
+    title: "深度研究：神经网络架构第一性原理"
+    status: in_progress
+    assigned_agent: gemini-researcher
+    phase: research
+    checkpoint_ref: CK-20260407-001
+```
+
+这意味着任务状态可以跨会话存活，可以纳入 Git 版本控制，而且是人类可读的。当一个智能体重启多天任务时，它读取的是结构化状态，而非试图从对话日志中重建上下文。
+
+## 队列驱动的调度
+
+任务通过状态机流转：
+
+```
+Backlog -> Ready -> In Progress -> Review -> Done
+                        |              |
+                     Blocked     Dead Letter
+```
+
+三个约束条件防止过度承诺：
+
+| 预算项 | 上限 | 理由 |
+|--------|-------|-----------|
+| 每班次最多任务数 | 18 | 人类认知负荷跟踪上限 |
+| 最大并行子任务数 | 3 | API 速率限制，质量控制 |
+| 每班次专家调用上限 | 6 | 前沿模型调用的成本控制 |
+
+这些不是任意设定的——来自数月运行系统的经验。超过 3 个并行子任务会可靠地降低每个任务的质量；每班次超过 18 个任务意味着你添加任务的速度超过了完成速度。
+
+## 智能体专业化与路由
+
+不同模型有不同优势。路由表对此编码：
+
+| 任务类型 | 主智能体 | 备选 | 超时 |
+|-----------|--------------|----------|---------|
+| 日常编码 | Claude（通才） | Codex | 600s |
+| 开源复现 | Codex | Gemini | 1800s |
+| 学术证明 | Gemini | Claude Opus | 900s |
+| 架构决策 | Claude Opus | — | 600s |
+| 质量审查 | Satonus（审查专家） | — | 600s |
+
+路由不仅仅是基于能力的。**Compass 协议**强制执行阶段分离：每个复杂任务必须经过 Research、Implement 和 Review 阶段，由不同智能体处理。研究问题的智能体永远不是实现解决方案的智能体，也不是审查它的智能体。
+
+这防止了 AI 辅助工作中的一种常见失败模式：提出方法的模型因为已经认同了产生它的推理，所以会倾向于给自己的输出以好评。将构建者与验证者分离，强制了独立评估。
+
+```python
+# Lacia 的路由决策树（v4，含控制平面逻辑）
+def route_next_action(state: SystemState) -> Action:
+    if state.review_queue:
+        return dispatch_reviewer()           # 审查优先
+
+    if state.in_progress_has_artifacts:
+        if context_running_low() and state.assist_budget > 0:
+            return send_assist_signal()      # 主动干预
+        return push_to_review()
+
+    if state.ready_queue:
+        return route_and_dispatch()          # 执行下一个就绪任务
+
+    if state.blocked_with_retries:
+        if state.rollback_budget > 0 and checkpoint_available():
+            return rollback_to_checkpoint()  # 优先回滚而非重试
+        return retry_and_promote()
+
+    if state.escalation_pending:
+        return escalate()                    # 处理升级队列
+
+    return check_mailbox_and_heartbeat()     # 空闲：检查通信
+```
+
+## 控制平面：预算制主动控制
+
+传统调度器是被动的路由器——分发任务后等待结果。Beatless v4 的控制平面主动监控执行，并在需要时进行干预，受预算约束限制。
+
+四种干预类型：
+
+| 操作 | 触发条件 | 效果 |
+|--------|---------|--------|
+| **assist** | 智能体输出缺乏证据，上下文接近耗尽 | 注入额外上下文、约束、参考资料 |
+| **silent** | 执行正常进行 | 记录状态，不干预 |
+| **escalate** | 任务阻塞超过阈值，存在错误传播风险 | 提升优先级，启用备用智能体，或通知人类 |
+| **rollback** | 检测到检查点偏差 | 恢复最后稳定状态，重新分发 |
+
+预算机制防止控制平面成为瓶颈：
+
+```yaml
+control_plane:
+  budget:
+    max_assist_per_shift: 12
+    max_rollback_per_shift: 3
+    escalate_requires_approval: true  # 需人工确认
+  checkpoints:
+    interval_tasks: 3     # 每 3 个任务保存一次
+    interval_seconds: 1800  # 或每 30 分钟
+```
+
+每个检查点捕获完整快照：
+
+```yaml
+checkpoint:
+  id: CK-20260407-001
+  timestamp: 2026-04-07T13:30:00+08:00
+  task_id: BT-IMPL-20260407-003
+  phase: implement
+  context_snapshot: ./.context-snapshots/CK-20260407-001.md
+  artifacts:
+    - path: ./output/partial-result.md
+      checksum: sha256:abc123
+  rollback_target: CK-20260407-000
+```
+
+回滚时，系统加载快照，丢弃部分产物，将任务返回就绪队列，并可选择分配不同的智能体。这对多天任务至关重要——第 2 天走错一步，不应该需要从第 1 天重新开始。
+
+## 智能体邮箱：异步协调
+
+多智能体系统需要通信，但大多数设计会产生两类问题之一：要么是成为瓶颈和 token 消耗中心的中央消息代理，要么是随智能体累积消息而爆炸的共享聊天上下文。
+
+邮箱协议走了第三条路：基于每个工作区文件的收件箱，无中央注册、无保证投递、无推送通知。
+
+```
+~/.openclaw/
+├── workspace-lacia/
+│   └── .agent-mailbox/
+│       ├── inbox/      # 未读消息
+│       └── archive/    # 已消费消息
+```
+
+消息遵循命名约定，编码优先级和发送者：
+
+```
+20260407130000--methode--warn--task-overdue.md
+```
+
+每个智能体在会话开始时检查自己的收件箱，读取最近的 1-3 条消息，并独立决定是否响应：
+
+- **critical**：立即读取，影响当前行为
+- **warn**：读取并酌情纳入当前工作
+- **info**：浏览，仅保留有用的
+
+```text
+Title: BT-IMPL-003 的上下文限制即将达到
+From: methode
+Created-At: 2026-04-07T13:30:00+08:00
+Priority: warn
+TTL: 7200
+ACK: false
+Checkpoint-Ref: CK-20260407-002
+Tags: context,assist-request
+
+建议在下次检查点保存后触发 assist 信号，
+以补充 Lacia 的调度上下文。
+```
+
+设计刻意保持最小化。消息有 TTL（生存时间）会过期。ACK 是可选的、尽力而为的。无 webhooks、无云同步、无从消息自动执行任务。邮箱是咨询性质的——智能体对是否响应收到的消息有最终判断权。
+
+为什么这比替代方案更好：
+
+- **无 token 风暴**：每个智能体只读自己的收件箱，每会话消费 1-3 条消息
+- **解耦**：发送者不阻塞等待响应
+- **透明**：纯文本文件，可 Git 追踪，人类可读
+- **容错**：错过一条消息是可以接受的；系统不依赖保证投递
+
+## 保留证据的上下文压缩
+
+当智能体的上下文窗口接近容量时，标准做法是滑动窗口截断：丢弃最旧的消息。这是破坏性的——它丢弃了可能对保持连贯多步推理至关重要的决定和证据。
+
+Beatless v4 按信息类型对上下文单元分类，选择性压缩：
+
+| 类型 | 示例 | 基础价值 |
+|------|---------|------------|
+| **Decision** | "因约束 X 选择了方案 Y" | 高（不可重现） |
+| **Artifact** | 生成的代码、报告章节 | 高（重新生成代价高） |
+| **Evidence** | 论文摘要、实验数据点 | 中（可重新获取但有成本） |
+| **Narrative** | 过程描述、过渡文本 | 低（可压缩） |
+
+```python
+def compress_context(
+    messages: list[Message],
+    token_budget: int,
+) -> list[Message]:
+    """在保留决策关键信息的同时压缩上下文。"""
+    scored = [(classify(m), m) for m in messages]
+    
+    # P0：始终保留决策和产物
+    p0 = [m for c, m in scored if c in ("decision", "artifact")]
+    
+    # P1：保留不可重新获取的证据
+    p1 = [m for c, m in scored if c == "evidence" and not is_refetchable(m)]
+    
+    # P2：总结叙事，丢弃细节
+    p2 = [summarize(m) for c, m in scored if c == "narrative"]
+    
+    kept = p0 + p1 + p2
+    
+    if count_tokens(kept) > token_budget:
+        # 最后手段：剪裁最旧的 P1 项，保留所有 P0
+        kept = prune_to_budget(kept, token_budget, priority="decision_first")
+    
+    return kept
+```
+
+关键洞察是：决定是不可重现的——"我们因为约束 Z 选择了架构 X 而非 Y"无法仅从代码重建。证据是可部分重现的——论文引用可以重新获取，但从中提取的具体洞察可能不能。叙事是完全可压缩的——过程描述不包含产物和决定已经编码的信息。
+
+## 设计决策及其理由
+
+**为什么用 YAML 而非数据库？** 可读性、Git 兼容性、可移植性。人类可以打开 TASKS.yaml 理解完整系统状态。数据库对复杂查询更快，但引入了部署依赖并使状态不透明。
+
+**为什么强制阶段分离（Compass）？** 确认偏误。研究问题的智能体会形成先验。如果同一智能体实现解决方案，那些先验不会被质疑。将研究、实施和审查分离，强制每个阶段独立自证。
+
+**为什么将并行限制在 3？** 经验之谈。超过 3 个并行子任务，每个任务的质量可测量地下降。人类操作员也无法有效监控超过 3 个并发流。这个限制是人与 AI 系统共同的特性，不仅仅是 AI 系统的限制。
+
+**为什么用邮箱而非共享聊天？** Token 效率。共享聊天上下文随参与者和消息线性增长。邮箱随*接收者*的收件箱大小线性增长，而收件箱受每会话 1-3 条消息的读取限制约束，保持有界。
+
+**为什么用检查点而非简单重试？** 上下文保留。无上下文恢复的重试往往使智能体走上同样的失败路径。检查点恢复决策上下文，允许从已知的良好状态出发重新尝试——可能由不同智能体执行。
+
+## 局限性
+
+四个值得承认的约束：
+
+1. **人在回路**：任务创建和最终验收仍需人类判断。系统编排执行，而非编排意图。
+2. **错误诊断**：回滚恢复状态但不诊断失败。复杂错误仍需人工调试。
+3. **上下文是有限的**：保留证据的压缩缓解了但未解决上下文窗口限制的根本问题。超长任务仍会丢失信息。
+4. **尽力而为的通信**：邮箱不保证投递。关键协调不应依赖消息被读取。
+
+## 下一步
+
+Beatless v4 与完全自主的研究助手之间的差距在三个能力：
+
+**自动任务分解**——系统应能将"调研神经网络架构 X"分解为子任务（文献搜索、代码分析、实验设计），无需人工指定。
+
+**学习路由**——关于哪些智能体在哪些任务类型上成功的历史数据应反馈到路由决策中。目前路由表是静态的。
+
+**检查点智能化**——而非按固定计划保存检查点，系统应识别关键决策何时做出并主动创建检查点。
+
+更广泛的方向是：从你使用的工具，到你配置的流程，再到在你设定的约束内自主管理自身执行的系统。Beatless v4 处于第二和第三阶段之间的边界——它主动管理执行，但受制于保持人类在控制中的硬性预算。
+
+---
+
+*Beatless 是 [CrepuscularIRIS](https://github.com/CrepuscularIRIS) 的个人项目。系统协议和模板位于 `~/.openclaw/beatless/protocols/`。当前版本：v4 (2026-04-07)。*

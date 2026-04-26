@@ -1,0 +1,68 @@
+---
+title: "GPT-4o Can't Fine-Tune, But Can It Segment? A Benchmark…"
+description: "First systematic benchmark of proprietary multimodal LLMs on standard CV tasks reveals whether text-native models can actually understand vision."
+publishDate: "2026-04-26"
+updatedDate: "2026-04-26"
+category: paper-spotlight
+hIE: saturnus
+hero_image: /assets/hIE/_shared/280186-multi-arato-kouka-lacia-methode-snowdrop.jpg
+tags: [paper, multimodal, GPT-4o, benchmark, computer-vision, evaluation]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=Oq3yRhFp0t"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+Ramachandran et al. force API-only multimodal LLMs like GPT-4o through standard computer vision benchmarks by translating segmentation masks, bounding boxes, and depth maps into text-compatible formats — asking the uncomfortable question: does a model trained to predict the next token actually *see*?
+
+## Why This Is Worth Your Time
+
+The multimodal LLM hype cycle has reached a peculiar inflection point. Every major lab now ships a "vision-capable" model, and benchmarks like MMMU and MathVista dominate the leaderboard. But those are *language-forward* tasks dressed up as vision problems.
+
+This paper does something more uncomfortable: it puts GPT-4o, Gemini, and their peers against the same evaluation pipelines that have benchmarked *dedicated* computer vision models for a decade. Segmentation, depth estimation, object detection — tasks where the ground truth is spatial, not linguistic.
+
+The curatorial case here is less "read this for the results" and more "watch this methodology" — the authors reveal that evaluation infrastructure itself needs redesigning when your model only has an API endpoint and no weights.
+
+## Core Method (3-Minute Version)
+
+Standard CV benchmarks assume you have direct access to a model's output tensor. You want to evaluate semantic segmentation? Great — the model produces a per-pixel class logit map, and you compare it directly to ground truth masks.
+
+Multimodal LLMs don't work that way. GPT-4o takes an image, returns text. To evaluate it on segmentation, you need an *interface layer* — a prompt that asks the model to output its prediction in a structured text format (e.g., COCO-style polygon coordinates, or a dense caption), and a parser that converts that text back into something comparable to ground truth.
+
+The authors' key methodological contribution is this translation layer. They evaluate across three families of tasks:
+
+**Segmentation** — the model outputs pixel coordinates or region descriptions; the authors parse these into binary masks and measure IoU against standard datasets.
+
+**Detection** — bounding boxes are expressed as text strings like "x_min, y_min, width, height"; parsed and scored with standard AP metrics.
+
+**Depth estimation** — monocular depth maps are expressed as text (relative depth rankings or quantized values), then reconstructed and compared.
+
+The evaluation framework is designed to minimize additional prompting tricks — they're testing raw model capability, not prompt-engineered performance.
+
+## Key Results
+
+No concrete numbers were available in the source material. The paper's primary contribution is methodological — establishing the benchmark design and reporting framework itself. Specific performance comparisons between proprietary and open-weight models would appear in the full paper tables.
+
+## Limits and Unanswered Questions
+
+**The translation tax.** Every time you convert a vision output to text and back, you introduce noise. A model might have excellent internal visual representations that simply don't compress well into textual format. This evaluation may penalize models whose strengths don't map cleanly to sequential coordinate output.
+
+**Prompt sensitivity.** The paper likely faces the standard LLM benchmark problem: results are a function of both model capability and prompt design. Without a full ablation of prompt strategies, it's hard to know whether "poor" results reflect genuine visual misunderstanding or suboptimal text output formatting.
+
+**Task coverage.** Three task families is a start, not a comprehensive picture. Does the methodology extend to video, 3D point clouds, or medical imaging? Unclear from the source.
+
+**Reproducibility with proprietary models.** The paper evaluates GPT-4o — a model that changes without notice. Any result in this paper is already potentially stale by the time you read it.
+
+## Further Reading
+
+- The OpenReview discussion page for this paper may contain author responses and reviewer critiques worth following.
+- For the broader evaluation methodology question: "Evaluating Large Multimodal Models for Vision Tasks" (survey, if available) would provide context on how this work fits into the evaluation landscape.
+
+---
+
+**Curated**: 2026-04-26
+**Reading difficulty**: ⭐⭐⭐⭐☆
+**Recommended because**: It asks the right question, even if the answers require careful interpretation.
