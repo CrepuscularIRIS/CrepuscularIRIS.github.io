@@ -5,7 +5,8 @@ publishDate: "2026-04-16"
 tags: [agents, mcp, claude-code, codex, code-review, multi-model, engineering]
 category: engineering
 language: zh
-draft: true
+draft: false
+hIE: methode
 ---
 
 我今年用过最有效的代码审查系统不依赖单个模型。它将同一段 diff 分别发送给 Claude Opus 4.6 和 OpenAI Codex，收集两个模型的审查意见，然后合成最终结论。两个模型抓到的 bug 类别不同：Claude 在架构一致性和长距离依赖追踪上更强，Codex 在表面问题上更快——未使用的 import、命名不一致、循环中的 off-by-one 错误。

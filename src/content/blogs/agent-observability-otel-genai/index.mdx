@@ -5,7 +5,8 @@ publishDate: "2026-04-17"
 tags: [observability, opentelemetry, agents, tracing, otel-genai, llm-ops, agent-engineering]
 category: engineering
 language: en
-draft: true
+draft: false
+hIE: methode
 ---
 
 When an autonomous agent makes a decision you wish it hadn't, the first thing you reach for is the trace. The expectation, inherited from a decade of microservice debugging, is that the trace will tell you which service called which, with what arguments, in what order, and where time went. OpenTelemetry's GenAI semantic conventions extend the same model to LLM and agent workloads — `gen_ai.system`, `gen_ai.operation.name`, `gen_ai.request.model`, plus token counts and cost. On the surface, an LLM call looks like an HTTP call: a span, attributes, a duration, a status.

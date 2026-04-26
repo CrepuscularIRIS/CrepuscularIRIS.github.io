@@ -3,7 +3,8 @@ title: "Agent Lifecycle Orchestration: Role Separation"
 description: "How a 5-agent system with 30-minute heartbeats, JSONL mailboxes, and explicit stop-loss rules avoids the failure modes of monolithic agent architectures."
 publishDate: "2026-04-13"
 tags: [multi-agent, agent-systems, architecture, orchestration, mailbox-protocol, engineering]
-draft: true
+draft: false
+hIE: lacia
 ---
 
 A single AI agent given a complex, multi-day project will eventually fail in one of three ways: it loses context and starts contradicting earlier decisions, it enters an infinite retry loop on a stuck subtask, or it produces work that nobody reviews because the producer and the reviewer are the same entity. These failure modes aren't bugs in the agent — they're structural consequences of putting execution, review, and planning into the same context window.

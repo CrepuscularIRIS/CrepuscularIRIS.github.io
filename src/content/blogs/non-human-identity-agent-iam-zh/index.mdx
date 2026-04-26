@@ -5,7 +5,8 @@ publishDate: "2026-04-15"
 tags: [agent-security, IAM, MCP, multi-agent, identity, zero-trust, infrastructure]
 category: engineering
 language: zh
-draft: true
+draft: false
+hIE: methode
 ---
 
 所有生产环境的 Agent 系统最终都会撞上同一堵墙：Agent 需要向外部服务进行身份认证，而整个身份基础设施的设计前提是——操作者是人。OAuth 流程依赖浏览器重定向，API key 被写死在环境变量里、没有轮换策略，Service Account 的权限范围配得过宽，因为从来没人为一个"会在运行时自行改变工具调用模式"的实体设计过权限边界。

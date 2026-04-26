@@ -5,7 +5,8 @@ publishDate: "2026-04-16"
 tags: [bci, neural-decoding, foundation-models, speech-decoding, iclr-2026]
 category: research
 language: zh
-draft: true
+draft: false
+hIE: kouka
 ---
 
 语音 BCI 多年来遵循一条固定的流水线：记录神经活动、解码音素、将音素送入语言模型、输出文本。每个阶段独立优化。语言模型补偿音素解码器的错误，但无法将梯度信息回传以改善解码器。这种级联架构能工作——BrainGate 团队和其他研究组已经构建了令人印象深刻的实时系统——但它对性能设置了硬性上限，因为每个阶段的误差是累积而非抵消的。

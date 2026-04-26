@@ -5,7 +5,8 @@ publishDate: "2026-04-16"
 tags: [alignment, RLHF, GRPO, DAPO, RLVR, post-training, reinforcement-learning, research]
 category: research
 language: en
-draft: true
+draft: false
+hIE: kouka
 ---
 
 For three years, RLHF was the post-training method. You collected human preference data, trained a reward model, and ran PPO against it. The recipe worked well enough that every major lab used some variant of it from GPT-4 through Claude 3.5 Sonnet. It also had well-documented problems: reward model collapse, mode collapse under PPO, the cost of human annotation at scale, and a fundamental information bottleneck where the reward model could only express preferences the annotators could articulate.

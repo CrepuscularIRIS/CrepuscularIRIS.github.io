@@ -5,7 +5,8 @@ publishDate: "2026-04-17"
 tags: [agents, durable-execution, cloudflare, resilience, state-management, workflow-engines, orchestration]
 category: engineering
 language: en
-draft: true
+draft: false
+hIE: methode
 ---
 
 An autonomous agent working on a three-hour task hits a 504 from the upstream LLM provider. The retry works, but the worker process dies during retry — oom kill, container eviction, a deploy rollout, a node reboot. The agent restarts. It has no memory of the last three hours. It runs the whole task again, re-issuing every LLM call, re-fetching every tool result, re-incurring every dollar. This is the agent amnesia problem, and it scales with the length of your tasks. An agent that checkpoints every ten minutes wastes only minutes. An agent that runs for hours and crashes near the end wastes hours.

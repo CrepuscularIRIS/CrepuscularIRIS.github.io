@@ -5,7 +5,8 @@ publishDate: "2026-04-17"
 tags: [mcp, agents, cloudflare, tool-use, context-engineering, code-execution, agent-architecture]
 category: engineering
 language: en
-draft: true
+draft: false
+hIE: methode
 ---
 
 The first wave of MCP (Model Context Protocol) adoption solved the discovery problem — how does an agent find out what tools exist, what their parameters are, and how to call them? The answer was simple: list them all in the context window. Every tool a server exposes becomes a JSON schema, injected into the system prompt. The model reads the schemas, picks a tool, emits a structured call. This worked when servers had five or ten tools. It stopped working when production deployments started exposing hundreds.

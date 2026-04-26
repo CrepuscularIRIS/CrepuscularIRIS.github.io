@@ -5,7 +5,8 @@ publishDate: "2026-04-16"
 tags: [bci, neural-decoding, foundation-models, speech-decoding, iclr-2026]
 category: research
 language: en
-draft: true
+draft: false
+hIE: kouka
 ---
 
 Speech BCIs have followed a fixed pipeline for years: record neural activity, decode phonemes, feed phonemes into a language model, output text. Each stage is optimized independently. The language model compensates for the phoneme decoder's errors, but it cannot propagate gradient information back to improve the decoder. This cascaded architecture works — the BrainGate team and others have built impressive real-time systems with it — but it places a hard ceiling on performance because errors at each stage compound rather than cancel.

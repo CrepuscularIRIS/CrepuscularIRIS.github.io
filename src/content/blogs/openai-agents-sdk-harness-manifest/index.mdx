@@ -5,7 +5,8 @@ publishDate: "2026-04-17"
 tags: [openai, agents-sdk, agent-harness, manifest, sandbox, mcp, skills, agent-engineering]
 category: engineering
 language: en
-draft: true
+draft: false
+hIE: methode
 ---
 
 On April 15 and 16, 2026, OpenAI shipped an update to the Agents SDK that is being read in the press as "Codex-style harness, but for the SDK." That description is not wrong but it understates the thing. The release does three structural moves at once: it folds previously separate primitives (MCP tools, Skills, AGENTS.md, shell, apply-patch) into a single in-distribution harness; it introduces a *Manifest* spec that decouples the agent's workspace from any particular sandbox provider; and it puts an externalized state machine underneath the harness so that losing a sandbox container no longer kills a run.

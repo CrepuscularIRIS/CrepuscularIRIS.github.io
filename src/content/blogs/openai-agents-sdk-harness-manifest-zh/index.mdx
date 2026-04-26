@@ -5,7 +5,8 @@ publishDate: "2026-04-17"
 tags: [openai, agents-sdk, agent-harness, manifest, sandbox, mcp, skills, agent-engineering]
 category: engineering
 language: zh
-draft: true
+draft: false
+hIE: methode
 ---
 
 2026 年 4 月 15、16 日，OpenAI 给 Agents SDK 推了一次更新，行业新闻把它定性成"Codex 风格的 harness 装进了 SDK"。这个描述没错但低估了。这次发布同时做了三件结构性的事：把原本分开的原语（MCP 工具、Skills、AGENTS.md、shell、apply-patch）折叠进一个 SDK 自带的 harness；引入一份 **Manifest** 规范，让 Agent 的 workspace 和具体 sandbox provider 解耦；并在 harness 底下放了一个外部化的状态机，让丢一个 sandbox 容器不再等于丢一次 run。

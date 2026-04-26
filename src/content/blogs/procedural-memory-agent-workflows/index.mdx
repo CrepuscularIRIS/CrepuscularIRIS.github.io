@@ -5,7 +5,8 @@ publishDate: "2026-04-17"
 tags: [agents, memory, procedural-memory, agent-workflow-memory, context-engineering, AWM, voyager, reflexion]
 category: engineering
 language: en
-draft: true
+draft: false
+hIE: methode
 ---
 
 When people list the components of an agent memory system, they almost always stop at two: a short-term context buffer and a long-term store, usually implemented as vector-RAG. That taxonomy is the one borrowed from retrieval systems, and it is wrong for agents. Cognitive scientists have been using a three-way split for half a century — *episodic* (events you experienced), *semantic* (facts you know), and *procedural* (skills you have practiced) — because the three serve different functions and degrade independently. Apply that taxonomy to agents and the gap is obvious. Most production agents have something like episodic memory (chat history, session logs) and something like semantic memory (RAG over docs). Almost none have procedural memory. That is the next capability frontier, and the research literature has already shown what it looks like.

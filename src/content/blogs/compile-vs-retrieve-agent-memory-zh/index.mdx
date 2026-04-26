@@ -5,7 +5,8 @@ publishDate: "2026-04-17"
 tags: [agent-memory, llm-wiki, mempalace, karpathy, mcp, retrieval, long-term-memory, agent-engineering]
 category: engineering
 language: zh
-draft: true
+draft: false
+hIE: methode
 ---
 
 2026 年 4 月初的七十二小时之内，针对长期运行 Agent 的两个记忆架构相继落地，方向却完全相反。Andrej Karpathy 发布了一份 gist，描述他所谓的 *LLM Wiki*：模型被当作一个"编译器"，离线读入论文、转录、推文、Slides 等原始素材，输出一组互相链接的 Markdown 维基页面，之后只要这个话题再次出现，相关页面就被整体喂回 context。三天之后，**MemPalace** 项目以一个 MCP server 形式发布（按公开 writeup 大约二十个工具），给 Agent 一套空间隐喻——翼楼、房间、抽屉、隧道——让模型在查询时主动在记忆图里"漫步"。

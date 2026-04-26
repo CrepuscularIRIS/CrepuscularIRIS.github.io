@@ -5,7 +5,8 @@ publishDate: "2026-04-12"
 tags: [MoE, architecture, efficiency, Google-DeepMind, inference, sparsity, Gemma]
 category: technical
 language: en
-draft: true
+draft: false
+hIE: methode
 ---
 
 Google DeepMind's Gemma 4 released in early April 2026 as a 26-billion parameter mixture-of-experts model with 128 specialized experts — but the inference cost is closer to a sub-4B dense model. The key is extreme activation sparsity: at each token position, only a small subset of experts is activated, while the rest sit idle. The total parameter count funds knowledge capacity; the active count funds inference cost.

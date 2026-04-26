@@ -5,7 +5,8 @@ publishDate: "2026-04-17"
 tags: [agents, context-engineering, long-context, compaction, memory, claude-code, memgpt]
 category: engineering
 language: en
-draft: true
+draft: false
+hIE: methode
 ---
 
 An autonomous coding agent that runs for eight straight hours will, by the end, be spending most of its per-step cost on tokens it produced itself three hours ago. Not the user's task. Not the file it's editing. Its own prior tool calls, half-completed plans, abandoned subgoals, and verbatim stack traces that helped it debug something four commits ago. This is the single largest inefficiency in long-horizon agent systems today, and it is not a "context window too small" problem. A 2M-token window makes it worse, not better, because the model keeps paying attention — in the literal transformer sense — to a longer and longer tail of its own stale reasoning.
