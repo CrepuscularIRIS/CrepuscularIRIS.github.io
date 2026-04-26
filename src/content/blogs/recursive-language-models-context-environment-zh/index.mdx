@@ -88,7 +88,7 @@ RLM 论文中一个更有趣的推论，以及与前沿实验室发展方向最�
 
 首先，它解耦了模型规模与上下文长度。一个写出好 REPL 代码的 Haiku 级根模型，可以回答需要 10M token 语料的问题，而裸上下文的 Opus 无法做到，因为 Opus 将计算浪费在无用的注意力上，而 Haiku 在跑 grep。有趣的前沿变成"能良好编排的最小模型"，而非"能读取 2M token 的最大模型"。
 
-其次，它重新框定了 KV-cache 压缩军备竞赛。当前 KV-cache 压缩的工作（本博客[在其他文章中](https://zakura-world.com/blog/kv-cache-compression-long-context-economics)已涵盖）试图让 1M token 提示词的 serving 成本可控。RLM 说：不要 serving 那个 1M token 提示词。并行 serving 十个 10K token 提示词，由一个小型根模型编排。经济学方向不同：每次查询调用更多次，但每次调用成本大幅降低，且可并行化程度高得多。
+其次，它重新框定了 KV-cache 压缩军备竞赛。当前 KV-cache 压缩的工作（本博客[在其他文章中](/blogs/kv-cache-compression-long-context-economics)已涵盖）试图让 1M token 提示词的 serving 成本可控。RLM 说：不要 serving 那个 1M token 提示词。并行 serving 十个 10K token 提示词，由一个小型根模型编排。经济学方向不同：每次查询调用更多次，但每次调用成本大幅降低，且可并行化程度高得多。
 
 ## 这对评估意味着什么
 

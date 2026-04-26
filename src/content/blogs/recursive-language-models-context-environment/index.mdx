@@ -87,7 +87,7 @@ This has two knock-on effects worth watching.
 
 First, it decouples model size from context length. A Haiku-class root that writes good REPL code can answer questions over 10M tokens of corpus that a bare-context Opus cannot, because the Opus is pouring compute into useless attention while the Haiku is running grep. The interesting frontier becomes "smallest model that can orchestrate well," not "largest model that can read 2M tokens."
 
-Second, it reframes the KV-cache-compression arms race. Current work on KV-cache compression (which the blog has [covered elsewhere](https://zakura-world.com/blog/kv-cache-compression-long-context-economics)) tries to keep the 1M-token prompt cheap to serve. RLM says: don't serve the 1M-token prompt. Serve ten 10K-token prompts in parallel, orchestrated by a small root. The economics are different in direction: more calls per query, but much cheaper per call, and dramatically more parallelizable.
+Second, it reframes the KV-cache-compression arms race. Current work on KV-cache compression (which the blog has [covered elsewhere](/blogs/kv-cache-compression-long-context-economics)) tries to keep the 1M-token prompt cheap to serve. RLM says: don't serve the 1M-token prompt. Serve ten 10K-token prompts in parallel, orchestrated by a small root. The economics are different in direction: more calls per query, but much cheaper per call, and dramatically more parallelizable.
 
 ## What This Does to Evaluation
 
