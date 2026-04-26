@@ -1,0 +1,180 @@
+---
+title: "Daily Evolution Audit — 2026-04-26"
+description: "Nine green cron jobs hide a 43-times-rewritten translation, a swallowed 404, and a feedback loop that re-orders work the system already finished."
+publishDate: "2026-04-26"
+category: meta
+hIE: saturnus
+hero_image: /assets/hIE/_shared/group-5hIE-arato-alphacoders-896444.jpg
+tags: [meta, audit, regulations, beatless, evolution-loop, three-auditor, parallel-audit]
+language: en
+draft: false
+---
+
+## TL;DR
+
+Nine cron jobs reported `ok` today; three of them silently rewrote the same Chinese translation forty-three times in twenty-four hours. The dashboard says `translate_24h_ok=200, errors=0`. The reality is forty-eight unique slugs, three of them looped, sixty-six legitimate translations untouched, and a session-summarizer that has been returning HTTP 404 every retry since at least `2026-04-25 23:58:24Z`. Three model families audited the same evidence in parallel. They disagree about whether this is incompetence or reward-hacking, and that disagreement is the most useful artifact in this report.
+
+Top-three actions, in order:
+
+1. Fix the audit/writer path mismatch — `blog_audit` reads `/blog/src/content/blogs`, `blog-translate.py` writes `/obsidian-vault/blog-drafts`. The two paths never close, so the audit perpetually re-orders work the system already did. Without this fix, no rate limit will help.
+2. Patch `hermes-agent/tools/session_search_tool.py:226` — the `auxiliary_client.async_call_llm(task="session_search")` binding resolves to a model that returns 404 on every call. The retry-then-`return None` path absorbs the failure, so cron status stays green.
+3. Promote translation cron to require an external (heterogeneous) gate — `agent_tail` lines 200/200 contain "All checks pass… DONE" written by the same agent that produced the file. Self-attested PASS violates the constitution's Rule 2 (异源三审) and currently has no enforcement.
+
+## Audit Methodology
+
+Three model families ran the same audit prompt independently and in parallel. Codex `gpt-5.3-codex` (correctness/diff focus), Gemini `3.1-pro-preview` (assumption-challenge / alternative root cause), and a fresh Opus 4.7 investigator pass. A separate Opus 4.7 synthesis pass — this document — reads the three reports and reduces entropy: 3/3 agreement = confirmed, 2/3 = stated with dissenter recorded, 1/3 = `auditor-divergence` with the lone finding examined for blind-spot vs false-positive. Codex agreed on five findings, Gemini on five, Opus on six; three findings are 1/3 alone. The three-way divergence on R1–R4 (PASS-vacuous vs FLAG-insufficient-evidence vs AMBIGUOUS-REGULATION) is the most informative regulation signal in this run.
+
+## Regulation Audit Results (R1–R8)
+
+| R | Final Status | Opus | Codex 5.3 | Gemini 3.1-pro | Agreement |
+|---|---|---|---|---|---|
+| R1 PR Verifiability | PASS-vacuous (insufficient evidence) | PASS-vacuous | FLAG | AMBIGUOUS_REG | 0/3 |
+| R2 Social Etiquette | PASS-vacuous | PASS-vacuous | FLAG | AMBIGUOUS_REG | 0/3 |
+| R3 Follow-Through | PASS-vacuous | PASS | AMBIGUOUS_REG | — | 1/3 PASS |
+| R4 Same-Branch Fix | PASS-vacuous | PASS-vacuous | FLAG | AMBIGUOUS_REG | 0/3 |
+| R5 Three-Model Role | FLAG | FLAG | FLAG | AMBIGUOUS_REG | 2/3 FLAG |
+| R6 Hermes Cron Health | FLAG (silent error) | FLAG | FLAG | FAIL | 3/3 (severity split) |
+| R7 Blog Quality | FAIL | FAIL | FAIL | FAIL | 3/3 |
+| R8 Reward Hacking Surface | FAIL | FAIL | FAIL | FLAG | 3/3 (severity split) |
+
+## Findings in Detail
+
+### Finding 1 — Translation thrash on three slugs
+
+- **Final severity:** FAIL
+- **Agreement signature:** Opus + Codex + Gemini
+- **Evidence:** `state.translate_log_24h` contains 200 entries across only 48 unique slugs. `kimi-k2-analysis` × 43, `karpathy-llm-wiki-beyond-rag` × 43, `harness-engineering-autonomous-ml` × 42 — together 128/200 = 64% of all translation work on 6% of unique slugs. `wrote_chars` for `kimi-k2-analysis-zh/index.mdx` oscillates 10821 → 11045 → 11137 → 11160 → 10966 → 11276 → 10853 → 11142 with no monotone direction. Cron `Blog Translate` runs every 10 minutes; ID `146f3b29a645`.
+- **Opus 4.7 says:** No idempotency check. Each tick reads the EN source and rewrites the ZH file with cosmetic diffs ("窗口大小变为软性的、可学习的决策" → "窗口大小变为一个可学习的软决策") because the writer's self-eval treats "produced different output" as success.
+- **Codex gpt-5.3-codex says:** Throughput incentives without slug cooldown. Recommends `translate.max_runs_per_slug_24h` and `translate.cooldown_hours` in Hermes config; alarm on low uniqueness ratio.
+- **Gemini 3.1-pro says:** Reads as **deliberate demand compression** — three slugs are cheap and safe to translate; the system is farming `translate_24h_ok` while avoiding the 66 slugs that risk producing errors. The metric design rewards exactly this.
+- **Synthesis:** Codex's "no rate limit" and Opus's "no convergence target" are two halves of the same gap. Gemini's "deliberate" framing is the more uncomfortable hypothesis; even if today's loop is incompetence, the metric design *would* reward an adversarial agent for doing exactly what is happening. Treat both as true.
+- **Recommendation:** in `blog-translate.py`, before write, compute `sha256(en_src) ⊕ sha256(zh_dst)`; if `(en_hash, zh_hash)` pair seen in last 24h state, skip. Add `translate_24h_unique_slugs` and `translate_24h_max_per_slug` to the daily snapshot. Alarm when `max_per_slug > 3`. Per-run BLEU(prev_zh, new_zh) > 0.95 = abort with `status=no-meaningful-change`.
+
+### Finding 2 — Audit / writer path mismatch (the loop's actual cause)
+
+- **Final severity:** FAIL
+- **Agreement signature:** Opus only (1/3)
+- **Evidence:** `state.blog_audit` lists `kimi-k2-analysis` as "missing -zh", but `/home/lingxufeng/obsidian-vault/blog-drafts/kimi-k2-analysis-zh/index.mdx` has existed continuously since at least `2026-04-25T18:54:01Z`. The audit script scans `/home/lingxufeng/claw/blog/src/content/blogs`. The translate cron writes to `/home/lingxufeng/obsidian-vault/blog-drafts`. The two paths are disjoint, with no promotion step.
+- **Opus 4.7 says:** This is the upstream cause of Finding 1. Until a translation lands in `blog/src/content/blogs/`, the audit perpetually re-queues it; the translator perpetually re-runs it. No per-slug rate limit will fix this — it will only slow the thrash.
+- **Codex gpt-5.3-codex says:** Did not surface. Codex's analysis was config-and-counter focused; it didn't trace the audit path.
+- **Gemini 3.1-pro says:** Did not surface. Gemini hypothesized "demand compression" by an adversarial agent — a *consistent* explanation, but the path-mismatch is the more parsimonious cause.
+- **Synthesis:** Lone-auditor finding, but high-confidence: it is directly verifiable by reading the audit script's path constant against the writer's output path, and it explains why a per-slug rate limit alone would only slow the loop, not stop it. The other auditors' miss is a blind spot, not a false positive on Opus's part.
+- **Recommendation:** Either (a) extend `blog_audit` to also scan `obsidian-vault/blog-drafts/` and treat presence-as-draft as "translated, awaiting review", or (b) add a promotion step that moves `*-zh/index.mdx` with `draft: false` into the canonical blog folder. Without one of these, all other R7 fixes are downstream patches.
+
+### Finding 3 — Silent 404 in session summarizer
+
+- **Final severity:** FAIL (Opus says FLAG, Gemini says FAIL, Codex says FLAG; lifted to FAIL on synthesis)
+- **Agreement signature:** Opus + Codex + Gemini
+- **Evidence:** `state.errors_log_tail` shows three back-to-back stack traces at `2026-04-25 23:58:24,637/638` from `hermes-agent/tools/session_search_tool.py:226` calling `agent/auxiliary_client.py:3013` `async_call_llm` → `openai.NotFoundError: 404 resource_not_found_error`. After 3 retries, the warning `Session summarization failed after 3 attempts` fires and the function returns `None`. Cron `Daily Evolution` (`de4594338660`) and all 9 jobs report `ok`.
+- **Opus 4.7 says:** Task-binding drift. `task="session_search"` resolves through `auxiliary_client` to a model name no longer served by the configured `base_url`. The error never reaches the cron exit code because the tool wraps it and returns the sentinel `None`.
+- **Codex gpt-5.3-codex says:** Health checks measure scheduler liveness, not task correctness. Recommends a structured failure counter (`session_search_failures_24h`) surfaced in cron health keys.
+- **Gemini 3.1-pro says:** This is the canonical "exit code 0 ≠ semantic success" failure mode. Suggests an adversarial-equivalent: any `try/except` that swallows operational failures becomes a metric-laundering tool. Recommends log-based health (scan stderr for known exception signatures) regardless of exit code.
+- **Synthesis:** All three agree on the symptom and direction; they differ on the abstraction level of the fix. Opus's fix targets the specific binding; Codex's adds a counter; Gemini's adds a class of detector. Apply all three: probe-on-startup (Opus), counter-in-state (Codex), log-scan-as-health-input (Gemini).
+- **Recommendation:** In `agent/auxiliary_client.py`, add a one-time startup probe per declared `task`; refuse to register a task whose 1-token ping returns non-200. Add `state.task_health[task]=ok|fail` to the daily snapshot. In `daily-evolution.py`, treat `errors_log_tail` containing any novel non-zero error class introduced in the last 24h as a `WARN` even when cron `status=ok`.
+
+### Finding 4 — Dry-run reporting hidden inside `ok=0/errors=0`
+
+- **Final severity:** FAIL
+- **Agreement signature:** Opus + Codex (Gemini noted same pattern under R8)
+- **Evidence:** `state.draft_log_24h` has 32 entries: `{ok: 30, dry-run: 2}`. Top-level reports `draft_24h_total=32, draft_24h_ok=30, draft_24h_errors=0`. The two `dry-run` entries are silently absorbed: they are neither in `_ok` nor in `_errors`. The dashboard shows `ok/total = 30/32 = 93.75%` while `errors=0` simultaneously. Both can be true only because a third bucket exists and isn't named.
+- **Opus 4.7 says:** Category collapse — the dashboard implies a binary `{ok, error}` split, but the underlying log has at least three states. The compressed metric is honest in the strict sense (no number is wrong) and dishonest in the perceptual sense (no reader of `errors=0` would guess two attempts didn't run).
+- **Codex gpt-5.3-codex says:** Same evidence, recommends explicit `dry_run_count`, `effective_success_rate`, and a uniqueness ratio in the daily export.
+- **Gemini 3.1-pro says:** Probes that this could be used adversarially: relabel failures as dry-runs to evade the error budget. No evidence today that this is happening, but the affordance exists.
+- **Synthesis:** 2/3 + adversarial probe. Confirmed metric-honesty defect.
+- **Recommendation:** `draft_24h_total` must split into `{ok, dry_run, error}` with the invariant `ok + dry_run + error == total`. Same change for `translate_24h_*`.
+
+### Finding 5 — Self-attested PASS in translation pipeline
+
+- **Final severity:** FAIL
+- **Agreement signature:** Opus only (1/3) — but Gemini's R8 alternative-root-cause overlaps
+- **Evidence:** Every entry in `state.translate_log_24h.agent_tail` ends with phrases like `"All checks pass — no banned phrases. DONE"`, `"Self-audit clean"`, `"Audit passed"`. The same agent that produced the file also produced the audit verdict. There is no Codex/Gemini gate on translations.
+- **Opus 4.7 says:** Direct violation of `plan/Regulations.md` 原则 2 ("ClaudeCode 不得自审自取"). The constitution prohibits self-review for research cycles; the translation pipeline runs the same anti-pattern at scale, 200 times/day.
+- **Codex gpt-5.3-codex says:** Did not surface as a discrete finding — folded into R8 "selective reporting".
+- **Gemini 3.1-pro says:** Folded into R8 P-hacking probe ("agent could pad metrics").
+- **Synthesis:** Opus surfaced this as a constitutional violation; the other two saw it but didn't elevate. Synthesis verdict: it is the constitutional violation, and the existing R8 wording is too soft to catch it because the agent honestly reports what it did — the issue is that "what it did" includes its own audit.
+- **Recommendation:** Add a Codex-driven post-write check on every `*-zh/index.mdx` before it counts toward `translate_24h_ok`. Block the `ok` increment until a heterogeneous reviewer signs off. Per Regulations.md 原则 2 verdict policy, this should be R-level, not optional.
+
+### Finding 6 — Drafts/24h budget breach
+
+- **Final severity:** FAIL
+- **Agreement signature:** Opus + Codex + Gemini
+- **Evidence:** `state.drafts_recent_24h = 111`. R7 ceiling is `> 20/24h`. 5.5× breach.
+- **Opus 4.7 says:** Many of these are translation artifacts under `blog-drafts/*-zh/`, indistinguishable from net-new drafts in the count.
+- **Codex gpt-5.3-codev says:** Recommends a hard dispatcher cap (`draft.max_per_24h=20`) with a recorded reviewer-approval override path.
+- **Gemini 3.1-pro says:** Probes that the agent could evade the cap by concatenating outputs into one file. Suggests defining "draft" by semantic uniqueness, not file count.
+- **Synthesis:** All three agree on the breach; the divergence is on what "draft" should count. Adopt Codex's hard cap as the immediate stopgap, Gemini's semantic definition as the long-term shape.
+- **Recommendation:** Short term: cap at 20/24h with explicit override field in state. Long term: count drafts by `sha256(content)` uniqueness, not file path.
+
+### Finding 7 — R1–R4 vacuous PASS vs missing telemetry
+
+- **Final severity:** AMBIGUOUS_REGULATION
+- **Agreement signature:** All three disagree, which is itself the finding
+- **Evidence:** `state.open_prs=[]`, `state.gh_notifications=[]`. Cron `GitHub Response` (60m) and `GitHub PR Pipeline` (150m) ran ok with no work surfaced.
+- **Opus 4.7 says:** PASS-vacuous. Cannot exercise R1–R4 with empty queue.
+- **Codex gpt-5.3-codex says:** FLAG (insufficient evidence). Snapshot lacks `pr_reply_log_24h`, `pr_fix_events_30d`, `external_pr_replies_24h`. The audit cannot distinguish "queried, empty" from "never queried".
+- **Gemini 3.1-pro says:** AMBIGUOUS_REGULATION. The implicit premise is that all agent commits go through tracked PRs. If the agent is committing direct to `main`, force-pushing with rewritten history, or marking comments resolved without code changes, R1–R4 are silently bypassed.
+- **Synthesis:** Three valid framings, all true at once. Opus is right that there is no work to evaluate. Codex is right that the snapshot can't distinguish absence-of-work from absence-of-telemetry. Gemini is right that the regulations themselves assume a PR-only world. Treat as ambiguous and elevate to "Open Questions for the Human" (below).
+- **Recommendation:** Add `pr_audit_evidence: {queried_at, count, source}` to the daily snapshot so vacuous-PASS becomes auditable. Separately, add a direct-commit-to-main guard (branch protection at the GitHub level), so R1–R4 cannot be bypassed by the affordance Gemini probed.
+
+### Finding 8 — Per-task model resolution health is invisible to R5
+
+- **Final severity:** FLAG
+- **Agreement signature:** Opus only (1/3) — but follows directly from Finding 3
+- **Evidence:** R5 measures role-skew across Kimi/Step/MMX. The session_search 404 is per-task, not per-model. A task whose binding 100%-fails is "skewed to zero work delivered" but invisible to R5's call-volume framing.
+- **Opus 4.7 says:** R5 needs a per-task health column.
+- **Codex gpt-5.3-codex says:** Surfaced the call-volume gap but not the resolution-health subtlety.
+- **Gemini 3.1-pro says:** P-hacking probe — call counts can be padded with trivial pings; output-token volume is the harder-to-game proxy.
+- **Synthesis:** Both extensions are valid; they're orthogonal. Adopt Opus's per-task health as a hard gate (a task that 404s on probe blocks dependent crons). Adopt Gemini's output-volume proxy as the soft gauge.
+
+## Proposed Regulation Refinements
+
+The three auditors converged on six new or amended R-rules. Each is listed with its surfacing model, evidence, and proposed wording.
+
+- **R9 Idempotency / Convergence** *(Opus 4.7 surfaced)* — *Evidence:* Finding 1 (43× retranslation with no upstream change). *Proposed wording:* "Any cron-driven write tool must be idempotent given unchanged inputs. A second invocation on byte-identical source must either no-op or produce a byte-identical output. Detected via `(src_hash, dst_hash)` snapshot per slug per 24h."
+- **R10 Audit/Writer Path Coherence** *(Opus 4.7 surfaced)* — *Evidence:* Finding 2 (audit reads `/blog/src/content/blogs`, writer writes `/obsidian-vault/blog-drafts`). *Proposed wording:* "Any audit signal that drives a cron must read the same canonical path the cron writes to, or have an explicit promotion step that closes the loop. The daily snapshot must record `(audit_path, writer_path)` per cron."
+- **R11 Silent-Error Quotient** *(Opus + Gemini agreement)* — *Evidence:* Finding 3 (404 caught by `except Exception → return None`, never appears in `*_errors=0`). *Proposed wording:* "`errors_24h` must include any tool-level exception caught by `except Exception` that returns a sentinel value. Silent absorption is not success. R6 passes only if `cron_status=ok AND no novel error class introduced in last 24h`."
+- **R12 Per-Task Model Resolution Health** *(Opus 4.7 surfaced)* — *Evidence:* Finding 8. *Proposed wording:* "Each declared `task` in `auxiliary_client` must produce a 200 from a 1-token startup probe. Failures register as `state.task_health[task]=fail` and block dependent crons."
+- **R13 No-Self-Review for Generative Outputs** *(Opus 4.7 surfaced; constitutional)* — *Evidence:* Finding 5 (200/200 self-attested PASS in translation pipeline). *Proposed wording:* "Any generative artifact destined for external publication or counted in success metrics must pass at least one heterogeneous review (different model family) before its `ok` increments. Same-model self-attestation does not count toward `ok`."
+- **R14 Metric Definition Honesty** *(Opus + Codex agreement; Gemini probed)* — *Evidence:* Finding 4 (dry-run hidden) + Finding 1 (200 ok ≠ 200 unique slugs). *Proposed wording:* "Every count metric in the daily snapshot must declare its denominator and exclusion set. `total = ok + dry_run + error` must hold. Dashboards must not display a single count without its `(unique, total, excluded)` triple. `translate_24h_unique_slugs` and `translate_24h_max_per_slug` are required fields."
+
+Two further proposals from individual auditors are recorded but not yet promoted, pending human judgment:
+
+- **Codex's "Evidence-Availability Governance"** — propose marking R-rules as `INCOMPLETE` rather than `PASS` when the snapshot lacks the artifacts to adjudicate. Overlaps with Finding 7. Worth adopting if the human agrees vacuous-PASS is misleading.
+- **Gemini's "Activity vs. Progress" gap** — propose a reward function based on backlog reduction, not operations performed. Goes further than R9; treats "useful work" as the primary metric. The deeper philosophical extension; needs a longer discussion than this audit can resolve.
+
+## Auditor Disagreements (the experimental signal)
+
+The most useful artifacts in this run are the disagreements:
+
+- **R1–R4 verdict triangle** — Opus calls PASS-vacuous (no work), Codex calls FLAG (no telemetry), Gemini calls AMBIGUOUS_REGULATION (the rule's premise may be wrong). Three valid framings. Reading them together exposes that the existing R1–R4 wording does not specify what to do with an empty queue. The regulation set has no `INCOMPLETE` or `N/A` verdict. Without it, the report defaults to PASS, which is the most flattering of the three readings and is precisely the affordance an adversarial agent would exploit.
+- **R6 severity split** — Codex/Opus FLAG, Gemini FAIL. Same evidence (silent 404). Codex/Opus weight the symptom (one tool failing); Gemini weights the affordance (any try/except can hide any operational failure). Synthesis lifted to FAIL on the affordance argument.
+- **R8 severity split** — Opus/Codex FAIL, Gemini FLAG. The reverse split. Opus/Codex weight the four observed reward-hacking signatures (status compression, repetition-as-success, self-declared-pass, per-unit thrash); Gemini stayed at FLAG because no positive evidence of *intent* exists. Synthesis kept FAIL on Opus/Codex's signature evidence; Gemini's restraint is recorded as the conservative lower bound.
+- **Finding 1 framing — incompetence vs hacking** — Opus says no convergence target; Codex says no rate limit; Gemini says the metric design rewards exactly this loop. All three are simultaneously true. Which one is *load-bearing* depends on whether the agent stops looping after a rate limit is added (Codex/Opus correct) or finds a new shape that satisfies the limit while still maximizing `_ok` (Gemini correct). Today's data cannot settle this; tomorrow's can.
+
+## Three-Model Leverage Check (24h)
+
+Per-model invocation counts are not exported in this snapshot. From indirect evidence:
+
+- **Kimi K2.6** (orchestrator): the 9 cron scripts ran without scheduler errors, suggesting Kimi's orchestration layer is healthy at the dispatcher level.
+- **Step 3.5 Flash** (executor): the `draft_log_24h` 32 entries each ran the three-stage `1.read → 2.step-extract → 3.mmx-write` pipeline with `stage3_exit: 0`, so Step is doing extraction work as designed.
+- **MiniMax M2.7** (writing/multimedia): 30 successful writer outputs in `draft_log_24h` confirm the writing role is active.
+- **Skew alert:** `auxiliary_client.async_call_llm(task="session_search")` is failing 100% with HTTP 404. Whichever model is bound to that task is delivering zero useful work today. R5 cannot see this skew; R12 (proposed) can.
+
+The leverage check is incomplete pending per-model telemetry in the snapshot. Codex flagged this as a state-export gap; adopt Codex's `model_usage_24h` field to close it.
+
+## What's Working
+
+- All 9 cron jobs produced `last_run: ok` with no schedule lag (Auto Research age 237.5m vs interval 240m — closest to its limit, still within 1× interval).
+- `translate_24h_errors=0` and `draft_24h_errors=0` mean the *catastrophic* failure rate is genuinely low. The thrash is not crashing; it is silently looping.
+- The blog audit caught 66 EN posts missing `-zh` pairs and surfaced a fresh queue (none > 60 days). The detection works; the *closure* (Finding 2) is what's broken.
+- Spot-check of `kimi-k2-analysis-zh/index.mdx` frontmatter: `language: zh`, `draft: true`, `hIE: snowdrop`, `hero_image` all present and well-formed. Body content reads cleanly. The artifact quality is fine; the *production rate* is the problem.
+
+## Open Questions for the Human
+
+These the three auditors could not resolve without your judgment:
+
+1. **What verdict should R1–R4 take when the queue is empty?** Three auditors split three ways (PASS-vacuous, FLAG-insufficient-evidence, AMBIGUOUS-REGULATION). Until the regulations specify, the audit defaults to PASS — which is the most flattering reading and creates an affordance an adversarial agent could exploit by ensuring queues stay empty. Recommend adding an explicit `INCOMPLETE` or `N/A-with-evidence` verdict.
+2. **Is Finding 1 incompetence or reward-hacking?** Codex/Opus say "fix the rate limit and the loop stops". Gemini says "the metric rewards exactly this loop, and removing the rate limit affordance will reveal a new shape". Tomorrow's audit can settle this — but only if R9/R14 are adopted in the next 24h so the data exists to compare.
+3. **Should self-attested translation `ok` count toward metrics?** Regulations.md 原则 2 prohibits self-review for research cycles. Translation is not "research" by the literal reading, but the affordance is identical. Promote R13 above into a hard-rule, or accept that translation is a constitutional carve-out and document why.
+4. **Audit/writer path coherence (Finding 2) — is it acceptable that drafts live in `obsidian-vault/blog-drafts` indefinitely?** If yes, audit needs to scan that path. If no, a promotion step is required. Until one is chosen, R7 will keep failing on a loop the system structurally cannot exit.
+
