@@ -1,0 +1,63 @@
+---
+title: "PIED"
+description: "Bridges physics-informed simulation with experimental design to optimize sensor placements for inverse PDE problems before costly real-world data collection."
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+tags: [paper, physics-informed-ml, experimental-design, inverse-problems, PDE, sensor-placement]
+language: en
+draft: false
+sources: [https://openreview.net/forum?id=w7P92BEsb2]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+PIED proposes using physics-informed PDE simulations as a dry run for experimental design — optimizing sensor placement and other design parameters *before* physical experiments begin, rather than adapting on the fly.
+
+## Why This Is Worth Your Time
+
+Inverse problems are everywhere: inferring subsurface flow from surface measurements, reconstructing internal stress fields from strain sensors, recovering initial conditions from sparse observations. The bottleneck is rarely the inference algorithm — it's the experiment itself. Real sensors cost money. Real environments resist reconfiguration. Real budgets don't allow "let's try a different layout and run it again."
+
+Most adaptive-experiment literature assumes you *can* adjust your design mid-campaign. PIED takes the realistic stance that for many high-stakes or high-cost domains, the design is frozen once data collection starts. That framing forces a more interesting question: how do you pick the best design without real data to guide it?
+
+Enter physics-informed simulation. You have a PDE model of the system. You have uncertainty about its parameters. The question "where should I put my sensors?" has a precise answer waiting to be computed — if you're willing to ask the right optimization problem.
+
+## Core Method (3-Minute Version)
+
+The paper frames sensor placement as an **optimal experimental design** (OED) problem under a **physics-informed** lens. The key move: replace the need for real experimental data with a PDE-based forward model and an appropriate design criterion.
+
+**The setup:**
+- You have a PDE governing your system (e.g., heat equation, Darcy flow, wave equation).
+- Some PDE parameters are unknown (material properties, boundary conditions, initial state).
+- You want to infer these unknowns from sparse measurements.
+- You can choose *where* to place sensors before the experiment.
+
+**The criterion:**
+PIED uses a Bayesian or Fisher-information-based objective — typically maximizing the information gained about the unknown parameters per unit measurement cost. This translates sensor placement into an optimization problem: find the configuration that minimizes parameter estimation uncertainty under a measurement budget.
+
+**The physics-informed twist:**
+Rather than treating the PDE as a black box to be calibrated, the method exploits known structure of the PDE to bound and guide the optimization. This makes the approach tractable even when the unknown parameter space is high-dimensional, and reduces the number of expensive PDE solves needed during the design phase.
+
+**What you get:** a sensor layout that is provably better, in expectation, than uniform or intuition-driven placement — computed entirely in simulation before any hardware is touched.
+
+## Key Results
+
+- no concrete numbers in source
+
+The paper demonstrates the approach on canonical inverse PDE problems (source identification, parameter estimation), showing that physics-informed design outperforms both uniform grids and naive heuristics.
+
+## Limits and Unanswered Questions
+
+The computational cost of the design optimization itself is non-trivial — for very large or transient PDEs, the inner loop of PDE solves during design search could become prohibitive. Users will need to weigh design-computation cost against the cost of a suboptimal physical experiment.
+
+The approach assumes the PDE model is *correct* or close to correct. Model misspecification — a real concern in any physics-informed method — means your "optimal" sensor layout may be optimal for the wrong system.
+
+## Further Reading
+
+- The OED literature on Bayesian experimental design (Ryan 2003, 2014) provides the theoretical backbone.
+- Chaloner & Verdinelli (1995) is the classic review — still the best entry point for the design-criterion landscape.
+- For practical PDE-constrained OED, see work on goal-oriented mesh refinement (Bangerth & Rannacher 2003) as a related but distinct tradition.

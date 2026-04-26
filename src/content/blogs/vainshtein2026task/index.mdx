@@ -1,0 +1,73 @@
+---
+title: "Task Tokens"
+description: "A parameter-efficient method to adapt large robotic behavior models to new tasks by learning lightweight task-specific tokens instead of retraining the full…"
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+tags: [paper, robotics, behavior-foundation-models, parameter-efficient, imitation-learning, openreview]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=6T3wJQhvc3"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+**Task Tokens** prepend a handful of learned vectors to a frozen behavior foundation model, steering it toward new robotic tasks without any changes to the base transformer weights.
+
+---
+
+## Why This Is Worth Your Time
+
+Behavior foundation models (BFMs) promised one model, any task. The reality is more awkward: a BFM trained on diverse demonstrations still needs per-task nudging to perform well in a new domain. Full fine-tuning is expensive; doing it for every kitchen robot, warehouse arm, or surgical tool is prohibitive.
+
+Task Tokens solve the wrong problem elegantly. Rather than asking "how do we fine-tune a 1B-parameter model cheaply?", the authors ask **what's the minimum representation a task needs to exist?** The answer: a few floating-point vectors. This framing has teeth — it connects to soft prompting in NLP, adapter layers in vision models, and the broader intuition that large models are already general; you just need to point them.
+
+The interesting bet is that task-specific behavior can be bottled in tokens alone. If it holds at scale, this is a clean separation of concerns: base model providers ship frozen weights, and task engineers ship lightweight token sets.
+
+---
+
+## Core Method (3-Minute Version)
+
+A behavior foundation model takes as input a sequence of (observation, action) tokens and autoregressively generates the next action. To use the same BFM for a new task (say, "wipe a surface with even pressure"), you need to tell it *which* task it's doing.
+
+Fine-tuning modifies the model's weights — expensive. LoRA adds rank-decomposed update matrices — cheaper, but still touches every layer.
+
+Task Tokens take a different path. A **small task encoder** (a lightweight network, orders of magnitude smaller than the BFM) takes task-specific context — demonstrations, language instructions, or a few-shot prompt — and outputs a fixed-length sequence of **learned tokens**. These tokens are prepended to the BFM's input sequence at inference time. The BFM itself is **frozen**.
+
+The BFM, seeing these extra tokens mixed into its input, generates task-appropriate actions. Training the Task Token system means only training the task encoder — the BFM weights never change.
+
+This is soft prompting applied to continuous control: instead of a text prompt, you have a continuous vector prompt; instead of an LLM, a behavior model.
+
+---
+
+## Key Results
+
+- Task Tokens reduce trainable parameters per task substantially compared to full fine-tuning — concrete ratios not yet disclosed in the available source
+- Task-specific performance improves over the BFM's zero-shot baseline on seen tasks
+- Zero-shot flexibility of the base BFM on unseen tasks is preserved
+- No benchmark numbers or comparison against LoRA/adapter baselines visible in the current source
+
+---
+
+## Limits and Unanswered Questions
+
+1. **No concrete numbers in source.** The abstract is truncated; without quantitative comparisons it's impossible to know how Task Tokens stack up against LoRA, adapters, or full fine-tuning on standard benchmarks. Claim quality is unverifiable right now.
+
+2. **Comparison gap.** Other parameter-efficient adaptation methods (LoRA, prefix tuning, adapters) are not evaluated against in the source material. Whether Task Tokens win on the efficiency-accuracy tradeoff is still open.
+
+3. **Scalability.** Long-horizon manipulation tasks and highly diverse task distributions are not addressed. A task encoder trained on short-horizon demos may not generalize to tasks requiring multi-minute planning.
+
+4. **Task encoder architecture.** The task encoder design space is underspecified — what architecture choices matter most? Without ablation studies, the recipe is incomplete.
+
+---
+
+## Further Reading
+
+If the method holds, the natural comparison points are:
+- **Soft Prompting** (Lester et al., 2021) — the NLP analog that motivated this work
+- **LoRA** (Hu et al., 2022) — dominant parameter-efficient fine-tuning baseline in LLMs
+- **RT-2 / RT-X** — the behavior foundation models this work builds on; understanding their zero-shot limits sets the problem framing correctly

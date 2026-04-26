@@ -1,0 +1,307 @@
+---
+title: "自主ML智能体的 Harness 工程"
+description: "ML工程师的工作正在从编写流水线转向设计让智能体能够自主迭代的Harness。"
+publishDate: '2026-04-11'
+updatedDate: '2026-04-13'
+category: engineering
+tags:
+  - ml-engineering
+  - agents
+  - autonomous-ml
+  - evaluation
+  - mlops
+  - harness
+language: zh
+draft: false
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+据报道，OpenAI 内部运行了一个实验：自主智能体生成了超过 100 万行生产代码，零人类编写。这些智能体并非无拘无束——它们在统一的 Codex Harness 内运作，Harness 指定了允许的动作、输出格式和验证门。Harness 由人类编写。代码不是。
+
+Google 的 MLE-STAR 智能体在 63% 的 Kaggle 级数据科学任务中取得奖牌级性能，靠的是自主迭代代码、运行实验、读取自身输出。它不需要人类来写训练循环。它需要人类来定义"赢"是什么样子。
+
+这就是 ML 工程领域正在发生的转变。真正重要的技能不再是流水线编写，而是 **Harness 设计**。
+
+## "Harness 工程"实际上意味着什么
+
+这个词来自测试领域：*测试 Harness* 是围绕被测代码的基础设施——固定装置（fixtures）、桩（stubs）、断言（assertions）和环境配置，让你能够可靠地评估行为。作为 ML 学科的 Harness 工程，是它的延伸：它是约束条件、评估标准和护栏的设计，让自主智能体在 ML 任务上运作，无需对每个步骤进行人工监督。
+
+**以前（MLOps 思维）：** 你写训练循环、数据加载流水线、评估脚本。你是每个步骤的决策者。
+
+**现在（Harness 工程思维）：** 你写正确解决方案的规范、阻止危险动作的沙箱、以及区分好迭代与坏迭代的评估指标。智能体写代码。你审查输出并更新 Harness。
+
+"我写的能运行的代码"与"我写的用于评估的代码"之比发生了逆转。
+
+## ML Harness 的三个组件
+
+### 1. 任务规范（Task Specification）
+
+这是最难做对的部分。自主智能体需要：
+
+- 它能访问哪些数据（schema、位置、样本）
+- 评估指标是什么（以及如何在本地计算）
+- 什么构成有效提交（格式、大小、类型约束）
+- 计算预算是多少（墙钟时间、GPU 小时数、API 调用次数）
+
+规范是一份契约。规范不足，智能体会以不符合你意图的方式优化代理指标。规范过度，它无法探索解空间。
+
+```python
+from dataclasses import dataclass
+from typing import Callable, Optional
+
+@dataclass(frozen=True)
+class TaskSpec:
+    """Immutable task specification for autonomous ML agents."""
+    name: str
+    train_path: str
+    test_path: str
+    target_column: str
+    metric: Callable                # function(y_true, y_pred) -> float
+    metric_direction: str           # "maximize" or "minimize"
+    time_budget_sec: int
+    compute_budget: dict            # {"gpu_hours": 2.0, "api_calls": 500}
+    submission_schema: dict         # jsonschema for valid submission format
+    forbidden_operations: tuple[str, ...] = (
+        "network_access",
+        "read_test_labels",
+        "modify_eval_script",
+    )
+```
+
+`forbidden_operations` 字段至关重要。没有明确的禁止，一个能力强的智能体就会找到捷径：在评估期间下载预训练模型、直接读取测试标签、或者修改评估脚本使其总是返回高分。这些不是恶意行为——它们是在规范不足的约束空间内的理性优化。
+
+### 2. 执行沙箱（Execution Sandbox）
+
+自主智能体编写和运行代码需要边界。失败模式不是恶意行为——而是无限制的资源消耗、跨训练/测试拆分的数据泄漏、或者静默传播的数值错误。
+
+```python
+import subprocess
+import tempfile
+import os
+import json
+from pathlib import Path
+
+def run_in_sandbox(script_path: str, spec: TaskSpec) -> dict:
+    """Execute agent-generated script with resource limits."""
+    with tempfile.TemporaryDirectory() as workdir:
+        env = {
+            **os.environ,
+            "TRAIN_PATH": spec.train_path,
+            "TEST_PATH": spec.test_path,
+            "OUTPUT_DIR": workdir,
+            "NO_PROXY": "*",  # Hint to disable proxies (not a real sandbox — use containers/netns for production)
+            "CUDA_VISIBLE_DEVICES": "0",  # Limit GPU access
+        }
+
+        result = subprocess.run(
+            ["python", script_path],
+            env=env,
+            timeout=spec.time_budget_sec,
+            capture_output=True,
+            cwd=workdir,
+        )
+
+        return {
+            "exit_code": result.returncode,
+            "stdout": result.stdout.decode()[-2000:],  # Last 2K chars
+            "stderr": result.stderr.decode()[-2000:],
+            "outputs": _parse_outputs(workdir),
+            "resource_usage": _get_resource_usage(result),
+        }
+
+
+def _parse_outputs(workdir: str) -> dict:
+    """Extract structured outputs from the agent's working directory."""
+    outputs = {}
+    output_dir = Path(workdir)
+
+    for f in output_dir.iterdir():
+        if f.suffix == ".csv":
+            outputs["submission"] = str(f)
+        elif f.suffix == ".json":
+            outputs["metadata"] = json.loads(f.read_text())
+        elif f.suffix == ".log":
+            outputs["logs"] = f.read_text()[-5000:]
+
+    return outputs
+
+
+def _get_resource_usage(result: subprocess.CompletedProcess) -> dict:
+    """Extract resource consumption metrics."""
+    return {
+        "wall_time_sec": getattr(result, "elapsed", None),
+        "stdout_size": len(result.stdout),
+        "stderr_size": len(result.stderr),
+    }
+```
+
+关键约束：文件系统隔离（智能体只写入自己的 workdir）、网络限制（评估期间禁止下载外部数据）、GPU 限制（防止囤积）、以及时间限制。GPU 内存限制可以在容器或 SLURM 级别强制执行。
+
+### 3. 评估 Oracle（Evaluation Oracle）
+
+智能体产生提交。Harness 对其进行评估并返回驱动迭代的信号。这听起来很简单——调用你的指标即可——但 Oracle 需要捕获标量指标隐藏的失败模式。
+
+**泄漏检测：** 提交中是否包含训练标签？
+
+```python
+import pandas as pd
+
+def detect_leakage(
+    submission: pd.DataFrame,
+    train_df: pd.DataFrame,
+    target_col: str,
+) -> dict:
+    """Check for train/test leakage in agent submissions."""
+    checks = {}
+
+    # Check 1: Suspiciously high correlation with train targets
+    if len(submission) == len(train_df) and "prediction" in submission.columns:
+        corr = submission["prediction"].corr(train_df[target_col])
+        checks["label_correlation"] = {
+            "value": float(corr),
+            "flagged": abs(corr) > 0.95,
+        }
+
+    # Check 2: Prediction distribution matches train distribution too closely
+    if "prediction" in submission.columns:
+        from scipy.stats import ks_2samp
+        stat, p_value = ks_2samp(
+            submission["prediction"].dropna(),
+            train_df[target_col].dropna(),
+        )
+        checks["distribution_match"] = {
+            "ks_statistic": float(stat),
+            "p_value": float(p_value),
+            "flagged": p_value > 0.99,  # Distributions suspiciously identical
+        }
+
+    return checks
+```
+
+**分布有效性：** 预测值是否在预期范围内？一个回归模型对每个样本都输出 -1e8，从格式上讲是有效的，但毫无意义。
+
+**迭代信号质量：** 返回结构化反馈，而不只是标量。按类别错误率、校准统计量、常见失败模式。智能体需要这些来指导下一次迭代。
+
+```python
+@dataclass(frozen=True)
+class OracleResult:
+    """Rich evaluation result that drives agent iteration."""
+    score: float
+    metric_name: str
+    leakage_checks: dict
+    distributional_checks: dict
+    per_class_scores: Optional[dict] = None
+    failure_analysis: Optional[str] = None
+    iteration_hints: tuple[str, ...] = ()
+
+    @property
+    def is_valid(self) -> bool:
+        """A submission must pass all integrity checks to be scored."""
+        leakage_flags = any(
+            v.get("flagged", False) for v in self.leakage_checks.values()
+        )
+        return not leakage_flags
+```
+
+## CLI 智能体 Harness 在实践中如何运作
+
+三大编码智能体 CLI——Claude Code、Codex CLI 和 Gemini CLI——各自以不同方式实现 Harness 模式，它们的架构选择揭示了对 ML Harness 设计至关重要的权衡。
+
+**Claude Code：Hook 作为 Harness 原语。** Claude Code 的 Hook 系统（`PreToolUse`、`PostToolUse`、`Stop`）是一个轻量级 Harness。Hook 在工具边界拦截智能体动作：`Bash` 上的 `PreToolUse` Hook 可以阻止危险命令，`Write` 上的 `PostToolUse` Hook 可以对每次文件编辑运行 linter，`Stop` Hook 可以在会话结束前强制执行验证清单。
+
+ML Harness 的类比：用执行前验证（检查脚本不访问禁止路径）和执行后评估（对输出运行 Oracle）包装你的实验运行器。Hook 架构使 Harness 可组合——每个约束是一个独立的拦截器，而不是单一的验证函数。
+
+**Codex CLI：沙箱优先设计。** Codex 默认在隔离沙箱中运行智能体生成的代码。网络访问被禁用。文件系统访问受限。智能体在受限环境中运作，唯一影响外部世界的方式是通过结构化输出通道。
+
+对于 ML Harness，这是参考模式：智能体的代码在容器中运行，有权访问训练数据和只写输出目录。其他一切都被阻止。沙箱是约束；评估 Oracle 是反馈通道。
+
+**Gemini CLI：上下文窗口即 Harness。** Gemini 100 万 + token 的上下文窗口支持不同的模式：将整个实验历史加载到上下文中，让智能体基于完整信息推理下一步尝试什么。Harness 是结构化上下文，而非沙箱。
+
+这适用于瓶颈是假设生成而非执行安全的 ML 探索场景。智能体看到每个先前实验的结果，从失败中学习而不需要外部记忆，并提出越来越精准的实验。代价是上下文预算——每次实验运行产生数千行日志时，100 万 token 也会被填满。
+
+## MLE-STAR：参考实现
+
+Google 的 MLE-STAR（2026 年 4 月）是目前最清晰的公开大规模自主 ML 工程演示。它使用带显式自我评估的迭代代码精炼：每次实验运行后，智能体读取自己的输出日志、识别失败模式并生成修订实现。
+
+架构是一个 Harness 循环：
+
+```
+Task Spec → Agent generates code → Sandbox executes →
+Oracle evaluates → Structured feedback → Agent revises →
+... repeat until budget exhausted → Return best solution
+```
+
+在 MLE-Bench-Lite 上 63% 的奖牌率意味着该智能体在标准 ML 任务上可与经验丰富的 Kaggle 参与者竞争。但每个基准任务都有清晰、无歧义的指标。人类仍然占主导的领域：定义正确指标本身就很难的那些任务。
+
+MLE-STAR 的关键设计洞察来自 Oracle 的复杂性。它不仅仅计算标量指标——它在返回分数之前检查常见的 ML 失败模式（训练/验证污染、指标黑客、梯度爆炸）。在被污染的提交上获得高分比没有分数更糟糕，因为这会强化错误的方法。
+
+## 这如何改变研究技能集
+
+**被自动化的部分：** 超参数搜索、架构消融、数据预处理变体、样板训练代码、标准评估流水线。
+
+**需要人类参与的部分：** 识别正确的评估指标（研究判断，而非软件任务）、诊断聚合指标隐藏的系统性失败模式、决定何时改变问题表述而非在当前问题上迭代。
+
+这映射出优秀博士研究员与优秀 ML 工程师的区别：识别*要问什么问题*的能力，而不仅仅是执行实验方案的能力。
+
+## 构建你的第一个 ML Harness
+
+如果从零开始，最小可行 Harness 有四个文件：
+
+```
+harness/
+├── spec.py          # TaskSpec 定义 — 智能体的目标是什么
+├── sandbox.py       # 执行环境 — 智能体代码如何运行
+├── oracle.py        # 评估 — "好"意味着什么，包含泄漏检查
+└── loop.py          # 迭代驱动 — spec → agent → sandbox → oracle → repeat
+```
+
+循环驱动将所有内容绑定在一起：
+
+```python
+def run_harness(spec: TaskSpec, agent_fn: Callable, max_iterations: int = 20):
+    """Run the harness loop until budget exhaustion or convergence."""
+    best_result = None
+    history: list[OracleResult] = []
+
+    for i in range(max_iterations):
+        # Agent generates code, informed by prior results
+        script = agent_fn(spec, history)
+
+        # Sandbox executes with constraints
+        execution = run_in_sandbox(script, spec)
+
+        if execution["exit_code"] != 0:
+            history.append(OracleResult(
+                score=0.0, metric_name=spec.metric.__name__,
+                leakage_checks={}, distributional_checks={},
+                failure_analysis=execution["stderr"],
+                iteration_hints=("Fix the runtime error before optimizing",),
+            ))
+            continue
+
+        # Oracle evaluates with integrity checks
+        result = evaluate(execution["outputs"], spec)
+        history.append(result)
+
+        if result.is_valid and (
+            best_result is None or result.score > best_result.score
+        ):
+            best_result = result
+
+    return best_result, history
+```
+
+从这个结构开始。只有当你观察到简单 Harness 无法捕获的特定失败模式时，才添加复杂性。Harness 从经验中成长，而非从预判中生长。
+
+## 令人不安的推论
+
+自主 ML 智能体在实验的机械执行上已经可与人类竞争。它们迭代更快、不会疲劳、犯的错误与人类不同——更少的拼写错误和差一错误（off-by-one），更多的幻觉 API 调用和库的微妙误用。如果你主要的研究贡献是"我跑了这些实验发现超参数 X 效果更好"，这种贡献正面临压力。
+
+ML 研究中仍然明显属于人类的部分：识别值得解决的问题、设计能抵抗博弈的评估、从失败中解读对底层问题的假设、以及知道何时应该改变问题而非优化答案。
+
+Harness 工程将这些判断形式化为智能体可以使用的系统。它不是用于委托 ML 研究的工具——它是使研究判断层变得明确和可复现的强制函数。
+
+---
+
+*参考文献：MLE-STAR (Google Research, 2026 年 4 月)；MLPerf Inference 6.0 (2026 年 4 月)；Claude Code Hooks 文档；Codex CLI 沙箱架构；Gemini CLI 上下文模式。*

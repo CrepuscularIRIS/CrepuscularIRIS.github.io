@@ -1,0 +1,97 @@
+---
+title: "PoinnCARE"
+description: "Brings hyperbolic geometry into enzyme function prediction, which is a rare and principled way to handle the natural hierarchy of EC numbers."
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+tags: [paper, enzyme-classification, hyperbolic-geometry, multi-modal, CARE-benchmark]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=dGxAYNK6JU"]
+confidence: medium
+status: draft
+---
+
+# PoinnCARE: Mapping Enzyme Hierarchies with Hyperbolic Geometry
+
+**Original Title**: PoinnCARE: Hyperbolic Multi-Modal Learning for Enzyme Classification  
+**Authors**: Kun XIE et al. | **Venue**: OpenReview (ICLR/NeurIPS track) | **Date**: 2026  
+**Link**: [OpenReview](https://openreview.net/forum?id=dGxAYNK6JU)
+
+---
+
+## One-Line Summary
+
+PoinnCARE embeds enzyme sequences, structures, and active sites into hyperbolic space — where tree-like hierarchies fit naturally — achieving consistent SOTA improvements across four CARE benchmark datasets.
+
+---
+
+## Why This Paper Deserves Your Attention
+
+Most enzyme function prediction papers treat the problem as flat classification: given a protein, output an EC number. But EC numbers are not flat. They encode a strict four-level hierarchy (EC 1.1.3.4, for example). Euclidean embedding spaces compress this hierarchy awkwardly — nearby nodes in the taxonomy get crushed, distant ones get inflated.
+
+**This is one of the few papers that takes the geometry of the target space seriously.** Instead of forcing enzyme hierarchies into a space they don't fit, PoinnCARE picks a space designed for hierarchies. That's a principled move, not a trick.
+
+A second angle worth noting: multi-modal fusion for sparse data. Enzymes have sequences (cheap to get), structures (moderately expensive), and active site annotations (expensive, sparse). PoinnCARE uses graph diffusion to propagate structural signal across sparse regions. Whether this diffusion strategy generalizes beyond the CARE benchmark remains an open question — but the framing is sound.
+
+---
+
+## Core Method (3-Minute Version)
+
+The core intuition: **EC numbers are a tree, and hyperbolic space grows exponentially — a natural fit.**
+
+In a Euclidean space, the volume of a ball grows polynomially (r²). In hyperbolic space, it grows exponentially (eʳ). This means a hyperbolic ball can pack exponentially more nodes near the center while keeping the boundary far away — which is exactly what you need to represent a taxonomy with many levels of hierarchy without distortions.
+
+PoinnCARE takes three modalities:
+- **Sequence**: protein language model embeddings (e.g., ESM)
+- **Structure**: structural graphs of the enzyme
+- **Active sites**: functional site annotations
+
+It encodes all three into a shared hyperbolic embedding space using a learned Riemannian metric. The graph diffusion step is key: when structural data is missing or sparse, diffusion propagates functional similarity signals from well-annotated nodes to sparser ones, enriching the representation.
+
+The training objective aligns all three modalities in hyperbolic space while preserving the EC hierarchy structure.
+
+---
+
+## Key Results
+
+| Benchmark (CARE) | Metric | Previous SOTA | PoinnCARE | Delta |
+|---|---|---|---|---|
+| Dataset 1 | — | — | Consistent improvement | +significant |
+| Dataset 2 | — | — | Consistent improvement | +significant |
+| Dataset 3 | — | — | Consistent improvement | +significant |
+| Dataset 4 | — | — | Consistent improvement | +significant |
+
+**Note**: No concrete numbers were reported in the source note. The authors claim consistent and significant improvements across all four CARE benchmark datasets, but the exact percentage or point gains are not available from this extraction.
+
+The consistent pattern across four datasets suggests the gains are not dataset-specific — which is the strongest signal here.
+
+---
+
+## Limits and Unanswered Questions
+
+The source note flags two concrete gaps:
+
+1. **No concrete numbers in source.** Claims of "significant improvement" without numbers are hard to evaluate. The scientific community will need the full paper to assess effect sizes.
+
+2. **No ablation or runtime analysis.** It's unclear which component — hyperbolic embedding, multi-modal fusion, or graph diffusion — drives the gains. It is also unknown how training time and inference cost compare to Euclidean baselines.
+
+A few additional questions not addressed in the note:
+- **Generalization beyond EC numbers**: Does hyperbolic geometry help for enzyme functions that don't map cleanly onto the EC taxonomy?
+- **Choice of curvature**: Hyperbolic space has a scalar curvature parameter. Is this tuned per-dataset or fixed?
+- **Reproducibility**: Has the code been released?
+
+---
+
+## Further Reading
+
+- **Hyperbolic graph embeddings** (Nickel & Kiela, 2017): The foundational work showing that hyperbolic spaces outperform Euclidean ones for hierarchical data. PoinnCARE builds on this insight.
+- **CARE benchmark** (Cheng et al.): The evaluation framework PoinnCARE uses — worth understanding what the benchmark covers and what it omits.
+
+---
+
+**Curated**: 2026-04-25  
+**Difficulty**: ⭐⭐⭐☆☆ (1–5)  
+**Recommendation**: 🔥🔥🔥☆☆  

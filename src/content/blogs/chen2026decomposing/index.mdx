@@ -1,0 +1,91 @@
+---
+title: "Jet Expansions"
+description: "Introduces a formal mathematical framework using jet operators to decompose LLM computations into interpretable paths, grounding and extending the Logit Lens…"
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: "/assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg"
+tags: [paper, interpretability, mechanistic-interpretability, llm, logit-lens, mathematics]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=u6JLh0BO5h"]
+confidence: medium
+status: draft
+---
+
+# Jet Expansions: Cutting Through the Black Box of Language Models
+
+**Original Title**: Decomposing LLM Computation with Jets  
+**Authors**: Chen et al.  
+**Published**: OpenReview | 2026  
+**Link**: [OpenReview](https://openreview.net/forum?id=u6JLh0BO5h)
+
+---
+
+## One-Line Summary
+
+Jet Expansions gives mechanists a formal mathematical knife to carve through LLM computation graphs — revealing explicit input-to-output paths that were previously buried in tangled residual streams, and rigorously justifying why the popular Logit Lens technique actually works.
+
+---
+
+## Why This Is Worth Your Time
+
+If you've ever wondered *how* an LLM gets from "the" to " cat" inside a 32-layer transformer, you've hit the wall that confronts every mechanistic interpretability researcher. The field has two rough tribes: those who use heuristics like Logit Lens to peek at intermediate activations, and those who demand rigorous causal analysis. They don't always speak the same language.
+
+Jet Expansions bridges that gap — not with another clever hack, but with a **formal mathematical framework**. The paper takes jet operators (a generalization of truncated Taylor series from differential geometry) and applies them to the computational graph of a transformer. The result: a principled decomposition of what the model is doing, and a theorem showing that Logit Lens is a special case of this richer structure.
+
+This matters because it gives the field a **shared vocabulary and a proof system**. When you say "this path is doing X," you're now working inside a framework where "what X means" can be formalized.
+
+---
+
+## Core Method (3-Minute Version)
+
+Think of an LLM as a deeply nested function. Information doesn't teleport from input to output — it flows through residual streams, attention heads, and MLP layers across **L** layers. The problem: these flows are entangled. By the time you reach layer 20, you can't point at a single computation and say "this is responsible for predicting *cat*."
+
+Jet Expansions solves this by analogy. Just as a Taylor series breaks a smooth function into a polynomial plus a remainder, a **jet expansion** breaks the LLM's computation into:
+
+- **Explicit input-to-output paths** — discrete computational chains that contribute directly to the output
+- **A remainder term** — everything else that doesn't factor neatly into paths
+
+The **jet operator** is the knife. It truncates the Taylor-like expansion at a chosen depth, cleanly separating what can be decomposed into paths from what can't. Each residual update in a transformer becomes a coordinate in this expansion, and the structure of the paths falls out naturally.
+
+One striking result: the number of distinct paths grows **super-exponentially** with recursive residual depth. This isn't a bug — it explains why mechanistic interpretability gets harder as models get deeper, and why dominant paths may dominate by a wide margin.
+
+---
+
+## Key Results
+
+| Aspect | Finding |
+|--------|---------|
+| Framework | Jet Expansions — a rigorous decomposition framework using jet operators |
+| Scope | Systematically decomposes models into explicit paths + remainders |
+| Path growth | (Super-)exponential with respect to recursive residual depth |
+| Prior work | Rigorously grounds and subsumes Logit Lens |
+
+The table is thin because the paper's contributions are **theoretical** rather than empirical. No benchmark tables here — the contribution is the framework itself, not a new SOTA number.
+
+---
+
+## Limits and Unanswered Questions
+
+The paper doesn't provide concrete numbers or experiments on real models. "Super-exponential path growth" is a structural result, but:
+
+- How many dominant paths actually dominate in practice? (Likely few — but unmeasured)
+- Does this framework make verified predictions about circuit-level behavior?
+- Can the remainder term be further analyzed, or does it stay opaque?
+
+Also: the framework assumes differentiable models. Discrete operations (sampling, top-k) break the jet structure — which limits applicability during inference.
+
+---
+
+## Further Reading
+
+- **Logit Lens** (nostraighteth/transformerlens) — the heuristic this paper formalizes
+- **Towards Monosemanticity** (Anthropic, 2023) — decomposition approaches in the circuit search literature
+
+---
+
+**Curated**: 2026-04-25  
+**Reading Difficulty**: ⭐⭐⭐☆☆  
+**Recommendation**: 🔥🔥🔥🔥

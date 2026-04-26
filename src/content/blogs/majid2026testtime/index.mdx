@@ -1,0 +1,63 @@
+---
+title: "Test-Time Accuracy-Cost Control in Neural Simulators via…"
+description: "A simple recurrent-depth knob lets neural simulators trade accuracy for speed at test time without retraining, bringing the flexibility of classical numerical…"
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+tags: [paper, neural-simulators, test-time-compute, accuracy-cost-tradeoff, recurrent-depth, physics-ml, surrogate-models]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=U2j9ZNgHqw"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+RecurrSim turns the number of recurrent iterations K into a live dial: spin it down for real-time control, crank it up for high-fidelity offline analysis — same trained model, zero retraining.
+
+## Why This Is Worth Your Time
+
+Neural simulators (learned surrogates for PDEs and physical systems) have a dirty secret: once deployed, you're stuck with the accuracy the training run gave you. Classical numerical solvers never had this problem — Runge-Kutta's step size is a knob anyone can tune. Majid et al. ask the obvious question: why can't a learned simulator offer the same flexibility?
+
+The answer, when phrased this way, feels almost embarrassingly simple. But the implications are real. A control engineer needing sub-millisecond inference doesn't have to maintain two separate systems (fast ML model + accurate classical solver); they can just set K=1. A researcher doing offline parameter sweeps can set K=50 and get something closer to ground truth without ever touching the weights. That's a genuine systems win.
+
+The paper's second merit is architecture-agnosticism. RecurrSim isn't a new layer or a new loss — it's a framing that wraps any neural simulator and exposes its internal recurrence depth as the control variable. Whether your base model is a U-Net, a Fourier Neural Operator, or something else entirely, the same K-knob applies. That alone makes this broadly portable.
+
+## Core Method (3-Minute Version)
+
+Think of how most neural simulators work: they take an initial state and output a predicted next state (or the full trajectory). Majid et al. reframe this as **fixed-point iteration**: each recurrent pass refines the current prediction, and the prediction is "done" when a fixed point is reached. The insight is that you don't need to reach the fixed point — you can stop early and get an approximate answer, or iterate more for higher accuracy.
+
+Mathematically, the model updates:
+
+```
+h_{k+1} = f(h_k; θ)
+```
+
+where h_k is the hidden/prediction state at iteration k, and f is the trained neural simulator. As k → ∞, h_k converges to the fixed point. The user picks k = K at test time.
+
+K is not trained as part of the loss — the model is trained once with a fixed K (or curriculum), and the K knob is exercised only at inference. This sidesteps the complexity of training-time accuracy-cost tradeoffs.
+
+The authors name this framework **RecurrSim** and demonstrate it by wrapping three 1D fluid dynamics benchmarks: Burgers equation, Korteweg-De Vries (KdV), and Kuramoto-Sivashinsky (KS). Each system has distinct stiffness and multi-scale behavior, making them a reasonable stress test for the generality claim.
+
+## Key Results
+
+- RecurrSim is demonstrated as **architecture-agnostic** — the framework applies without modifying the underlying neural simulator's design
+- **K as the only control variable**: users tune accuracy vs. compute by adjusting iteration count, with no architectural changes or retraining between settings
+- Evaluated on three 1D PDE benchmarks — Burgers, KdV, and Kuramoto-Sivashinsky — covering a range of multi-scale and nonlinear dynamics
+- Lower K values enable fast exploratory runs suitable for real-time control; higher K values support high-accuracy offline analysis
+- No concrete numerical benchmarks (e.g., relative L2 error at each K level) are reported in the source material
+
+## Limits and Unanswered Questions
+
+The most obvious gap is dimensional scope. All benchmarks are **1D PDEs**. Real-world engineering — aerodynamics, fluid-structure interaction, climate modeling — lives in 2D and 3D. Whether recurrent-depth control degrades gracefully or collapses entirely in higher dimensions is not addressed.
+
+There's also no comparison against other adaptive inference strategies: early-exit networks, learned timesteppers, or confidence-based halting. If someone has already built a U-Net with an adaptive exit head, how does RecurrSim's K-dial compare in efficiency or accuracy per compute?
+
+A subtler concern is convergence behavior: the paper assumes that more K always means more accuracy, which is true for contractive fixed-point iterations. But physical systems can have unstable or oscillatory fixed points. The framework may need additional stability checks before it's safe to crank K arbitrarily high on arbitrary physics.
+
+## Further Reading
+
+If you're coming from the neural operator literature, this paper sits comfortably alongside work on Fourier Neural Operators (FNO) and DeepONet — the key difference being that RecurrSim adds a temporal iteration axis rather than a spatial operator decomposition. For the numerical PDE crowd, the fixed-point framing connects naturally to classical iterative solvers (Jacobi, Gauss-Seidel), suggesting possible hybridization routes.

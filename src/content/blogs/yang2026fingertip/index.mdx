@@ -1,0 +1,108 @@
+---
+title: "FingerTip 20K"
+description: "First large-scale benchmark (20K demos) for mobile agents that proactively suggest tasks using context and personalize execution to individual user preferences."
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+tags: [paper, mobile-agents, LLM-agents, benchmark, proactive-AI, personalization]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=n3iFV0gLMc"]
+confidence: medium
+status: draft
+---
+
+# FingerTip 20K: Training Mobile Agents to Anticipate What You Need
+
+**Original title:** FingerTip 20K: A Benchmark for Proactive and Personalized Mobile LLM Agents  
+**Authors:** Qinglong Yang et al.  
+**Published:** OpenReview / 2026  
+**Link:** [OpenReview](https://openreview.net/forum?id=n3iFV0gLMc)
+
+---
+
+## One-Line Summary
+
+FingerTip 20K is the first benchmark built from **20,000 real human Android demonstrations** that captures not just what tasks people perform, but when and how they prefer to perform them — training mobile agents to both *proactively suggest* the right task at the right moment and *personalize* their execution style to each user's habits.
+
+---
+
+## Why This Is Worth Your Time
+
+Most mobile agent papers treat the phone as a passive tool: you give a command, the agent executes it. That's the easy version of the problem.
+
+The hard version — the one this paper actually tackles — is: *how does an agent know what you need before you ask?* Location, time of day, app history, repeating patterns — these are signals that a reactive agent ignores and a proactive agent should exploit.
+
+The second dimension is equally important and often overlooked: even when two users ask for the same task, they probably want it done differently. One user prefers short, direct routes. Another likes to check email before diving in. A good agent adapts. A great agent adapts *without being told*.
+
+FingerTip 20K is the first dataset that captures both dimensions at scale from real usage, rather than synthetic task scripts. Whether the benchmark itself holds up under scrutiny (more on that below), the framing — proactive suggestion + personalized execution — is the right north star for where mobile agents need to go.
+
+---
+
+## Core Method (3-Minute Version)
+
+The paper starts with a sharp observation: current mobile GUI agents are fundamentally reactive. They wait for a prompt. They don't look at the clock, check your location, or notice that every Thursday at 9 AM you open the expense app.
+
+To build an agent that can close this gap, you first need data that captures *how people actually use their phones* — not just what they do, but the context around it.
+
+**What they collected.** The authors ran a continuous data collection pipeline on real Android devices, capturing multi-step interaction sequences across everyday apps. The result is **20,000 unique demonstrations** — a dataset that dwarfs most prior mobile agent benchmarks in scale and, critically, in ecological validity. These aren't crowdsourced workers completing toy tasks; they're real users doing real things.
+
+**Two subtasks the benchmark targets:**
+
+1. **Proactive task suggestion.** Given a user's current context (time, location, recent app usage, etc.), predict what task they are likely to want next and surface it proactively. Think: the agent notices it's 8:45 AM on a weekday and you just put your car in drive — it suggests starting navigation to your usual commute route.
+
+2. **Personalized execution trajectories.** Two users ask to "send a message to Mom." The first user's preferred route goes through their default messaging app, checks the contact, and sends. The second user always switches to a third-party app first. The agent should learn and replicate *that* user's style, not an idealized average.
+
+**The key design choice.** Rather than scripting tasks or generating synthetic trajectories, the authors built instrumentation into real Android interactions to passively collect demonstration data. This is harder to do but produces data that actually reflects how humans behave, not how researchers assume they behave.
+
+---
+
+## Key Results
+
+The source note does not include concrete quantitative metrics (success rates, accuracy scores, or comparison baselines). What the paper does establish:
+
+| Dimension | Detail |
+|---|---|
+| Dataset scale | **20,000** unique human demonstrations |
+| Collection method | Real-user Android interaction logging (not synthetic tasks) |
+| Task types | Multi-step sequences across everyday apps |
+| Benchmark targets | Proactive suggestion + personalized execution |
+| Evaluation metrics | *Not available in the source excerpt* |
+
+The absence of quantitative baselines in the available source makes it difficult to assess how well FingerTip 20K actually discriminates between agents. This is a significant gap for a benchmark paper.
+
+---
+
+## Limits and Unanswered Questions
+
+The source note is truncated, so this assessment is necessarily partial — but several red flags deserve attention:
+
+**No quantitative results reported.** For a benchmark paper, the most important contribution is a table showing how existing agents perform. Without that, it's hard to know whether FingerTip 20K is genuinely challenging or trivially easy.
+
+**Dataset availability is unclear.** 20K demos is a substantial dataset. Is it publicly released? Under what license? If the data stays private, the benchmark can't be reproduced or extended by the community — which is the whole point of a benchmark.
+
+**What exactly counts as "proactive"?** Proactive suggestion requires the agent to infer intent from context. The paper needs to define how far ahead of the actual task the suggestion is expected to fire. A suggestion 30 seconds before the user opens an app is very different from one 30 minutes before.
+
+**User consent and privacy.** Continuous Android logging at scale raises obvious data ethics questions. The paper presumably addresses this (it's a 2026 paper, privacy norms are tighter), but the source note gives no details.
+
+**Generalization across device types.** The data comes from Android. Does the learned behavior transfer to iOS? To tablets? This matters for real-world deployment.
+
+---
+
+## Further Reading
+
+If you're tracking the mobile agent space, FingerTip 20K sits in a cluster with:
+
+- **AppAgent** (Zhang et al., 2024) — early benchmark for GUI agents on mobile, but reactive-only
+- **Mobile-Agent** series — multi-agent frameworks for mobile task automation
+- **MISA** / related personalization-in-execution work — the execution-trajectory personalization thread connects to recent LLM personalization research
+
+The proactive suggestion thread also connects to work on context-aware personal assistants and ambient intelligence in ubicomp.
+
+---
+
+**Curation date:** 2026-04-25  
+**Reading difficulty:** ⭐⭐⭐☆☆  
+**Recommendation:** 🔥🔥🔥🔥 (4/5) — Strong framing, large-scale real data, but quantitative evaluation not yet available for independent assessment.

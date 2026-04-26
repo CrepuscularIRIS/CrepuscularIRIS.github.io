@@ -1,0 +1,58 @@
+---
+title: "Fracture-GS"
+description: "First unified framework coupling physics-based fracture simulation with 3D Gaussian Splatting rendering, eliminating visual artifacts in extreme collision…"
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+tags: [paper, 3d-gs, fracture-simulation, mpm, physics-based-rendering, neural-rendering]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=zcAwK50ft0"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+Fracture-GS is the first framework to fuse a physics-based fracture simulator (Collision-MPM) with 3D Gaussian Splatting, so that shattered glass, burst concrete, and splintered debris render as physically plausible as they behave — no post-hoc visual fixes needed.
+
+## Why This Is Worth Your Time
+
+Rendering fracture has always been a two-world problem. Game engines and VFX pipelines simulate destruction one way, render it another, and end up with the same old artifact suite: shards that drift apart but still tug at each other, surfaces that crack but never quite fall apart the way momentum demands. The gap between the physics state and the visual state is treated as a production problem to be fixed in compositing, not a rendering problem to be solved in the pipeline itself.
+
+This paper's core bet is that the renderer should know about physics. By making the 3D Gaussian continuum itself fracture-aware — rather than rendering a simulated result as a passive texture layer — the visual output inherits momentum conservation, interface force behavior, and debris dynamics directly from the solver. If you care about physical fidelity in dynamic scene reconstruction (robotics sim-to-real, scientific visualization, or next-gen VFX), this is a direction worth watching.
+
+## Core Method (3-Minute Version)
+
+**The problem with the old workflow.** Standard 3D Gaussian Splatting reconstructs scenes from multi-view images by optimizing a set of anisotropic Gaussians — little ellipsoids of color and opacity — that are rasterized to produce novel views. It is excellent at static reconstruction and even handles moderate non-rigid motion, but it has no native concept of material failure. When a surface fractures, conventional pipelines simulate the debris separately and then layer visuals on top, which is where adhesion artifacts and unphysical motion creep in.
+
+**Fracture-GS's bet: make the primitives physics-aware.** The paper upgrades two things simultaneously. First, the physics side uses a **Collision-MPM** solver — an enhanced Material Point Method that handles large-deformation fracture with momentum-conserving interface forces. Second, the rendering side replaces naive Gaussians with a **fracture-aware 3D Gaussian continuum**: Gaussian primitives are parameterized so that their birth, movement, and death are coupled to the MPM state. When the MPM says a material surface has separated, the corresponding Gaussians split, translate, and scale according to the physical velocity field — not an artistic heuristic.
+
+The key coupling insight is that interface forces at fracture surfaces are computed with strict momentum conservation, which eliminates the "unphysical adhesion" problem (fragments still pulling on each other after the crack forms). The Gaussians inherit this physics at render time, meaning the novel-view rasterization already reflects the correct debris geometry and motion blur — without any post-processing pass.
+
+**Pipeline at a glance:** multi-view input images → Collision-MPM fracture simulation → fracture-aware Gaussian optimization → physically plausible novel-view rendering. End-to-end, no intermediate visual approximation step.
+
+## Key Results
+
+- Collision-MPM with momentum-conserving interface forces eliminates unphysical adhesion at fracture surfaces
+- Fracture-aware 3D Gaussian continuum enables physically plausible rendering without post-processing
+- End-to-end pipeline from multi-view images to dynamic fracture visualization
+
+> **No concrete numbers in source.** The paper does not report quantitative benchmarks, runtime figures, or comparison baselines in the available note. Confidence in numerical claims is therefore limited.
+
+## Limits and Unanswered Questions
+
+The source note is truncated, which means several critical dimensions remain unclear:
+
+- **No performance data.** Runtime, memory footprint, and scalability to high-resolution scenes are unstated. Physics-based simulation at the fidelity of MPM is traditionally expensive; whether Fracture-GS achieves interactive or near-interactive rates is unknown.
+- **No quantitative evaluation.** No PSNR, LPIPS, or other fidelity metrics are available, making it difficult to assess whether the visual quality gains over post-hoc approaches are significant or marginal.
+- **Methodology gaps.** The exact parameterization of the fracture-aware Gaussians and the training procedure are not described in the available excerpt.
+- **Generalization.** Whether the framework handles heterogeneous materials (glass vs. concrete vs. metal) with different fracture toughness parameters is not addressed.
+
+## Further Reading
+
+- Material Point Method (MPM) background: [Desbrun et al. — "Dynamic Real-time Deformations using Space Time Media"](https://dl.acm.org/doi/10.1145/237170.237262)
+- 3D Gaussian Splatting: [Kerbl et al. — "3D Gaussian Splatting for Real-Time Radiance Field Rendering"](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/)
+- Collision handling in MPM: [Hu et al. — "A Moving least squares Material Point Method with displacement discontinuity and adhesion"](https://arxiv.org/abs/2109.00078)

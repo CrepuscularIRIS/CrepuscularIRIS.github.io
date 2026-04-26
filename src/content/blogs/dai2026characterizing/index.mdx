@@ -1,0 +1,53 @@
+---
+title: "Characterizing and Optimizing the Spatial Kernel of…"
+description: "Provides the first rigorous physical-systems analysis of Instant-NGP's hash encoding via its Point Spread Function, turning heuristic hyperparameter tuning…"
+publishDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+tags: [paper, instant-ngp, hash-encoding, point-spread-function, neural-rendering, spatial-frequency]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=q05hC1Pzkr"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+Dai et al. treat Instant-NGP's hash encoding as a physical imaging system and derive its **Point Spread Function (PSF)** — turning the black art of hyperparameter tuning into a closed-form, principled framework.
+
+## Why This Is Worth Your Time
+
+Multi-Resolution Hash Encoding (the backbone of Instant-NGP and every NeRF variant that followed) sits in a strange epistemic position: it works exceptionally well in practice, yet nobody could tell you *why* a given resolution table or hash table size was optimal — it was all grid-searched intuition.
+
+This paper changes that. By borrowing the language of physical optics — the PSF, the Green's function, spatial bandwidth — the authors give the community a first-principles model of what hash encoding actually does to signal. If you've ever wondered whether your hash grid is too coarse at level 3 or your table size is wasteful, this work gives you a ruler instead of a guess.
+
+The second reason to care: **anisotropy**. The analysis uncovers that hash encoding is inherently anisotropic — spatial resolution varies with direction in a way that has nothing to do with the scene content and everything to do with the grid structure. That's a finding with downstream consequences for anyone using hash encodings in anisotropic domains (e.g., urban scenes, aerial imagery).
+
+## Core Method (3-Minute Version)
+
+Think of a hash encoding as a bank of feature lookups scattered across space at regular grid points. When a neural radiance field queries a point, it bilinearly interpolates from the nearest grid vertices — but the hash function redirects each vertex to a compact table entry, so many different spatial locations can "collide" into the same table slot.
+
+The paper asks: **what does the spatial footprint of a single hash entry actually look like from the network's perspective?** The answer comes from treating the encoding as a linear shift-invariant system and computing its impulse response — the PSF.
+
+Deriving the PSF analytically is hard because collisions introduce nonlinear coupling between resolution levels. The authors' key move is to derive a *collision-free* PSF as a baseline, then analyze how real (finite-table) collisions perturb it. The result is a Green's-function-like expression that describes how a single hash lookup spreads energy across spatial frequencies.
+
+The key analytical findings: the PSF has a **logarithmic spatial profile**, and the idealized spatial bandwidth (quantified by full-width at half-maximum, FWHM) is governed by the **average resolution across levels**, denoted N_avg. Grid-induced anisotropy emerges directly from the rectangular structure of the lookup grid.
+
+## Key Results
+
+- **Closed-form PSF approximation**: Derives a tractable analytical expression for the collision-free PSF of multi-resolution hash encoding, replacing empirical search with a formula.
+- **Intrinsic anisotropy**: Confirms that hash encoding produces directionally dependent spatial resolution — not a bug, a structural feature of the grid.
+- **Logarithmic spatial profile**: The PSF decays logarithmically in the hash table size, explaining why large tables don't fully eliminate aliasing artifacts.
+- **N_avg governs bandwidth**: The average resolution across hash levels (not any single level) determines the effective spatial bandwidth the network can represent.
+
+## Limits and Unanswered Questions
+
+The source material does not provide concrete quantitative benchmarks (e.g., PSNR comparisons, ablation over hash table sizes). The paper is primarily a theoretical/analytical contribution — the practical performance gap between the derived PSF model and end-to-end rendering quality remains to be characterized in detail.
+
+Particularly open: how does the PSF-derived resolution guidance map to specific scene types? Anisotropy matters more in some domains than others, and the paper doesn't yet give practitioners a decision framework for when to care.
+
+> No further reading section — no obvious direct follow-ons surfaced from the source material.
+
+DONE: dai2026characterizing

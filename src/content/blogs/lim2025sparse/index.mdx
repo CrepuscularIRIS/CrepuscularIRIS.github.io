@@ -1,0 +1,58 @@
+---
+title: "Sparse autoencoders reveal selective remapping of visual…"
+description: "First SAE for CLIP vision transformer that dissects which visual concepts get remapped during prompt-based adaptation, opening the black box of how foundation…"
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+tags: [paper, CLIP, SAE, interpretability, vision-transformer, prompt-tuning, adaptation]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=imT03YXlG2"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+A new sparse autoencoder for CLIP's vision transformer lets researchers watch which visual concepts — shape, color, semantics — get rewired when a model adapts to a new task via prompt tuning, and the answer is humbling: almost none of the internal concepts actually change; the gains come from rerouting the existing ones.
+
+## Why This Is Worth Your Time
+
+Prompt-based adaptation has become the default move in the CLIP / vision-language playbook. You freeze the backbone, you add a few learnable tokens, and suddenly your cat model detects dogs. Practitioners have been happy to treat this as a black box — it works, ship it.
+
+This paper cracks that box open. By training a **PatchSAE** on CLIP ViT activations, Lim et al. decompose every patch's representation into interpretable visual concepts with spatial attribution — meaning you can see *where* in an image a concept like "round" or "dog-like" fires. Then they compare those concept maps before and after state-of-the-art prompt adaptation methods.
+
+The finding that hits hardest: the adapted model's internal vocabulary barely changes. The same concepts exist; the same patches activate them. What's different is which patches map to which concepts — a **selective remapping** rather than a rewrite. This has immediate implications for anyone who wants to predict whether a given adaptation will generalize, fail silently, or introduce bias, because you can now trace the wiring change rather than just observing input-output behavior.
+
+In short: if you've ever wondered whether your prompt-tuned CLIP is learning new visual primitives or just reassigning existing ones, this is the first rigorous answer.
+
+## Core Method (3-Minute Version)
+
+The pipeline has two stages.
+
+**Stage 1 — PatchSAE training.** The authors train a sparse autoencoder on residual stream activations from a CLIP ViT-B/16. Sparse means the loss encourages most dimensions to be zero, so each latent unit acts as an independent "concept detector." They validate interpretability by probing whether individual latents correspond to recognizable visual features (color, shape, object class). Patch-level spatial attribution tells them *where* in each image each concept fires.
+
+**Stage 2 — Concept-map comparison across adaptations.** They apply four established prompt-based adaptation methods (CoOp, KgCoOp, PDA, PDA++) to a downstream task (mostly fine-grained classification benchmarks). For each adapted model, they run the same image set through PatchSAE and compare: (a) which concepts are active, and (b) which image patches activate which concepts, compared to the frozen pretrained model.
+
+The key question is not "are new concepts born?" but "do existing concepts get reassigned?"
+
+## Key Results
+
+- PatchSAE extracts interpretable visual concepts (shape, color, semantics) with patch-wise spatial attributions from CLIP ViT
+- Activation patterns of individual concepts change only slightly between adapted and non-adapted models
+- The majority of adaptation gains are explained by rerouting existing concepts, not by the emergence of new visual primitives
+- The paper investigates how state-of-the-art prompt-based adaptation techniques alter input-to-concept associations — the remapping is selective and concentrated on specific concept categories
+
+## Limits and Unanswered Questions
+
+- No concrete quantitative results (e.g., exact concept remapping percentages, correlation coefficients) are reported in the source
+- The study focuses on CLIP ViT-B/16; whether the selective-remapping pattern holds for larger models or different architectures remains open
+- The work does not explore what happens with fine-tuning or LoRA-adjacent weight-updating methods, only prompt-based (freezing backbone) techniques
+- Predicting adaptation failure modes from concept-map drift is hinted at but not systematically demonstrated
+
+## Further Reading
+
+- **CoOp** (Zhou et al., 2022) is the canonical baseline for prompt learning on vision-language models — the paper under review builds on top of it.
+- For a broader take on SAE interpretability in LLMs, the **Towards Monosemanticity** series (Anthropic, 2023–2024) is the conceptual predecessor — PatchSAE is its vision-transformer counterpart.

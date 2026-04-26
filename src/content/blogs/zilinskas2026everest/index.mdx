@@ -1,0 +1,96 @@
+---
+title: "EVEREST"
+description: "A transformer that explicitly models tail risk and uncertainty for rare-event forecasting, moving beyond point predictions to calibrated probabilistic anomaly…"
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+tags: [paper, transformer, anomaly-detection, uncertainty, rare-event, evidential-learning, extreme-value-theory, ICLR-2026]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=ScpCaOVGw1"]
+confidence: medium
+status: draft
+---
+
+# EVEREST: A Transformer for Rare-Event Anomaly Detection with Tail-Aware Uncertainty
+
+**Original Title:** EVEREST: A Transformer for Probabilistic Rare-Event Anomaly Detection with Evidential and Tail-Aware Uncertainty  
+**Authors:** Antanas Žilinskas, Robert Noel Shorten, Jakub Marecek  
+**Venue:** ICLR 2026 (OpenReview)  
+**Link:** [OpenReview](https://openreview.net/forum?id=ScpCaOVGw1)
+
+---
+
+## One-Line Summary
+
+EVEREST is a transformer architecture that doesn't just predict whether a rare event will happen — it estimates *how uncertain* it is about that prediction, explicitly modeling the fat tails where catastrophic events hide.
+
+---
+
+## Why This Is Worth Your Time
+
+Most anomaly detection papers optimize for AUC-ROC on balanced datasets. EVEREST refuses that comfort.
+
+The real world doesn't give you balanced datasets. Infrastructure failures, medical emergencies, financial flash crashes — these events are rare precisely because the system is designed to avoid them, which means by the time you have enough labeled examples to train a classifier, you're already in trouble.
+
+EVEREST's contribution is architectural: it treats *uncertainty itself* as a first-class output. Rather than a single score, it returns a full probability distribution calibrated to both the model's ignorance (epistemic) and the inherent noise in the data (aleatoric). That's a fundamentally different bet than "let's get better at imbalanced classification."
+
+The second值得注意 thing is the marriage of evidential learning with extreme value theory. These two camps rarely talk to each other. EVEREST bridges them — using Normal-Inverse-Gamma priors to capture what the model knows, and a Generalized Pareto Distribution head to model what happens in the tail. If you're building anything that needs to warn about catastrophic-but-rare failures, this paper deserves your attention.
+
+---
+
+## Core Method (3-Minute Version)
+
+Traditional anomaly detectors output a scalar score. You threshold it, and you're done. The problem: that score has no uncertainty attached. A 0.7 anomaly score from a model trained on 99% normal data is fundamentally different from a 0.7 score from a model that has seen diverse anomalies.
+
+EVEREST attacks this with four architectural components that train jointly under a composite loss:
+
+**Attention bottleneck.** A learnable attention mechanism aggregates temporal dynamics across the input series. This is standard transformer fare, but it gives the model the long-range context needed for precursor detection — seeing the subtle build-up before a catastrophic event.
+
+**Evidential head.** Instead of outputting a point estimate, this head places an evidential distribution — specifically a **Normal-Inverse-Gamma** (NIG) distribution — over the prediction. The NIG parameterization directly decomposes into:
+- **Aleatoric uncertainty**: irreducible noise in the data
+- **Epistemic uncertainty**: model ignorance, shrinkable with more data
+
+This is a clean separation that most Bayesian neural network approaches don't achieve as elegantly.
+
+**Extreme-value head.** Here's where it gets interesting. For the *tail events* — the rare, high-consequence anomalies — standard regression losses are inappropriate. The extreme-value head fits a **Generalized Pareto Distribution** (GPD) to the residual exceedances above a threshold. GPD is the theoretical backbone of peaks-over-threshold methods in statistics; EVEREST makes it trainable inside a transformer.
+
+**Precursor head.** A lightweight auxiliary head that detects early warning signals *before* the rare event fully materializes. This is what you'd want in a real early-warning system — not just a diagnosis after the fact.
+
+The whole system is trained end-to-end with a composite loss combining standard regression error and the probabilistic objectives from the evidential and extreme-value heads.
+
+---
+
+## Key Results
+
+- No concrete numbers reported in the source material.
+- The architecture is evaluated on multivariate time-series benchmarks with severe class imbalance.
+- Primary claims: calibrated probability distributions, improved tail-risk estimation, and interpretable attention-based signal attribution.
+
+---
+
+## Limits and Unanswered Questions
+
+**Limited transparency on benchmarks.** The source abstract mentions multivariate time-series benchmarks but doesn't name them. Without knowing the exact evaluation setup, it's hard to assess whether the improvements generalize or are benchmark-specific.
+
+**Composite loss tuning.** Training four heads jointly under a composite loss is architecturally elegant but practically delicate. The relative weighting of the evidential, extreme-value, and precursor objectives is likely sensitive — the paper doesn't report ablation studies on this.
+
+**Scalability.** The transformer backbone plus four specialized heads is heavier than a single anomaly score head. The paper doesn't discuss inference latency, which matters for real-time early-warning systems.
+
+**OpenReview status.** This is a 2026 ICLR submission under review. Results are preliminary pending formal acceptance and community scrutiny.
+
+---
+
+## Further Reading
+
+- **Evidential Deep Learning** — The evidential learning framework (Normal-Inverse-Gamma posteriors) originates from work by Amini et al. and has been applied across regression and classification tasks. EVEREST extends this to time-series forecasting.
+- **Extreme Value Theory in ML** — GPD-based tail modeling has a long history in risk management and climatology; EVEREST is one of the first to integrate it into an end-to-end transformer architecture.
+- **Rare-Event Prediction** — The broader literature on imbalanced classification, anomaly detection (Isolation Forests, One-Class SVM), and early-warning systems provides context for where EVEREST sits architecturally.
+
+---
+
+**Curation Date:** 2026-04-25  
+**Reading Difficulty:** ⭐⭐⭐☆☆ (3/5)  
+**Recommendation:** 🔥🔥🔥🔥 (4/5) — for practitioners building early-warning systems or anyone working in tail-risk-sensitive domains

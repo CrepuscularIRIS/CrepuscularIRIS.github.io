@@ -1,0 +1,64 @@
+---
+title: "CORDS: Treating Object Sets as Continuous Fields"
+description: "An invertible mapping lets models predict variable-sized object sets without padding or cardinality inference"
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+tags: [paper, set-prediction, continuous-representations, object-detection, molecular-modeling]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=RObkOKADBU"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+CORDS replaces the standard discrete-set output layer with an **invertible mapping to a continuous density-and-feature field**, allowing models to predict variable-sized object collections without ever committing to a fixed cardinality.
+
+---
+
+## Why This Is Worth Your Time
+
+Every object detector, molecular generator, and astrophysical source finder shares the same awkward design constraint: someone has to decide — before inference — how many objects the model will output. The field has gotten clever around this: anchor boxes, fixed-size tensors with padding, Hungarian matching. But the underlying mismatch between a model's fixed-width output and reality's unbounded object count hasn't gone away.
+
+CORDS attacks this at the representation layer. Instead of fighting over how many slots to allocate, it reparameterizes the problem entirely — predicting *where objects are and what they look like* as a continuous field, then recovering the discrete set via decoding. If this maps cleanly into existing training pipelines, it could collapse several fragile design decisions in detection and generation systems simultaneously.
+
+---
+
+## Core Method (3-Minute Version)
+
+The central idea: treat a set of N objects as a **continuous field** defined over some spatial or latent domain.
+
+Two components live in this field:
+
+- **Density field** — a scalar function that integrates to N, the true cardinality. Where the density is high, many objects cluster; where it is low, few exist. Crucially, the total integrated mass is unknown during inference, so the model doesn't guess N.
+- **Feature field** — a vector-valued function encoding per-object attributes (class, pose, charge, etc.). Each point in this field carries a feature vector.
+
+The mapping from this continuous field back to a discrete set is **invertible**: decoding applies a simple extraction step (e.g., mode-finding or gradient ascent) that recovers exactly the objects that generated the field. Because the forward pass is differentiable end-to-end, the model trains directly on the continuous representation and never needs to handle discrete set size as a separate problem.
+
+The practical win: no fixed tensor shapes, no padding tokens, no cardinality head. Just a field → decode pipeline.
+
+---
+
+## Key Results
+
+- Proposes **CORDS**, an invertible mapping from discrete sets to continuous density and feature fields
+- Enables prediction of **variable-sized** object sets without padding or explicit cardinality inference
+- Targets applications in **object detection**, **molecular modeling**, and **astrophysical source detection**
+
+---
+
+## Limits and Unanswered Questions
+
+- No concrete numbers reported in the source — effect size and comparison baselines are unavailable at this stage
+- Invertibility adds a decoding step; real-time latency trade-offs remain uncharacterized
+- Scalability to very large cardinalities (e.g., particle simulations with millions of objects) is an open question
+
+---
+
+## Further Reading
+
+Veljković et al. (2026) — [OpenReview](https://openreview.net/forum?id=RObkOKADBU)

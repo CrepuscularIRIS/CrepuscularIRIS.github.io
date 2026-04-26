@@ -1,0 +1,64 @@
+---
+title: "Submodular Function Minimization with Dueling Oracle"
+description: "First tight bounds for submodular minimization under pairwise-comparison feedback, closing the gap between dueling-bandit techniques and combinatorial…"
+publishDate: "2026-04-25"
+updatedDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: "/assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg"
+tags: [paper, submodular-optimization, dueling-bandits, online-learning, combinatorial-optimization]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=BeMtzSH1d7"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+The first algorithm to achieve **tight regret bounds** for submodular function minimization — but instead of querying function values directly, it only receives noisy pairwise comparisons between sets, like a dueling-bandit setup applied to a combinatorial problem.
+
+---
+
+## Why This Is Worth Your Time
+
+Submodular minimization sits at the intersection of combinatorial optimization and machine learning. Its applications range from sensor placement to MAP inference in graphical models. The standard formulation assumes you can query the function value $f(S)$ directly — but in many real-world settings, that assumption collapses. You might only get "is $S$ better than $T$?" from a human annotator, a bandit-feedback system, or a noisy comparison oracle.
+
+This paper's contribution is to take that realistic constraint seriously and ask: **what is the minimax rate when all you get is comparisons, not values?** The answer is not a trivial extension of existing dueling-bandit results — submodularity imposes geometric structure that the algorithm must actively exploit. Getting both upper and matching lower bounds makes this a rare completeness result.
+
+---
+
+## Core Method (3-Minute Version)
+
+The learner starts with a ground set of $n$ elements and access to a **dueling oracle**: given two sets $S$ and $T$, the oracle returns which has the smaller function value, corrupted by noise. The learner cannot observe $f(S)$ or $f(T)$ directly.
+
+The key insight is to frame the problem as learning to navigate a **submodular polyhedron** — the base polytope of the submodular function — but using only comparison queries rather than value queries. The algorithm carefully constructs a sequence of set-pair queries that progressively narrow down the region containing the minimizing set. By controlling the geometry of which set differences are queried, the algorithm avoids wasted comparisons and achieves a sample complexity that scales with $n^{3/2}$.
+
+The analysis handles a **bounded-difference constraint** on the noise model. This constraint is what makes the lower bound tractable: it rules out adversarial worst-case noise that could obscure any individual comparison. In exchange for that restriction, the algorithm's guarantees become tight up to constant factors.
+
+---
+
+## Key Results
+
+- Algorithm achieves **$O(n^{3/2}/\sqrt{T})$** error after $T$ queries against linear transfer functions
+- Matching lower bound **$\Omega(n^{3/2}/\sqrt{T})$** proved under the bounded-difference noise constraint
+- Without the bounded-difference constraint, the lower bound degrades to **$\Omega(n/\sqrt{T})$**
+- The algorithm is **optimal up to constants** in the constrained setting
+
+---
+
+## Limits and Unanswered Questions
+
+**Linear transfer functions only.** The paper's analysis targets a specific noise model. Real pairwise comparisons in crowdsourcing or human feedback may violate the bounded-difference assumption in ways that invalidate the $n^{3/2}$ rate. The nonlinear case is a genuine open problem.
+
+**No empirical validation.** The paper is purely theoretical. Practitioners working with human comparison oracles will need to test whether the theoretical noise model holds in their setting — or adapt the algorithm before trusting its guarantees.
+
+**The gap without bounded-difference.** The lower bound drops from $\Omega(n^{3/2}/\sqrt{T})$ to $\Omega(n/\sqrt{T})$ when the noise constraint is relaxed. This gap suggests the algorithm may be suboptimal under more realistic noise, but proving a tighter lower bound is an open challenge.
+
+---
+
+## Further Reading
+
+- For submodular minimization in the standard (value-oracle) model, see the Iwata–Fleischer–Fujishige algorithm (2001) and its combinatorial $O(n^6)$ runtime
+- Dueling bandit fundamentals: Yue et al. (2012) *The $k$-Armed Dueling Bandits Problem*
+- Submodular bandits with value queries: Badanidiyuru & Krause (2014) provide approximation guarantees, not exact minimization

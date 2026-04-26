@@ -1,0 +1,57 @@
+---
+title: "Linearization as the Hidden Hand Behind PEFT"
+description: "A new theoretical paper reframes PEFT dynamics through model linearization and NTK theory, explaining why parameter-efficient fine-tuning actually works."
+publishDate: "2026-04-26"
+updatedDate: "2026-04-26"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+tags: [paper, fine-tuning, NTK, PEFT, theory]
+language: en
+draft: false
+sources: ["https://openreview.net/forum?id=tdwRIP6NG2"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+Adding an explicit L2 regularization term to fine-tuning transforms the optimization dynamics into kernel regression with the neural tangent kernel (NTK) — making the success of PEFT methods a direct consequence of staying near the pretrained model, not magic.
+
+## Why This Is Worth Your Time
+
+PEFT methods like LoRA are everywhere in practice, but the theoretical story of *why* they work so well has remained surprisingly vague. Most explanations lean on intuition ("low-rank adaptation") rather than formal grounding.
+
+This paper makes a sharp move: it makes the implicit bias of fine-tuning **explicit**. By adding L2 distance from pretrained weights as a regularization term, the authors show the dynamics reduce exactly to NTK kernel regression. That's not just mathematically elegant — it gives you a quantitative handle on how well linearized fine-tuning approximates full fine-tuning.
+
+The second reason to pay attention: this work gives the field's folk wisdom ("fine-tune close to pretrained") a precise formulation. For practitioners choosing regularization strengths, that's genuinely useful.
+
+## Core Method (3-Minute Version)
+
+When you fine-tune a pretrained LLM, you usually don't reset the weights to random. You start from a model that already works, and the optimizer gently nudges the parameters. Most people treat this as a loose heuristic.
+
+The authors cut through the hand-waving. They ask: what happens if you **explicitly** penalize the distance between fine-tuned weights and pretrained weights? Formally, they add an L2 regularization term on the parameter-space distance.
+
+Here's the key result: under this formulation, the fine-tuning dynamics are **exactly equivalent** to kernel regression with the NTK. The NTK is a positive-definite kernel that describes how small parameter changes propagate through an infinitely wide neural network. The connection isn't new in theory (the NTK literature is well-established), but the authors apply it cleanly to the PEFT setting.
+
+The implication: the gap between fine-tuning with a linearized model (cheap forward pass) vs. full fine-tuning (expensive gradient computation) depends precisely on the regularization strength. Stronger regularization pushes the linearized approximation closer to the true dynamics. This is a testable claim, and it's the kind of quantitative handle the field rarely gets.
+
+## Key Results
+
+- Fine-tuning with explicit L2 parameter-distance regularization **is equivalent** to learning with the positive-definite NTK
+- The closeness of linearized vs. full fine-tuning depends **directly on** regularization strength
+- The result provides **theoretical justification** for the common practice of staying near pretrained weights
+
+No concrete numbers (benchmark scores, kernel eigenvalue distributions) were visible in the excerpted source — the full paper's experimental validation remains to be reviewed.
+
+## Limits and Unanswered Questions
+
+**The abstract is truncated.** The full quantitative bounds and any experimental validation are not accessible in the excerpt, so I cannot assess how tight the theoretical guarantees are in practice.
+
+**Architectural scope is unclear.** The paper does not specify which LLM families or scales were used in experiments (if any). NTK theory is traditionally most precise in the infinite-width limit; whether the bounds remain meaningful for modern 7B–70B scale models is an open question.
+
+**Linearization itself is a strong assumption.** The NTK derivation assumes the network is in the "linear regime" during training — meaning parameters don't move too far from initialization. For large-scale fine-tuning with aggressive task specialization, this regime may not hold cleanly.
+
+---
+
+**Curation date**: 2026-04-26

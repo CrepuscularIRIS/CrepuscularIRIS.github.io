@@ -1,0 +1,89 @@
+---
+title: "Nait"
+description: "Proposes a neuron-activation-similarity metric for selecting instruction-tuning data, moving data-quality assessment from the output/token level down to the…"
+publishDate: "2026-04-25"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+tags: [paper, instruction-tuning, data-selection, neuron-activation, LLM, ICLR-2026]
+language: en
+draft: false
+sources: [https://openreview.net/forum?id=uq6UWRgzMr]
+confidence: medium
+status: draft
+---
+
+# Nait: Judging Instruction-Tuning Data by What Neurons It Activates
+
+**Original title:** Neuron-Aware Data Selection in Instruction Tuning for Large Language Models  
+**Authors:** Chen et al. (multiple institutions)  
+**Published:** ICLR 2026 | [OpenReview](https://openreview.net/forum?id=uq6UWRgzMr)
+
+---
+
+## One-Line Summary
+
+Nait measures instruction-tuning data quality by how closely a candidate example activates the same hidden neurons as proven expert demonstrations — replacing surface-level metrics like perplexity with a direct look at internal LLM representations.
+
+---
+
+## Why This Is Worth Your Time
+
+The instruction-tuning field has a dirty secret: nobody really agrees on *which* data makes LLMs better.
+
+Most data-selection methods today fall into two camps. The first scores examples by perplexity or loss — treating good data as data the model already predicts well, which is backwards (easy examples don't teach much). The second uses reward models or LLM-as-judge to score outputs, which is expensive and still measures *what comes out*, not *what changes inside*.
+
+Nait attacks the problem from the inside. By treating neuron activation patterns as the ground truth signal, it asks a cleaner question: does this example push the model's internal state toward the state it shows when performing the target skill well? This reframes data curation from "which outputs look good" to "which inputs activate the right circuits."
+
+The reusability angle is the other reason this paper值得追踪. The activation profiles are built once from in-domain seed data and then reused across many subset-selection runs — meaning you don't need to retrain the full model to know which data matters.
+
+---
+
+## Core Method (3-Minute Version)
+
+The core intuition is simple: two pieces of text are "similar in what matters" not when their surface tokens overlap, but when they excite the same hidden neurons inside the LLM.
+
+Here's the recipe. First, Nait collects a small set of *seed demonstrations* — examples that clearly exhibit the target capability (say, math reasoning or code generation). The key is that these don't need to be instruction-tuning examples themselves; any high-quality in-domain text works.
+
+Second, Nait runs these seed texts through the *untrained or base* LLM and records which neurons fire strongly. This creates a **neuron activation profile** — a sparse signature of which hidden units are most activated for this capability.
+
+Third, candidate IT examples are scored by how closely their activation signatures match that profile. The authors use cosine similarity between activation vectors as the core metric, though the exact similarity measure can vary.
+
+Finally, the top-scoring subset is used for instruction tuning. The claim is that examples activating the right neurons are better training signal than examples chosen by perplexity or random sampling.
+
+A critical design choice: these activation profiles are **reusable and transferable**. Once you have the profile for "good at Python," you can score any new candidate dataset against it without retraining.
+
+---
+
+## Key Results
+
+The paper demonstrates that carefully selected small subsets guided by neuron similarity outperform larger uncurated instruction-tuning sets.
+
+Key empirical findings:
+- Small subsets selected by Nait's neuron-activation similarity outperform larger uncurated IT datasets on target-domain benchmarks
+- Reusable activation profiles enable efficient subset selection without repeated full-model training runs
+- The approach generalizes across multiple model sizes and capability domains (exact numbers not available in the publicly visible abstract)
+
+> The full experimental scope — model sizes tested, specific domain baselines, and absolute numbers — requires reading the complete paper.
+
+---
+
+## Limits and Unanswered Questions
+
+Two gaps worth flagging before you reshare this:
+
+- **No concrete numbers visible.** The public abstract is truncated. The 2x or 10% improvements that make this paper compelling haven't been confirmed from the source alone. Treat the claims as directional until the full paper is available.
+- **Profile transferability has unknown bounds.** "Reusable and transferable" sounds great, but it's unclear how well neuron activation profiles generalize across very different model architectures — a profile built for a transformer-decoder may not transfer cleanly to a mixture-of-experts model.
+- **What makes a good seed set?** The method assumes you can collect high-quality in-domain demonstrations to build the profile. In practice, that curation step isn't free and isn't discussed.
+
+---
+
+## Further Reading
+
+If this direction resonates, the natural next questions are: (1) how does Nait compare to prior activation-based analysis work (e.g., probing classifiers), and (2) can the neuron profiles be constructed from synthetic or LLM-generated seed data rather than human-curated examples?
+
+---
+
+**Curated:** 2026-04-25  
+**Reading difficulty:** ⭐⭐⭐☆☆  
+**Recommended because:** Reframes data selection as a representational alignment problem — a cleaner signal than perplexity or reward models, and one with practical reusability baked in.

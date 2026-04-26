@@ -1,0 +1,302 @@
+---
+title: "超越 RAG：Karpathy 的 LLM Wiki 范式"
+description: "为什么增量式 Markdown 编译可能比向量检索更适合长周期 AI 推理——以及如何构建同时利用两者的混合系统。"
+publishDate: "2026-04-12"
+tags: ["RAG", "LLM", "Knowledge Base", "Andrej Karpathy", "Architecture"]
+draft: false
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+---
+
+2026 年 4 月初，Andrej Karpathy 发布了一篇博文，提出了所谓 **LLM Wiki** 范式——直接挑战了当前几乎所有生产级 AI 系统的记忆处理方式。论点精准：RAG 实际上不会 *学习*。它在每次查询时都重新检索、重新阅读、重新从原始文档推理。那不叫知识库。那叫一个带快速查找功能的文件柜。
+
+LLM Wiki 的想法看似简单，但架构意义深远。不再存储原始源文档并查询它们，而是部署一个 LLM Agent，将这些文档 *编译* 成一个活的、结构化的、带超链接的 Markdown Wiki——并持续保持更新。
+
+## RAG 的核心问题
+
+标准 RAG 流程是这样的：将文档嵌入向量，存储，然后查询时检索 top-k 片段，填充到上下文窗口。模型随后对一段它从未"处理"过的原始文本进行推理。
+
+这造成了结构性低效。每次查询都从零开始。模型无法跨文档建立复合理解。来源之间的矛盾不会被解决——两个来源都会被检索出来，留给模型在上下文中处理，而模型往往处理不了。过期性是无形的：来自过期文档的片段和来自新文档的片段看起来一模一样。
+
+对于简单的事实问答、固定文档集，这套机制运转良好。对于长周期推理——保持代码库上下文、跟踪研究项目、连续数月理解一个客户——它就崩溃了。
+
+## LLM Wiki 架构
+
+Karpathy 的提案颠倒了检索与推理的关系。LLM 不再在查询时被调用来推理原始数据。它被 *持续* 调用来维护一个结构化知识库：
+
+```
+原始来源 → LLM 图书馆员 Agent → 结构化 Markdown Wiki → 查询接口
+```
+
+Agent 的职责不是回答问题。它的职责是做一个研究图书馆馆员：阅读新文档、更新 Wiki、解决冲突、添加交叉链接、修剪过期条目。问答变得极其便宜——你在读取已编译的知识，而非对原始文本进行推理。
+
+一个最小化实现如下：
+
+```python
+import anthropic
+from pathlib import Path
+
+client = anthropic.Anthropic()
+
+WIKI_PATH = Path("./knowledge-wiki")
+
+def ingest_document(doc_text: str, doc_source: str) -> None:
+    """将新文档摄入 Wiki，更新相关页面。"""
+    
+    # 读取当前 Wiki 状态
+    existing_pages = {
+        p.stem: p.read_text() 
+        for p in WIKI_PATH.glob("*.md")
+    }
+    wiki_index = "\n".join(f"- {name}" for name in existing_pages)
+    
+    response = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=4096,
+        messages=[{
+            "role": "user",
+            "content": f"""你是一位研究图书馆馆员，正在维护一个结构化 Wiki。
+
+当前 Wiki 页面：
+{wiki_index}
+
+来自 {doc_source} 的新文档：
+{doc_text}
+
+你的任务：
+1. 识别该文档更新、矛盾或扩展了哪些现有 Wiki 页面
+2. 如果存在真正全新的主题，创建新页面
+3. 对于每个要创建或更新的页面，输出完整页面内容
+
+输出格式：
+<page name="PageName">
+完整的 Markdown 内容，包括与相关页面的链接，如 [[RelatedPage]]
+</page>
+
+明确解决任何矛盾。链接相关概念。删除已被取代的声明。"""
+        }]
+    )
+    
+    # 解析并写入更新后的页面
+    import re
+    pages = re.findall(r'<page name="([^"]+)">(.*?)</page>', response.content[0].text, re.DOTALL)
+    for page_name, content in pages:
+        (WIKI_PATH / f"{page_name}.md").write_text(content.strip())
+    
+    print(f"从 {doc_source} 更新了 {len(pages)} 个 Wiki 页面")
+```
+
+关键转变：LLM 做的是 *编辑工作*，而非回答问题。输出的是持久积累的结构化知识。
+
+## 自我修复 Linter
+
+Karpathy 提案中更有趣的部分是一个 **linting 机制**。不是每次摄入时都运行，而是作为后台维护任务定期执行——LLM 扫描 Wiki 检查：
+
+- **矛盾**：页面 A 说 X，页面 B 说非 X
+- **孤立页面**：没有被任何其他内容引用的主题
+- **过期事实**：被新页面取代的过时声明
+- **缺失链接**：应该交叉引用但没有的主题
+
+```python
+def lint_wiki() -> list[str]:
+    """扫描 Wiki 查找矛盾、过期和缺失链接。"""
+    
+    all_pages = {
+        p.stem: p.read_text() 
+        for p in WIKI_PATH.glob("*.md")
+    }
+    
+    # 将整个 Wiki 喂给模型进行跨页面分析
+    wiki_dump = "\n\n---\n\n".join(
+        f"# {name}\n{content}" 
+        for name, content in all_pages.items()
+    )
+    
+    response = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=8192,
+        messages=[{
+            "role": "user", 
+            "content": f"""审计这个知识 Wiki 的质量问题。
+
+{wiki_dump}
+
+找出并报告：
+1. 页面之间的直接矛盾（引用两个页面和冲突的声明）
+2. 应该存在但缺失或循环的交叉链接
+3. 鉴于其他页面所言，显得过时的页面
+4. 被引用但尚未记录的主题
+
+对每个问题，输出：
+<issue type="contradiction|orphan|stale|missing" pages="Page1,Page2">
+问题描述及建议解决方案
+</issue>"""
+        }]
+    )
+    
+    # 解析问题并返回供审查或自动修复
+    import re
+    issues = re.findall(r'<issue[^>]*>(.*?)</issue>', response.content[0].text, re.DOTALL)
+    return [i.strip() for i in issues]
+```
+
+每天夜间运行此任务。自动修复低风险问题（缺失链接、孤立页面清理）。将矛盾标记为需要人工审查或更仔细的解决过程。
+
+## 为什么这在长周期任务中胜过 RAG
+
+实际优势随时间积累：
+
+**1. 矛盾解决发生在写入时，一次解决。** 在 RAG 中，如果你的文档语料库有两篇相互矛盾的文章，每条同时检索到两篇文档的查询都会看到矛盾。在 Wiki 中，图书馆员 Agent 在第二篇文章被摄入时就解决了它。查询永远看不到原始冲突。
+
+**2. 跨文档综合被 baked in。** Wiki 可以有一篇综合了 20 篇论文洞见的"MoE 训练方法"页面。RAG 做不到——它只能检索，无法在索引时综合。
+
+**3. 过期性变得显式。** Wiki 页面可以携带修改时间戳和来源追溯。RAG 中一条来自 2024 年的片段不知道它已被 2026 年的论文取代。Wiki 页面可以明确说明："这是截至 2026 年 3 月的共识；详见 [[最新发现]] 的修订。"
+
+**4. 查询延迟大幅降低。** 读取 Wiki 页面很快。嵌入、检索、然后推理 10 个原始片段很慢。对于高频查询稳定知识，Wiki 方案效率显著更高。
+
+## RAG 仍然占优的场景
+
+这不是全面替代。RAG 在特定场景下有真实优势：
+
+- **高文档速度**：如果你每天摄入 10,000 篇新文章，在那种速度下维护 Wiki 需要海量算力，不切实际。RAG 更容易扩展到大型语料库。
+- **逐字检索需求**：法律、监管和合规场景通常要求原始文本的精确性。 paraphrase 和综合的 Wiki 会丢失来源追溯。
+- **冷启动新鲜度**：如果你需要回答 5 分钟前才摄入的文档问题，RAG 已经就绪。Wiki 需要时间来编译。
+
+## 混合架构：Wiki + RAG
+
+真正的答案不是二选一。而是构建分层系统，让每个组件各展所长。
+
+```python
+from dataclasses import dataclass
+from enum import Enum
+
+class RetrievalTier(Enum):
+    HOT_WIKI = "hot_wiki"      # 已编译、高价值、高频访问
+    WARM_INDEX = "warm_index"  # 已摘要、可搜索、非关键
+    COLD_RAG = "cold_rag"      # 原始文档、向量检索
+
+@dataclass
+class WikiResult:
+    content: str
+    confidence: float
+
+@dataclass
+class KnowledgeRouter:
+    """将查询路由到适当的检索层级。"""
+    
+    wiki_path: Path
+    vector_store: VectorStore
+    summary_index: SummaryIndex
+    
+    def query(self, question: str) -> str:
+        # 先检查热 Wiki——已编译知识，快速查找
+        wiki_results = self._search_wiki(question)
+        if wiki_results and wiki_results.confidence > 0.85:
+            return wiki_results.content
+        
+        # 回退到温索引——摘要文档
+        summary_results = self.summary_index.search(question, top_k=5)
+        if summary_results and summary_results[0].score > 0.80:
+            return self._synthesize(summary_results, question)
+        
+        # 冷 RAG——原始文档检索作为最后手段
+        raw_chunks = self.vector_store.search(question, top_k=10)
+        return self._reason_over_chunks(raw_chunks, question)
+    
+    def _search_wiki(self, question: str):
+        """使用关键词 + 语义匹配搜索已编译 Wiki 页面。"""
+        pages = list(self.wiki_path.glob("*.md"))
+        # 结合关键词匹配和嵌入相似度
+        candidates = []
+        for page in pages:
+            content = page.read_text()
+            score = self._relevance_score(question, content)
+            if score > 0.5:
+                candidates.append((page, content, score))
+        
+        candidates.sort(key=lambda x: x[2], reverse=True)
+        if candidates:
+            return WikiResult(
+                content=candidates[0][1], 
+                confidence=candidates[0][2]
+            )
+        return None
+```
+
+三层服务于不同的访问模式：
+
+| 层级 | 内容 | 更新频率 | 查询延迟 | 适用场景 |
+|------|------|---------|----------|---------|
+| 热 Wiki | 已编译、带交叉链接的 Markdown | 摄入时 + 每日 lint | &lt;100ms | 核心领域知识、高频问答 |
+| 温索引 | 带元数据的文档摘要 | 每日批量 | ~500ms | 更广泛上下文、支持性证据 |
+| 冷 RAG | 原始文档片段 | 摄入时 | ~2s | 长尾查询、逐字检索 |
+
+Wiki 可能只处理你 20% 的文档——高价值、高频访问、缓慢变化的核心知识。温索引覆盖另外 30%——有用的上下文，不需要完整编辑处理。冷 RAG 处理剩余 50%——你某天可能需要的长尾文档。
+
+## 成本问题
+
+显而易见的质疑：为每份摄入的文档运行 LLM 来编译，成本很高。确实。但成本分析并不简单。
+
+一个每天处理 1,000 次查询的 RAG 系统，每次检索 10 个片段并推理，每天运行 1,000 次 LLM 调用。一个每天摄入 50 份新文档的 Wiki 系统，运行 50 次编译调用加约 10 次 lint 调用——但随后用已编译的 Markdown 服务查询，缓存知识的 LLM 调用次数为零。
+
+```
+RAG 每日成本：   1,000 次查询 × 10K tokens/查询 = 10M tokens
+Wiki 每日成本：  50 次摄入 × 5K tokens + 10 次 lint × 20K tokens = 450K tokens
+Wiki 查询成本：  免费（读取 Markdown 文件）
+
+盈亏平衡点：    同一知识库上约 45 次查询/天
+```
+
+超过 45 次查询/天，Wiki 更便宜。对于高流量知识库——客服、内部文档、研究文献——编译的经济账压倒性地有利。
+
+真正的成本不是 API tokens——而是构建编译管道、linting 系统、分层路由和来源追溯的工程投入。大多数团队在这里放弃，转而默认 RAG。RAG 是一个 `pip install`。Wiki 系统是一个项目。
+
+## 来源追溯与信任
+
+Wiki 方法一个被低估的优势：来源是显式且可审计的。每个 Wiki 页面都可以追踪其来源：
+
+```markdown
+# MoE 训练方法
+
+## 摘要
+Mixture of Experts 模型通过每个输入 token 仅激活专家子集来实现参数效率。
+主流方法使用 top-k 路由和辅助负载均衡损失。
+
+## 关键发现
+- top-2 路由 + capacity factor 1.25 是当前标准 [[Switch Transformer]]
+- 专家并行扩展到 2048 个专家，通信开销可接受 [[GShard]]
+- 极端稀疏（256 中激活 1 个）表现出惊人有效性 [[Gemma 4 分析]]
+
+## 来源
+- [Switch Transformers](https://arxiv.org/abs/2101.03961) — Fedus et al., 2021
+- [GShard](https://arxiv.org/abs/2006.16668) — Lepikhin et al., 2020
+- [Gemma 4 blog analysis](/blog/gemma-4-extreme-moe-sparsity) — 内部, 2026-04-12
+
+最后更新：2026-04-12 | 置信度：高 | 下次审查：2026-05-12
+```
+
+在 RAG 中，来源追溯隐含在片段元数据中——如果你记得存储的话。在 Wiki 中，来源是知识本身的一等公民。当一个声明被质疑时，你可以追溯到其源页面，源页面再追溯到其源文档。
+
+## 实现经验
+
+为这篇博客的研究流水线构建了一个类似理念的系统，三条不显而易见的经验：
+
+**1. 图书馆员 prompt 比摄入 prompt 更重要。** Wiki 编译质量高度依赖于你如何指示 LLM 处理冲突、决定粒度、维护交叉链接。一句通用的"总结此文档"prompt 产生糟糕的 Wiki 页面。一句具体的"你是一个为 AI 研究人员维护知识库的研究图书馆馆员"prompt 产生质量显著更好的页面。
+
+**2. 增量更新优于全量重写。** 当新文档到达时，不要重新生成每个可能受影响的页面。识别受影响的 2-3 个页面，仅更新这些页面。全 Wiki 重新生成成本高且引入不必要的漂移。
+
+**3. Linting 过程是秘密武器。** 摄入质量参差不齐——有时图书馆员错过一个关联或引入细微不一致。定期 linting 过程捕获这些问题。把它想象成知识的持续集成：每天夜间运行质量检查，修复坏掉的，记录需要人工审查的。
+
+## 文件柜不是图书馆
+
+Karpathy 的框架与其说是规范性的，不如说是哲学性的——论证的是知识库 *应该* 是什么，而非一个完整的系统设计。但核心洞察成立：从不综合输入的检索系统是在把智能留在桌面上。
+
+文件柜——RAG——擅长存储和查找。图书馆——已编译、维护、交叉链接的知识库——擅长 *理解*。图书馆馆员——维护 Wiki 的 LLM——是使这种转变成为可能的那个缺失环节。
+
+2026 年大多数生产系统仍在使用文件柜。那些正在建设图书馆的系统正在看到文件柜无法匹配的复合回报。
+
+文件柜不是图书馆。图书馆有图书馆馆员。
+
+---
+
+*Karpathy 原文：[karpathy.ai](https://karpathy.ai)。相关阅读：[语境工程 > 提示词工程](/blog/context-engineering-beyond-prompts) 涵盖了向工程模型所见内容的更广泛转变。[LLM 文献编译器](/blog/llm-literature-compiler-autoresearch) 探索了用于学术研究的编译范式的一个具体实现。*
