@@ -6,7 +6,8 @@ category: engineering
 language: zh
 draft: true
 hIE: snowdrop
-hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+heroImage:
+  src: ../../../assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
 ---
 
 过去一年我看过的大多数检索增强生成系统，说白了，都是失忆的。流程就是嵌入文档、存储向量，然后在查询时嵌入问题、提取 top-k 块、粘贴到提示里。每次查询都走这一遍。模型对你的语料库永远学不到任何东西。关于同一章节的两个问题会独立地检索出相同的段落，而第三个本可以从模型上周读过的内容中受益的问题，却没有任何途径获知。每次查询都是新人的第一天。

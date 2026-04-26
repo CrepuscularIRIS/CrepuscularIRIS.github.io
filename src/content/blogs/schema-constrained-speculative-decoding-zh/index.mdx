@@ -13,7 +13,8 @@ tags:
 language: zh
 draft: true
 hIE: snowdrop
-hero_image: /assets/hIE/snowdrop/666551-beatless-dress-no_bra-redjuice-see_through-snowdrop-tattoo.jpg
+heroImage:
+  src: ../../../assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
 ---
 
 工具调用智能体从外部看成本高昂——大量模型调用、长prompt、不断膨胀的上下文。但如果你分析实际耗时（wall-clock time）花在哪里，答案令人不安：大部分都在解码那些从一开始就**没有变数**的token。智能体输出 `{"name": "search_web", "arguments": {"query": "...` 然后，逐个token地，模型重新推导下一个是引号、闭合大括号后可能是逗号、"arguments"这个键的拼写始终如一。自回归解码的每token计算成本是固定的，无论这个token是出人意料的词汇选择，还是一个JSON schema在调用开始前就已确定的字符。

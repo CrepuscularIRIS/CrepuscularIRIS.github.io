@@ -7,7 +7,8 @@ category: research
 language: zh
 draft: false
 hIE: snowdrop
-hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+heroImage:
+  src: ../../../assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
 ---
 
 EEG 基础模型有一个 NLP 领域从未面对的硬件碎片化问题。OpenAI 在互联网文本上训练 GPT 时，每份文档共享同一套字符集。而当一个 BCI 实验室用 128 通道 BioSemi 系统录制的 EEG 数据训练神经解码器时，这个模型与 32 通道 g.tec 头戴式设备或 8 通道消费级 Muse 头环的数据在结构上根本不兼容——电极位置不同，通道数量不同，空间采样密度不同。在一种配置上训练的模型，无法不做额外适配就处理另一种配置的数据。

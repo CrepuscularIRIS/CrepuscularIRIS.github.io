@@ -13,7 +13,8 @@ tags:
 language: zh
 draft: true
 hIE: snowdrop
-hero_image: /assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+heroImage:
+  src: ../../../assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
 ---
 
 四月中旬发布的 Claude Opus 4.7 带来了 100 万 context window，还有一个安静但架构影响更深远的变更：`effort` 参数现在成了正式的 API 旋钮，`xhigh` 档位把推理时的深度推到了此前 `high` 上限之上。`low`、`medium`、`high`、`xhigh` 的差异不是固定模型的 UI 皮肤。它是单次调用的推理 trace 预算，被提升为可编程输入。

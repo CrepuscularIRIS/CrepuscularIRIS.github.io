@@ -6,7 +6,8 @@ category: research
 language: zh
 draft: true
 hIE: snowdrop
-hero_image: /assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
+heroImage:
+  src: ../../../assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg
 ---
 
 脑机接口闭环的延迟预算极其严苛。要实现流畅的光标控制，研究团队设定的端到端目标是20毫秒——信号采集、滤波、尖峰检测、解码、执行。对于需要用户感受到控制的任务，人类能察觉到的反馈延迟低至50毫秒。基于GPU的流水线在老旧硬件上每次解码需要5-10毫秒；到2026年初，尖峰排序的GPU实现已在1000+通道设备上将解码阶段压缩至约0.75毫秒，采用激进的核融合、混合精度模板和每通道并行策略。0.75毫秒已是底层算法的极限。电极数量不断攀升——256通道、1024通道，再到3072通道，Paradromics的Connexus类阵列——解码步骤再次威胁要吞噬整个预算。到2025年底，多个研究小组报告GPU尖峰排序成为1000+通道设备的瓶颈；每通道的匹配滤波在相邻通道共享尖峰波形时无法干净地并行化，分类器必须将每次检测分配给正确的源神经元。
