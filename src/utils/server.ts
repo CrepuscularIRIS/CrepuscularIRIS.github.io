@@ -170,3 +170,8 @@ export function getUniqueCategoriesWithCount(collections: BlogPostEntry[]): [str
 export function getCollectionsByCategory<T extends BlogPostEntry>(collections: T[], category: string): T[] {
   return collections.filter((collection) => collection.data.category === category)
 }
+
+/** Filter collections by hIE taxonomy code (snowdrop / kouka / saturnus / methode / lacia) */
+export function getCollectionsByHie<T extends BlogPostEntry>(collections: T[], hie: string): T[] {
+  return collections.filter((collection) => (collection.data as any).hIE === hie)
+}

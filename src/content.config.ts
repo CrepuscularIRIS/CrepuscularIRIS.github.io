@@ -30,6 +30,11 @@ const blogSchema = ({ image }: { image: () => any }) =>
       .optional(),
     tags: z.array(z.string()).default([]).transform(removeDupsAndLowerCase),
     category: z.string().optional(),
+    hIE: z.enum(['snowdrop', 'kouka', 'saturnus', 'methode', 'lacia']).optional(),
+    hero_image: z.string().optional(),
+    sources: z.array(z.string()).optional(),
+    confidence: z.string().optional(),
+    status: z.string().optional(),
     language: z.string().optional(),
     draft: z.boolean().default(false),
     // Integrations

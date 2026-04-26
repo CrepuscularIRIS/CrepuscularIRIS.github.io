@@ -3,7 +3,7 @@ import type { GetStaticPaths, Page } from 'astro'
 import type { CollectionEntry } from 'astro:content'
 
 import { Paginator, PostPreview, CollectionPreview } from '@/components/pages'
-import { getBlogCollection, getUniqueCategories, getCollectionsByCategory, getUniqueTags, sortMDByDate, getPostCollections } from '@/server'
+import { getBlogCollection, getUniqueCategories, getCollectionsByCategory, getCollectionsByHie, getUniqueTags, sortMDByDate, getPostCollections } from '@/server'
 import { Button, Icon } from '@/components/user'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import config from '@/site-config'
@@ -11,7 +11,20 @@ import config from '@/site-config'
 export const prerender = true
 
 export const getStaticPaths = (async ({ paginate }) => {
-  const categoryMap: Record<string, string> = {
+  // 5-hIE taxonomy: user-facing slug → underlying hIE code (frontmatter field).
+  // Order here is the navbar order + circular prev/next order.
+  const HIE_SLUGS: Array<[string, string, string]> = [
+    // [url-slug, hIE-code, display-name]
+    ['papers',  'snowdrop', 'Papers'],
+    ['signals', 'kouka',    'Signals'],
+    ['audit',   'saturnus', 'Audit'],
+    ['build',   'methode',  'Build'],
+    ['digest',  'lacia',    'Digest']
+  ]
+
+  // Legacy category names kept for backward-compat URLs (existing posts that
+  // still rely on `category:` field rather than `hIE:`).
+  const legacyCategoryMap: Record<string, string> = {
     'tech': 'Technical',
     'daily': 'Daily Life',
     'research': 'Research',
@@ -23,28 +36,48 @@ export const getStaticPaths = (async ({ paginate }) => {
     'opinion': 'Opinion'
   }
 
-  const categoryOrder = ['engineering', 'research', 'interpretation', 'tech', 'technical', 'opinion', 'updates', 'daily', 'journal']
-  
+  // Display name lookup combines hIE labels + legacy categories.
+  const categoryMap: Record<string, string> = { ...legacyCategoryMap }
+  for (const [slug, , label] of HIE_SLUGS) categoryMap[slug] = label
+
   const allCollections = await getBlogCollection()
+
+  // Build the route list from hIE slugs (primary nav). Legacy categories
+  // continue to be reachable for backward compat but are no longer in the
+  // circular nav.
+  const hieSlugs = HIE_SLUGS.map(([slug]) => slug)
+  const legacyCategoryOrder = ['engineering', 'research', 'interpretation', 'tech', 'technical', 'opinion', 'updates', 'daily', 'journal']
   const allUniqueCategories = getUniqueCategories(allCollections)
-  
-  const uniqueCategories = categoryOrder.filter(cat => allUniqueCategories.includes(cat))
-  
-  return uniqueCategories.flatMap((category, index) => {
-    const collections = sortMDByDate(getCollectionsByCategory(allCollections, category))
+  const liveLegacy = legacyCategoryOrder.filter(cat => allUniqueCategories.includes(cat))
+
+  // Ordering for prev/next arrows uses ONLY the hIE nav.
+  const navOrder = hieSlugs
+
+  const allRoutes = [...hieSlugs, ...liveLegacy]
+
+  return allRoutes.flatMap((slug, _idx) => {
+    const hieEntry = HIE_SLUGS.find(([s]) => s === slug)
+    const collections = sortMDByDate(
+      hieEntry
+        ? getCollectionsByHie(allCollections, hieEntry[1])
+        : getCollectionsByCategory(allCollections, slug)
+    )
     const uniqueTags = getUniqueTags(collections)
     const collectionsCount = collections.length
-    
-    // Get previous and next categories (circular navigation)
-    const prevIndex = index === 0 ? uniqueCategories.length - 1 : index - 1
-    const nextIndex = index === uniqueCategories.length - 1 ? 0 : index + 1
-    const prevCategory = uniqueCategories[prevIndex]
-    const nextCategory = uniqueCategories[nextIndex]
-    
+
+    // Circular prev/next over the hIE nav only (legacy routes get the first/last hIE).
+    const navIdx = navOrder.indexOf(slug)
+    const prevCategory = navIdx >= 0
+      ? navOrder[navIdx === 0 ? navOrder.length - 1 : navIdx - 1]
+      : navOrder[navOrder.length - 1]
+    const nextCategory = navIdx >= 0
+      ? navOrder[navIdx === navOrder.length - 1 ? 0 : navIdx + 1]
+      : navOrder[0]
+
     return paginate(collections, {
-      params: { category },
+      params: { category: slug },
       pageSize: config.content?.blogPageSize || 8,
-      props: { uniqueTags, collectionsCount, category, prevCategory, nextCategory, categoryMap }
+      props: { uniqueTags, collectionsCount, category: slug, prevCategory, nextCategory, categoryMap }
     })
   })
 }) satisfies GetStaticPaths

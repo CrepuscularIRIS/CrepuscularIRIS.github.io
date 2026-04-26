@@ -39,12 +39,18 @@ export const theme: ThemeUserConfig = {
   head: [],
   customCss: [],
 
-  /** Configure the header of your site. */
+  /** Configure the header of your site.
+   *  5-hIE taxonomy: papers (snowdrop) / signals (kouka) / audit (saturnus) /
+   *  build (methode) / digest (lacia). URL slugs are the user-facing names;
+   *  the [category] route maps them to the underlying hIE codes.
+   */
   header: {
     menu: [
-      { title: 'Engineering', link: '/blog/engineering' },
-      { title: 'Research', link: '/blog/research' },
-      { title: 'Interpretation', link: '/blog/interpretation' },
+      { title: 'Papers', link: '/blog/papers' },
+      { title: 'Signals', link: '/blog/signals' },
+      { title: 'Audit', link: '/blog/audit' },
+      { title: 'Build', link: '/blog/build' },
+      { title: 'Digest', link: '/blog/digest' },
       { title: 'Activity', link: '/activity' },
       { title: 'Projects', link: '/projects' },
       { title: 'Links', link: '/links' },
