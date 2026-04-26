@@ -5,7 +5,7 @@ publishDate: "2026-04-17"
 tags: [agents, security, prompt-injection, coding-agents, dual-llm, trust-boundaries, CaMeL]
 category: engineering
 language: zh
-draft: false
+draft: true
 ---
 
 每次编码 Agent 读取一个 GitHub Issue、从 CI 日志粘贴堆栈跟踪、或在写代码前抓取文档页面，它都在把指令和数据混在一起。语言模型看到的是一个字符串，没有任何原生机制区分哪些字符是任务所有者放进去的，哪些是 Agent 刚加载的第三方内容的作者放进去的。这就是提示注入问题的全部，不需要花哨的例子。每一个具体利用——"忽略先前指令"、隐藏的 Markdown 注释、Base64 载荷、零宽字符走私——都是结果，不是原因。

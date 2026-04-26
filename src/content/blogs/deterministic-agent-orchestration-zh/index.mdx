@@ -5,7 +5,7 @@ publishDate: "2026-04-16"
 tags: [agent-systems, orchestration, DAG, A2A, LangGraph, state-machines, multi-agent]
 category: engineering
 language: zh
-draft: false
+draft: true
 ---
 
 目前生产环境中的大多数多智能体系统本质上都是提示词级联（prompt cascades）：智能体 A 生成文本，智能体 B 将该文本作为输入，智能体 C 对 B 的输出进行操作。整个流程是隐式的，编码在提示词模板和字符串拼接中。成功时看似魔法，失败时却让你无从下手：不知道故障出现在哪个环节，无法从检查点恢复，也没有在关键时刻注入人工监督的机制。

@@ -5,7 +5,7 @@ publishDate: "2026-04-16"
 tags: [kv-cache, long-context, inference, architecture, efficiency, transformers]
 category: research
 language: zh
-draft: false
+draft: true
 ---
 
 Attention 机制正面临着严峻的显存挑战。对于一个序列长度为 $n$、特征维度为 $d$、包含 $L$ 层和 $H$ 个 Attention Head 的模型，其 KV-cache 需要占用 $2 \times L \times H \times n \times d_h$ 个浮点数。在 FP16 精度下，一个 80 层、8 个 KV Head（GQA）的模型处理 1M token 上下文时，仅 KV-cache 就需要大约 300 GB 的空间——这还没算上模型权重、激活值或 Batch 开销。即使是较小的 32 层、4 KV Head 模型也需要约 75 GB。

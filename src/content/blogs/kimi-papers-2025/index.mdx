@@ -13,7 +13,7 @@ tags:
   - sparse-attention
   - efficiency
 language: en
-draft: false
+draft: true
 ---
 
 The long-context attention problem has a clean statement: standard self-attention is O(n^2) in sequence length, so a 200K-token context window is roughly 400x more expensive than a 10K-token window. Every approach to long-context LLMs must address this cost, and the design space splits into two strategies — approximate the full attention matrix (linear attention, sliding window, kernelized attention) or select a sparse subset of it (block-sparse, top-k, routing-based).

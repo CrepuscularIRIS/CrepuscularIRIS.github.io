@@ -5,7 +5,7 @@ publishDate: "2026-04-16"
 tags: [kv-cache, long-context, inference, architecture, efficiency, transformers]
 category: research
 language: en
-draft: false
+draft: true
 ---
 
 The attention mechanism has a memory problem. For a sequence of length $n$ with KV heads $H_{kv}$ of dimension $d_h$ across $L$ layers, the KV-cache occupies $2 \times L \times H_{kv} \times n \times d_h$ floating-point values. At FP16 precision, a model with 80 layers and 8 KV heads (GQA) processing a 1M-token context requires roughly 300 GB of KV-cache alone — before accounting for model weights, activations, or batch overhead. Even a smaller 32-layer model with 4 KV heads needs ~75 GB.

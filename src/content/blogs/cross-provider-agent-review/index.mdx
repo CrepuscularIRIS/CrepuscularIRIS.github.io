@@ -5,7 +5,7 @@ publishDate: "2026-04-16"
 tags: [agents, mcp, claude-code, codex, code-review, multi-model, engineering]
 category: engineering
 language: en
-draft: false
+draft: true
 ---
 
 The most effective code review system I have used this year does not rely on a single model. It sends the same diff through Claude Opus 4.6 and OpenAI's Codex CLI, collects both critiques, and synthesizes a final verdict. The two models catch different classes of bugs. Claude is stronger on architectural coherence and long-range dependency tracking. Codex is faster at spotting surface-level issues — unused imports, naming inconsistencies, off-by-one errors in loops.

@@ -5,7 +5,7 @@ publishDate: "2026-04-17"
 tags: [Claude, Anthropic, long-context, agent-harness, context-engineering, 1M-context, kv-cache]
 category: engineering
 language: en
-draft: false
+draft: true
 ---
 
 Anthropic has shipped Claude Opus 4.7 with a 1M-token context window. The announcement read like a version bump — a step-up from Opus 4.6's "Mythos" architecture without a new name — but a 5x context expansion on the flagship reasoning model is not a minor change, because agent harnesses are designed around the context limits of the model they were written for. Every compaction heuristic, summary injection, and memory file was motivated by a specific number, and when the number moves, parts of the harness become dead weight.

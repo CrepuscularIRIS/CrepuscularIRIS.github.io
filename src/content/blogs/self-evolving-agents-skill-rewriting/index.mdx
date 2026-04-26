@@ -5,7 +5,7 @@ publishDate: "2026-04-17"
 tags: [agents, self-modification, skills, reliability, safety, governance, tool-use]
 category: engineering
 language: en
-draft: false
+draft: true
 ---
 
 The standard failure loop for a production agent is: call tool, get error, retry with the same tool code, give up if retries exhaust. It works for transient errors. It does nothing for the more common class of failure where the tool code is actually wrong — the API was deprecated, the schema drifted, the agent learned the call on stale training data. A retry with the same code is a retry with the same bug.

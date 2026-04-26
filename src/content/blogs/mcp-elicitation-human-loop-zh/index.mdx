@@ -5,7 +5,7 @@ publishDate: "2026-04-16"
 tags: [mcp, agent-infrastructure, human-in-the-loop, protocol-design, elicitation]
 category: engineering
 language: zh
-draft: false
+draft: true
 ---
 
 Model Context Protocol (MCP) 的最初设计基于一个清晰的隔离架构：客户端发起请求，服务端执行工具，结果返回。在这种模式下，工具就像是一个"黑盒"，接收参数并返回输出。如果工具在执行过程中发现信息不足，通常只有两个选择：要么报错失败，要么盲目猜测。在生产级的 Agent 工作流中，这两种选择往往都会导致糟糕的结果。

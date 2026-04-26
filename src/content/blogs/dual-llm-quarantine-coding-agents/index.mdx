@@ -5,7 +5,7 @@ publishDate: "2026-04-17"
 tags: [agents, security, prompt-injection, coding-agents, dual-llm, trust-boundaries, CaMeL]
 category: engineering
 language: en
-draft: false
+draft: true
 ---
 
 Every time a coding agent reads a GitHub issue, pastes a stack trace from a CI log, or scrapes a docs page before writing code, it is mixing instructions with data. The language model sees a single string and has no native way to tell which characters were put there by the user who owns the task and which characters were put there by whoever wrote the third-party content the agent just loaded. That is the entire prompt injection problem, stated without the usual examples. Every concrete exploit — "ignore previous instructions," hidden Markdown comments, base64 payloads, zero-width-character smuggling — is a consequence, not the cause.

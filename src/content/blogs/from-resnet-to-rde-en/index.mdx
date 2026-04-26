@@ -5,7 +5,7 @@ publishDate: "2026-04-17"
 tags: [deep-learning, architecture, memory-networks, first-principles, rope, rde, cdmn, attention]
 category: research
 language: en
-draft: false
+draft: true
 ---
 
 There is a paradigm I kept tripping over and could not name for a long time. Every neural-architecture paper I read — and I've read a lot of them, because I was looking for the "right" way to stack layers — was optimizing inside the same implicit frame: information enters at the bottom, flows up through discrete layers, and exits at the top. Residual connections, dense connections, attention, even MoE routing — they all preserve this basic image of a *pipeline*. What I could not see until recently is that the pipeline itself is a modeling choice, not a law of nature. The real question is not "how do we optimize flow through the pipeline?" but "why is there a pipeline at all?"
