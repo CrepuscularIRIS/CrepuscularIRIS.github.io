@@ -3,27 +3,11 @@ import config from '@/site-config'
 import { Icon } from '@/components/user'
 import LanguageSwitch from '@/components/user/LanguageSwitch.astro'
 import { getRelativeLocaleUrl } from 'astro:i18n'
-import { getBlogCollection, getUniqueCategories } from '@/server'
 
-// Get all categories for the dropdown menu
-const allCollections = await getBlogCollection()
-const allCategories = getUniqueCategories(allCollections)
-
-// Define category display names and filter allowed categories
-const categoryMap: Record<string, string> = {
-  'tech': 'Technical',
-  'daily': 'Daily Life',
-  'research': 'Research',
-  'journal': 'Month Journal'
-}
-
-// Define custom order (Research first)
-const categoryOrder = ['research', 'tech', 'daily', 'journal']
-
-// Filter and map categories with custom order
-const categories = categoryOrder
-  .filter(cat => allCategories.includes(cat))
-  .map(cat => ({ slug: cat, name: categoryMap[cat] }))
+// Navbar items come straight from site.config.ts header.menu (Engineering / Research / Activity / Projects / Links / About).
+// Per user-directive 2026-04-27: NO dropdown for Research — the legacy
+// {tech, daily, journal, research} sub-categories are obsolete since the
+// 2-bucket model (Engineering / Research) is the canonical taxonomy.
 
 // 处理 trailingSlash: 'never' 配置的辅助函数
 function getLocalizedUrl(locale: string | undefined, path: string) {
@@ -58,46 +42,15 @@ function getLocalizedUrl(locale: string | undefined, path: string) {
     >
       <div class='flex flex-col items-center justify-center md:flex-row'>
         {
-          (config.header?.menu || []).map((item: any) => {
-            const isBlogMenu = item.link === '/blog/research' || item.title === 'Blog'
-            if (isBlogMenu && categories.length > 0) {
-              return (
-                <div class='menu-item-with-dropdown relative w-full md:w-fit' style='position: relative;'>
-                  <a
-                    href={getLocalizedUrl(Astro.currentLocale, item.link)}
-                    class='blog-menu-link flex w-full flex-none items-center justify-end py-2 font-medium transition-none hover:text-primary md:px-3 md:justify-center'
-                    aria-label='Nav menu item'
-                  >
-                    {item.title}
-                    <Icon name='chevron-down' class='chevron-icon ml-1 size-4 transition-transform' />
-                  </a>
-                  {/* Dropdown menu */}
-                  <div class='dropdown-menu absolute right-0 top-full mt-0 w-48 rounded-xl border border-border bg-background/80 shadow-lg backdrop-blur-md dark:bg-muted/80 md:left-0 md:right-auto' style='z-index: 9999;'>
-                    <div class='py-1'>
-                      {categories.map((category) => (
-                        <a
-                          href={getLocalizedUrl(Astro.currentLocale, `/blog/${category.slug}`)}
-                          class='category-link block px-4 py-2 text-sm transition-colors hover:bg-background/60 hover:text-primary dark:hover:bg-muted/60'
-                        >
-                          {category.name}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )
-            }
-            
-            return (
-              <a
-                href={getLocalizedUrl(Astro.currentLocale, item.link)}
-                class='w-full flex-none grow py-2 text-right font-medium transition-none hover:text-primary md:w-fit md:px-3'
-                aria-label='Nav menu item'
-              >
-                {item.title}
-              </a>
-            )
-          })
+          (config.header?.menu || []).map((item: any) => (
+            <a
+              href={getLocalizedUrl(Astro.currentLocale, item.link)}
+              class='w-full flex-none grow py-2 text-right font-medium transition-none hover:text-primary md:w-fit md:px-3'
+              aria-label='Nav menu item'
+            >
+              {item.title}
+            </a>
+          ))
         }
         <a class='w-full flex-none grow py-2 text-right font-medium transition-none hover:text-primary md:w-fit md:px-3' href='https://www.travellings.cn/go.html' title='Travellings' target='_blank' rel='noopener noreferrer'>
           <span class='sr-only'>Travellings</span>

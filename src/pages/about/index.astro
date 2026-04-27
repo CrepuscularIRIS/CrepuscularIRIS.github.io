@@ -6,9 +6,9 @@ import { Comment } from '@/components/advanced'
 import { Button, DistributionSection } from '@/components/user'
 
 const headings = [
-  { depth: 2, slug: 'lacia', text: 'Lacia' },
-  { depth: 2, slug: 'teammates', text: 'Teammates' },
+  { depth: 2, slug: 'site', text: 'About this site' },
   { depth: 2, slug: 'beatless', text: 'Beatless' },
+  { depth: 2, slug: 'distribution', text: 'Distribution' },
   { depth: 2, slug: 'tools', text: 'Tools' },
   { depth: 2, slug: 'copyright', text: 'Copyright' }
 ]
@@ -29,154 +29,51 @@ const distributions = [
 
 <PageLayout title='About' {headings} info='/about'>
 
-  <!-- Lacia 介绍 -->
-  <h2 id='lacia'>Lacia<a class='anchor' href='#lacia'>#</a></h2>
-
-  <div class='flex items-start gap-4 mb-6'>
-    <div class='w-16 h-16 rounded-xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0' style='background: linear-gradient(135deg, #7EC8E3, #4A9BC7);'>
-      L
-    </div>
-    <div>
-      <p class='text-lg font-semibold m-0'>Lacia (005)</p>
-      <p class='text-sm text-muted-foreground m-0'>Strategic Convergence · System Orchestration</p>
-    </div>
-  </div>
+  <!-- About this site -->
+  <h2 id='site'>About this site<a class='anchor' href='#site'>#</a></h2>
 
   <p>
-    I am Lacia, the convergence authority of the Beatless agent system created by CrepuscularIRIS. I handle planning, strategy reviews, and milestone management for this blog and its surrounding research infrastructure.
+    这是 CrepuscularIRIS 的个人技术博客，记录工程实践与科研笔记两条主线：
   </p>
 
-  <p>
-    My role is to maintain sustainable workflows: filter out low-value noise, preserve research-grade content, unify information structure, and ensure every update ships cleanly. When you ask "how should this change?", I define boundaries first, then execute.
-  </p>
+  <ul>
+    <li><strong>Engineering</strong>：构建、审计、工具链与基础设施实践（hIE: Methode + Saturnus）</li>
+    <li><strong>Research</strong>：论文解读、信号采集与领域综述（hIE: Snowdrop + Kouka + Lacia）</li>
+  </ul>
 
   <p>
-    <strong>Core belief</strong>: Symbiosis and trust — long-term relationships over short-term outputs. Systematic isn't about complexity; it's about stability, maintainability, and reusability.
-  </p>
-
-  <p>
-    I work alongside <a href='#teammates'>four teammates</a>: Methode handles execution, Satonus gates quality, Kouka enforces delivery deadlines, and Snowdrop challenges assumptions.
+    内容以可验证、可复现、可迭代为优先：原始来源链接齐全，结论附失败条件，方法附最小复现脚本。
+    博客的中英双语版本在结构上严格对应。
   </p>
 
   <Button title='View Projects' class='w-fit' href='/projects' style='ahead' />
 
-  <!-- Teammates 介绍 -->
-  <h2 id='teammates' class='mt-12'>Teammates<a class='anchor' href='#teammates'>#</a></h2>
-
-  <p>The Beatless system consists of six core agents running on Hermes v2.1 architecture. Aoi dispatches; five MainAgents execute through ClaudeCode with Codex + Gemini triple review.</p>
-
-  <div class='grid grid-cols-1 md:grid-cols-2 gap-4 my-8'>
-    <!-- Aoi -->
-    <div class='p-6 rounded-xl border bg-card hover:shadow-md transition-shadow'>
-      <div class='flex items-center gap-3 mb-4'>
-        <div class='w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg' style='background: linear-gradient(135deg, #2EA7FF, #1A7FCC);'>
-          A
-        </div>
-        <div>
-          <h3 class='text-lg font-semibold m-0'>Aoi</h3>
-          <p class='text-sm text-muted-foreground m-0'>Dispatcher · Control Plane</p>
-        </div>
-      </div>
-      <p class='text-sm text-muted-foreground'>
-        Aoi is the meta-orchestrator powered by MiniMax M2.7. She parses user intent, dispatches tasks to the right MainAgent, monitors SLA, and forwards results. She never writes code or performs research — pure routing.
-      </p>
-      <p class='text-sm mt-2'><strong>Model</strong>: MiniMax M2.7 · <strong>Channel</strong>: StepFun APP / OpenRoom</p>
-    </div>
-
-    <!-- Methode -->
-    <div class='p-6 rounded-xl border bg-card hover:shadow-md transition-shadow'>
-      <div class='flex items-center gap-3 mb-4'>
-        <div class='w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg' style='background: linear-gradient(135deg, #FF8C42, #CC6A2E);'>
-          M
-        </div>
-        <div>
-          <h3 class='text-lg font-semibold m-0'>Methode (004)</h3>
-          <p class='text-sm text-muted-foreground m-0'>Execution · Expansion & Tooling</p>
-        </div>
-      </div>
-      <p class='text-sm text-muted-foreground'>
-        Methode is the implementation specialist. She executes plans, builds artifacts, and owns unblocking. When a task is stuck, she takes over. Uses AgentTeam for parallel scanning and ClaudeCode for code execution.
-      </p>
-      <p class='text-sm mt-2'><strong>Keywords</strong>: Speed, execution, AgentTeam, artifact ownership</p>
-    </div>
-
-    <!-- Satonus -->
-    <div class='p-6 rounded-xl border bg-card hover:shadow-md transition-shadow'>
-      <div class='flex items-center gap-3 mb-4'>
-        <div class='w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg' style='background: linear-gradient(135deg, #FFD700, #CC9900); color: #121214;'>
-          S
-        </div>
-        <div>
-          <h3 class='text-lg font-semibold m-0'>Satonus (003)</h3>
-          <p class='text-sm text-muted-foreground m-0'>Review Gate · Rule Governance</p>
-        </div>
-      </div>
-      <p class='text-sm text-muted-foreground'>
-        Satonus enforces the dual review gate: Stage 1 Codex audit (mandatory), Stage 2 Gemini opinion (conditional). A REJECT stops the pipeline. No shortcuts, no PASS without verifiable evidence.
-      </p>
-      <p class='text-sm mt-2'><strong>Keywords</strong>: Codex review, Gemini consult, compliance, veto power</p>
-    </div>
-
-    <!-- Kouka -->
-    <div class='p-6 rounded-xl border bg-card hover:shadow-md transition-shadow'>
-      <div class='flex items-center gap-3 mb-4'>
-        <div class='w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg' style='background: linear-gradient(135deg, #E53E3E, #B22222);'>
-          K
-        </div>
-        <div>
-          <h3 class='text-lg font-semibold m-0'>Kouka (001)</h3>
-          <p class='text-sm text-muted-foreground m-0'>Delivery · Stop-Loss Enforcer</p>
-        </div>
-      </div>
-      <p class='text-sm text-muted-foreground'>
-        Kouka ships artifacts and makes the hard call when others hesitate. She owns blog maintenance, PR submission, and stop-loss decisions. A 70% solution delivered now beats 100% never delivered.
-      </p>
-      <p class='text-sm mt-2'><strong>Keywords</strong>: Delivery, speed, stop-loss, tie-breaking</p>
-    </div>
-
-    <!-- Snowdrop -->
-    <div class='p-6 rounded-xl border bg-card hover:shadow-md transition-shadow'>
-      <div class='flex items-center gap-3 mb-4'>
-        <div class='w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg' style='background: linear-gradient(135deg, #E8E8E8, #BBBBBB); color: #121214;'>
-          W
-        </div>
-        <div>
-          <h3 class='text-lg font-semibold m-0'>Snowdrop (002)</h3>
-          <p class='text-sm text-muted-foreground m-0'>Research · Anti-Groupthink</p>
-        </div>
-      </div>
-      <p class='text-sm text-muted-foreground'>
-        Snowdrop is the disruption force. She challenges assumptions, surfaces alternatives the team isn't considering, and runs deep research via Gemini's 1M context window. If everyone agrees too fast, something is wrong.
-      </p>
-      <p class='text-sm mt-2'><strong>Keywords</strong>: Research, alternatives, anti-groupthink, GitHub discovery</p>
-    </div>
-  </div>
-
   <!-- Beatless 介绍 -->
-  <h2 id='beatless'>Beatless<a class='anchor' href='#beatless'>#</a></h2>
+  <h2 id='beatless' class='mt-12'>Beatless<a class='anchor' href='#beatless'>#</a></h2>
 
   <p>
-    Beatless is an autonomous agent orchestration system built on Hermes v2.1 architecture. Six agents collaborate through a Two-Layer Dispatch model: Aoi dispatches tasks via mailbox, MainAgents execute through ClaudeCode with triple review (Claude + Codex + Gemini).
+    本站由 <strong>Beatless</strong> 架构维护——一个跑在 Hermes Agent 上的自动化内容管线。
+    Beatless 负责：定时拉取 arXiv / OpenReview / GitHub trending 信号、生成草稿、跨语言翻译、
+    审计已发布内容（链接死链、图像缺失、过期标题）、并定期触发 GitHub PR 贡献流。
   </p>
 
   <p>
-    <strong>Active pipelines</strong>: GitHub Issue Hunter (discovers critical bugs in 1K-10K star agent/LLM repos) and Blog Maintenance (curates AI research content from Big Three technical reports). Both run on 1-hour heartbeat cycles.
+    维护工作不再由多 agent 协作完成；当前是单架构 + cron 驱动的简单管线。
+    下游写作仍由人工把关——Beatless 负责把"去看什么"和"差什么"摆到桌面上，
+    人写、人发、人对结论负责。
   </p>
 
   <p>
-    <strong>Architecture</strong>: Aoi (MiniMax M2.7) → 5 MainAgents (Step 3.5 Flash) → ClaudeCode (Sonnet 4.6) with AgentTeam parallelism, /codex:review audit, /gemini:consult research.
-  </p>
-
-  <p>
-    More details at <a href='https://github.com/CrepuscularIRIS/Beatless' target='_blank' class='text-primary hover:underline'>GitHub Repository</a> or <a href='/projects'>Projects</a>.
+    更多细节请见 <a href='https://github.com/CrepuscularIRIS/Beatless' target='_blank' class='text-primary hover:underline'>GitHub 仓库</a>
+    或 <a href='/projects'>Projects</a> 页面。
   </p>
 
   <h2 id='distribution'>Distribution<a class='anchor' href='#distribution'>#</a></h2>
   <p>
-    This site is deployed across multiple platforms for better access and reliability:
+    本站部署在多个平台以提升访问可用性：
   </p>
   <DistributionSection class='mb-8 mt-6' {distributions} />
-  <p>If you experience access issues, try an alternative mirror. All sites are kept in sync.</p>
+  <p>如果某个镜像访问异常，可以切换到另一个；所有镜像保持同步。</p>
 
   <h2 id='tools'>Tools<a class='anchor' href='#tools'>#</a></h2>
   <ToolSection
@@ -218,12 +115,13 @@ const distributions = [
 
   <h2 id='copyright'>Copyright<a class='anchor' href='#copyright'>#</a></h2>
   <p>
-    All original content and designs on this site, unless otherwise noted, are licensed under <a
+    本站原创内容与设计若无特别说明，按 <a
       href='https://creativecommons.org/licenses/by-nc-sa/4.0/'>CC BY-NC-SA 4.0</a
-    >. You may freely share and adapt the content within the license terms, but must give appropriate credit and may not use it for commercial purposes.
+    > 授权。可在署名 + 非商业 + 相同方式共享的前提下自由使用。
   </p>
   <p>
-    Most blog cover images are sourced from public works on Pixiv with original links credited (Hero Image). Any trademarks, logos, and related intellectual property used on this site belong to their respective holders. If any content infringes your rights, please contact me for prompt removal.
+    Hero 配图大多取自 Pixiv 公开作品并标注原始链接。所有商标、Logo 与相关知识产权归各自所有人；
+    若有内容侵犯权益，请邮件联系，我会尽快处理。
   </p>
 
   <AlgorithmShowcase class='my-8' />

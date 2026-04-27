@@ -6,10 +6,11 @@ import { Comment } from '@/components/advanced'
 import { DistributionSection } from '@/components/user'
 
 const headings = [
+  { depth: 2, slug: 'site', text: 'About this site' },
+  { depth: 2, slug: 'beatless', text: 'Beatless' },
   { depth: 2, slug: 'distribution', text: 'Distribution' },
   { depth: 2, slug: 'tools', text: 'Tools' },
-  { depth: 2, slug: 'copyright', text: 'Copyright' },
-  { depth: 2, slug: 'theme', text: 'Theme' }
+  { depth: 2, slug: 'copyright', text: 'Copyright' }
 ]
 
 const distributions = [
@@ -27,10 +28,29 @@ const distributions = [
 ---
 
 <PageLayout title='About' {headings} info='/about'>
-  <p>AI Researcher & Engineer</p>
+  <h2 id='site'>About this site<a class='anchor' href='#site'>#</a></h2>
   <p>
-    Exploring the frontiers of AI architecture and neural network design. Focusing on depth ontology, residual mechanisms, and next-generation transformer architectures.
+    Personal tech blog by CrepuscularIRIS, organised into two streams:
   </p>
+  <ul>
+    <li><strong>Engineering</strong> — build, audit, tooling, infrastructure (hIE: Methode + Saturnus)</li>
+    <li><strong>Research</strong> — paper interpretation, signal scanning, domain digests (hIE: Snowdrop + Kouka + Lacia)</li>
+  </ul>
+  <p>
+    Verifiable, reproducible, iterable: every claim is sourced, every result has a failure condition, every method ships with a minimal repro. The Chinese and English versions are structurally aligned.
+  </p>
+
+  <h2 id='beatless' class='mt-12'>Beatless<a class='anchor' href='#beatless'>#</a></h2>
+  <p>
+    This site is maintained by <strong>Beatless</strong> — an autonomous content pipeline running on the Hermes Agent runtime. Beatless pulls signals from arXiv / OpenReview / GitHub trending, generates drafts, handles cross-language translation, audits published content for stale links / broken images / outdated titles, and periodically drives GitHub PR contributions.
+  </p>
+  <p>
+    Maintenance is no longer multi-agent collaborative; it is a single-architecture cron-driven pipeline. Writing remains human-gated — Beatless surfaces "what to look at" and "what's missing"; the human writes, ships, and owns the conclusions.
+  </p>
+  <p>
+    More details on <a href='https://github.com/CrepuscularIRIS/Beatless' target='_blank' class='text-primary hover:underline'>GitHub</a> or the <a href='/en/projects'>Projects</a> page.
+  </p>
+
   <h2 id='distribution'>Website Distribution<a class='anchor' href='#distribution'>#</a></h2>
   <p>
     To provide a better browsing experience and improved reliability, this site is deployed across
