@@ -7,7 +7,8 @@ category: engineering
 language: zh
 draft: false
 hIE: methode
-hero_image: /assets/hIE/methode/478880-beatless-bodysuit-fhilippedu-methode.jpg
+heroImage:
+  src: ../../../assets/hIE/methode/478880-beatless-bodysuit-fhilippedu-methode.jpg
 ---
 
 一个连续运行八小时的自主编码 Agent，到了后期，每一步的成本大部分都花在自己三小时前产生的 token 上。不是用户的任务，不是正在编辑的文件，而是它自己的历史工具调用、半途而废的计划、被放弃的子目标，以及四条 commit 之前用来 debug 的完整错误堆栈。这是当前长时距 Agent 系统最大的低效，而且这不是"context window 太小"的问题。2M token 的 window 反而让情况更糟，因为模型在字面意义上的 transformer attention 层面，持续在越来越长的自身陈旧推理尾巴上消耗资源。

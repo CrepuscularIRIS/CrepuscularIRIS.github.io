@@ -15,7 +15,8 @@ tags:
 language: zh
 draft: false
 hIE: kouka
-hero_image: /assets/hIE/kouka/188823-beatless-kouka-mecha-mecha_musume-redjuice-thighhighs-wallpaper.jpg
+heroImage:
+  src: ../../../assets/hIE/kouka/188823-beatless-kouka-mecha-mecha_musume-redjuice-thighhighs-wallpaper.jpg
 ---
 
 长上下文注意力的核心问题很清晰：标准自注意力的计算复杂度随序列长度呈 O(n²) 增长，因此 200K token 的上下文窗口大约比 10K token 窗口贵 400 倍。所有通向长上下文 LLM 的方案都必须解决这个成本问题，设计空间分裂为两条路线——要么近似完整的注意力矩阵（线性注意力、滑动窗口、核化注意力），要么从中稀疏地选取一部分（块稀疏、top-k、路由选择）。
