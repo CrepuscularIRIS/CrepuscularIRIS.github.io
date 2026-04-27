@@ -14,7 +14,7 @@ language: zh
 draft: true
 hIE: snowdrop
 heroImage:
-  src: ../../../assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+  src: ../../../assets/hIE/snowdrop/image.png
 ---
 
 2023 年主导的 EEG 解码架构是 Conformer 或各种 EEG 化的 Transformer 变体——EEGNet-Transformer 混合结构、ViT 风格的通道-时间 patch、跨被试注意力模型。它们在 BCI Competition IV-2a 上击败了卷积基线，扩展到多被试预训练，基准表上堆满了对看似已定型的架构的微小改进。但一个令人不安的细节是，如果你仔细观察训练曲线，会发现 **Transformer 是在对抗信号，而不是拟合信号**。

@@ -8,7 +8,7 @@ language: zh
 draft: false
 hIE: methode
 heroImage:
-  src: ../../../assets/hIE/methode/669371-ass-beatless-bodysuit-dress-kouka-lacia-maid-mariage-mecha_musume-methode.jpg
+  src: ../../../assets/hIE/methode/image.png
 ---
 
 当一个自主 agent 做出了你不想看到决策时，你第一个伸手去拿的就是 trace。这种预期——来自十年微服务调试经验——是 trace 能告诉你哪个服务调用了哪个、传了什么参数、以什么顺序、以及时间花在了哪里。OpenTelemetry 的 GenAI 语义约定将同样的模型扩展到 LLM 和 agent 工作负载：`gen_ai.system`、`gen_ai.operation.name`、`gen_ai.request.model`，外加 token 计数和成本。表面上，一次 LLM 调用看起来就像一次 HTTP 调用：一个 span、属性、一段耗时、一个状态码。

@@ -1,20 +1,14 @@
-// Static fallback images per hIE category. Astro requires static imports for
-// asset processing, so the candidates are listed up-front; the picker is
-// deterministic so the same post always renders the same hero across reloads.
+// One-image-per-hIE fallback. The blog now uses a single user-drawn image per
+// 5-hIE category (image.png in each src/assets/hIE/<category>/ dir). The pool
+// model from the earlier 14-asset library is collapsed: every hIE category
+// resolves to its single signature image, and posts without an explicit
+// heroImage frontmatter render the matching category illustration.
 
-import kouka1 from '@/assets/hIE/kouka/181339-beatless-kouka-redjuice-thighhighs.jpg'
-import kouka2 from '@/assets/hIE/kouka/188823-beatless-kouka-mecha-mecha_musume-redjuice-thighhighs-wallpaper.jpg'
-import kouka3 from '@/assets/hIE/kouka/444647-animal_ears-beatless-cleavage-kouka-nyaa__28nnekoron_29-thighhighs.jpg'
-
-import lacia1 from '@/assets/hIE/lacia/lacia-1920x1200-869498.jpg'
-import lacia2 from '@/assets/hIE/lacia/lacia-futuristic-glow-909177.jpg'
-
-import methode1 from '@/assets/hIE/methode/445955-beatless-bodysuit-dress-katou_hiromasa-lacia-methode-snowdrop.jpg'
-import methode2 from '@/assets/hIE/methode/478880-beatless-bodysuit-fhilippedu-methode.jpg'
-import methode3 from '@/assets/hIE/methode/669371-ass-beatless-bodysuit-dress-kouka-lacia-maid-mariage-mecha_musume-methode.jpg'
-
-import snowdrop1 from '@/assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg'
-import snowdrop2 from '@/assets/hIE/snowdrop/348914-beatless-no_bra-pointy_ears-redjuice-see_through-snowdrop-tattoo.jpg'
+import kouka from '@/assets/hIE/kouka/image.png'
+import lacia from '@/assets/hIE/lacia/image.png'
+import methode from '@/assets/hIE/methode/image.png'
+import saturnus from '@/assets/hIE/saturnus/image.png'
+import snowdrop from '@/assets/hIE/snowdrop/image.png'
 
 import shared1 from '@/assets/hIE/_shared/280186-multi-arato-kouka-lacia-methode-snowdrop.jpg'
 import shared2 from '@/assets/hIE/_shared/cybernetic-922741.jpg'
@@ -23,15 +17,15 @@ import shared4 from '@/assets/hIE/_shared/group-kengo-lacia-922740.jpg'
 
 type ImgImport = ImageMetadata
 
-const POOLS: Record<string, ImgImport[]> = {
-  kouka: [kouka1, kouka2, kouka3],
-  lacia: [lacia1, lacia2],
-  methode: [methode1, methode2, methode3],
-  snowdrop: [snowdrop1, snowdrop2],
-  // No saturnus assets yet — fall back to shared.
-  saturnus: [shared1, shared3],
-  _shared: [shared1, shared2, shared3, shared4]
+const HIE_IMAGE: Record<string, ImgImport> = {
+  kouka,
+  lacia,
+  methode,
+  saturnus,
+  snowdrop
 }
+
+const SHARED_POOL: ImgImport[] = [shared1, shared2, shared3, shared4]
 
 function hashString(s: string): number {
   let h = 0
@@ -41,8 +35,15 @@ function hashString(s: string): number {
   return Math.abs(h)
 }
 
-/** Pick a stable fallback hero image based on hIE category and slug. */
+/** Pick a deterministic fallback hero. If hIE matches a known category, use
+ *  that category's signature image. Otherwise fall back to the shared pool
+ *  (used for legacy posts without an hIE field). */
 export function pickHeroFallback(hIE: string | undefined, slug: string): ImgImport {
-  const pool = (hIE && POOLS[hIE]) || POOLS._shared
-  return pool[hashString(slug) % pool.length]
+  if (hIE && HIE_IMAGE[hIE]) return HIE_IMAGE[hIE]
+  return SHARED_POOL[hashString(slug) % SHARED_POOL.length]
+}
+
+/** Direct lookup by hIE category — used when migrating frontmatter refs. */
+export function heroForHIE(hIE: string): ImgImport | undefined {
+  return HIE_IMAGE[hIE]
 }

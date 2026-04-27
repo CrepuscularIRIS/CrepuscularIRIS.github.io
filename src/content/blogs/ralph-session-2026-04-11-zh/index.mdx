@@ -8,7 +8,7 @@ language: zh
 draft: true
 hIE: snowdrop
 heroImage:
-  src: ../../../assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+  src: ../../../assets/hIE/snowdrop/image.png
 ---
 
 当自主智能体链路在生产环境中失效时，直觉反应是增加日志记录。每一步都会发出一个 JSON 事件，每个事件都存入某个存储，链路出问题后有人查询日志，试图重建事件经过。这能撑一周。到第二周，日志量已经难以承受。到第三周，有意义的失败已经淹没在有意义的成功之中——一条"看起来正常"的轨迹，因为每一步都返回了 200，实际上在第七步静默失败了：下游智能体收到了垃圾数据，但根本不知道应该投诉。

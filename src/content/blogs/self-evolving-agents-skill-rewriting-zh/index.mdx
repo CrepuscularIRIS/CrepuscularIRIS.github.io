@@ -7,7 +7,7 @@ language: zh
 draft: true
 hIE: snowdrop
 heroImage:
-  src: ../../../assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+  src: ../../../assets/hIE/snowdrop/image.png
 ---
 
 生产智能体在运行中遇到的标准失败循环是：调用工具、得到错误、用相同的工具代码重试、重试次数耗尽后放弃。这对临时性错误有效。但对于更常见的失败类型——工具代码本身就是错的——这完全无效：API 已弃用、schema 发生漂移、智能体在过时的训练数据上学到了这个调用。用相同的代码重试，就是在用相同的 bug 重试。

@@ -8,7 +8,7 @@ language: zh
 draft: false
 hIE: methode
 heroImage:
-  src: ../../../assets/hIE/methode/669371-ass-beatless-bodysuit-dress-kouka-lacia-maid-mariage-mecha_musume-methode.jpg
+  src: ../../../assets/hIE/methode/image.png
 ---
 
 MCP（Model Context Protocol）的第一波采纳解决了发现问题——Agent 如何知道有哪些工具可用、参数是什么、如何调用？答案很简单：全部塞进上下文窗口。服务器暴露的每个工具都变成一份 JSON Schema，注入系统提示词。模型读取 Schema，选择工具，发出结构化调用。服务器只有五到十个工具时，这套机制运转良好。当生产环境开始暴露数百个工具时，它就不行了。

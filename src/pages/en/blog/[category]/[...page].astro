@@ -11,7 +11,12 @@ import config from '@/site-config'
 export const prerender = true
 
 export const getStaticPaths = (async ({ paginate }) => {
-  // 5-hIE taxonomy slug map — kept in sync with src/pages/blog/[category]/[...page].astro
+  // Two-bucket nav, mirrors src/pages/blog/[category]/[...page].astro.
+  const BUCKETS: Array<[string, string, string[], string]> = [
+    ['engineering', 'Engineering', ['methode', 'saturnus'], 'Build · Audit'],
+    ['research',    'Research',    ['snowdrop', 'kouka', 'lacia'], 'Papers · Signals · Digest']
+  ]
+
   const HIE_SLUGS: Array<[string, string, string]> = [
     ['papers',  'snowdrop', 'Papers'],
     ['signals', 'kouka',    'Signals'],
@@ -23,9 +28,7 @@ export const getStaticPaths = (async ({ paginate }) => {
   const legacyCategoryMap: Record<string, string> = {
     'tech': 'Technical',
     'daily': 'Daily Life',
-    'research': 'Research',
     'journal': 'Month Journal',
-    'engineering': 'Engineering',
     'interpretation': 'Interpretation',
     'technical': 'Technical',
     'updates': 'Updates',
@@ -33,26 +36,37 @@ export const getStaticPaths = (async ({ paginate }) => {
   }
   const categoryMap: Record<string, string> = { ...legacyCategoryMap }
   for (const [slug, , label] of HIE_SLUGS) categoryMap[slug] = label
+  for (const [slug, label] of BUCKETS) categoryMap[slug] = label
 
   const allCollections = await getBlogCollectionEn()
 
+  const bucketSlugs = BUCKETS.map(([slug]) => slug)
   const hieSlugs = HIE_SLUGS.map(([slug]) => slug)
-  const legacyCategoryOrder = ['engineering', 'research', 'interpretation', 'tech', 'technical', 'opinion', 'updates', 'daily', 'journal']
+  const legacyCategoryOrder = ['interpretation', 'tech', 'technical', 'opinion', 'updates', 'daily', 'journal']
   const allUniqueCategories = getUniqueCategories(allCollections)
   const liveLegacy = legacyCategoryOrder.filter(cat => allUniqueCategories.includes(cat))
 
-  const navOrder = hieSlugs
-  const allRoutes = [...hieSlugs, ...liveLegacy]
+  const navOrder = bucketSlugs
+  const allRoutes = [...bucketSlugs, ...hieSlugs, ...liveLegacy]
 
   return allRoutes.flatMap((slug) => {
+    const bucketEntry = BUCKETS.find(([s]) => s === slug)
     const hieEntry = HIE_SLUGS.find(([s]) => s === slug)
     const collections = sortMDByDate(
-      hieEntry
-        ? getCollectionsByHie(allCollections, hieEntry[1])
-        : getCollectionsByCategory(allCollections, slug)
+      bucketEntry
+        ? bucketEntry[2].flatMap(code => getCollectionsByHie(allCollections, code))
+        : hieEntry
+          ? getCollectionsByHie(allCollections, hieEntry[1])
+          : getCollectionsByCategory(allCollections, slug)
     )
-    const uniqueTags = getUniqueTags(collections)
-    const collectionsCount = collections.length
+    const seen = new Set<string>()
+    const dedupCollections = collections.filter(c => {
+      if (seen.has(c.id)) return false
+      seen.add(c.id)
+      return true
+    })
+    const uniqueTags = getUniqueTags(dedupCollections)
+    const collectionsCount = dedupCollections.length
 
     const navIdx = navOrder.indexOf(slug)
     const prevCategory = navIdx >= 0
@@ -62,7 +76,7 @@ export const getStaticPaths = (async ({ paginate }) => {
       ? navOrder[navIdx === navOrder.length - 1 ? 0 : navIdx + 1]
       : navOrder[0]
 
-    return paginate(collections, {
+    return paginate(dedupCollections, {
       params: { category: slug },
       pageSize: config.content?.blogPageSize || 8,
       props: { uniqueTags, collectionsCount, category: slug, prevCategory, nextCategory, categoryMap }

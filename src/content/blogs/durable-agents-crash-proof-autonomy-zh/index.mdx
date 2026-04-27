@@ -8,7 +8,7 @@ language: zh
 draft: false
 hIE: methode
 heroImage:
-  src: ../../../assets/hIE/methode/445955-beatless-bodysuit-dress-katou_hiromasa-lacia-methode-snowdrop.jpg
+  src: ../../../assets/hIE/methode/image.png
 ---
 
 一个自主 Agent 正在执行一个三小时的任务，期间接收到上游 LLM 提供商的 504 错误。重试成功了，但 worker 进程在重试期间被杀死——OOM kill、容器驱逐、部署滚动、节点重启。Agent 重启了。它对过去三小时毫无记忆，重新执行整个任务，重新发起每一条 LLM 调用，重新获取每个工具结果，重新产生每一笔费用。

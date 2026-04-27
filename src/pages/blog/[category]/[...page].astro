@@ -11,8 +11,15 @@ import config from '@/site-config'
 export const prerender = true
 
 export const getStaticPaths = (async ({ paginate }) => {
-  // 5-hIE taxonomy: user-facing slug → underlying hIE code (frontmatter field).
-  // Order here is the navbar order + circular prev/next order.
+  // Two-bucket nav: each bucket aggregates a subset of the 5-hIE taxonomy.
+  // The 5 hIE pages are still reachable individually below.
+  const BUCKETS: Array<[string, string, string[], string]> = [
+    // [url-slug, display-name, hIE-codes-included, sub-label]
+    ['engineering', 'Engineering', ['methode', 'saturnus'], 'Build · Audit'],
+    ['research',    'Research',    ['snowdrop', 'kouka', 'lacia'], 'Papers · Signals · Digest']
+  ]
+
+  // Per-hIE detail routes — same template, drilldown view.
   const HIE_SLUGS: Array<[string, string, string]> = [
     // [url-slug, hIE-code, display-name]
     ['papers',  'snowdrop', 'Papers'],
@@ -22,50 +29,57 @@ export const getStaticPaths = (async ({ paginate }) => {
     ['digest',  'lacia',    'Digest']
   ]
 
-  // Legacy category names kept for backward-compat URLs (existing posts that
-  // still rely on `category:` field rather than `hIE:`).
+  // Legacy category names kept for backward-compat URLs.
   const legacyCategoryMap: Record<string, string> = {
     'tech': 'Technical',
     'daily': 'Daily Life',
-    'research': 'Research',
     'journal': 'Month Journal',
-    'engineering': 'Engineering',
     'interpretation': 'Interpretation',
     'technical': 'Technical',
     'updates': 'Updates',
     'opinion': 'Opinion'
   }
 
-  // Display name lookup combines hIE labels + legacy categories.
+  // Display name lookup combines bucket labels + hIE labels + legacy categories.
   const categoryMap: Record<string, string> = { ...legacyCategoryMap }
   for (const [slug, , label] of HIE_SLUGS) categoryMap[slug] = label
+  for (const [slug, label] of BUCKETS) categoryMap[slug] = label
 
   const allCollections = await getBlogCollection()
 
-  // Build the route list from hIE slugs (primary nav). Legacy categories
-  // continue to be reachable for backward compat but are no longer in the
-  // circular nav.
+  const bucketSlugs = BUCKETS.map(([slug]) => slug)
   const hieSlugs = HIE_SLUGS.map(([slug]) => slug)
-  const legacyCategoryOrder = ['engineering', 'research', 'interpretation', 'tech', 'technical', 'opinion', 'updates', 'daily', 'journal']
+  const legacyCategoryOrder = ['interpretation', 'tech', 'technical', 'opinion', 'updates', 'daily', 'journal']
   const allUniqueCategories = getUniqueCategories(allCollections)
   const liveLegacy = legacyCategoryOrder.filter(cat => allUniqueCategories.includes(cat))
 
-  // Ordering for prev/next arrows uses ONLY the hIE nav.
-  const navOrder = hieSlugs
+  // Circular prev/next is between the two buckets only — the simple top-level nav.
+  const navOrder = bucketSlugs
 
-  const allRoutes = [...hieSlugs, ...liveLegacy]
+  const allRoutes = [...bucketSlugs, ...hieSlugs, ...liveLegacy]
 
   return allRoutes.flatMap((slug, _idx) => {
+    const bucketEntry = BUCKETS.find(([s]) => s === slug)
     const hieEntry = HIE_SLUGS.find(([s]) => s === slug)
     const collections = sortMDByDate(
-      hieEntry
-        ? getCollectionsByHie(allCollections, hieEntry[1])
-        : getCollectionsByCategory(allCollections, slug)
+      bucketEntry
+        // Bucket route: union of all hIE codes in that bucket.
+        ? bucketEntry[2].flatMap(code => getCollectionsByHie(allCollections, code))
+        : hieEntry
+          ? getCollectionsByHie(allCollections, hieEntry[1])
+          : getCollectionsByCategory(allCollections, slug)
     )
-    const uniqueTags = getUniqueTags(collections)
-    const collectionsCount = collections.length
+    // De-dup if a post has both an hIE code in two buckets (shouldn't, but defensive).
+    const seen = new Set<string>()
+    const dedupCollections = collections.filter(c => {
+      if (seen.has(c.id)) return false
+      seen.add(c.id)
+      return true
+    })
+    const uniqueTags = getUniqueTags(dedupCollections)
+    const collectionsCount = dedupCollections.length
 
-    // Circular prev/next over the hIE nav only (legacy routes get the first/last hIE).
+    // Circular prev/next over the 2-bucket nav. Detail/legacy pages get the first/last bucket.
     const navIdx = navOrder.indexOf(slug)
     const prevCategory = navIdx >= 0
       ? navOrder[navIdx === 0 ? navOrder.length - 1 : navIdx - 1]
@@ -74,7 +88,7 @@ export const getStaticPaths = (async ({ paginate }) => {
       ? navOrder[navIdx === navOrder.length - 1 ? 0 : navIdx + 1]
       : navOrder[0]
 
-    return paginate(collections, {
+    return paginate(dedupCollections, {
       params: { category: slug },
       pageSize: config.content?.blogPageSize || 8,
       props: { uniqueTags, collectionsCount, category: slug, prevCategory, nextCategory, categoryMap }

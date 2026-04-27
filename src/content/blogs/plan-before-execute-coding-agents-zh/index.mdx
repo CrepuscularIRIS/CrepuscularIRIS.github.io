@@ -7,7 +7,7 @@ language: zh
 draft: true
 hIE: snowdrop
 heroImage:
-  src: ../../../assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+  src: ../../../assets/hIE/snowdrop/image.png
 ---
 
 编码智能体最常见的故障模式不是答错了，而是进入了*循环*：智能体执行 `pnpm test`，收到失败信号，改了一个文件，再次执行 `pnpm test`，得到另一个失败，再以不同方式修改同一个文件，第三次执行 `pnpm test`，又回到第一个失败，如此循环九十多次，直到 token 预算耗尽或用户关闭会话。模型从不停下来质疑自己的代码心智模型是否就错了。它只会一直尝试。
