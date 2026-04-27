@@ -12,9 +12,15 @@ export const prerender = true
 
 export const getStaticPaths = (async ({ paginate }) => {
   // Two-bucket nav, mirrors src/pages/blog/[category]/[...page].astro.
-  const BUCKETS: Array<[string, string, string[], string]> = [
-    ['engineering', 'Engineering', ['methode', 'saturnus'], 'Build · Audit'],
-    ['research',    'Research',    ['snowdrop', 'kouka', 'lacia'], 'Papers · Signals · Digest']
+  const BUCKETS: Array<[string, string, string[], string[], string]> = [
+    ['engineering', 'Engineering',
+      ['methode', 'saturnus'],
+      ['tech', 'technical', 'engineering', 'updates'],
+      'Build · Audit · Tech'],
+    ['research',    'Research',
+      ['snowdrop', 'kouka', 'lacia'],
+      ['research', 'interpretation', 'opinion'],
+      'Papers · Signals · Digest']
   ]
 
   const HIE_SLUGS: Array<[string, string, string]> = [
@@ -54,7 +60,10 @@ export const getStaticPaths = (async ({ paginate }) => {
     const hieEntry = HIE_SLUGS.find(([s]) => s === slug)
     const collections = sortMDByDate(
       bucketEntry
-        ? bucketEntry[2].flatMap(code => getCollectionsByHie(allCollections, code))
+        ? [
+            ...bucketEntry[2].flatMap(code => getCollectionsByHie(allCollections, code)),
+            ...bucketEntry[3].flatMap(legacy => getCollectionsByCategory(allCollections, legacy))
+          ]
         : hieEntry
           ? getCollectionsByHie(allCollections, hieEntry[1])
           : getCollectionsByCategory(allCollections, slug)

@@ -11,12 +11,19 @@ import config from '@/site-config'
 export const prerender = true
 
 export const getStaticPaths = (async ({ paginate }) => {
-  // Two-bucket nav: each bucket aggregates a subset of the 5-hIE taxonomy.
-  // The 5 hIE pages are still reachable individually below.
-  const BUCKETS: Array<[string, string, string[], string]> = [
-    // [url-slug, display-name, hIE-codes-included, sub-label]
-    ['engineering', 'Engineering', ['methode', 'saturnus'], 'Build · Audit'],
-    ['research',    'Research',    ['snowdrop', 'kouka', 'lacia'], 'Papers · Signals · Digest']
+  // Two-bucket nav. Each bucket aggregates a subset of the 5-hIE writing
+  // taxonomy AND any legacy `category:` values that semantically belong to it.
+  // The 5 hIE detail pages are still reachable individually below.
+  const BUCKETS: Array<[string, string, string[], string[], string]> = [
+    // [url-slug, display-name, hIE-codes, legacy-category-values, sub-label]
+    ['engineering', 'Engineering',
+      ['methode', 'saturnus'],
+      ['tech', 'technical', 'engineering', 'updates'],
+      'Build · Audit · Tech'],
+    ['research',    'Research',
+      ['snowdrop', 'kouka', 'lacia'],
+      ['research', 'interpretation', 'opinion'],
+      'Papers · Signals · Digest']
   ]
 
   // Per-hIE detail routes — same template, drilldown view.
@@ -63,8 +70,11 @@ export const getStaticPaths = (async ({ paginate }) => {
     const hieEntry = HIE_SLUGS.find(([s]) => s === slug)
     const collections = sortMDByDate(
       bucketEntry
-        // Bucket route: union of all hIE codes in that bucket.
-        ? bucketEntry[2].flatMap(code => getCollectionsByHie(allCollections, code))
+        // Bucket route: union of hIE codes + legacy categories that map to this bucket.
+        ? [
+            ...bucketEntry[2].flatMap(code => getCollectionsByHie(allCollections, code)),
+            ...bucketEntry[3].flatMap(legacy => getCollectionsByCategory(allCollections, legacy))
+          ]
         : hieEntry
           ? getCollectionsByHie(allCollections, hieEntry[1])
           : getCollectionsByCategory(allCollections, slug)
