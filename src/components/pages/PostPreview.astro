@@ -6,6 +6,8 @@ import { getRelativeLocaleUrl } from 'astro:i18n'
 
 import { cn } from '@/utils'
 import { Button, FormattedDate, Icon } from '@/components/user'
+import { canonicalSlug } from '@/server'
+import { pickHeroFallback } from '@/utils/hero-fallback'
 
 type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }> & {
   post: CollectionEntry<CollectionKey>
@@ -19,6 +21,7 @@ const { id, data } = post
 
 const { remarkPluginFrontmatter } = await render(post)
 const postDate = data.updatedDate ?? data.publishDate
+const slug = canonicalSlug(id)
 
 const heroImageProps = data.heroImage ? {
   src: data.heroImage.src,
@@ -26,7 +29,13 @@ const heroImageProps = data.heroImage ? {
   color: data.heroImage.color,
   width: data.heroImage.width || 1200,
   height: data.heroImage.height || 630
-} : undefined
+} : {
+  src: pickHeroFallback(data.hIE, slug),
+  alt: data.title,
+  color: undefined as string | undefined,
+  width: 1200,
+  height: 630
+}
 
 function getLocalizedUrl(locale: string | undefined, path: string) {
   let url = getRelativeLocaleUrl(locale || 'zh', path)
@@ -53,9 +62,9 @@ function getLocalizedUrl(locale: string | undefined, path: string) {
     class={cn(
       'group/link w-full flex flex-col transition-all hover:text-primary',
       !detailed && 'sm:flex-row',
-      detailed && data.heroImage && 'max-md:pt-24'
+      detailed && 'max-md:pt-24'
     )}
-    href={getLocalizedUrl(Astro.currentLocale, `/blog/${id}`)}
+    href={getLocalizedUrl(Astro.currentLocale, `/blog/${slug}`)}
     data-astro-prefetch
   >
     {
@@ -109,7 +118,7 @@ function getLocalizedUrl(locale: string | undefined, path: string) {
             <p
               class={cn(
                 'line-clamp-2 pt-1 text-sm text-muted-foreground sm:line-clamp-3',
-                data.heroImage && 'sm:me-24'
+                'sm:me-24'
               )}
             >
               {data.description}

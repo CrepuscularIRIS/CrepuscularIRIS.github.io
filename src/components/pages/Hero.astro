@@ -4,10 +4,13 @@ import type { InferEntrySchema } from 'astro:content'
 
 import { PageInfo } from '.'
 import { FormattedDate, Icon } from '@/components/user'
+import { canonicalSlug, getCounterpartUrl } from '@/server'
+import { pickHeroFallback } from '@/utils/hero-fallback'
 
 interface Props {
   data: InferEntrySchema<'blog'> | InferEntrySchema<'blogEn'>
   remarkPluginFrontmatter: Record<string, unknown>
+  postId?: string
 }
 
 const {
@@ -16,6 +19,7 @@ const {
     description,
     draft,
     heroImage,
+    hIE,
     publishDate,
     updatedDate,
     comment: enableComment,
@@ -23,47 +27,52 @@ const {
     language,
     pixivLink
   },
-  remarkPluginFrontmatter
+  remarkPluginFrontmatter,
+  postId
 } = Astro.props
 
 const dateTimeOptions: Intl.DateTimeFormatOptions = {
   month: 'short'
 }
 
+const slug = postId ? canonicalSlug(postId) : ''
+const isEnRoute = Astro.currentLocale === 'en'
+const counterpartUrl = postId ? await getCounterpartUrl(postId, isEnRoute) : null
+
 const imageProps: {
   src: any
   width: number
   height: number
-} | undefined = heroImage ? {
+} = heroImage ? {
   src: heroImage.src,
   width: heroImage.width || 1200,
   height: heroImage.height || 630
-} : undefined
+} : {
+  src: pickHeroFallback(hIE, slug || title),
+  width: 1200,
+  height: 630
+}
 
 const imageAlt: string = (heroImage?.alt || title) as string
 ---
 
-{
-  imageProps && (
-    <div class='hero-image relative mb-6'>
-      <Image
-        alt={imageAlt}
-        class='cover-image relative z-10 h-auto w-full max-w-[65ch] rounded-2xl object-contain'
-        fetchpriority='high'
-        loading='eager'
-        {...imageProps}
-      />
-      <Image
-        alt='Blur image'
-        fetchpriority='high'
-        loading='eager'
-        id='blurImage'
-        class='absolute end-0 top-4 z-0 mt-0 h-full max-w-[65ch] rounded-3xl opacity-60 blur-xl transition-opacity duration-300'
-        {...imageProps}
-      />
-    </div>
-  )
-}
+<div class='hero-image relative mb-6'>
+  <Image
+    alt={imageAlt}
+    class='cover-image relative z-10 h-auto w-full max-w-[65ch] rounded-2xl object-contain'
+    fetchpriority='high'
+    loading='eager'
+    {...imageProps}
+  />
+  <Image
+    alt='Blur image'
+    fetchpriority='high'
+    loading='eager'
+    id='blurImage'
+    class='absolute end-0 top-4 z-0 mt-0 h-full max-w-[65ch] rounded-3xl opacity-60 blur-xl transition-opacity duration-300'
+    {...imageProps}
+  />
+</div>
 
 {draft ? <span class='text-red-500'>(Draft)</span> : null}
 
@@ -95,11 +104,23 @@ const imageAlt: string = (heroImage?.alt || title) as string
       {remarkPluginFrontmatter.minutesRead}
     </div>
     {
-      // Language
+      // Language + edition toggle
       language && (
         <span class='flex items-center gap-1'>
           <Icon name='earth' class='size-5' />
-          {language}
+          {counterpartUrl ? (
+            <a
+              href={counterpartUrl}
+              class='inline-flex items-center gap-1 hover:underline hover:underline-offset-4'
+              title={isEnRoute ? '查看中文版' : 'Read in English'}
+            >
+              <span>{language}</span>
+              <span class='text-muted-foreground'>↔</span>
+              <span>{isEnRoute ? 'zh' : 'en'}</span>
+            </a>
+          ) : (
+            <span>{language}</span>
+          )}
         </span>
       )
     }

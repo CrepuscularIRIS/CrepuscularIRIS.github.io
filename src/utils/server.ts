@@ -4,89 +4,83 @@ export type BlogPostEntry = CollectionEntry<'blog'> | CollectionEntry<'blogEn'>
 
 export const prod = import.meta.env.PROD
 
-/** Note: this function filters out draft posts based on the environment */
-export async function getBlogCollection() {
-  return await getCollection('blog', ({ data }) => {
-    // Not in production & draft is not false
-    return prod ? !data.draft : true
-  })
+/** Strip optional /index(.md|.mdx) tail from a collection entry id. */
+export function postFolder(id: string): string {
+  return id.replace(/\/index(?:\.(?:md|mdx))?$/, '')
 }
 
-/** 
- * Get English blog collection with fallback to Chinese version
- * If an English version (index-en.md) doesn't exist, use the Chinese version (index.md)
- */
+/** Canonical slug shared by both editions: drops trailing -zh. */
+export function canonicalSlug(id: string): string {
+  const folder = postFolder(id)
+  return folder.endsWith('-zh') ? folder.slice(0, -3) : folder
+}
+
+/** A post is Chinese if its folder ends with -zh OR frontmatter language === 'zh'. */
+function isZhPost(post: CollectionEntry<'blog'>): boolean {
+  const folder = postFolder(post.id)
+  if (folder.endsWith('-zh')) return true
+  return post.data.language === 'zh'
+}
+
+async function loadAllBlogs() {
+  return getCollection('blog', ({ data }) => (prod ? !data.draft : true))
+}
+
+/** Chinese collection only — used by the default `/blog/...` routes. */
+export async function getBlogCollection() {
+  const all = await loadAllBlogs()
+  return all.filter(isZhPost)
+}
+
+/** English collection only, with fallback to Chinese-only orphans so nothing disappears
+ *  from the EN listing if a translation is still missing. */
 export async function getBlogCollectionEn() {
-  // Get all English versions
-  const englishPosts = await getCollection('blogEn', ({ data }) => {
-    return prod ? !data.draft : true
-  })
-  
-  // Transform English post IDs from "anygrasp/index-en" to "anygrasp"
-  const transformedEnglishPosts = englishPosts.map(post => ({
-    ...post,
-    id: post.id.replace(/\/index-en$/, '')
-  }))
-  
-  // Get all Chinese versions
-  const chinesePosts = await getBlogCollection()
-  
-  // Create a map of English posts by their slug (folder name)
-  const englishPostSlugs = new Set(
-    transformedEnglishPosts.map(post => {
-      // Extract folder name from id: "anygrasp/index.md" -> "anygrasp"
-      const match = post.id.match(/^(.+?)\/index\.(md|mdx)$/)
-      return match ? match[1] : post.id
-    })
-  )
-  
-  // Add Chinese posts that don't have English versions
-  const fallbackPosts = (chinesePosts as any[])
-    .filter(post => {
-      // Extract folder name from id: "anygrasp/index.md" -> "anygrasp"
-      const match = post.id.match(/^(.+?)\/index\.(md|mdx)$/)
-      const slug = match ? match[1] : post.id
-      return !englishPostSlugs.has(slug)
-    })
-    .map(post => post as CollectionEntry<'blogEn'>)
-  
-  // Combine English posts and fallback Chinese posts
-  return [...transformedEnglishPosts, ...fallbackPosts] as CollectionEntry<'blogEn'>[]
+  const all = await loadAllBlogs()
+  const enPosts = all.filter((p) => !isZhPost(p))
+  const enSlugs = new Set(enPosts.map((p) => canonicalSlug(p.id)))
+  const orphans = all.filter(isZhPost).filter((p) => !enSlugs.has(canonicalSlug(p.id)))
+  return [...enPosts, ...orphans] as unknown as CollectionEntry<'blogEn'>[]
+}
+
+/** Return the counterpart slug if a sibling edition exists in the other language. */
+export async function getCounterpartUrl(
+  id: string,
+  currentIsEn: boolean
+): Promise<string | null> {
+  const all = await loadAllBlogs()
+  const slug = canonicalSlug(id)
+  const want = (post: CollectionEntry<'blog'>) =>
+    canonicalSlug(post.id) === slug && (currentIsEn ? isZhPost(post) : !isZhPost(post))
+  const counterpart = all.find(want)
+  if (!counterpart) return null
+  const target = canonicalSlug(counterpart.id)
+  return currentIsEn ? `/blog/${target}` : `/en/blog/${target}`
 }
 
 export async function getPostCollections() {
   return await getCollection('postCollections')
 }
 
-export async function getPostsForCollection(collection: CollectionEntry<'postCollections'>, isEn: boolean = false) {
+export async function getPostsForCollection(
+  collection: CollectionEntry<'postCollections'>,
+  isEn: boolean = false
+) {
   const allPosts = isEn ? await getBlogCollectionEn() : await getBlogCollection()
   const blogList = collection.data.bloglist || []
-  
-  // Create a mapping of possible IDs (lowercased) to posts for quick lookup
+
   const postMap = new Map<string, BlogPostEntry>()
-  allPosts.forEach(post => {
-    // Standard ID
+  allPosts.forEach((post) => {
     postMap.set(post.id.toLowerCase(), post)
-    
-    // Normalized ID (without extension/index)
-    const match = post.id.match(/^(.+?)\/index\.(md|mdx)$/)
-    if (match) {
-      postMap.set(match[1].toLowerCase(), post)
-    } else {
-      // Also try to remove extension if it's not index
-      postMap.set(post.id.replace(/\.(md|mdx)$/, '').toLowerCase(), post)
-    }
+    postMap.set(postFolder(post.id).toLowerCase(), post)
+    postMap.set(canonicalSlug(post.id).toLowerCase(), post)
   })
 
-  // Map the blogList to actual post entries, preserving blogList order
   return blogList
-    .map(itemId => postMap.get(itemId.toLowerCase()))
+    .map((itemId) => postMap.get(itemId.toLowerCase()))
     .filter((post): post is BlogPostEntry => post !== undefined)
 }
 
-function getYearFromCollection(
-  collection: BlogPostEntry
-): number | undefined {
+function getYearFromCollection(collection: BlogPostEntry): number | undefined {
   const dateStr = collection.data.updatedDate ?? collection.data.publishDate
   return dateStr ? new Date(dateStr).getFullYear() : undefined
 }
@@ -105,11 +99,8 @@ export function groupCollectionsByYear<T extends BlogPostEntry>(
     return acc
   }, new Map<number, T[]>())
 
-  return Array.from(
-    collectionsByYear.entries()
-  ).sort((a, b) => b[0] - a[0])
+  return Array.from(collectionsByYear.entries()).sort((a, b) => b[0] - a[0])
 }
-
 
 export function sortMDByDate<T extends BlogPostEntry>(collections: T[]): T[] {
   return [...collections].sort((a, b) => {
@@ -124,17 +115,14 @@ export function sortMDByDate<T extends BlogPostEntry>(collections: T[]): T[] {
   })
 }
 
-/** Note: This function doesn't filter draft posts, pass it the result of getAllPosts above to do so. */
-export function getAllTags(collections: BlogPostEntry[]) {
+export function getAllTags(collections: BlogPostEntry[]): string[] {
   return collections.flatMap((collection) => [...collection.data.tags])
 }
 
-/** Note: This function doesn't filter draft posts, pass it the result of getAllPosts above to do so. */
-export function getUniqueTags(collections: BlogPostEntry[]) {
+export function getUniqueTags(collections: BlogPostEntry[]): string[] {
   return [...new Set(getAllTags(collections))]
 }
 
-/** Note: This function doesn't filter draft posts, pass it the result of getAllPosts above to do so. */
 export function getUniqueTagsWithCount(collections: BlogPostEntry[]): [string, number][] {
   return [
     ...getAllTags(collections).reduce(
@@ -144,20 +132,19 @@ export function getUniqueTagsWithCount(collections: BlogPostEntry[]): [string, n
   ].sort((a, b) => b[1] - a[1])
 }
 
-/** Note: This function doesn't filter draft posts, pass it the result of getAllPosts above to do so. */
-export function getAllCategories(collections: BlogPostEntry[]) {
+export function getAllCategories(collections: BlogPostEntry[]): string[] {
   return collections
     .map((collection) => collection.data.category)
     .filter((category): category is string => category !== undefined)
 }
 
-/** Note: This function doesn't filter draft posts, pass it the result of getAllPosts above to do so. */
-export function getUniqueCategories(collections: BlogPostEntry[]) {
+export function getUniqueCategories(collections: BlogPostEntry[]): string[] {
   return [...new Set(getAllCategories(collections))]
 }
 
-/** Note: This function doesn't filter draft posts, pass it the result of getAllPosts above to do so. */
-export function getUniqueCategoriesWithCount(collections: BlogPostEntry[]): [string, number][] {
+export function getUniqueCategoriesWithCount(
+  collections: BlogPostEntry[]
+): [string, number][] {
   return [
     ...getAllCategories(collections).reduce(
       (acc, c) => acc.set(c, (acc.get(c) || 0) + 1),
@@ -166,12 +153,16 @@ export function getUniqueCategoriesWithCount(collections: BlogPostEntry[]): [str
   ].sort((a, b) => b[1] - a[1])
 }
 
-/** Filter collections by category */
-export function getCollectionsByCategory<T extends BlogPostEntry>(collections: T[], category: string): T[] {
+export function getCollectionsByCategory<T extends BlogPostEntry>(
+  collections: T[],
+  category: string
+): T[] {
   return collections.filter((collection) => collection.data.category === category)
 }
 
-/** Filter collections by hIE taxonomy code (snowdrop / kouka / saturnus / methode / lacia) */
-export function getCollectionsByHie<T extends BlogPostEntry>(collections: T[], hie: string): T[] {
+export function getCollectionsByHie<T extends BlogPostEntry>(
+  collections: T[],
+  hie: string
+): T[] {
   return collections.filter((collection) => (collection.data as any).hIE === hie)
 }

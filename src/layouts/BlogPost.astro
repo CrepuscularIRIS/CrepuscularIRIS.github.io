@@ -50,7 +50,7 @@ const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--tw-tex
 >
   {!!headings.length && <TOC {headings} slot='sidebar' />}
 
-  <Hero {data} {remarkPluginFrontmatter} slot='header' />
+  <Hero {data} {remarkPluginFrontmatter} postId={id} slot='header' />
 
   <slot />
 

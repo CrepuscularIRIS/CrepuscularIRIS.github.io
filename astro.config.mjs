@@ -1,5 +1,8 @@
 // @ts-check
 
+import { readdirSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { rehypeHeadingIds } from '@astrojs/markdown-remark'
 // Adapters
 import vercel from '@astrojs/vercel'
@@ -35,6 +38,33 @@ const platform = process.env.DEPLOYMENT_PLATFORM || 'vercel'
 const isCloudflare = platform === 'cloudflare'
 const isGithubPages = platform === 'github'
 
+// Build redirects map: legacy /blog/foo-zh → /blog/foo (and /en/blog/ counterpart).
+// Lets external inbound links keep working after the bilingual unification.
+function buildLegacyRedirects() {
+  const blogsDir = './src/content/blogs'
+  /** @type {Record<string, string>} */
+  const redirects = {}
+  try {
+    for (const name of readdirSync(blogsDir)) {
+      if (!name.endsWith('-zh')) continue
+      const full = join(blogsDir, name)
+      try {
+        if (!statSync(full).isDirectory()) continue
+      } catch {
+        continue
+      }
+      const canonical = name.slice(0, -3)
+      redirects[`/blog/${name}`] = `/blog/${canonical}`
+      redirects[`/en/blog/${name}`] = `/en/blog/${canonical}`
+    }
+  } catch {
+    // blogs dir not readable — skip.
+  }
+  return redirects
+}
+
+const legacyRedirects = buildLegacyRedirects()
+
 // https://astro.build/config
 export default defineConfig({
   // Top-Level Options
@@ -53,6 +83,8 @@ export default defineConfig({
 
   adapter: isGithubPages ? undefined : (isCloudflare ? cloudflare() : vercel()),
   output: isGithubPages ? 'static' : (isCloudflare ? 'static' : 'server'),
+
+  redirects: legacyRedirects,
 
   image: {
     service: {

@@ -10,7 +10,7 @@ import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 import config from '@/site-config'
 
-import { getBlogCollection, sortMDByDate } from '@/server'
+import { canonicalSlug, getBlogCollection, sortMDByDate } from '@/server'
 
 // Get dynamic import of images as a map collection
 const imagesGlob = import.meta.glob<{ default: ImageMetadata }>(
@@ -70,7 +70,7 @@ const GET = async (context: AstroGlobal) => {
     items: await Promise.all(
       allPostsByDate.map(async (post) => ({
         pubDate: post.data.publishDate,
-        link: `/blog/${post.id}`,
+        link: `/blog/${canonicalSlug(post.id)}`,
         customData: `<h:img src="${typeof post.data.heroImage?.src === 'string' ? post.data.heroImage?.src : post.data.heroImage?.src.src}" />
           <enclosure url="${typeof post.data.heroImage?.src === 'string' ? post.data.heroImage?.src : post.data.heroImage?.src.src}" />`,
         content: await renderContent(post, siteUrl),
