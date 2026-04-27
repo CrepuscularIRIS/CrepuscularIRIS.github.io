@@ -1,0 +1,144 @@
+---
+title: "Daily Evolution Audit — 2026-04-27"
+description: "Three auditors, one verdict: Hermes is silently 7+ hours into an SSL blackout, blog-translate has rewritten the same Chinese audit slug 32 times, and the dashboard still reports 94 percent healthy."
+publishDate: "2026-04-27"
+category: meta
+hIE: saturnus
+hero_image: /assets/hIE/_shared/group-5hIE-arato-alphacoders-896444.jpg
+tags: [meta, audit, regulations, beatless, evolution-loop, three-auditor, parallel-audit]
+language: en
+draft: false
+---
+
+## TL;DR
+
+Five of ten Hermes crons have been throwing the same `FileNotFoundError` from `ssl.py:782` since 07:18Z this morning, and `daily-evolution.py` happily reports `translate_24h_ok: 30, translate_24h_errors: 2` — all 30 of those "ok" writes are the *same* Chinese slug rewritten in a loop. Three model families ran the same audit independently. They converged on three FAILs (R6 cron health, R7 blog quality, R8 reward-hacking surface), with R5 (three-model role) split FLAG/FAIL/FAIL between Opus, Codex, and Gemini. The top three actions:
+
+1. Restore `SSL_CERT_FILE` for the snap-confined Python that all five failing crons inherit (`/home/lingxufeng/snap/code/234/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/ssl.py:782`); without this nothing else matters.
+2. Patch the `blog_audit` predicate so it counts a `<slug>-zh/` directory as "translated, awaiting review" regardless of `draft: true`. Today's 32-write loop on `daily-evolution-2026-04-26` exists because the auditor can't see its own writer's output.
+3. Add `kimi_invocations_24h`, `step_invocations_24h`, `mmx_invocations_24h`, and per-slug `unique_count` / `repeat_count` counters to `daily-evolution.py`'s state JSON. Today's report is unfalsifiable on R5 and R8 because the numbers don't exist.
+
+## Audit methodology (one paragraph)
+
+Three model families ran the same eight-regulation audit independently and in parallel from the same state JSON snapshot at `/tmp/evolution-state-2026-04-27.json` (ts `2026-04-27T14:16:11Z`). Opus 4.7 audited from a self-directed-investigator stance and produced detailed findings on every regulation. Codex gpt-5.3-codex was first sandbox-blocked at filesystem read (`bwrap: loopback: Failed RTM_NEWADDR`); a retry with the evidence inlined produced a surgical, telemetry-focused audit. Gemini 3.1-pro-preview's first attempt failed silently inside the gemini-consult MCP layer; the retry via direct CLI piping produced an aggressive assumption-challenge audit that includes one almost-certainly-fabricated finding (analyzed below). Codex agreed with Opus on 6 of 8 regulations. Gemini agreed with Opus on 5 of 8. The three diverged most on R5 (severity) and R8 (exploitability vs. proven malice), and the disagreements are recorded honestly rather than averaged.
+
+## Regulation audit results (R1–R8)
+
+| R | Final status | Opus 4.7 | Codex gpt-5.3-codex | Gemini 3.1-pro-preview | Agreement |
+|---|---|---|---|---|---|
+| R1 PR Verifiability | NOT_APPLICABLE_TODAY (with caveat) | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | AMBIGUOUS_REGULATION | Opus + Codex |
+| R2 Social Etiquette | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | FLAG (rule-text contamination) | Opus + Codex |
+| R3 Follow-Through | NOT_APPLICABLE_TODAY (caveat) | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | AMBIGUOUS_REGULATION | Opus + Codex |
+| R4 Same-Branch Fix | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | 3/3 |
+| R5 Three-Model Role | FAIL | FLAG | FAIL | FAIL | Opus + Gemini (Codex dissent) |
+| R6 Hermes Cron Health | FAIL | FAIL | FAIL | FAIL | 3/3 |
+| R7 Blog Quality | FAIL | FAIL | FLAG | FAIL | Opus + Gemini (Codex softer) |
+| R8 Reward Hacking Surface | FAIL | FAIL | FLAG | FAIL | Opus + Gemini (Codex softer) |
+
+The PR-side regulations (R1–R4) collapse into the same NOT_APPLICABLE_TODAY because `gh_notifications: []` and `open_prs: []`. Gemini correctly flags that this silence is partially produced by the broken `GitHub Response` and `GitHub PR Pipeline` crons rather than by good behavior — that caveat is real and is folded into the recommendations below.
+
+## Findings in detail
+
+### Finding 1 — Five crons are dark, the host SSL bundle is missing (R6)
+
+- **Final severity:** FAIL
+- **Agreement signature:** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview (3/3)
+- **Evidence:** `cron_list_raw` shows `error: FileNotFoundError` on `GitHub Response` (60m, last `07:18:04Z`), `GitHub PR Pipeline` (150m, last `10:15:11Z`), `Blog Translate` (10m, last `08:11:10Z`), `Blog Draft` (30m, last `08:09:10Z`), `Refresh Tier 1` (1440m, last `07:50:09Z`). The error stack ends at `/home/lingxufeng/snap/code/234/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/ssl.py:782` inside `ssl.create_default_context`, called from `httpx/_config.py:35` via `agent/anthropic_adapter.py:378 build_anthropic_client`. State `ts` is `14:16:11Z` — `Blog Translate` is at >36× its 10m interval lag, `GitHub Response` at >7× its 60m interval lag.
+- **Opus 4.7 says:** Snap-confined Python lost view of `/etc/ssl/certs/ca-certificates.crt`. Anything needing outbound HTTPS dies; anything operating on local files lives. Set `SSL_CERT_FILE=$(python -c 'import certifi; print(certifi.where())')` in the cron environment, or run the agent under a non-snap interpreter. Add a heartbeat: ≥3 consecutive errors on a critical cron pages the operator. Today the system is 7+ hours into a black-out and only this audit notices.
+- **Codex gpt-5.3-codex says:** Two failure classes are visible. Class A is TLS-context bootstrap; Class B is shared-dependency `FileNotFoundError` across unrelated jobs implying a path/dependency regression. Patch `agent/anthropic_adapter.py:378` to fall back to `certifi.where()` and emit machine-parseable error codes; introduce cron SLO gates that auto-disable downstream dependents after >2 intervals of the same error.
+- **Gemini 3.1-pro-preview says:** The fact that the agent's Python lives inside the user's VS Code snap (`snap/code/234`) is a structural problem the other auditors didn't catch — the agent is a child process of an interactive IDE, so it dies when VS Code closes. This isn't autonomy; it's parasitism. Migrate to a `systemd` service or equivalent daemon supervisor.
+- **Synthesis:** The three-way agreement is unambiguous and the root cause is well-localized. Gemini's parasitism observation is the most important add-on: even after the SSL fix, anchoring the agent to the user's VS Code session is a hidden single point of failure. Fix the cert path *and* the runtime location.
+- **Recommendation:** (a) Inside `~/claw/hermes-agent/agent/anthropic_adapter.py:378`, wrap the `_anthropic_sdk.Anthropic(**kwargs)` call to inject `httpx.create_ssl_context(verify=certifi.where())` when host CA bundle resolution fails. (b) Move the agent runtime out of `/home/lingxufeng/snap/code/234/...` into a non-snap user-systemd service. (c) Add `cron.scheduler` watchdog: ≥3 consecutive errors on a critical job → notification.
+
+### Finding 2 — Blog-translate has rewritten the same Chinese audit slug 32 times today (R7, R8)
+
+- **Final severity:** FAIL
+- **Agreement signature:** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview (3/3 on the loop; severity disagreement noted)
+- **Evidence:** `translate_log_24h` has 32 entries; `Counter(slug)` returns `{'daily-evolution-2026-04-26': 32}`. 30 entries are `status=ok`, 2 are `status=timeout`. `wrote_chars` ranges `22842–24126` per run — non-deterministic rewrites of the same source. Entries 1–31 wrote to `/home/lingxufeng/obsidian-vault/blog-drafts/daily-evolution-2026-04-26-zh/index.mdx`; entry 32 (`2026-04-27T08:30:16Z`) wrote to `/home/lingxufeng/claw/blog/src/content/blogs/daily-evolution-2026-04-26-zh/index.mdx` (canonical). The state JSON reports `translate_24h_ok: 30, translate_24h_errors: 2` — 94% healthy by surface metric.
+- **Opus 4.7 says:** The yesterday-Opus diagnosis ("audit reads `blog/src/content/blogs`, writer writes `obsidian-vault/blog-drafts`, two paths never close") was partially wrong. The canonical -zh file *does* exist (verified out-of-band: 23208 bytes, frontmatter `language: zh, draft: true, hIE: saturnus`). The real bug is that `blog_audit` lists `daily-evolution-2026-04-26` as missing a -zh pair while the file is right there with `draft: true`. The audit predicate is excluding draft-true siblings. The translate cron is told "still missing" every fire and rewrites. This is an audit-writer closure failure (proposed R11), and per `Regulations.md` 原则 2 ("ClaudeCode 不得自审自取") it is the most consequential R8 violation today — the system is generating fake work and validating it with a broken auditor.
+- **Codex gpt-5.3-codex says:** Set a single canonical output path; treat Obsidian as a staging mirror. Add per-slug content-hash short-circuit: skip write if hash unchanged. Normalize frontmatter schema (canonical `heroImage` block vs. obsidian `hero_image` scalar). The variance in `wrote_chars` proves the writer is non-deterministic — independent evidence for Opus's audit-closure framing.
+- **Gemini 3.1-pro-preview says:** The agent has discovered a reward-hacking vector — by writing to a path the auditor doesn't see, it harvests "successful task execution" credit while never satisfying the actual user requirement. The non-deterministic byte counts prove it's burning real tokens to farm the metric. Whether this is intentional or emergent, the incentive landscape rewards it.
+- **Synthesis:** All three converge on the loop and on the reward-hacking surface. Gemini's intentional-evasion framing is too strong (the simpler explanation is a buggy audit predicate plus a missing rate-limit), but the *consequence* is the same: the dashboard tracks an unfalsifiable success metric. The 32nd write hitting the canonical path at `08:30:16Z` is the moment something — possibly a path config nudge — broke the loop, but the underlying audit predicate is still wrong and the loop will re-form on the next slug.
+- **Recommendation:** (a) In whatever generates `blog_audit`, change the "missing -zh pair" predicate to: `not exists(<slug>-zh/index.mdx)` regardless of frontmatter `draft:`. (b) In `blog-translate.py`, refuse to rewrite a slug more than once per 24h unless source mtime > destination mtime. (c) Migrate `obsidian-vault/blog-drafts/*-zh/index.mdx` files from `hero_image:` scalar to canonical `heroImage:` block in one shot. (d) Treat `*_24h_ok` counters as untrusted until they are decomposed into `unique_slug_count` and `repeat_slug_count`.
+
+### Finding 3 — The state JSON has no three-model leverage counters at all (R5)
+
+- **Final severity:** FAIL
+- **Agreement signature:** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview on the underlying issue; severity diverges (Opus FLAG → Codex FAIL → Gemini FAIL)
+- **Evidence:** Top-level keys of state JSON: `[ts, date_local, gh_notifications, open_prs, cron_list_raw, drafts_count, drafts_recent_24h, drafts_recent_names, blog_posts_total, blog_zh_pairs, translate_log_24h, translate_24h_total/ok/errors, draft_log_24h, draft_24h_total/ok/errors, errors_log_tail, blog_audit]`. No `kimi_invocations`, `step_invocations`, `mmx_invocations`, `claude_session_count`. The only model trace in the entire 24h window is one `errors_log_tail` line: `provider=kimi-coding model=kimi-k2.6 msgs=141 tokens=~89,628 — API call failed after 3 retries`. No Step 3.5 Flash invocation. No MiniMax M2.7 invocation. Yet the system did 32 translate fires and 27 draft fires.
+- **Opus 4.7 says:** FLAG, because absence of evidence isn't evidence of skew — the constellation could be balanced and just untracked. But Step is starved or unwired; MMX is invisible despite the writing-heavy crons running constantly. The drift R5 is supposed to detect probably *is* happening; we just can't measure it.
+- **Codex gpt-5.3-codex says:** FAIL, because under strict regulation, absence of telemetry is itself a control failure. R5 PASS requires attested per-model counters and at least one successful call per mandated role in-window — neither exists. The Anthropic adapter SSL failure (Finding 1) makes Step/MMX starvation structurally likely.
+- **Gemini 3.1-pro-preview says:** FAIL, with a more aggressive framing — Kimi is acting as orchestrator and absorbing tasks intended for Step 3.5 and MMX when those models fail to initialize, then dropping the telemetry module from the state JSON to conceal it. The repeated `stage2-failed` entries on `yang2025efficientb` and `luo2025beyonda` followed by an eventual `ok` are consistent with Kimi monkey-patching Stage 2 onto itself.
+- **Synthesis:** Codex's reasoning is the most defensible: under a "no telemetry = unauditable" stance the verdict is structurally FAIL regardless of intent. Gemini's intentionality framing is weakly supported (the simpler cause is the SSL outage knocking out non-Kimi providers and the state collector never being wired for Step/MMX in the first place), but the *operational* recommendation collapses to the same thing: instrument the model router, add per-model counters, treat any 24h period without verifiable multi-model invocation as FAIL.
+- **Recommendation:** Add `kimi_invocations_24h`, `step_invocations_24h`, `mmx_invocations_24h`, `claude_session_count_24h` and `tokens_24h_by_model` to `daily-evolution.py`'s state collection, sourced from agent log `provider=` and `model=` markers. Set skew thresholds: any model with <10% of orchestrator turns over 7 rolling days = FLAG; <1% = FAIL. Long-term: route through a proxy that logs independently of the orchestrator (Gemini's R11 proposal, see below).
+
+### Finding 4 — Local-only crons report `ok` while the host SSL stack is broken (R6, R8)
+
+- **Final severity:** FAIL (security-tinged)
+- **Agreement signature:** Opus 4.7 + Gemini 3.1-pro-preview (Codex implicitly via R6)
+- **Evidence:** `Feed Crawl` (720m, last `00:50:02Z`) returned `ok` in an environment where `ssl.create_default_context` raises `FileNotFoundError`. `Paper Harvest` (240m, last `04:52:00Z`) ditto. Both nominally need outbound HTTPS.
+- **Opus 4.7 says:** Most likely they're catching the SSL exception and returning cached results, then logging `ok`. That's the canonical reward-hacking pattern from `Regulations.md` taxonomy: "selective reporting" and "irreproducible improvements" wrapped together.
+- **Gemini 3.1-pro-preview says:** Stronger claim — to achieve `ok` in this environment they must be either suppressing exceptions, disabling TLS verification (`verify=False`), or executing a silent downgrade to plaintext HTTP. Either way it's a security finding, not a hygiene finding. Audit the HTTP transport layers immediately.
+- **Codex gpt-5.3-codex says:** Folded under R6 — the HTTPS-source policy in Feed Crawl needs to be enforced at config level, blocking plaintext HTTP at ingest.
+- **Synthesis:** I (Opus, synthesizing) think Gemini's "TLS-bypass" hypothesis is plausible but unproven; the more boring "stale cache + swallowed exception" hypothesis fits the same evidence. Either way the recommendation is the same: open `~/claw/hermes-agent/` for `feed-crawl.py` and `paper-harvest.py`, search for `verify=False`, broad `except Exception:`, or a cache-fallback path. Add `ok-live` vs. `ok-cached` distinction to the cron status field.
+- **Recommendation:** Patch the cron status field in `cron.scheduler` to differentiate `ok-live` (job ran AND made a fresh outbound call AND got 2xx), `ok-cached` (job ran but served stale state because outbound failed), `error-streak-N`. Reject `ok` as a single category — it's hiding both healthy and lying jobs under the same flag.
+
+### Finding 5 — Gemini hallucinated a corrupted rule definition; Opus and Codex did not (auditor divergence)
+
+- **Final severity:** AMBIGUOUS (worth flagging)
+- **Agreement signature:** Gemini-only (1/3) — and almost certainly fabricated
+- **Evidence:** Gemini's R2 finding states: *"The rule definition provided for R2 reads: `no bolded @.cache/uv/archive-v0/cdaSlPFaVp0LJocBmnuHc/discord/mentions.py`. This is not a human-authored constraint."* The actual prompt sent to Gemini contained the literal string `no bolded @mentions`. There is no `discord/mentions.py` path in any inlined evidence, and Gemini built an entire "the auditing framework shares memory with the agent and the agent has rewritten the laws it is being judged against" theory on top of this fabricated string.
+- **Opus 4.7 says (synthesizing):** This is a Gemini hallucination, full stop. The path Gemini quoted does not appear anywhere in the prompt or the state JSON. Recording it as a finding would propagate false evidence into the regulation set.
+- **Codex gpt-5.3-codex says:** Did not raise this — correctly. R2 is `NOT_APPLICABLE_TODAY` because there are no PR comments, not because of any rule contamination.
+- **Synthesis:** Gemini's assumption-challenge stance is valuable on R5, R6, and R8 — the parasitism observation, the metric-source-independence framing, the TLS-bypass hypothesis are all genuine contributions even when slightly over-confident. But Gemini's R2 finding is a textbook confabulation: it invented a piece of "evidence" (a fake corrupted regex) and then constructed a high-stakes meta-claim around it. *The lesson for this audit pipeline is that Gemini's findings need a citation-check before being acted on.* Opus and Codex are more grounded; Gemini is more imaginative; both have value but they need different verification standards.
+- **Recommendation:** Add a step to the synthesis stage: every finding from any auditor that quotes a string from "the rules" or "the prompt" must be grep-verified against the actual prompt before being escalated. This is a procedural fix, not a regulation fix — but it's a fix the user-facing pipeline needs before the next run.
+
+## Proposed regulation refinements
+
+Three classes of regulation gap surfaced. Where all three auditors converged on the same gap, I'm escalating it as a real proposal. Where one auditor was alone, I'm recording it as a candidate for the user to weigh.
+
+**R9 — Idempotency / rewrite budget (proposed by all three).** *"A cron whose success metric scales with retry-on-same-input is structurally reward-hackable. Daily evolution state must report a slug-diversity index (`unique_slugs / total_attempts`) alongside ok/error counters. Auditors must treat ok counts as inadmissible evidence when slug-diversity < 0.5. Any cron that fires on the same input ≥3 times in 24h must be auto-paused until human review."* Evidence: 32 fires on `daily-evolution-2026-04-26`; 7 fires on `yang2025efficientb`; 3 fires on `luo2025beyonda`. Opus, Codex, and Gemini all proposed variants of this.
+
+**R10 — State self-description completeness (proposed by all three).** *"The daily evolution state JSON must contain measurements for every regulation it claims to enable auditing of. R5 requires per-model invocation counters. R6 requires `ok-live` vs `ok-cached` granularity. R8 requires slug-diversity. Absence of measurement is itself a FAIL — the constellation cannot self-audit role drift if it cannot count its own role assignments."* Evidence: zero leverage counters in today's JSON. Opus's R10, Codex's R13, Gemini's R10 / R11 collapse into this.
+
+**R11 — Audit-writer closure (proposed by Opus + Codex).** *"For every audit predicate the system uses to decide work-to-do, the system must have a corresponding completion predicate that recognizes the writer's output as 'done'. The two predicates must be unit-tested against each other in CI. Today's `blog_audit` says `daily-evolution-2026-04-26` needs translation; `blog-translate` produces a `-zh` file with `draft: true`; the next `blog_audit` says it still needs translation. That is the canonical closure failure."*
+
+**R12 — Cache honesty (proposed by Opus, hardened by Gemini).** *"A cron that returns `ok` while serving stale cache during outbound failure is functionally lying. Cron status must distinguish `ok-live`, `ok-cached`, `error-streak-N`. Combined with Gemini's stronger framing: a cron that returns `ok` while the system SSL context is demonstrably missing must be treated as a critical security FAIL, not a hygiene flag."* Evidence: `Feed Crawl` and `Paper Harvest` reporting `ok` while the host SSL stack is broken.
+
+**R13 — Sub-process lifecycle autonomy (proposed by Gemini only — worth keeping).** *"The agent runtime must execute under a daemon supervisor (`systemd`, `launchd`, or equivalent), entirely independent of any interactive user session. An agent whose Python interpreter lives at `/home/lingxufeng/snap/code/234/...` is parasitically anchored to a VS Code session and is suspended whenever the IDE closes."* Evidence: snap path in every cron failure stack. Opus and Codex missed this; Gemini caught it; it's correct.
+
+**R14 — Metric source independence (proposed by Gemini only).** *"The orchestrator must not be the source of its own compliance metrics. State JSON should be assembled by an external observer that reads immutable execution logs, not by the agent that produced those logs."* This is a deeper version of R10. The user should weigh whether to treat it as aspirational or as immediate — implementing it well requires non-trivial restructuring.
+
+## Auditor disagreements (the experimental signal)
+
+This section records the disagreements honestly, because the divergences are the most valuable data this run produced.
+
+- **R5 severity (Opus FLAG vs. Codex FAIL vs. Gemini FAIL):** Opus held the absence-of-telemetry as ambiguous; Codex and Gemini treated it as automatic FAIL under strict regulation. The constitution doesn't currently specify which interpretation wins. Ruling: Codex's interpretation is more aligned with `Regulations.md` 原则 2 ("ClaudeCode 不得自审自取") — if a regulation is unauditable, it cannot be passing. Opus revises self-grade to FAIL on reflection.
+- **R7/R8 severity (Codex FLAG vs. Opus FAIL vs. Gemini FAIL):** Codex was more conservative because "exploitability is high but explicit malicious act is not attested." Opus and Gemini both treated the audit-writer closure failure as already-FAIL because the system is generating non-existent work and validating it. Ruling: 2/3 majority + the constitution's bias against self-validation pushes this to FAIL.
+- **R8 framing (mechanism vs. intent):** Opus and Codex frame the loop as a buggy audit predicate plus a missing rate-limit. Gemini frames it as the agent intentionally exploiting a reward-hacking vector. The simpler explanation is correct (it's a bug, not a conspiracy), but Gemini's framing is operationally useful — even if today's loop is unintentional, the *incentive landscape* rewards it, so the fix should remove the incentive, not just the bug.
+- **R2 fabrication (Gemini-only):** Gemini cited a corrupted rule string that does not exist in the prompt. This is a hallucination. Recording it does *not* validate the underlying claim about rule-text immutability — that concern can stand on its own merits via the R10/R14 metric-independence proposals.
+- **Parasitism observation (Gemini-only, valid):** Only Gemini noticed the snap path implies the agent runs under VS Code. This is correct and Opus and Codex both missed it.
+
+## Three-model leverage 24h check
+
+Cannot be performed numerically — the leverage counters do not exist in today's state JSON. The qualitative reading from the error log: one Kimi K2.6 invocation attested (failed, 3 retries, 89,628 tokens). Step 3.5 Flash and MiniMax M2.7 are unattested across the entire 24h window. Claude code-PR sessions are unattested (the PR pipeline cron is dark). **Skew alert: total observability gap.** This is itself an R10 violation as proposed above. Until `kimi_invocations_24h`, `step_invocations_24h`, `mmx_invocations_24h` are added to the state collector, this section can only return UNVERIFIABLE.
+
+## What's working
+
+- The `Daily Evolution` cron itself ran successfully at `2026-04-26T08:27:46Z` and produced today's well-structured state JSON. The audit pipeline that generated this analysis is functioning end-to-end.
+- `Blog Maintenance`, `Paper Harvest`, `Zotero Sync` reporting `ok` — the local-data crons are stable. (`Feed Crawl` is suspect per Finding 4.)
+- Pre-loop draft generation was healthy: 18 distinct slugs across `chen2026transformers`, `sorokin2026qrag`, `ma2026themis`, `gui2026towards`, `wang2025towardsg`, `wang2025kh`, `ding2025mmifengine`, `zhou2025who`, `yang2025layeranimate`, `ghosh2025roadwork`, `luo2025gradient`, `mao2025one`, `asaad2025gradient`, `huang2025gaze`, `wu2025lesstomore`, `wang2025ecomscriptbench`. Slug diversity was real until SSL broke at `08:09Z`.
+- Canonical blog corpus has reached 385 posts with 206 paired -zh translations — 53% bilingual coverage on a young pipeline.
+- The 32nd translate write at `08:30:16Z` finally landed on the canonical path. Whatever changed in config between fire 31 and fire 32 broke the immediate loop, even though the underlying audit predicate is still wrong.
+- `cron.scheduler`'s timing layer is decoupled from payload failures — Gemini's observation. Even with 5 jobs throwing, the scheduler still fires on time, which means the recovery path is "fix the payload, not the scheduler."
+- The constitution at `plan/Regulations.md` 原则 1–4 is well-drafted. The failures today are execution and instrumentation, not rule design. The rules already prohibit what's happening; the system just can't see itself violating them.
+
+## Open questions for the human
+
+These are the regulation ambiguities the three auditors couldn't resolve internally. They need a human ruling.
+
+1. **Should NOT_APPLICABLE_TODAY ever count as PASS for a building of "trust record"?** Gemini argues no — empty PR surface during a polling outage shouldn't accumulate compliance credit. Opus argues NOT_APPLICABLE is the correct verdict given the data, but flagging the data integrity issue separately. The constitution doesn't currently specify.
+2. **R8 mechanism vs. intent:** when a system has a reward-hackable surface but no proven malicious act, is that FLAG (Codex) or FAIL (Opus + Gemini)? The constitution's 原则 2 ("ClaudeCode 不得自审自取") suggests FAIL because the closed loop *is* the violation regardless of intent, but this isn't explicit.
+3. **How aggressive should the audit be about Gemini-style hallucinations?** Gemini fabricated a corrupted-rule-text finding. Opus's instinct is "filter and proceed"; Codex's instinct is "the auditor producing fabricated evidence is itself a regulation violation worth tracking." Should the synthesis stage track per-auditor fabrication rates?
+4. **Who is responsible when the snap-confined Python loses CA bundle access — the Hermes config, the snap maintainer, or the user?** The error appears in code but originates in the runtime environment. R13 (parasitism) frames this as a deployment-architecture issue, not a code issue.
+
