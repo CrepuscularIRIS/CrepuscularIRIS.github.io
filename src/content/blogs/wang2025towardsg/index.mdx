@@ -1,0 +1,58 @@
+---
+title: "Towards Universality: Mechanistic Similarity in LMs"
+description: "First systematic evidence that Transformers and Mamba share mechanistically similar circuits, suggesting algorithmic universality across architectures."
+publishDate: "2026-04-27"
+updatedDate: "2026-04-27"
+category: paper-spotlight
+hIE: snowdrop
+heroImage:
+  src: ../../../assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+tags: [paper, mechanistic-interpretability, transformer, mamba, sae, circuits, universality]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=2J18i8T0oI"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+Transformers and state-space models (Mamba) turn out to implement strikingly similar internal circuits — the first systematic evidence that algorithmic universality may hold across fundamentally different neural architectures.
+
+## Why This Is Worth Your Time
+
+The field has long assumed that **Transformer attention** and **Mamba's selective state spaces** are mechanistically distinct. Wang et al. challenge that assumption head-on. If the same high-level algorithms — induction heads, induction circuits — emerge independently in both architectures, it suggests the neural substrate matters less than we thought, and that mechanistic interpretability findings may generalize farther than their Transformer-only origins imply. This is not a curiosity; it's a stress test of the entire research program that tries to understand LLMs by reverse-engineering their circuits.
+
+The second reason to care: if circuits are shared, so is the attack surface. The same "Off-by-One" vulnerability or information-leaking motif found in a Transformer might quietly exist in every Mamba model too. The paper makes that connection explicit.
+
+## Core Method (3-Minute Version)
+
+The authors take two families of language models — Transformer-based and Mamba-based — and run them through a shared interpretability pipeline.
+
+**Step 1 — Feature extraction via Sparse Autoencoders (SAEs).** SAEs decompose a model's residual stream into sparse, human-interpretable directions. The team trains SAEs independently on a Transformer and a Mamba model of comparable size.
+
+**Step 2 — Feature-level comparison.** They ask: do the same conceptual features (e.g., "capital city", "programming keyword") appear in both models? If so, are they geometrically close in activation space?
+
+**Step 3 — Circuit-level tracing.** This is where it gets interesting. Mamba doesn't have attention matrices you can probe directly. Instead, the team traces how information propagates through the **state space** — how a token's hidden state gets written, carried, and read at subsequent positions. They look for analogues of well-characterized Transformer circuits, particularly induction circuits (which let models predict the next token in a repeated sequence).
+
+The key instrument: the "Off-by-One motif." In Transformers, induction heads read the previous token's representation to predict the next copy of a repeated token. In Mamba, the authors find a structurally analogous mechanism — but it writes token information into the state space one position *ahead* of where you'd naively expect. Hence: Off-by-One.
+
+## Key Results
+
+- Most SAE features are measurably similar between comparable Transformer and Mamba models
+- Induction circuits in Mamba are structurally analogous to those in Transformers, despite the absence of attention
+- An "Off-by-One motif" identified: token information is written into the SSM state at the next position relative to the Transformer convention
+- The findings suggest that universality is a property of the *algorithm* a model learns, not a property of the architecture used to implement it
+
+## Limits and Unanswered Questions
+
+- No concrete numbers are reported in the source abstract — the scale of feature similarity, geometric distances, and the proportion of shared circuits are all unspecified
+- The abstract is truncated; full experimental details, model sizes, and dataset specifics are not available in the public record yet
+- The study is limited to language modeling; whether the same circuit-level universality holds for multimodal or reasoning tasks is completely unexplored
+- Only one architecture pairing (Transformer ↔ Mamba) is examined — universality across more exotic architectures (Hyena, RWKV, state-space hybrids) remains an open question
+
+## Further Reading
+
+The broader mechanistic interpretability literature — particularly the work on induction heads and superposition in Transformers — provides essential context. Readers unfamiliar with SAE-based interpretability should start there before attempting to trace the Off-by-One argument in detail.
+
+**Source:** Wang et al., "Towards Universality: Studying Mechanistic Similarity Across Language Model Architectures," OpenReview (2025). [OpenReview](https://openreview.net/forum?id=2J18i8T0oI)

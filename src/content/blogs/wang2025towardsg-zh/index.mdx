@@ -1,0 +1,58 @@
+---
+title: "迈向通用性：跨语言模型架构的机制相似性研究"
+description: "首次系统性地证明 Transformer 与 Mamba 共享机制层面相似的电路，表明不同架构之间存在算法通用性。"
+publishDate: "2026-04-27"
+updatedDate: "2026-04-27"
+category: paper-spotlight
+hIE: snowdrop
+heroImage:
+  src: ../../../assets/hIE/snowdrop/291936-beatless-lacia-monochrome-redjuice-snowdrop.jpg
+tags: [论文, 机制可解释性, transformer, mamba, sae, 电路, 通用性]
+language: zh
+draft: true
+sources: ["https://openreview.net/forum?id=2J18i8T0oI"]
+confidence: medium
+status: draft
+---
+
+## 一句话摘要
+
+Transformer 和状态空间模型（Mamba）的内部电路表现出惊人相似的结构——这是首次系统性地证明，不同神经网络架构可能独立演化出相同的算法。
+
+## 为什么值得看
+
+这个领域长期默认 **Transformer 的注意力机制** 和 **Mamba 的选择性状态空间** 在机制层面截然不同。Wang 等人的工作直接挑战了这一假设。如果 induction head、induction circuit 这类高层算法能够独立出现在两种架构中，那就意味着：神经网络底层 substrate 的选择也许没有我们以为的那么重要，机制可解释性的发现可能比它们诞生时更具普适性。
+
+这不是一个理论上的好奇心。如果电路是共享的，攻击面也是共享的。同一个 "Off-by-One" 漏洞或信息泄露 motif，在 Transformer 里发现了，就有可能静默存在于所有 Mamba 模型中。论文把这个联系说得很清楚。
+
+## 核心方法（3 分钟版）
+
+作者对两类语言模型——基于 Transformer 的和基于 Mamba 的——使用同一套可解释性流水线进行分析。
+
+**步骤一：通过 Sparse Autoencoders (SAE) 提取特征。** SAE 将模型的残差流分解为稀疏的、人类可解释的方向向量。团队在 Transformer 和 Mamba 上分别训练了 SAE。
+
+**步骤二：特征层面的比对。** 核心问题是：同一个概念特征（比如"首都城市"、"编程关键字"）是否同时出现在两个模型中？如果是，它们的几何位置是否接近？
+
+**步骤三：电路层面的追踪。** 这里最有趣。Mamba 没有直接的注意力矩阵可以探测。团队转而追踪信息如何通过**状态空间**传播——一个 token 的隐状态如何在后续位置被写入、携带和读取。他们在 Mamba 中寻找已被充分表征的 Transformer 电路的对应物，尤其是 induction circuit（让模型能够在重复序列中预测下一个 token 的机制）。
+
+关键发现是 "Off-by-One motif"。在 Transformer 中，induction head 通过读取前一个 token 的表示来预测重复 token 序列中的下一个副本。在 Mamba 中，团队找到了一个结构上类似的机制——但它将 token 信息写入状态空间的位置比 Transformer 惯例提前了一个位置。这正是 Off-by-One 名称的由来。
+
+## 关键结果
+
+- 大部分 SAE 特征在 Transformer 和 Mamba 之间具有可量化的相似性
+- Mamba 中的 induction circuit 与 Transformer 中的 induction circuit 结构上高度类似，尽管 Mamba 没有注意力机制
+- 确认了 "Off-by-One motif"：token 信息被写入 SSM 状态的位置，相较于 Transformer 的惯例提前了一个位置
+- 结果表明，通用性可能是模型习得**算法**的属性，而非实现该算法的**架构**的属性
+
+## 局限与未回答的问题
+
+- 源摘要中未给出具体数字——特征相似性的规模、几何距离、共享电路的比例均未披露
+- 摘要内容不完整，完整实验细节、模型规模、数据集规格尚未公开
+- 研究仅覆盖语言建模任务；在多模态或推理任务上是否同样存在电路层面的通用性，完全未被探索
+- 仅检验了一种架构配对（Transformer ↔ Mamba）——在其他更复杂的架构（Hyena、RWKV、状态空间混合模型）上是否具有通用性，仍是开放问题
+
+## 延伸阅读
+
+更广泛的机制可解释性文献——尤其是关于 Transformer 中 induction head 和叠加（superposition）的研究——是理解本文的必要背景。建议不熟悉 SAE 方法的读者先补充这方面的基础，再深入追踪 Off-by-One 论证的细节。
+
+**来源：** Wang et al., "Towards Universality: Studying Mechanistic Similarity Across Language Model Architectures," OpenReview (2025). [OpenReview](https://openreview.net/forum?id=2J18i8T0oI)

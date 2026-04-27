@@ -39,19 +39,25 @@ const slug = postId ? canonicalSlug(postId) : ''
 const isEnRoute = Astro.currentLocale === 'en'
 const counterpartUrl = postId ? await getCounterpartUrl(postId, isEnRoute) : null
 
+// Same fix as PostPreview: respect the imported image's natural dimensions.
+// Hardcoding 1200x630 forced portrait hIE assets (e.g. 3233x4101) into a
+// landscape box, leaving the gray container area visible below the image.
 const imageProps: {
   src: any
   width: number
   height: number
 } = heroImage ? {
   src: heroImage.src,
-  width: heroImage.width || 1200,
-  height: heroImage.height || 630
-} : {
-  src: pickHeroFallback(hIE, slug || title),
-  width: 1200,
-  height: 630
-}
+  width: heroImage.width ?? (heroImage.src as any)?.width ?? 1200,
+  height: heroImage.height ?? (heroImage.src as any)?.height ?? 630
+} : (() => {
+  const fb = pickHeroFallback(hIE, slug || title) as any
+  return {
+    src: fb,
+    width: fb?.width ?? 1200,
+    height: fb?.height ?? 630
+  }
+})()
 
 const imageAlt: string = (heroImage?.alt || title) as string
 ---

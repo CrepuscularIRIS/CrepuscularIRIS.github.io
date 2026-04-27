@@ -23,19 +23,26 @@ const { remarkPluginFrontmatter } = await render(post)
 const postDate = data.updatedDate ?? data.publishDate
 const slug = canonicalSlug(id)
 
+// Use natural image dimensions (from the imported ESM image asset) when the
+// frontmatter doesn't pin width/height. Astro's image() loader puts width/height
+// on the imported module itself, so data.heroImage.src.{width,height} reflect
+// the file's true aspect ratio. Hardcoding 1200x630 broke portrait images.
 const heroImageProps = data.heroImage ? {
   src: data.heroImage.src,
   alt: data.heroImage.alt,
   color: data.heroImage.color,
-  width: data.heroImage.width || 1200,
-  height: data.heroImage.height || 630
-} : {
-  src: pickHeroFallback(data.hIE, slug),
-  alt: data.title,
-  color: undefined as string | undefined,
-  width: 1200,
-  height: 630
-}
+  width: data.heroImage.width ?? (data.heroImage.src as any)?.width ?? 1200,
+  height: data.heroImage.height ?? (data.heroImage.src as any)?.height ?? 630
+} : (() => {
+  const fb = pickHeroFallback(data.hIE, slug) as any
+  return {
+    src: fb,
+    alt: data.title,
+    color: undefined as string | undefined,
+    width: fb?.width ?? 1200,
+    height: fb?.height ?? 630
+  }
+})()
 
 function getLocalizedUrl(locale: string | undefined, path: string) {
   let url = getRelativeLocaleUrl(locale || 'zh', path)
