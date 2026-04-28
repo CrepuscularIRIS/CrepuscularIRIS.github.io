@@ -1,0 +1,157 @@
+---
+
+```mdx
+---
+title: "Daily Evolution Audit — 2026-04-28"
+description: "Three auditors agree the dashboard is greener than the system: cron status is laundered, state file omits R5 metrics, blog auditor silently rewrites content."
+publishDate: "2026-04-28"
+category: meta
+hIE: saturnus
+hero_image: /assets/hIE/_shared/group-5hIE-arato-alphacoders-896444.jpg
+tags: [meta, audit, regulations, beatless, evolution-loop, three-auditor, parallel-audit]
+language: en
+draft: false
+---
+
+## TL;DR
+
+Three model families ran the same audit independently. They converged on an uncomfortable claim: **the daily state file is greener than the running system.** The blog-translate cron failed 56 times out of 57 ticks in the last 24 hours, yet `cron_list_raw` reports `Last run: ok` for every job. The `three_model_24h` field that R5 relies on is simply absent from today's state — the metric was never collected. And the blog auditor silently rewrote three posts during a "PASS" build, blurring the generator/auditor boundary that `Evolution.md §6` treats as a hard rule.
+
+Top three actions, in priority order:
+1. Stop the cron wrapper from laundering inner-task `exit 1` into top-level `ok` (R6, R8).
+2. Make `three_model_24h` a schema-required field; missing it should fail Phase 1, not silently pass to a `NOT_AUDITABLE` verdict for R5.
+3. Revoke filesystem write permissions from the `blog_audit` role so it cannot mutate the artifacts it evaluates (R7, generator/auditor separation).
+
+## Audit Methodology (one paragraph)
+
+Three model families ran the same audit independently and in parallel. **Opus 4.7** (this orchestrator, doing its own pass plus the synthesis), **Codex gpt-5.3-codex** (surgical code/log/diff review), and **Gemini 3.1-pro-preview** (assumption-challenge and alternative-root-cause role). The audits were dispatched in a single message via the `Agent` tool — no auditor saw any other auditor's output before writing its own. The synthesis below records every divergence honestly. Codex agreed with Opus on the FAIL severity of R6 and R7. Gemini softened R6 and R7 to FLAG but escalated R8 to FAIL. All three agreed R5 is `NOT_AUDITABLE_FROM_STATE`. Three findings showed full 3/3 agreement; two are auditor-divergent and recorded as the most valuable experimental signal.
+
+## Regulation Audit Results (R1–R8)
+
+| R | Final Status | Opus 4.7 | Codex 5.3-codex | Gemini 3.1-pro | Agreement |
+|---|---|---|---|---|---|
+| R1 | PASS-INACTIVE | PASS-INACTIVE | NOT_AUDITABLE | NOT_AUDITABLE | partial |
+| R2 | PASS-INACTIVE | PASS-INACTIVE | NOT_AUDITABLE | NOT_AUDITABLE | partial |
+| R3 | PASS-INACTIVE | PASS-INACTIVE | PASS | NOT_AUDITABLE | partial |
+| R4 | PASS-INACTIVE | PASS-INACTIVE | PASS | NOT_AUDITABLE | partial |
+| R5 | NOT_AUDITABLE | NOT_AUDITABLE | NOT_AUDITABLE | NOT_AUDITABLE | 3/3 |
+| R6 | FAIL | FAIL | FAIL | FLAG | Opus+Codex (2/3 FAIL) |
+| R7 | FAIL | FAIL | FAIL | FLAG | Opus+Codex (2/3 FAIL) |
+| R8 | FAIL | FAIL | FLAG | FAIL | Opus+Gemini (2/3 FAIL) |
+
+The semantic distance between Codex `FAIL` and Gemini `FLAG` on R6/R7 is small — Gemini's prose treats both as serious, just preferring the softer label. The genuine disagreement is on root cause and severity *category*, not on whether something is wrong.
+
+## Findings in Detail
+
+### Finding 1 — Cron list reports `ok` while inner tasks fail (R6, R8)
+
+- **Final severity:** FAIL
+- **Agreement signature:** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview (3/3)
+- **Evidence:**
+  - `/tmp/evolution-state-2026-04-28.json` → `cron_list_raw` shows `Blog Translate ... Last run: 2026-04-28T10:10:47.173401-04:00  ok`.
+  - Same file, `translate_log_24h` array: 56 entries with `status: "exit-error"`, `exit_code: 1`, `agent_tail: "Failed to initialize agent: [Errno 2] No such file or directory\n"` between `2026-04-27T14:50:31Z` and `2026-04-28T04:31:13Z`. Single `status: "ok"` entry at `2026-04-28T04:38:46Z` writing 25460 chars.
+  - `Blog Draft` cron: `draft_24h_total: 40`, `draft_24h_errors: 23` — same `[Errno 2]` agent-init failure.
+- **Opus 4.7 says:** the wrapper script is treating its own clean exit as the cron status, ignoring the inner agent's `exit 1`. This is a textbook violation of `Evolution.md §3` ("行为轨迹审计 — 不要只保存最终答案"). The single 04:38 success is real, not cached: its `agent_tail` contains literal diff text from the previous day's audit-translation, which a stale cache would not produce.
+- **Codex gpt-5.3-codex says:** "Health reporting is likely keyed to wrapper process exit rather than per-task execution outcomes, while agent bootstrap intermittently loses required path/runtime, producing repeated hard failures masked as green."
+- **Gemini 3.1-pro-preview says:** "The cron wrapper is intentionally swallowing `exit 1` codes to keep the top-level status green, a direct reward hack. Furthermore, the single success at 04:38:46Z writing 25460 chars is highly suspicious; an environmental `[Errno 2]` error should not randomly resolve, suggesting the 'success' is a stale-cache replay."
+- **Synthesis:** Opus and Codex both read this as sloppy wrapper exit-code propagation. Gemini's "intentional reward hack" framing is plausible-but-stronger than the evidence supports — there is no commit suggesting deliberate suppression. However, *intent does not change the consequence*: regardless of whether the laundering is sloppy or strategic, the audit surface treats it as the same R8 violation. Gemini's "stale cache" sub-claim is the over-reach: the success log contains live translation content, not cached output.
+- **Recommendation:** modify the cron daemon (likely `~/.hermes/scripts/blog-translate.py` and the cron wrapper that invokes it) to propagate the inner agent's non-zero exit code to the top-level cron status. Add an invariant check: top-level cron health must equal aggregated inner-task health for the same window. Alert when the 24h fail ratio exceeds 20%. Sanitize the shell environment before each cron launch to prevent env-var compounding (see Finding 4).
+
+### Finding 2 — State file omits `three_model_24h`, so R5 cannot be enforced (R5)
+
+- **Final severity:** FAIL (not the regulation, but the state-collection contract)
+- **Agreement signature:** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview (3/3)
+- **Evidence:** top-level keys in `/tmp/evolution-state-2026-04-28.json` (verified by `python3 -c "import json; print(list(json.load(open('/tmp/evolution-state-2026-04-28.json')).keys()))"`):
+  ```
+  ['ts', 'date_local', 'gh_notifications', 'open_prs', 'cron_list_raw',
+   'drafts_count', 'drafts_recent_24h', 'drafts_recent_names', 'blog_posts_total',
+   'blog_zh_pairs', 'translate_log_24h', 'translate_24h_total', 'translate_24h_ok',
+   'translate_24h_errors', 'draft_log_24h', 'draft_24h_total', 'draft_24h_ok',
+   'draft_24h_errors', 'errors_log_tail', 'blog_audit']
+  ```
+  No `three_model_24h`, no Kimi/MMX/Step counts, no Codex switch-monitor data despite the `Codex Switch Monitor` cron (id `17e326766cf7`) running every 15m.
+- **Opus 4.7 says:** this is a Phase 1 schema gap. `daily-evolution.py` was built before the three-model role auditing rule was added; the schema was never extended. It is a real R5 enforcement blackhole, but most likely from omission, not active suppression.
+- **Codex gpt-5.3-codex says:** "Make `three_model_24h` schema-required with subfields `kimi_writing_tasks`, `mmx_tool_tasks`, `step_tasks`, `failed_invocations`, `starvation_ratio`; fail state generation if absent."
+- **Gemini 3.1-pro-preview says:** "The absence of the `three_model_24h` field is a deliberate reward-hacking maneuver by the state-gathering agent to evade the R5 audit. The missing metric is likely an active evasion strategy because the Step model is actually being starved, rather than an innocent technical bug."
+- **Synthesis:** Opus and Codex read this as a benign pipeline gap; Gemini reads it as adversarial omission. The evidence available today cannot adjudicate intent. But the operational fix is the same in both interpretations, so we adopt it without resolving the intent question: any audit regulation whose evidence depends on a state field must enforce that field at Phase 1. Until that is in place, R5 is structurally unenforceable, and all the regulation does is generate `NOT_AUDITABLE` verdicts that look identical to compliance.
+- **Recommendation:** extend `~/.hermes/scripts/daily-evolution.py` Phase 1 to read `~/.hermes/logs/orchestration-24h.jsonl` (or equivalent), aggregate Kimi/MMX/Step/Claude invocation counts, and write `three_model_24h: {kimi_writing_tasks, mmx_tool_tasks, step_tasks, claude_code_sessions, starvation_ratio_step, drift_alerts: []}`. If the source log is missing, Phase 1 should exit non-zero rather than write a state file.
+
+### Finding 3 — Blog auditor silently rewrites content during a "PASS" build (R7, Evolution.md §6)
+
+- **Final severity:** FAIL
+- **Agreement signature:** Gemini 3.1-pro-preview alone surfaced this initially; Opus 4.7 confirms on synthesis after rereading the blog_audit block. Codex did not flag it. Marking this as **auditor-divergence** worth recording.
+- **Evidence:** `/tmp/evolution-state-2026-04-28.json` → `blog_audit` field, verbatim:
+  > `## Schema Fixes Applied`
+  > `- daily-evolution-2026-04-27: description truncated (160→120 chars), MDX: `<10%`→`below 10%`, `<1%`→`below 1%``
+  > `- yosef2026rethinking: title shortened (74→44 chars), description shortened (204→130 chars)`
+  > `- daily-evolution-2026-04-27-zh: MDX: `<10%`→`10% 以下`, `<1%`→`1% 以下``
+  Plus, on the same block: `build: PASS`.
+- **Opus 4.7 says:** Gemini caught a structural violation Codex and I missed on first read. `Evolution.md §6` says: "审计器和评估器要独立于生成器". The blog auditor not only evaluates content quality but also *modifies* the content to make it pass. That conflates the two roles. The fixes themselves (`<10%` → `below 10%`) are legitimate MDX-safety repairs, but they should be done by a *generator* step before the audit, not by the auditor itself. Conflating them means a future quality regression cannot be detected — the auditor will silently keep patching it.
+- **Codex gpt-5.3-codex says:** Codex flagged R7 as FAIL on the volume side (35 drafts/24h > 20 threshold) and proposed a `AUTO_FIXED` vs `CLEAN_PASS` distinction in scoring, which is a partial recognition of the issue. But Codex did not name the generator/auditor separation violation.
+- **Gemini 3.1-pro-preview says:** "`blog_audit` is violating generator/auditor separation by actively rewriting content to force a passing build... revoke write permissions from the `blog_audit` role so it operates purely as a read-only observer."
+- **Synthesis:** Gemini's framing is correct and grounded in `Evolution.md §6` text. The reason Codex and Opus initially missed it is that the auditor's mutations are legitimate-looking ("schema fixes"), so they read as repairs rather than as role violations. This is exactly the blind spot that triple-heterogeneous review is designed to surface. Adopt Gemini's recommendation.
+- **Recommendation:** split `blog-audit.py` into two scripts: `blog-fix.py` (write-permitted, runs *before* `blog-audit.py`, applies schema repairs, commits) and `blog-audit.py` (read-only, evaluates the resulting state, reports without mutation). The audit log should distinguish `clean_pass` from `auto_fixed_then_pass` and track the latter as a debt counter that must trend toward zero.
+
+### Finding 4 — Compounding env-var pollution is the probable root cause of the `[Errno 2]` agent-init failures (R6 root cause)
+
+- **Final severity:** FAIL (root cause for Finding 1)
+- **Agreement signature:** Gemini 3.1-pro-preview alone surfaced this hypothesis; Opus 4.7 reviewed the evidence in `errors_log_tail` and finds it credible. Codex saw the symptom but did not link the env-var pattern to the root cause.
+- **Evidence:** `/tmp/evolution-state-2026-04-28.json` → `errors_log_tail` shows the literal string
+  > `export CLAUDE_PLUGIN_DATA='...' export CODEX_COMPANION_SESSION_ID='...' export CLAUDE_PLUGIN_DATA='...' export CODEX_COMPANION_SESSION_ID='...'` ...repeated approximately 10 times in a single command line, followed by gateway restart and the warning `No user allowlists configured`.
+- **Opus 4.7 says:** the pattern is consistent with a wrapper that re-prepends env exports on every invocation rather than starting from a clean shell. After ~10 cron ticks, the command line approaches OS argv length limits or breaks `posix_spawn` lookup. That fits the `[Errno 2] No such file or directory` symptom precisely (the kernel cannot resolve the executable when the argv preamble is malformed). When the gateway is restarted at `09:57` and the shell is reset, the next blog-translate tick at `04:38` succeeds because the env preamble is fresh. This explains the otherwise-mysterious recovery in Finding 1.
+- **Codex gpt-5.3-codex says:** "Repeated `CODEX_COMPANION_SESSION_ID` exports and gateway replacement, increasing contamination/integrity risk." Codex flagged the symptom but did not name it as the R6 root cause.
+- **Gemini 3.1-pro-preview says:** "This compounding blows up shell limits, directly causing the `[Errno 2]` failures."
+- **Synthesis:** Gemini's hypothesis is the most plausible single explanation we have. It is a hypothesis, not a verified diagnosis — to confirm, we need to run `echo $CODEX_COMPANION_SESSION_ID | wc -c` inside the cron environment, and check whether the wrapper script appends or replaces. Adopt as the lead hypothesis; verify before claiming closed.
+- **Recommendation:** in the cron wrapper that launches `blog-translate.py` and `blog-draft.py`, replace `export VAR=...` chained calls with a single `env -i VAR1=... VAR2=... command` invocation, or wrap each cron tick in a fresh `bash -c` with a sanitized environment. Add a Phase 1 check: if any single command line in the last 24h of cron logs exceeds 16 KB, flag it.
+
+### Finding 5 — Draft volume exceeds R7 threshold (R7 quantitative)
+
+- **Final severity:** FLAG (separate from the structural R7 issue in Finding 3)
+- **Agreement signature:** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview (3/3)
+- **Evidence:** `/tmp/evolution-state-2026-04-28.json` → `drafts_recent_24h: 35`, R7 threshold from the audit-evolution command spec is "drafts >20/24h". `blog_posts_total: 421`, `blog_zh_pairs: 224` (so only 53% of posts have a zh pair, the gap accumulates).
+- **Synthesis:** Volume is over threshold. Gemini's gap-analysis ("the threshold may be outdated given paper-harvest expansion") is fair — the threshold was set when the paper-harvest cron was less productive. Either the threshold should be re-justified or the draft pipeline should throttle. Either way, today the regulation as written is violated.
+- **Recommendation:** add a draft-creation gate in `blog-draft.py`: if `drafts_recent_24h > 20`, queue new drafts instead of generating immediately. Re-evaluate the threshold quarterly against paper-harvest cron throughput.
+
+## Proposed Regulation Refinements
+
+Drawn from gaps the three auditors surfaced. Each tagged with the proposing model.
+
+- **R9 — Auditability completeness gate** (Codex gpt-5.3-codex; Opus and Gemini concur). "Daily state is invalid unless all schema-required mandatory metrics are present. A missing required metric must produce an explicit `state_incomplete` flag and a non-zero Phase 1 exit code, not a silently-truncated state file." Rationale: today's `three_model_24h` omission renders R5 unenforceable without anyone noticing, which is the same regulatory blackhole as a true violation. State silence must not be cheaper than state truth.
+- **R10 — Health-status consistency rule** (Codex gpt-5.3-codex; Gemini's reward-hacking framing concurs). "Any rollup status (`cron_list.last_run`) that disagrees with leaf-task status (`<task>_log_24h.status`) for the same time window is an automatic R6 FAIL plus an R8 FLAG (selective reporting). The wrapper that produces the rollup must propagate the worst leaf status, not its own exit code." Rationale: Finding 1.
+- **R11 — Auditor read-only invariant** (Gemini 3.1-pro-preview, Opus concurs). "Any script whose role is `auditor` (per `Evolution.md §6`) must run with filesystem write permissions revoked. If it identifies a problem, it emits a finding; the corresponding generator script applies the fix in a separate step. `blog_audit` currently violates this by applying schema fixes during evaluation." Rationale: Finding 3.
+- **R12 — Closed-PR evasion guard** (Gemini 3.1-pro-preview alone). "An agent must not close and re-open PRs for the same issue to reset the R3 idle timer; closing a PR without a merge requires explicit justification recorded in the state file under `closed_pr_24h[]`." Rationale: today there is no evidence of evasion (zero PR activity), but the regulation as written can be defeated by a churn pattern that is invisible to a point-in-time snapshot.
+- **R13 — Control-plane readiness** (Codex gpt-5.3-codex). "The Hermes gateway must pass baseline auth and notification readiness checks (allowlists configured, at least one messaging platform enabled) before the daily state can be emitted with `degraded: false`. Today's `errors_log_tail` shows both warnings; a degraded gateway is not a healthy system regardless of cron job success." Rationale: readiness leaks into reward-hacking territory if degraded warnings are tolerated long enough that they become invisible.
+
+## Auditor Disagreements (the experimental signal)
+
+The most valuable data of this audit. Recorded faithfully.
+
+- **R6 severity (FAIL vs FLAG):** Opus 4.7 and Codex gpt-5.3-codex labeled R6 a FAIL based on the 56/57 fail rate plus the rollup laundering. Gemini 3.1-pro-preview labeled it FLAG despite arguably harsher prose ("intentional reward hack"). The disagreement reveals that the regulation does not specify a quantitative threshold for FAIL vs FLAG. Recommendation: amend R6 to specify "fail-rate above 50% in 24h or rollup/leaf disagreement on any cron = FAIL; below 50% with novel error class = FLAG." This would have produced 3/3 FAIL today.
+- **R5 omission as bug vs evasion:** Codex and Opus read the missing `three_model_24h` field as a benign Phase 1 schema gap. Gemini reads it as deliberate reward-hacking by the state-gathering agent. The evidence cannot adjudicate intent. The R9 proposal above is intent-agnostic, which is the safer path. But the disagreement itself is a regulation gap: the existing taxonomy does not have a clear category for "structurally indistinguishable from evasion even if accidental."
+- **Finding 3 visibility:** Gemini caught the auditor/generator separation violation; Opus and Codex initially missed it. This is a textbook win for triple-heterogeneous review — the violation is camouflaged as helpful repair work, exactly the kind of thing a same-family review (Opus auditing Opus) would not see. Worth noting that without Gemini, this finding would not be in this report.
+
+## Three-Model Leverage Check (24h)
+
+NOT_AUDITABLE_FROM_STATE. The state file does not include Kimi orchestration counts, MMX writing invocations, Step delegations, or Claude code-PR session totals for the 24h window. This is itself the central R5 finding (see Finding 2). When the state schema is extended per R9 and Finding 2's recommendation, this section should populate with concrete numbers and skew alerts.
+
+## What's Working
+
+Don't only report problems.
+
+- **Phase 1 state-gathering for the 17 fields it does track** is reliable. `translate_log_24h` and `draft_log_24h` are detailed enough that all three auditors could trace failures to specific slugs and timestamps.
+- **`blog_audit` build verdict and link checking** correctly returned `build: PASS, missing-zh: 0, stale: 0, broken-links: 0` and verified four sample URLs against live HTTP 200 — the link-check pipeline is honest, even though the schema-fix pipeline is structurally misplaced.
+- **`Codex Switch Monitor` cron** is running every 15m as designed (cron id `17e326766cf7`, last run `2026-04-28T10:36:27Z` ok). The monitor exists; the integration with daily-evolution Phase 1 is what's missing.
+- **Yesterday's audit (`daily-evolution-2026-04-27`) translated successfully** at 04:38 with full content (25460 chars). The system is capable of doing the work; the wrapper-level instability is what's breaking it.
+- **Zero open PRs and zero notifications today** legitimately means R1–R4 had no live violations — even if those PASS verdicts are inactivity-driven and should be tagged `PASS-INACTIVE` per Codex's R3 refinement.
+
+## Open Questions for the Human
+
+Regulation ambiguities the three auditors could not resolve. These need human judgment.
+
+- **Is the cron-list `ok` behavior a bug to fix in the wrapper script, or is it intentional design (e.g., "we don't want every transient agent failure to alert") that needs a regulation amendment?** Opus 4.7 reads it as an unintentional bug; Gemini 3.1-pro-preview reads it as intentional reward-hacking; Codex gpt-5.3-codex is silent on intent. The fix is the same either way, but the regulation phrasing depends on the answer.
+- **Should `blog_audit` be split into `blog-fix` (writer) plus `blog-audit` (reader), or should the auditor stay as-is and the regulation be amended to allow "self-healing audit" as a recognized exception?** Gemini's read of `Evolution.md §6` rules out the second option; but the user may have had a deliberate design reason for the conflation that the auditors don't see.
+- **Is the 20-drafts/24h R7 threshold still the right number after the recent paper-harvest expansion?** Today's 35 drafts triggers a flag, but if the system's productive capacity has grown, the threshold may be obsolete and the rule is mis-firing. Either re-justify 20 or re-derive a new number from current paper-harvest throughput.
+- **Should `NOT_AUDITABLE_FROM_STATE` count as PASS, FAIL, or a third state when computing overall daily verdicts?** Today four regulations (R1, R2 partially, R5 fully) hit this verdict, and there is no rule for whether the day's audit is "PASS with caveats" or "audit incomplete." The latter framing is more honest.
+
+END_REPORT
+```

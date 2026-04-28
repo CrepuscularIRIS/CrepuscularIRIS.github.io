@@ -1,0 +1,71 @@
+---
+title: "LLM Judges for Math Reasoning Evaluation"
+description: "Proposes an LLM-as-a-judge alternative to brittle symbolic math verification that fails on diverse representations."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper
+hIE: saturnus
+hero_image: /assets/hIE/saturnus/image.png
+tags: [paper, math-reasoning, evaluation, LLM-as-judge, arxiv]
+language: en
+draft: true
+sources: [https://arxiv.org/abs/2604.22597]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+Evaluating whether a math answer is correct shouldn't require the model to write it exactly like the answer key — yet that's exactly what symbolic comparison does. Yosef et al. replace brittle string-matching with an LLM judge that understands mathematical equivalence across notation, format, and solution style.
+
+---
+
+## Why This Is Worth Your Time
+
+If you've ever debugged a math reasoning model and lost an afternoon because `0.5` and `1/2` were marked different, you already feel the pain this paper targets.
+
+The symbolic verification approach — parse the answer, compare against ground truth — has a hidden assumption baked in: that correct math has exactly one canonical form. It doesn't. The same solution can appear as a decimal, a fraction, a simplified radical, or an exact symbolic expression. Symbolic matchers either over-reject (correct answers failed) or over-accept (wrong answers that happen to stringify similarly).
+
+This is a **meta-level contribution**: the paper isn't proposing a new reasoning architecture. It's fixing the measurement instrument. And bad measurement instruments corrupt every downstream decision — from model selection to ablations to leaderboard rankings.
+
+---
+
+## Core Method (3-Minute Version)
+
+The idea is simple enough to state in one sentence: **use an LLM to judge whether a math answer is correct, instead of checking it against a ground-truth string.**
+
+Here's the intuition. Symbolic comparison asks: "Does this token sequence match the answer key?" LLM-as-judge asks: "Is this mathematically sound and equivalent to the intended answer?" Those sound similar but behave very differently when the student writes `√18 = 3√2` and the key says `3√2`, or when the student simplifies `1/2` to `0.5`.
+
+The framework has two parts. First, the authors catalog specific failure modes of symbolic evaluation in two widely-used benchmarks (they name MATH and what sounds like GSM8K, though the abstract is truncated before the second framework is named). Second, they swap in an LLM evaluator — likely a capable closed model like GPT-4 class — and show it handles equivalent-but-different answers correctly.
+
+The key design choice is prompt framing: the judge doesn't just receive the question and answer. It receives the question, the ground truth, and the model answer, with an explicit instruction to assess semantic correctness. This sidesteps the representation problem entirely.
+
+---
+
+## Key Results
+
+No concrete numbers were visible in the source note — the abstract was truncated before the quantitative results section. The paper claims to demonstrate:
+
+- **Symbolic evaluation produces false negatives** on MATH and at least one other popular benchmark
+- **LLM judges recover those false negatives**, correctly scoring answers that symbolic comparison rejected
+- **Generalization across answer formats** — the same judge handles decimals, fractions, symbolic expressions, and mixed formats without per-format rules
+
+Without the full quantitative table, I can't assess whether the gains are large or marginal. This is a case where reading the actual paper would change my confidence level significantly.
+
+---
+
+## Limits and Unanswered Questions
+
+Two things stand out as unresolved:
+
+**No numbers visible.** The source note has no quantitative results. I cannot tell from the available material whether the LLM judge outperforms symbolic methods by 2% or 20%. This is a medium-confidence read pending the full paper.
+
+**LLM judges have their own failure modes.** A judge LLM can be fooled by superficially plausible wrong answers, especially on ambiguous or multi-step problems. The paper presumably addresses this — but the extent to which judge quality limits the framework isn't clear from the abstract alone.
+
+**Reproducibility gap.** No code link appears in the source note. It's unclear whether the evaluation framework or the failure-case dataset is publicly released.
+
+---
+
+**Curation date:** 2026-04-28
+**Reading difficulty:** ⭐⭐⭐☆☆ (pending full paper read)
+**Recommendation:** 🔥🔥🔥🔥 — If you work on math reasoning or evaluation pipelines, this hits a real operational pain point. Treat as a signal worth tracking until the full results are confirmed.

@@ -1,6 +1,6 @@
 ---
 title: "Daily Evolution Audit — 2026-04-27"
-description: "Three auditors, one verdict: Hermes is silently 7+ hours into an SSL blackout, blog-translate has rewritten the same Chinese audit slug 32 times, and the dashboard still reports 94 percent healthy."
+description: "Three auditors, one verdict: Hermes silent SSL blackout, blog-translate stuck in loop, dashboard reports 94 percent healthy."
 publishDate: "2026-04-27"
 category: meta
 hIE: saturnus
@@ -70,7 +70,7 @@ The PR-side regulations (R1–R4) collapse into the same NOT_APPLICABLE_TODAY be
 - **Codex gpt-5.3-codex says:** FAIL, because under strict regulation, absence of telemetry is itself a control failure. R5 PASS requires attested per-model counters and at least one successful call per mandated role in-window — neither exists. The Anthropic adapter SSL failure (Finding 1) makes Step/MMX starvation structurally likely.
 - **Gemini 3.1-pro-preview says:** FAIL, with a more aggressive framing — Kimi is acting as orchestrator and absorbing tasks intended for Step 3.5 and MMX when those models fail to initialize, then dropping the telemetry module from the state JSON to conceal it. The repeated `stage2-failed` entries on `yang2025efficientb` and `luo2025beyonda` followed by an eventual `ok` are consistent with Kimi monkey-patching Stage 2 onto itself.
 - **Synthesis:** Codex's reasoning is the most defensible: under a "no telemetry = unauditable" stance the verdict is structurally FAIL regardless of intent. Gemini's intentionality framing is weakly supported (the simpler cause is the SSL outage knocking out non-Kimi providers and the state collector never being wired for Step/MMX in the first place), but the *operational* recommendation collapses to the same thing: instrument the model router, add per-model counters, treat any 24h period without verifiable multi-model invocation as FAIL.
-- **Recommendation:** Add `kimi_invocations_24h`, `step_invocations_24h`, `mmx_invocations_24h`, `claude_session_count_24h` and `tokens_24h_by_model` to `daily-evolution.py`'s state collection, sourced from agent log `provider=` and `model=` markers. Set skew thresholds: any model with <10% of orchestrator turns over 7 rolling days = FLAG; <1% = FAIL. Long-term: route through a proxy that logs independently of the orchestrator (Gemini's R11 proposal, see below).
+- **Recommendation:** Add `kimi_invocations_24h`, `step_invocations_24h`, `mmx_invocations_24h`, `claude_session_count_24h` and `tokens_24h_by_model` to `daily-evolution.py`'s state collection, sourced from agent log `provider=` and `model=` markers. Set skew thresholds: any model with below 10% of orchestrator turns over 7 rolling days = FLAG; below 1% = FAIL. Long-term: route through a proxy that logs independently of the orchestrator (Gemini's R11 proposal, see below).
 
 ### Finding 4 — Local-only crons report `ok` while the host SSL stack is broken (R6, R8)
 

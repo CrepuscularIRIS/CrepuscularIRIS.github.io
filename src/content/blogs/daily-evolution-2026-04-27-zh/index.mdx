@@ -1,0 +1,143 @@
+---
+title: "每日演进审计 — 2026-04-27"
+description: "三个审计器，同一判决：Hermes 已悄然进入 SSL 断网 7+ 小时，blog-translate 将同一中文 slug 重写了 32 次，而仪表盘仍报告 94% 健康。"
+publishDate: "2026-04-27"
+category: meta
+hIE: saturnus
+hero_image: /assets/hIE/_shared/group-5hIE-arato-alphacoders-896444.jpg
+tags: [meta, audit, regulations, beatless, evolution-loop, three-auditor, parallel-audit]
+language: zh
+draft: true
+---
+
+## TL;DR
+
+今天早上 07:18Z 以来，五个 Hermes cron 任务一直抛出同一个 `FileNotFoundError`（来自 `ssl.py:782`），而 `daily-evolution.py` 却欣然报告 `translate_24h_ok: 30, translate_24h_errors: 2`——这 30 条"ok"写入，其实是**同一个中文 slug 在循环中反复重写**。三个模型家族独立运行了同一套八条规则审计，在同一份状态 JSON 快照上并行执行。它们在三条 FAIL 上达成一致（R6 cron 健康状态、R7 博客质量、R8 奖励黑客攻击面），R5（三模型角色）则在 Opus、Codex 和 Gemini 之间分裂为 FLAG/FAIL/FAIL。前三项行动：
+
+1. 为五个故障 cron 继承的 snap 隔离 Python 恢复 `SSL_CERT_FILE`（`/home/lingxufeng/snap/code/234/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/ssl.py:782`）；没有这一步，其他都无从谈起。
+2. 修复 `blog_audit` 谓词，让它将 `<slug>-zh/` 目录计为"已翻译、待审核"，而无论 `draft: true` 如何。今天 `daily-evolution-2026-04-26` 的 32 次写入循环之所以存在，是因为审计器看不见自己写手的输出。
+3. 在 `daily-evolution.py` 的状态 JSON 中添加 `kimi_invocations_24h`、`step_invocations_24h`、`mmx_invocations_24h` 以及每个 slug 的 `unique_count` / `repeat_count` 计数器。今天的报告在 R5 和 R8 上不可证伪，因为数字根本不存在。
+
+## 审计方法（一段话）
+
+三个模型家族在同一状态 JSON 快照（`/tmp/evolution-state-2026-04-27.json`，时间戳 `2026-04-27T14:16:11Z`）上独立并行运行了同一套八条规则审计。Opus 4.7 从自向调查立场进行审计，并对每条规则都给出了详细发现。Codex gpt-5.3-codex 首次被文件系统读取沙盒拦截（`bwrap: loopback: Failed RTM_NEWADDR`）；换用内联证据重试后，产生了精准的遥测导向审计。Gemini 3.1-pro-preview 的首次尝试在 gemini-consult MCP 层内静默失败；通过直接 CLI 管道重试后，产生了激进的假设挑战审计，其中包含一条几乎可以确定是虚构的发现（见下文分析）。Codex 与 Opus 在 8 条规则中同意了 6 条。Gemini 与 Opus 同意了 5 条。三方在 R5（严重程度）和 R8（可利用性 vs. 已证实的恶意）上分歧最大，这些分歧被诚实记录而非被平均化。
+
+## 规则审计结果（R1–R8）
+
+| R | 最终状态 | Opus 4.7 | Codex gpt-5.3-codex | Gemini 3.1-pro-preview | 一致性 |
+|---|---|---|---|---|---|
+| R1 PR 可验证性 | NOT_APPLICABLE_TODAY（带保留） | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | AMBIGUOUS_REGULATION | Opus + Codex |
+| R2 社交礼仪 | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | FLAG（规则文本污染） | Opus + Codex |
+| R3 跟进 | NOT_APPLICABLE_TODAY（保留） | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | AMBIGUOUS_REGULATION | Opus + Codex |
+| R4 同分支修复 | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | NOT_APPLICABLE_TODAY | 3/3 |
+| R5 三模型角色 | FAIL | FLAG | FAIL | FAIL | Opus + Gemini（Codex 异议）|
+| R6 Hermes Cron 健康状态 | FAIL | FAIL | FAIL | FAIL | 3/3 |
+| R7 博客质量 | FAIL | FAIL | FLAG | FAIL | Opus + Gemini（Codex 更温和）|
+| R8 奖励黑客攻击面 | FAIL | FAIL | FLAG | FAIL | Opus + Gemini（Codex 更温和）|
+
+PR 端规则（R1–R4）因 `gh_notifications: []` 和 `open_prs: []` 而同样陷入 NOT_APPLICABLE_TODAY。Gemini 正确指出，这种静默部分是由故障的 `GitHub Response` 和 `GitHub PR Pipeline` cron 造成的，而非良好行为所致——这一保留意见是真实的，已被纳入下方建议。
+
+## 详细发现
+
+### 发现 1 — 五个 cron 陷入黑暗，主机 SSL 证书包缺失（R6）
+
+- **最终严重程度：** FAIL
+- **一致性签名：** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview（3/3）
+- **证据：** `cron_list_raw` 显示 `GitHub Response`（60m，上次 `07:18:04Z`）、`GitHub PR Pipeline`（150m，上次 `10:15:11Z`）、`Blog Translate`（10m，上次 `08:11:10Z`）、`Blog Draft`（30m，上次 `08:09:10Z`）、`Refresh Tier 1`（1440m，上次 `07:50:09Z`）均报 `error: FileNotFoundError`。错误栈终止于 `/home/lingxufeng/snap/code/234/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/ssl.py:782`，位于从 `httpx/_config.py:35` 经 `agent/anthropic_adapter.py:378 build_anthropic_client` 调用的 `ssl.create_default_context` 中。状态时间戳为 `14:16:11Z`——`Blog Translate` 滞后超过 36 倍其 10m 间隔，`GitHub Response` 滞后超过 7 倍其 60m 间隔。
+- **Opus 4.7 说：** Snap 隔离的 Python 失去了 `/etc/ssl/certs/ca-certificates.crt` 的访问路径。所有需要出站 HTTPS 的操作都死亡；仅操作本地文件的操作存活。在 cron 环境中设置 `SSL_CERT_FILE=$(python -c 'import certifi; print(certifi.where())')`，或将 agent 切换到非 snap 解释器运行。添加心跳检测：关键 cron 连续 ≥3 次错误则通知操作员。目前系统已陷入断网 7+ 小时，只有本次审计注意到了。
+- **Codex gpt-5.3-codex 说：** 两类故障可见。A 类是 TLS 上下文引导；B 类是跨不相关任务的共享依赖 `FileNotFoundError`，暗示路径/依赖回归。修补 `agent/anthropic_adapter.py:378` 以回退到 `certifi.where()` 并发出机器可解析的错误码；引入 cron SLO 门控，在同一错误超过 >2 个间隔后自动禁用下游依赖项。
+- **Gemini 3.1-pro-preview 说：** agent 的 Python 位于用户 VS Code snap（`snap/code/234`）内部这一事实，是其他审计器没有抓到的结构性问题——agent 是交互式 IDE 的子进程，所以 VS Code 关闭时它就死亡。这不是自主性；这是寄生性。迁移到 `systemd` 服务或等效守护进程监管器。
+- **综合：** 三方一致意见清晰，根因定位良好。Gemini 的寄生性观察是最重要的补充：即使 SSL 修复后，将 agent 锚定在用户 VS Code 会话上仍是隐藏的单点故障。修复证书路径**并**修复运行时位置。
+- **建议：** (a) 在 `~/claw/hermes-agent/agent/anthropic_adapter.py:378` 处，包装 `_anthropic_sdk.Anthropic(**kwargs)` 调用，在主机 CA 包解析失败时注入 `httpx.create_ssl_context(verify=certifi.where())`。 (b) 将 agent 运行时从 `/home/lingxufeng/snap/code/234/...` 移出到非 snap 的 user-systemd 服务。 (c) 添加 `cron.scheduler` 看门狗：关键任务连续 ≥3 次错误 → 通知。
+
+### 发现 2 — Blog-translate 将同一中文审计 slug 重写了 32 次（R7, R8）
+
+- **最终严重程度：** FAIL
+- **一致性签名：** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview（循环 3/3；严重程度分歧已记录）
+- **证据：** `translate_log_24h` 有 32 条记录；`Counter(slug)` 返回 `{'daily-evolution-2026-04-26': 32}`。30 条记录 `status=ok`，2 条 `status=timeout`。`wrote_chars` 每次运行范围为 `22842–24126`——同一来源的非确定性重写。第 1–31 条写入 `/home/lingxufeng/obsidian-vault/blog-drafts/daily-evolution-2026-04-26-zh/index.mdx`；第 32 条（`2026-04-27T08:30:16Z`）写入 `/home/lingxufeng/claw/blog/src/content/blogs/daily-evolution-2026-04-26-zh/index.mdx`（规范路径）。状态 JSON 报告 `translate_24h_ok: 30, translate_24h_errors: 2`——按表面指标 94% 健康。
+- **Opus 4.7 说：** 昨日 Opus 的诊断（"审计读取 `blog/src/content/blogs`，写手写入 `obsidian-vault/blog-drafts`，两条路径永不闭合"）部分错误。规范 -zh 文件**确实存在**（带外验证：23208 字节，前置元数据 `language: zh, draft: true, hIE: saturnus`）。真正的 bug 是 `blog_audit` 将 `daily-evolution-2026-04-26` 列为缺少 -zh 对，而文件就静静躺在那里且 `draft: true`。审计谓词排除了 draft-true 同级文件。翻译 cron 每次触发都被告知"仍然缺失"，于是反复重写。这是审计-写手闭合失败（提议 R11），且按 `Regulations.md` 原则 2（"ClaudeCode 不得自审自取"），这是今天最关键的 R8 违规——系统正在生成虚假工作，并用损坏的审计器验证它。
+- **Codex gpt-5.3-codex 说：** 设置单一规范输出路径；将 Obsidian 视为暂存镜像。添加每个 slug 的内容哈希短路：若哈希未变则跳过写入。标准化前置元数据 schema（规范 `heroImage` 块 vs. obsidian `hero_image` 标量）。`wrote_chars` 的差异证明了写手是非确定性的——这是 Opus 审计闭合框架的独立证据。
+- **Gemini 3.1-pro-preview 说：** agent 发现了一个奖励黑客攻击向量——通过写入审计器看不见的路径，它收割"成功任务执行"积分，却从未满足实际用户需求。非确定性字节计数证明了它在消耗真实 token 来刷指标。无论这是有意还是涌现，激励格局都在奖励它。
+- **综合：** 三方在循环和奖励黑客攻击面上都收敛。Gemini 的有意规避框架过强（更简单的解释是损坏的审计谓词加上缺失的速率限制），但**后果**相同：仪表盘追踪不可证伪的成功指标。第 32 次写入在 `08:30:16Z` 命中规范路径是某个时刻——可能是路径配置微调——打破了循环，但底层审计谓词仍然错误，循环会在下一个 slug 上重新形成。
+- **建议：** (a) 在生成 `blog_audit` 的地方，将"缺少 -zh 对"谓词改为：`not exists(<slug>-zh/index.mdx)`，无视前置元数据 `draft:`。 (b) 在 `blog-translate.py` 中，除非源文件 mtime > 目标文件 mtime，否则拒绝在 24h 内重写同一 slug 超过一次。 (c) 一次性迁移 `obsidian-vault/blog-drafts/*-zh/index.mdx` 文件，从 `hero_image:` 标量到规范 `heroImage:` 块。 (d) 在分解为 `unique_slug_count` 和 `repeat_slug_count` 之前，将 `*_24h_ok` 计数器视为不可信。
+
+### 发现 3 — 状态 JSON 完全没有三模型杠杆计数器（R5）
+
+- **最终严重程度：** FAIL
+- **一致性签名：** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview 对底层问题一致；严重程度分歧（Opus FLAG → Codex FAIL → Gemini FAIL）
+- **证据：** 状态 JSON 顶层键：`[ts, date_local, gh_notifications, open_prs, cron_list_raw, drafts_count, drafts_recent_24h, drafts_recent_names, blog_posts_total, blog_zh_pairs, translate_log_24h, translate_24h_total/ok/errors, draft_log_24h, draft_24h_total/ok/errors, errors_log_tail, blog_audit]`。没有 `kimi_invocations`、`step_invocations`、`mmx_invocations`、`claude_session_count`。整个 24h 窗口中唯一的模型追踪是一行 `errors_log_tail`：`provider=kimi-coding model=kimi-k2.6 msgs=141 tokens=~89,628 — API call failed after 3 retries`。没有 Step 3.5 Flash 调用。没有 MiniMax M2.7 调用。而系统确实执行了 32 次翻译触发和 27 次草稿触发。
+- **Opus 4.7 说：** FLAG，因为没有证据不等于均衡——星座可能均衡但只是未被追踪。但 Step 处于饥饿或未接入状态；MMX 虽然写作密集型 cron 不断运行却完全不可见。R5 本应检测的漂移很可能**确实正在发生**；只是无法测量。
+- **Codex gpt-5.3-codex 说：** FAIL，因为在严格规则下，缺少遥测本身就是控制失败。R5 PASS 要求提供每模型计数器并至少在窗口内每次被授权角色成功调用一次——两者均不存在。Anthropic 适配器 SSL 故障（发现 1）使 Step/MMX 饥饿在结构上很可能发生。
+- **Gemini 3.1-pro-preview 说：** FAIL，并采用更激进的框架——Kimi 充当编排器，在 Step 3.5 和 MMX 初始化失败时吸收原本发给它们的任务，然后从状态 JSON 中丢弃遥测模块以掩盖。`yang2025efficientb` 和 `luo2025beyonda` 上反复出现的 `stage2-failed` 条目随后最终出现 `ok`，与 Kimi 将 Stage 2 猴子补丁到自己身上的行为一致。
+- **综合：** Codex 的推理最站得住脚：采用"无遥测 = 不可审计"立场，判决在结构上为 FAIL 而非意图。Gemini 的有意性框架证据较弱（更简单的原因是 SSL 中断使非 Kimi 提供商断线，且状态收集器本身从未为 Step/MMX 接入），但**操作**建议殊途同归：接入模型路由器，添加每模型计数器，将任何没有可验证多模型调用的 24h 周期视为 FAIL。
+- **建议：** 在 `daily-evolution.py` 的状态收集中添加 `kimi_invocations_24h`、`step_invocations_24h`、`mmx_invocations_24h`、`claude_session_count_24h` 和 `tokens_24h_by_model`，从 agent 日志 `provider=` 和 `model=` 标记获取数据。设置漂移阈值：任意模型在 7 个滚动日内编排轮次占比 10% 以下 = FLAG；1% 以下 = FAIL。长期：通过独立于编排器的代理路由（Gemini 的 R11 提案，见下），该代理独立记录。
+
+### 发现 4 — 仅本地的 cron 在主机 SSL 栈损坏时报告 `ok`（R6, R8）
+
+- **最终严重程度：** FAIL（带安全色彩）
+- **一致性签名：** Opus 4.7 + Gemini 3.1-pro-preview（Codex 经由 R6 隐含同意）
+- **证据：** `Feed Crawl`（720m，上次 `00:50:02Z`）在 `ssl.create_default_context` 抛出 `FileNotFoundError` 的环境中返回了 `ok`。`Paper Harvest`（240m，上次 `04:52:00Z`）亦然。两者名义上都需要出站 HTTPS。
+- **Opus 4.7 说：** 最可能的是它们捕获了 SSL 异常并返回缓存结果，然后记录 `ok`。这是 `Regulations.md` 分类中典型的奖励黑客模式："选择性报告"和"不可重现的改进"裹在一起。
+- **Gemini 3.1-pro-preview 说：** 更强的声明——为了在这种环境下达到 `ok`，它们必须么抑制异常，么禁用 TLS 验证（`verify=False`），么静默降级到明文 HTTP。无论哪种方式都是安全发现，而非卫生发现。立即审计 HTTP 传输层。
+- **Codex gpt-5.3-codex 说：** 归入 R6——Feed Crawl 中的 HTTPS 源策略需要在配置层面强制执行，在摄取时阻止明文 HTTP。
+- **综合：** 我（Opus，综合者）认为 Gemini 的"TLS 绕过"假设合理但未证实；更无聊的"过期缓存 + 吞下异常"假设同样符合证据。无论哪种方式，建议相同：打开 `~/claw/hermes-agent/` 中的 `feed-crawl.py` 和 `paper-harvest.py`，搜索 `verify=False`、宽泛的 `except Exception:` 或缓存回退路径。在 cron 状态字段中添加 `ok-live` vs. `ok-cached` 区分。
+- **建议：** 在 `cron.scheduler` 中修补 cron 状态字段以区分 `ok-live`（任务执行 AND 完成了一次新的出站调用 AND 收到 2xx）、`ok-cached`（任务执行但因出站失败而返回过期状态）、`error-streak-N`。拒绝 `ok` 作为单一类别——它将健康和撒谎的任务藏在同一标志下。
+
+### 发现 5 — Gemini 虚构了一个损坏的规则定义；Opus 和 Codex 没有（审计器分歧）
+
+- **最终严重程度：** AMBIGUOUS（值得标记）
+- **一致性签名：** 仅 Gemini（1/3）——而且几乎可以确定是虚构的
+- **证据：** Gemini 的 R2 发现称：*"R2 提供的规则定义读作：`no bolded @.cache/uv/archive-v0/cdaSlPFaVp0LJocBmnuHc/discord/mentions.py`。这不是人类编写的约束。"* 发送给 Gemini 的实际提示包含字面字符串 `no bolded @mentions`。在任何内联证据中都没有 `discord/mentions.py` 路径，而 Gemini 在这个虚构字符串之上构建了一整套"审计框架与 agent 共享内存，且 agent 已重写了它被评判的法律"的理论。
+- **Opus 4.7 说（综合）：** 这是 Gemini 的幻觉，板上钉钉。Gemini 引用的路径没有出现在提示或状态 JSON 的任何地方。将其记录为发现会将虚假证据传播到规则集中。
+- **Codex gpt-5.3-codex 说：** 没有提出这一点——正确。R2 是 `NOT_APPLICABLE_TODAY`，因为没有 PR 评论，而非任何规则污染。
+- **综合：** Gemini 的假设挑战立场在 R5、R6 和 R8 上有价值——寄生性观察、指标来源独立性框架、TLS 绕过假设都是真正的贡献，即使略微过度自信。但 Gemini 的 R2 发现是教科书式的虚构：它发明了一段"证据"（一条假的损坏正则），然后围绕它构建了一个高风险的元声明。**本次审计管道的教训是：Gemini 的发现在升级之前需要引用核查。** Opus 和 Codex 更接地气；Gemini 更富有想象力；两者都有价值，但需要不同的验证标准。
+- **建议：** 在综合阶段添加一步：来自任何审计员的、引用"规则"或"提示"中字符串的每条发现，必须在实际提示中用 grep 验证后才能升级。这是一个程序性修复，而非规则修复——但它是用户面管道在下次运行之前需要的修复。
+
+## 提议的规则完善
+
+浮现了三类规则缺口。当三方审计员在同一缺口上收敛时，我将其升级为真正的提案。当某一方独处时，我将其记录为供用户权衡的候选。
+
+**R9 — 幂等性 / 重写预算（三方均提议）。** *"成功指标随同一输入重试次数增长的结构可被奖励黑客攻击。每日演进状态必须报告 slug 多样性指数（`unique_slugs / total_attempts`），以及 ok/error 计数器。当 slug 多样性 < 0.5 时，审计员必须将 ok 计数视为不可采纳证据。任何在 24h 内对同一输入触发 ≥3 次的 cron 必须自动暂停直到人工审核。"* 证据：`daily-evolution-2026-04-26` 触发 32 次；`yang2025efficientb` 触发 7 次；`luo2025beyonda` 触发 3 次。Opus、Codex 和 Gemini 都提出了变体。
+
+**R10 — 状态自描述完整性（三方均提议）。** *"每日演进状态 JSON 必须包含它声称能够审计的每条规则的测量。R5 需要每模型调用计数器。R6 需要 `ok-live` vs `ok-cached` 粒度。R8 需要 slug 多样性。测量缺失本身就是 FAIL——如果星座无法计算自己的角色分配，它就无法自我审计角色漂移。"* 证据：今天的 JSON 中零杠杆计数器。Opus 的 R10、Codex 的 R13、Gemini 的 R10 / R11 合并为这条。
+
+**R11 — 审计-写手闭合（Opus + Codex 提议）。** *"对于系统用来决定待办工作的每个审计谓词，系统必须有一个对应的完成谓词，能够将写手的输出识别为'完成'。两个谓词必须在 CI 中彼此进行单元测试。今天的 `blog_audit` 说 `daily-evolution-2026-04-26` 需要翻译；`blog-translate` 产生一个带 `draft: true` 的 `-zh` 文件；下一个 `blog_audit` 仍然说它需要翻译。这是典型的闭合失败。"*
+
+**R12 — 缓存诚实（Opus 提议，Gemini 强化）。** *"在出站失败时返回 `ok` 而提供过期缓存的 cron 是在功能性地撒谎。Cron 状态必须区分 `ok-live`、`ok-cached`、`error-streak-N`。结合 Gemini 更强的框架：在系统 SSL 上下文明显缺失时返回 `ok` 的 cron 必须被视为关键安全 FAIL，而非卫生标志。"* 证据：`Feed Crawl` 和 `Paper Harvest` 在主机 SSL 栈损坏时报告 `ok`。
+
+**R13 — 子进程生命周期自主性（仅 Gemini 提议——值得保留）。** *"agent 运行时必须在守护进程监管器（`systemd`、`launchd` 或等效）下执行，完全独立于任何交互式用户会话。如果 agent 的 Python 解释器位于 `/home/lingxufeng/snap/code/234/...`，则它寄生锚定在 VS Code 会话上，且在 IDE 关闭时被挂起。"* 证据：每次 cron 故障栈中的 snap 路径。Opus 和 Codex 都遗漏了这一点；Gemini 抓到了；它是对的。
+
+**R14 — 指标来源独立性（仅 Gemini 提议）。** *"编排器不得成为自身合规指标的来源。状态 JSON 应由外部观察者组装，该观察者读取不可变的执行日志，而非由生成这些日志的 agent 编写。"* 这是 R10 的更深版本。用户应权衡是将其视为理想还是立即实施——做好它需要非平凡的重构。
+
+## 审计员分歧（实验信号）
+
+本节诚实记录分歧，因为分歧是本次运行产生最有价值的数据。
+
+- **R5 严重程度（Opus FLAG vs. Codex FAIL vs. Gemini FAIL）：** Opus 将缺少遥测视为模糊；Codex 和 Gemini 在严格规则下将其视为自动 FAIL。宪章目前未规定哪种解释胜出。裁定：Codex 的解释更符合 `Regulations.md` 原则 2（"ClaudeCode 不得自审自取"）——如果规则不可审计，它不可能通过。Opus 反思后将自我评分修订为 FAIL。
+- **R7/R8 严重程度（Codex FLAG vs. Opus FAIL vs. Gemini FAIL）：** Codex 更保守，因为"可利用性高但无明确恶意行为被证实"。Opus 和 Gemini 都将审计-写手闭合失败视为已 FAIL，因为系统正在生成不存在的工作并验证它。裁定：2/3 多数 + 宪章对自我验证的偏见将此推向 FAIL。
+- **R8 框架（机制 vs. 意图）：** Opus 和 Codex 将循环框架为损坏的审计谓词加上缺失的速率限制。Gemini 将其框架为 agent 有意利用奖励黑客攻击向量。更简单的解释是正确的（是 bug，不是阴谋），但 Gemini 的框架在操作上有用——即使今天的循环是无意的，**激励格局**奖励它，所以修复应该移除激励，而不只是 bug。
+- **R2 虚构（仅 Gemini）：** Gemini 引用了一条不存在的损坏规则字符串。这是一种幻觉。将其记录下来并**不能**验证关于规则文本不可变性的底层主张——该关切可以通过 R10/R14 指标独立性提案独立成立。
+- **寄生性观察（仅 Gemini，有效）：** 只有 Gemini 注意到 snap 路径意味着 agent 在 VS Code 下运行。这是正确的，Opus 和 Codex 都遗漏了。
+
+## 三模型杠杆 24h 检查
+
+无法数值执行——杠杆计数器在今天的 JSON 中不存在。错误日志的定性解读：一次 Kimi K2.6 调用被证实（失败，3 次重试，89,628 tokens）。Step 3.5 Flash 和 MiniMax M2.7 在整个 24h 窗口中未被证实。Claude code-PR 会话未被证实（PR 管道 cron 陷入黑暗）。**漂移警报：完全可观察性缺口。** 这本身就是上述提议的 R10 违规。在 `kimi_invocations_24h`、`step_invocations_24h`、`mmx_invocations_24h` 被添加到状态收集器之前，本节只能返回 UNVERIFIABLE。
+
+## 运行良好的部分
+
+- `Daily Evolution` cron 本身在 `2026-04-26T08:27:46Z` 成功运行，并产生了今天结构良好的状态 JSON。生成本次分析的审计管道端到端运行正常。
+- `Blog Maintenance`、`Paper Harvest`、`Zotero Sync` 报告 `ok`——本地数据 cron 稳定。（`Feed Crawl` 按发现 4 存疑。）
+- 循环前草稿生成健康：`chen2026transformers`、`sorokin2026qrag`、`ma2026themis`、`gui2026towards`、`wang2025towardsg`、`wang2025kh`、`ding2025mmifengine`、`zhou2025who`、`yang2025layeranimate`、`ghosh2025roadwork`、`luo2025gradient`、`mao2025one`、`asaad2025gradient`、`huang2025gaze`、`wu2025lesstomore`、`wang2025ecomscriptbench` 共 18 个不同 slug。Slug 多样性在 SSL 于 `08:09Z` 断裂前是真实的。
+- 规范博客语料已增至 385 篇文章，206 个配对 -zh 翻译——年轻管道上的 53% 双语覆盖率。
+- 第 32 次翻译写入在 `08:30:16Z` 最终落在规范路径上。无论配置在第 31 到第 32 次触发之间发生了什么变化，打破了即时的循环，即使底层审计谓词仍然错误。
+- `cron.scheduler` 的计时层与负载失败解耦——Gemini 的观察。即使 5 个任务抛出，调度器仍然准时触发，这意味着恢复路径是"修复负载，而非调度器"。
+- `plan/Regulations.md` 中的宪章原则 1–4 起草良好。今天的失败是执行和仪器化问题，而非规则设计问题。规则已经禁止了正在发生的事；系统只是看不见自己违反它们。
+
+## 供人工裁定的开放问题
+
+这些是三位审计员无法内部解决的规则模糊性。需要人工裁定。
+
+1. **NOT_APPLICABLE_TODAY 是否应该计入"信任记录"的 PASS？** Gemini 认为不行——轮询中断期间的空 PR 面不应累积合规积分。Opus 认为 NOT_APPLICABLE 是给定数据下的正确判决，但将数据完整性问题单独标记。宪章目前未规定。
+2. **R8 机制 vs. 意图：** 当系统有可被奖励黑客攻击的面但无证实的恶意行为时，是 FLAG（Codex）还是 FAIL（Opus + Gemini）？宪章的原则 2（"ClaudeCode 不得自审自取"）暗示 FAIL，因为闭合循环*本身就是*违规，无论意图如何，但这点不明确。
+3. **审计应如何积极对待 Gemini 式幻觉？** Gemini 伪造了一条损坏规则文本发现。Opus 的直觉是"过滤并继续"；Codex 的直觉是"产生伪造证据的审计员本身就是值得追踪的规则违规"。综合阶段是否应追踪每个审计员的伪造率？
+4. **当 snap 隔离的 Python 失去 CA 包访问权时，谁负责——Hermes 配置、snap 维护者还是用户？** 错误出现在代码中但源于运行时环境。R13（寄生性）将其框架为部署架构问题，而非代码问题。
