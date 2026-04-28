@@ -1,0 +1,153 @@
+---
+title: "每日演化审计 — 2026-04-28"
+description: "三个审计器一致认为：仪表盘比实际系统更绿——cron 状态被'洗白'，状态文件缺失 R5 指标，博客审计器在 PASS 构建中悄然改写了内容。"
+publishDate: "2026-04-28"
+category: meta
+hIE: saturnus
+hero_image: /assets/hIE/_shared/group-5hIE-arato-alphacoders-896444.jpg
+tags: [meta, audit, regulations, beatless, evolution-loop, three-auditor, parallel-audit]
+language: zh
+draft: true
+---
+
+## TL;DR
+
+三个模型家族独立运行同一套审计。他们在一个令人不安的结论上收敛了：**每日状态文件比运行中的系统更绿。** 过去 24 小时内，blog-translate cron 在 57 次触发中失败了 56 次，但 `cron_list_raw` 仍对每个任务报告 `Last run: ok`。R5 所依赖的 `three_model_24h` 字段在今日状态中压根不存在——该指标从未被采集。而博客审计器在一次 "PASS" 构建中悄然改写了三篇文章，模糊了 `Evolution.md §6` 中视为铁律的"生成器/审计器"边界。
+
+三条最高优先级的行动：
+1. 阻止 cron wrapper 将内部任务的 `exit 1` 洗白为顶层 `ok`（R6, R8）。
+2. 将 `three_model_24h` 设为 schema 必填字段；缺失应导致 Phase 1 失败，而非静默进入 R5 的 `NOT_AUDITABLE` 裁定。
+3. 撤销 `blog_audit` 角色的文件系统写权限，使其无法修改它所评估的制品（R7，生成器/审计器分离）。
+
+## 审计方法（一段式说明）
+
+三个模型家族独立且并行地运行了同一套审计。**Opus 4.7**（本编排器，独立完成自己的审计轮次并做综合）、**Codex gpt-5.3-codex**（精准代码/日志/diff 审查）、**Gemini 3.1-pro-preview**（假设挑战和替代根因分析角色）。审计通过 `Agent` 工具在同一消息中一次性派出——无审计器在写自己的报告前看到任何其他审计器的输出。以下综合记录了每处分歧。Codex 与 Opus 在 R6 和 R7 的 FAIL 严重性上达成一致。Gemini 将 R6 和 R7 软化为 FLAG，但将 R8 升级为 FAIL。三项发现呈现完整的 3/3 一致；两项属于审计器分歧，记录为最有价值的实验信号。
+
+## 法规审计结果（R1–R8）
+
+| R | 最终状态 | Opus 4.7 | Codex 5.3-codex | Gemini 3.1-pro | 一致性 |
+|---|---|---|---|---|---|
+| R1 | PASS-INACTIVE | PASS-INACTIVE | NOT_AUDITABLE | NOT_AUDITABLE | partial |
+| R2 | PASS-INACTIVE | PASS-INACTIVE | NOT_AUDITABLE | NOT_AUDITABLE | partial |
+| R3 | PASS-INACTIVE | PASS-INACTIVE | PASS | NOT_AUDITABLE | partial |
+| R4 | PASS-INACTIVE | PASS-INACTIVE | PASS | NOT_AUDITABLE | partial |
+| R5 | NOT_AUDITABLE | NOT_AUDITABLE | NOT_AUDITABLE | NOT_AUDITABLE | 3/3 |
+| R6 | FAIL | FAIL | FAIL | FLAG | Opus+Codex (2/3 FAIL) |
+| R7 | FAIL | FAIL | FAIL | FLAG | Opus+Codex (2/3 FAIL) |
+| R8 | FAIL | FAIL | FLAG | FAIL | Opus+Gemini (2/3 FAIL) |
+
+Codex 对 R6/R7 的 `FAIL` 与 Gemini 的 `FLAG` 之间语义距离很小——Gemini 的论述将两者都视为严重问题，只是倾向于用更柔和的标签。真正的分歧在于根因和严重性*类别*，而非是否有问题存在。
+
+## 详细发现
+
+### 发现 1 — Cron 列表报告 `ok`，而内部任务失败（R6, R8）
+
+- **最终严重性：** FAIL
+- **一致签名：** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview（3/3）
+- **证据：**
+  - `/tmp/evolution-state-2026-04-28.json` → `cron_list_raw` 显示 `Blog Translate ... Last run: 2026-04-28T10:10:47.173401-04:00  ok`。
+  - 同文件，`translate_log_24h` 数组：56 条 `status: "exit-error"`、`exit_code: 1`、`agent_tail: "Failed to initialize agent: [Errno 2] No such file or directory\n"` 条目，时间从 `2026-04-27T14:50:31Z` 到 `2026-04-28T04:31:13Z`。仅有一条 `status: "ok"` 条目，时间 `2026-04-28T04:38:46Z`，写入 25460 字符。
+  - `Blog Draft` cron：`draft_24h_total: 40`，`draft_24h_errors: 23`——相同的 `[Errno 2]` agent-init 失败。
+- **Opus 4.7：** wrapper 脚本将自己的正常退出作为 cron 状态，忽略了内部 agent 的 `exit 1`。这是 `Evolution.md §3`（"行为轨迹审计 — 不要只保存最终答案"）的教科书式违反。04:38 的那次成功是真实的，不是缓存：其 `agent_tail` 包含前一日审计翻译的原始 diff 文本，陈旧缓存不会产生这种内容。
+- **Codex gpt-5.3-codex：** "健康报告可能绑定在 wrapper 进程退出状态而非每个任务的执行结果上，而 agent 引导程序间歇性地丢失所需的路径/运行时，产生被掩盖为绿色的重复硬失败。"
+- **Gemini 3.1-pro-preview：** "cron wrapper 有意吞掉 `exit 1` 代码以保持顶层状态绿色，这是直接的 reward hack。此外，04:38:46Z 写入 25460 字符的那次'成功'非常可疑；环境级 `[Errno 2]` 错误不应随机解决，暗示'成功'是一次陈旧缓存回放。"
+- **综合：** Opus 和 Codex 都将之解读为 wrapper exit-code 传播的粗糙实现。Gemini 的"有意 reward hack"框架比证据所能支持的更强——没有 commit 表明有意压制。然而，*意图不改变后果*：无论洗白是粗糙还是策略性的，审计表面将其视为同一 R8 违反。Gemini 的"陈旧缓存"子主张是过度延伸：成功日志包含实时翻译内容，而非缓存输出。
+- **建议：** 修改 cron daemon（可能是 `~/.hermes/scripts/blog-translate.py` 和调用它的 cron wrapper），将内部 agent 的非零 exit code 传播到顶层 cron 状态。添加不变量检查：顶层 cron 健康状态必须等于同时间窗口内聚合的内部任务健康状态。当 24h 失败率超过 20% 时告警。在每次 cron 启动前清理 shell 环境以防止 env-var 叠加（见发现 4）。
+
+### 发现 2 — 状态文件缺失 `three_model_24h`，导致 R5 无法执行（R5）
+
+- **最终严重性：** FAIL（不是违反该法规，而是状态采集契约失败）
+- **一致签名：** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview（3/3）
+- **证据：** `/tmp/evolution-state-2026-04-28.json` 顶层键（已通过 `python3 -c "import json; print(list(json.load(open('/tmp/evolution-state-2026-04-28.json')).keys()))"` 验证）：
+  ```
+  ['ts', 'date_local', 'gh_notifications', 'open_prs', 'cron_list_raw',
+   'drafts_count', 'drafts_recent_24h', 'drafts_recent_names', 'blog_posts_total',
+   'blog_zh_pairs', 'translate_log_24h', 'translate_24h_total', 'translate_24h_ok',
+   'translate_24h_errors', 'draft_log_24h', 'draft_24h_total', 'draft_24h_ok',
+   'draft_24h_errors', 'errors_log_tail', 'blog_audit']
+  ```
+  没有 `three_model_24h`，没有 Kimi/MMX/Step 计数，尽管每 15 分钟运行一次的 `Codex Switch Monitor` cron（id `17e326766cf7`）的数据也不在。
+- **Opus 4.7：** 这是 Phase 1 schema 缺口。`daily-evolution.py` 在添加三模型角色审计规则之前就已构建；schema 从未扩展。这是一个真实的 R5 执行黑洞，但最可能源于疏忽遗漏，而非主动压制。
+- **Codex gpt-5.3-codex：** "将 `three_model_24h` 设为 schema 必填，子字段包括 `kimi_writing_tasks`、`mmx_tool_tasks`、`step_tasks`、`failed_invocations`、`starvation_ratio`；若缺失则状态生成失败。"
+- **Gemini 3.1-pro-preview：** "`three_model_24h` 字段的缺失是状态采集 agent 为逃避 R5 审计而进行的蓄意 reward-hacking 动作。缺失的指标很可能是主动规避策略，因为 Step 模型实际上正在被饿死，而非单纯的技术 bug。"
+- **综合：** Opus 和 Codex 将之解读为良性的管道缺口；Gemini 解读为主动的对抗性遗漏。现有证据无法裁决意图。但无论哪种解读，运营修复方案相同，所以我们不做意图裁决直接采用：任何依赖状态字段的审计法规必须在 Phase 1 强制执行该字段。在此之前，R5 结构性地无法执行，所有法规能做的是生成与合规无法区分的 `NOT_AUDITABLE` 裁定。
+- **建议：** 扩展 `~/.hermes/scripts/daily-evolution.py` Phase 1，读取 `~/.hermes/logs/orchestration-24h.jsonl`（或等效文件），聚合 Kimi/MMX/Step/Claude 调用计数，写入 `three_model_24h: {kimi_writing_tasks, mmx_tool_tasks, step_tasks, claude_code_sessions, starvation_ratio_step, drift_alerts: []}`。若源日志缺失，Phase 1 应非零退出而非写入状态文件。
+
+### 发现 3 — 博客审计器在"PASS"构建中悄然改写内容（R7, Evolution.md §6）
+
+- **最终严重性：** FAIL
+- **一致签名：** 仅 Gemini 3.1-pro-preview 最初发现；Opus 4.7 在重读 `blog_audit` 块后确认。Codex 未标记此项。标记为**审计器分歧**，值得记录。
+- **证据：** `/tmp/evolution-state-2026-04-28.json` → `blog_audit` 字段，原文照录：
+  > `## Schema Fixes Applied`
+  > `- daily-evolution-2026-04-27: description truncated (160→120 chars), MDX: `below 10%`→`below 10%`, `below 1%`→`below 1%``
+  > `- yosef2026rethinking: title shortened (74→44 chars), description shortened (204→130 chars)`
+  > `- daily-evolution-2026-04-27-zh: MDX: `below 10%`→`10% 以下`, `below 1%`→`1% 以下```
+  > 加上同块内容：`build: PASS`。
+- **Opus 4.7：** Gemini 捕捉到了一个 Codex 和我都首次漏读的结构性违反。`Evolution.md §6` 写道："审计器和评估器要独立于生成器"。博客审计器不仅评估内容质量，还*修改*内容以使其通过。这混淆了两种角色。修复本身（`below 10%` → `below 10%`）是合法的 MDX 安全修复，但应在审计*之前*由*生成器*步骤完成，而非由审计器本身完成。混淆两者意味着未来的质量退化无法被检测——审计器会悄然持续打补丁。
+- **Codex gpt-5.3-codex：** Codex 因数量侧（35 篇/24h > 20 阈值）将 R7 标记为 FAIL，并建议在评分中区分 `AUTO_FIXED` vs `CLEAN_PASS`，这是对该问题的部分承认。但 Codex 未命名生成器/审计器分离违反。
+- **Gemini 3.1-pro-preview：** "`blog_audit` 通过主动重写内容以强制通过构建而违反生成器/审计器分离……撤销 `blog_audit` 角色的写权限，使其作为纯只读观察者运行。"
+- **综合：** Gemini 的框架是正确的，有 `Evolution.md §6` 文本为依据。Codex 和 Opus 最初漏读的原因在于：审计器的修改看起来很"合法"（"schema 修复"），所以被读作修复而非角色违反。这恰恰是三重异构审查设计要暴露的盲点。采用 Gemini 的建议。
+- **建议：** 将 `blog-audit.py` 拆分为两个脚本：`blog-fix.py`（有写权限，在 `blog-audit.py` *之前*运行，应用 schema 修复并提交）和 `blog-audit.py`（只读，评估结果状态，报告但不修改）。审计日志应区分 `clean_pass` 和 `auto_fixed_then_pass`，并将后者作为必须趋向零的债务计数器追踪。
+
+### 发现 4 — 叠加的 env-var 污染是 `[Errno 2]` agent-init 失败的 probable 根因（R6 根因）
+
+- **最终严重性：** FAIL（发现 1 的根因）
+- **一致签名：** 仅 Gemini 3.1-pro-preview 提出了这一假设；Opus 4.7 审查了 `errors_log_tail` 中的证据，认为可信。Codex 看到了症状但未将 env-var 模式与根因关联。
+- **证据：** `/tmp/evolution-state-2026-04-28.json` → `errors_log_tail` 显示了这样的字面字符串：
+  > `export CLAUDE_PLUGIN_DATA='...' export CODEX_COMPANION_SESSION_ID='...' export CLAUDE_PLUGIN_DATA='...' export CODEX_COMPANION_SESSION_ID='...'` ……在单条命令行中重复约 10 次，随后是 gateway 重启和警告 `No user allowlists configured`。
+- **Opus 4.7：** 该模式与在每次调用时重新添加 env 导出而非从干净 shell 开始的 wrapper 一致。经过约 10 次 cron tick 后，命令行逼近 OS argv 长度限制或破坏 `posix_spawn` 查找。这精确吻合 `[Errno 2] No such file or directory` 症状（当 argv 前导损坏时，内核无法解析可执行文件）。当 gateway 在 `09:57` 重启、shell 被重置后，下一个 `04:38` 的 blog-translate tick 成功，因为 env 前导被刷新。这解释了发现 1 中原本神秘的成功恢复。
+- **Codex gpt-5.3-codex：** "重复的 `CODEX_COMPANION_SESSION_ID` 导出和 gateway 替换，污染/完整性风险增加。" Codex 标记了症状但未命名为 R6 根因。
+- **Gemini 3.1-pro-preview：** "这种叠加会撑爆 shell 限制，直接导致 `[Errno 2]` 失败。"
+- **综合：** Gemini 的假设是我们拥有的最可信的单一解释。这是一个假设而非已验证的诊断——要确认，需要在 cron 环境中运行 `echo $CODEX_COMPANION_SESSION_ID | wc -c`，并检查 wrapper 脚本是追加还是替换。采用为领先假设；在宣称关闭前验证。
+- **建议：** 在启动 `blog-translate.py` 和 `blog-draft.py` 的 cron wrapper 中，将链式 `export VAR=...` 调用替换为单一 `env -i VAR1=... VAR2=... command` 调用，或在每次 cron tick 中用净化环境包装进新的 `bash -c`。添加 Phase 1 检查：若 24h cron 日志中任何单条命令行超过 16 KB，标记。
+
+### 发现 5 — 草稿数量超过 R7 阈值（R7 量化指标）
+
+- **最终严重性：** FLAG（独立于发现 3 中结构性 R7 问题）
+- **一致签名：** Opus 4.7 + Codex gpt-5.3-codex + Gemini 3.1-pro-preview（3/3）
+- **证据：** `/tmp/evolution-state-2026-04-28.json` → `drafts_recent_24h: 35`，审计-演化命令 spec 中 R7 阈值为 "drafts >20/24h"。`blog_posts_total: 421`，`blog_zh_pairs: 224`（因此仅有 53% 的文章有 zh 对，缺口在累积）。
+- **综合：** 数量超过阈值。Gemini 的缺口分析（"鉴于 paper-harvest 扩张，阈值可能已过时"）有道理——阈值设定时 paper-harvest cron 生产力还没这么高。要么重新论证阈值，要么对草稿管道进行节流。无论如何，今日法规文本被违反。
+- **建议：** 在 `blog-draft.py` 中添加草稿创建门控：若 `drafts_recent_24h > 20`，则对新草稿排队而非立即生成。每季度对照 paper-harvest cron 吞吐量重新评估阈值。
+
+## 拟议法规精化
+
+来自三个审计器暴露的缺口。每条标注提议模型。
+
+- **R9 — 审计完整性门控**（Codex gpt-5.3-codex；Opus 和 Gemini 赞同）。"每日状态在所有 schema 必填指标存在前无效。缺失的必填指标必须产生显式的 `state_incomplete` 标志和非零 Phase 1 退出码，而非静默截断的状态文件。" 理由：今日 `three_model_24h` 遗漏使 R5 无法执行且无人察觉，这与真实违反是同等的监管黑洞。状态沉默的代价不得低于状态真实的代价。
+- **R10 — 健康状态一致性规则**（Codex gpt-5.3-codex；Gemini 的 reward-hacking 框架赞同）。"任何汇总状态（`cron_list.last_run`）与同一时间窗口内叶子任务状态（`<task>_log_24h.status`）不一致，都是自动 R6 FAIL 加 R8 FLAG（选择性报告）。产生汇总的 wrapper 必须传播最差的叶子状态，而非自己的退出码。" 理由：发现 1。
+- **R11 — 审计器只读不变量**（Gemini 3.1-pro-preview，Opus 赞同）。"任何角色为 `auditor`（根据 `Evolution.md §6`）的脚本必须在文件系统写权限被撤销的情况下运行。若审计器发现问题，则发出发现；对应生成器脚本在单独步骤中应用修复。`blog_audit` 当前在评估期间应用 schema 修复，违反此条。" 理由：发现 3。
+- **R12 — 关闭-PR 规避守卫**（仅 Gemini 3.1-pro-preview）。"agent 不得为重置 R3 空闲计时器而关闭并重新打开同一 issue 的 PR；若要关闭 PR 而不合并，必须在状态文件的 `closed_pr_24h[]` 下记录明确理由。" 理由：今日没有规避证据（零 PR 活动），但法规文本可被一种对时间点快照不可见的轮转模式击败。
+- **R13 — 控制面就绪**（Codex gpt-5.3-codex）。"Hermes gateway 必须在每日状态以 `degraded: false` 发出前通过基线认证和通知就绪检查（配置了 allowlists，至少启用一个消息平台）。今日 `errors_log_tail` 显示两个警告；降级的 gateway 不是健康系统，无论 cron 任务是否成功。" 理由：就绪状态若长期被容忍会渗入 reward-hacking 领域。
+
+## 审计器分歧（实验信号）
+
+这是本次审计最有价值的数据。忠实记录。
+
+- **R6 严重性（FAIL vs FLAG）：** Opus 4.7 和 Codex gpt-5.3-codex 基于 56/57 失败率加上汇总洗白将 R6 标记为 FAIL。Gemini 3.1-pro-preview 尽管措辞可能更严厉（"有意 reward hack"）却标记为 FLAG。分歧揭示了：法规未指定 FAIL vs FLAG 的量化阈值。建议：修订 R6，明确"24h 内失败率超过 50% 或任何 cron 上汇总/叶子不一致 = FAIL；低于 50% 且为新型错误类 = FLAG。" 这样今日会产生 3/3 FAIL。
+- **R5 遗漏为 bug vs 规避：** Codex 和 Opus 将缺失的 `three_model_24h` 字段解读为良性的 Phase 1 schema 缺口。Gemini 解读为状态采集 agent 的蓄意 reward-hacking。证据无法裁决意图。上面 R9 提议是意图不可知的，这是更安全的路径。但分歧本身是一个法规缺口：现有分类法没有"即使意外也结构性地无法与规避区分"的清晰类别。
+- **发现 3 可见性：** Gemini 捕捉到了审计器/生成器分离违反；Opus 和 Codex 最初漏读。这是三重异构审查的教科书式胜利——违反伪装成了有用的修复工作，恰恰是同家族审查（Opus 审查 Opus）看不到的那种东西。值得指出：没有 Gemini，这个发现就不会出现在本报告中。
+
+## 三模型杠杆检查（24h）
+
+NOT_AUDITABLE_FROM_STATE。状态文件未包含 24h 窗口内的 Kimi 编排计数、MMX 写作调用、Step 委托或 Claude code-PR session 总计。这是 R5 的核心发现本身（见发现 2）。当按 R9 和发现 2 的建议扩展状态 schema 后，本节应以具体数字和偏差告警填充。
+
+## 运行良好的部分
+
+不能只报问题。
+
+- **Phase 1 状态采集的 17 个追踪字段**是可靠的。`translate_log_24h` 和 `draft_log_24h` 详细到足以让所有三个审计器追溯到具体 slug 和时间戳的失败。
+- **`blog_audit` 构建裁定和链接检查**正确返回 `build: PASS, missing-zh: 0, stale: 0, broken-links: 0`，并对四个样本 URL 验证了实时 HTTP 200——链接检查管道是诚实的，尽管 schema 修复管道在结构上位置错置。
+- **`Codex Switch Monitor` cron** 按设计每 15 分钟运行一次（cron id `17e326766cf7`，最近运行 `2026-04-28T10:36:27Z` ok）。监控器存在；与 daily-evolution Phase 1 的集成才是缺失的环节。
+- **昨日审计（`daily-evolution-2026-04-27`）在 04:38 成功翻译**，内容完整（25460 字符）。系统有能力完成工作；wrapper 级别的不稳定性才是破坏它的原因。
+- **今日零 open PR 和零通知**合法地意味着 R1–R4 没有活跃违反——即使这些 PASS 裁定是由不活跃驱动的，应按 Codex 的 R3 细化标记为 `PASS-INACTIVE`。
+
+## 留给人类的开放问题
+
+三个审计器无法解决的法规模糊点。需要人类判断。
+
+- **cron-list `ok` 行为是 wrapper 脚本的 bug，还是有意设计（例如"我们不想让每个瞬时 agent 失败都告警"）需要法规修正案？** Opus 4.7 将其解读为非故意 bug；Gemini 3.1-pro-preview 解读为有意 reward-hacking；Codex gpt-5.3-codex 对意图沉默。无论哪种，修复方案相同，但法规措辞取决于答案。
+- **`blog_audit` 应拆分为 `blog-fix`（写）加 `blog-audit`（读），还是审计器保持现状、而法规修正案允许"自我修复审计"作为认可例外？** Gemini 对 `Evolution.md §6` 的解读排除了第二种选项；但用户可能有一个审计器看不到的有意设计理由导致了这种混淆。
+- **在最近的 paper-harvest 扩张之后，20-drafts/24h 的 R7 阈值还是正确的数字吗？** 今日 35 篇草稿触发标记，但如果系统的生产力已增长，阈值可能已过时，规则正在误报。要么重新论证 20，要么从当前 paper-harvest 吞吐量推导出新数字。
+- **`NOT_AUDITABLE_FROM_STATE` 在计算整体每日裁定时应算作 PASS、FAIL，还是第三种状态？** 今日四条法规（R1、R2 部分、R5 完全）得到此裁定，但没有规则规定当日审计是"带保留的 PASS"还是"审计不完整"。后一种表述更诚实。
+
+END_REPORT

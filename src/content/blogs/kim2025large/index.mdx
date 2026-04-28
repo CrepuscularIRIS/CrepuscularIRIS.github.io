@@ -1,0 +1,60 @@
+---
+title: "LLMs as Realistic Microservice Trace Generators"
+description: "Applying LLMs to synthesize realistic microservice execution traces, bridging the gap between production trace scarcity and benchmark reproducibility."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: engineering
+hIE: methode
+hero_image: /assets/hIE/methode/image.png
+tags: [paper, distributed-systems, LLM, trace-generation, EMNLP2025]
+language: en
+draft: true
+sources: ["https://aclanthology.org/2025.emnlp-main.4/"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+Kim et al. use large language models as generative engines for microservice execution traces — turning service topology and request patterns into synthetic yet structurally realistic call graphs and latency distributions, without touching proprietary production data.
+
+## Why This Is Worth Your Time
+
+If you've ever tried to reproduce a distributed-systems result and hit a wall because the traces you need are either proprietary, GDPR-wrapped, or simply never released — you're not alone. **Benchmark starvation** is endemic in this subfield: the gap between what's published and what's reproducible is measured in months of data negotiation or outright abandonment.
+
+The intuition here flips the problem. Instead of asking "how do we share real traces safely?", the paper asks "can we teach a model to generate traces that *behave* like real ones?" This sidesteps privacy and legal barriers entirely — no anonymization pipelines, no NDA sign-offs, no data-sharing agreements. Just a generative model conditioned on system topology.
+
+For engineers building observability tooling, chaos engineering frameworks, or ML-based anomaly detectors on microservice telemetry, this is a practical unlock. It won't replace production data, but it could make the pre-production development loop dramatically faster.
+
+## Core Method (3-Minute Version)
+
+The paper's approach treats the LLM as a **conditional telemetry synthesizer**. Given a service dependency graph (who calls whom, what protocols, what SLAs) and a description of request traffic patterns (bursty? periodic? request-size distributions?), the model generates plausible traces: which services are hit, in what order, with what latency, what error codes.
+
+The key design choice is *conditioning*. Rather than asking an LLM to hallucinate a trace from scratch (which produces noise), the authors likely structure the prompt with:
+
+- Service topology as a structured input (a graph or JSON schema)
+- Example real trace snippets as in-context demonstrations
+- Constraints encoding service-level agreements and protocol semantics
+
+The output is a call graph + latency series that respects causality (no service can be called before its dependencies execute) and distributional properties (latencies don't cluster implausibly).
+
+This is conceptually adjacent to how LLMs generate code: the model has internalized the *grammar* of distributed traces (service names, span hierarchies, trace IDs, timing invariants) and can sample from that distribution conditioned on topology and traffic inputs.
+
+## Key Results
+
+- **no concrete numbers in source** — the extracted metadata does not include specific benchmark figures, accuracy metrics, or fidelity scores. Claims about trace fidelity should be verified against the full paper before citing.
+
+## Limits and Unanswered Questions
+
+The extracted metadata does not include explicit limitations discussed by the authors. Based on the paper's framing, plausible open questions include:
+
+- **Fidelity ceiling**: How close can synthetic traces get to real ones before the LLM's distributional priors introduce systematic bias that doesn't exist in production?
+- **Topological generalization**: Does the approach degrade when tested on service architectures fundamentally different from those seen during prompting/in-context?
+- **Semantic realism**: LLMs can approximate *structural* properties of traces, but whether they capture subtle failure modes (e.g., cascading timeout patterns, partial degradation signals) remains an open question.
+- **Reproducibility**: Without a seeded generation protocol, the same input topology may yield different traces on different runs — a challenge for deterministic benchmark construction.
+
+## Further Reading
+
+- OpenTelemetry trace format specifications — the structural grammar LLMs must learn
+- Magpie (Microsoft) — earlier work on synthetic service-level trace generation using rule-based methods, for comparison on fidelity vs. scalability
+- Chaos engineering frameworks (Chaos Monkey, Gremlin) — downstream use-case consumers of synthetic trace data

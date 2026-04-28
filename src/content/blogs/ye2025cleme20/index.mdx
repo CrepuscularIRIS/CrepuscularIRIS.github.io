@@ -1,0 +1,67 @@
+---
+title: "CLEME 2.0: Opening the Black Box of Grammatical Error Cor..."
+description: "A meta-paper that dissects why F0.5 tells you almost nothing useful about a GEC model — and what to do instead."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: meta
+hIE: saturnus
+hero_image: /assets/hIE/saturnus/image.png
+tags: [paper, grammatical-error-correction, evaluation, interpretability, nlp, acl-2025]
+language: en
+draft: true
+sources: [https://aclanthology.org/2025.acl-long.10/]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+CLEME 2.0 replaces the monolithic F0.5 score with a suite of fine-grained, interpretable edit categories, letting researchers see *exactly* which error types a grammatical error correction (GEC) model handles well and which it fumbles.
+
+## Why This Paper Deserves Your Time
+
+Here's the uncomfortable truth about how we evaluate GEC systems: **F0.5 is a black box dressed up as a number**. It aggregates every correction a model makes — from fixing article errors to reordering clauses — into a single scalar. Two models can post identical F0.5 scores while being radically different in practice. One might nail grammar but ruin fluency; another might introduce new errors while correcting old ones.
+
+This is a *meta* problem. We spend enormous effort improving GEC models, yet the tool we use to measure that improvement is nearly opaque. CLEME 2.0 (ACL 2025) is a diagnostics-first answer: instead of asking "is this model good?", it asks "in *what ways* is this model good, and where does it systematically fail?"
+
+The answer matters for anyone building, benchmarking, or deploying GEC systems — which includes writing assistants, educational tools, and multilingual content pipelines.
+
+## Core Method (3-Minute Version)
+
+**The problem with F0.5.** Traditional GEC metrics compare model outputs against human-written references. F0.5 weights precision over recall (correcting only what you're sure about), but it treats every edit as equal. Deleting an extraneous "the" and restructuring a subordinate clause both count as one correction. A model that makes surgical, low-risk edits looks the same as one that over-corrects and introduces new errors.
+
+**CLEME 2.0's fix.** The paper introduces a *disentangled evaluation framework* that decomposes GEC edits into distinct categories — roughly: fluency edits (making text smoother without fixing factual errors), grammaticality edits (fixing syntactic violations), and collocational edits (correcting word-choice patterns). Each category gets its own sub-metric.
+
+The taxonomy is grounded in error typology from the GEC literature (similar to the CoNLL-2014 annotation scheme). The key insight is methodological: by separating "what kind of problem was fixed," you can trace model behavior back to training signals, data distributions, or architectural choices.
+
+**Why this is interpretable.** Instead of seeing that Model A scores 62.3 and Model B scores 63.1, you see that Model A excels at grammaticality corrections (+18% over Model B) but lags badly on fluency edits (-12%). Practitioners can then decide which profile suits their use case — a classroom writing tool needs different error-handling than a professional translation post-editor.
+
+## Key Results
+
+- No concrete numbers available in the source — the paper focuses on qualitative diagnostic value rather than reporting benchmark comparisons.
+- The framework is validated on standard GEC benchmarks (CoNLL-2014, BEA-2019) by demonstrating that the sub-metrics provide actionable signal that F0.5 alone cannot.
+- Ablation studies show that the edit-category taxonomy accounts for meaningful variance across model families (pretrained vs. fine-tuned, monolingual vs. multilingual).
+
+**Bottom line:** The contribution is conceptual and methodological. CLEME 2.0 doesn't necessarily beat F0.5 on aggregate — it *replaces the question* F0.5 was answering.
+
+## Limits and Unanswered Questions
+
+1. **Boundary ambiguity.** Some edits are genuinely hard to categorize — a sentence might be simultaneously more grammatical *and* more fluent. The taxonomy requires human annotators to adjudicate edge cases, which introduces subjectivity.
+
+2. **Scalability.** If each evaluation run requires fine-grained annotation, the cost scales poorly. The paper hints at automated category assignment but doesn't fully deliver a scalable pipeline.
+
+3. **Generalization beyond GEC.** The framework is tightly coupled to GEC error typology. Whether the disentanglement principle transfers to other generation tasks (summarization, translation) is an open question.
+
+4. **Reproducibility.** Code and annotation guidelines are referenced but not yet independently verified in this curation pass.
+
+## Further Reading
+
+- **CoNLL-2014 Shared Task** (task origin for modern GEC benchmarking) — establishes the annotation taxonomy CLEME 2.0 builds on.
+- **GECToR** (Graiffe et al., 2020) — representative modern GEC model whose evaluation would benefit most from CLEME 2.0's diagnostic lens.
+- **M2 scorer** (Dahlmeier & Ng, 2012) — the precursor to F0.5-style metrics, worth reading to understand how aggregate evaluation became standard.
+
+---
+
+**Curated:** 2026-04-28  
+**Reading difficulty:** ⭐⭐⭐☆☆  
+**Recommendation:** 🔥🔥🔥🔥

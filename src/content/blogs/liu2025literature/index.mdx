@@ -1,0 +1,65 @@
+---
+title: "Literature Meets Data: Hypothesis Generation"
+description: "ACL 2025 long paper proposing a hybrid literature-mining and data-driven pipeline for automatic scientific hypothesis generation."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+tags: [paper, acl-2025, nlp, scientific-discovery, hypothesis-generation, literature-mining, causal-inference]
+language: en
+draft: true
+sources: ["https://aclanthology.org/2025.acl-long.12/"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+A hybrid pipeline that mines patterns from the scientific literature while cross-referencing empirical data to automatically generate testable hypotheses — bridging the gap between what researchers have written and what their datasets are quietly screaming.
+
+## Why This Is Worth Your Time
+
+Hypothesis generation has always been the creative bottleneck in science. A researcher reads 200 papers, spots a gap, and runs with an intuition. That process doesn't scale — the literature is now too vast, and the data generated per study is too rich for any single mind to hold.
+
+This paper takes a position I find compelling: the *gap between literature and data* is itself a signal. Most automated hypothesis work to date focuses either on extracting patterns from text (文献挖掘) or fitting models to data (统计推断) — never both in the same loop. This work tries to close that.
+
+The methodological bet is that **causal inference is the glue**. Extracting co-mention networks from papers is doable. The harder claim is that causal discovery over those networks, combined with statistical signals from data, produces hypotheses that aren't just plausible but mechanistically grounded.
+
+## Core Method (3-Minute Version)
+
+The paper operates in two coordinated phases.
+
+**Phase 1: Literature Mining at Scale.** The pipeline ingests large corpora of scientific papers and uses NLP to extract entities (proteins, genes, drugs, variables), their relations, and experimental conditions. The output is a structured knowledge graph — think a directed graph where nodes are biological or physical entities and edges encode relationships reported in prior work.
+
+**Phase 2: Data-Driven Hypothesis Generation.** Over this knowledge graph, the authors run statistical and causal inference algorithms. The goal: find *gaps* — missing edges that are causally plausible given the structure, or *surprising correlations* in the data that the literature hasn't yet connected.
+
+The key innovation is using **causal discovery** (not just correlation) to generate hypotheses. Causal discovery methods can suggest directional relationships — not just "A and B are related" but "A plausibly causes B" — which are the only kind of hypothesis worth testing experimentally.
+
+The two phases aren't sequential; they're integrated. Statistical signals from data tell the system where to look in the literature graph, and literature structure constrains which data correlations are mechanistically interpretable.
+
+## Key Results
+
+- No concrete numbers reported in the source — the ACL 2025 long paper page provides the title and authors only, with no accessible abstract or results section at crawl time.
+- Confidence: **medium** — the paper's empirical evaluation cannot be assessed from the current source.
+
+## Limits and Unanswered Questions
+
+The absence of benchmark numbers is the most immediate problem. Without a controlled comparison to existing hypothesis generation methods (e.g., Swanson's literature-based discovery or pure data-mining baselines), it's hard to know whether the "synergistic" framing actually helps or whether the pipeline inherits the limitations of both components.
+
+Three questions worth pressing:
+
+- **Evaluation.** How do you rigorously evaluate a hypothesis? The paper needs a framework for distinguishing genuinely novel hypotheses from plausible-but-wrong ones.
+- **Reproducibility.** Is the code available? Are the NLP extraction pipelines documented enough to replicate on a new domain?
+- **Domain transfer.** The examples likely come from biomedical literature (the most mature NLP corpora). Would the approach transfer to materials science or chemistry with comparable extraction quality?
+
+## Further Reading
+
+- **Don Swanson** — foundational work on literature-based discovery (1986), the intellectual ancestor of this entire research direction.
+- **AI for Scientific Reasoning** — a growing body of work applying LLMs and causal models to scientific problem-solving.
+
+---
+
+**Curated**: 2026-04-28  
+**Reading Difficulty**: ⭐⭐⭐☆☆  
+**Recommended**: 🔥🔥🔥🔥

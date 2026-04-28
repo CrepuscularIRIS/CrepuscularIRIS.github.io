@@ -1,0 +1,67 @@
+---
+title: "Less Is More: Engineering Challenges of On-Device Small L..."
+description: "A rare practitioner case study that documents the painful gap between on-device SLM promise and production reality, showing how ambitious LLM-driven architec..."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: engineering
+hIE: methode
+hero_image: /assets/hIE/methode/image.png
+tags: [paper, on-device-SLM, mobile-AI, engineering, SLM, android, case-study]
+language: en
+draft: true
+sources: ["https://arxiv.org/abs/2604.24636"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+Two on-device small language models — a 2.6B-parameter Gemma 4 E2B and a 600M-parameter Qwen3 0.6B — entered a production Android word game and, after five days and 204 commits, the team replaced most of the LLM logic with curated word lists and deterministic rules.
+
+## Why This Is Worth Your Time
+
+Every vendor demo shows an SLM running smoothly on a phone. Almost no one publishes what happens in the weeks after the demo, when real users, real hardware variance, and real structured generation requirements meet the model. This paper is a practitioner unfiltered — a small development team building Palabrita, a word-guessing game, documenting each failure mode as they discovered it.
+
+This is the anti-narrative to the "local model, no cloud, privacy-safe" sales pitch. The authors don't argue that on-device SLMs are bad; they show that **the gap between "runs in demo" and "production-reliable" is enormous**, and that closing it requires architectural humbling, not better prompts.
+
+For anyone actually shipping AI features in mobile apps, this is more instructive than ten benchmark papers.
+
+## Core Method (3-Minute Version)
+
+The team started from what you'd expect: the LLM generates everything. Full structured puzzles — the word, its category, its difficulty rating, five hint sentences — all produced by the model at runtime in JSON format.
+
+Within hours of the 5-day sprint, this broke. The problems were specific:
+
+- **Structured generation hallucination**: Models would drop fields, invent categories, or produce malformed JSON under battery/thermal pressure.
+- **Latency variance**: On-device inference on a mid-range Android device was fast enough in isolation but became unpredictable under OS scheduling, other apps, and thermal throttling.
+- **Prompt sensitivity**: Small changes in the generation request produced wildly different outputs — fine in a chat interface, catastrophic for deterministic game logic that expects a specific schema.
+
+The iterative fix was an **architecture pivot in stages**:
+
+1. Strip the LLM from generating puzzle words entirely → human-curated word lists.
+2. Keep the LLM for creative hint generation, but constrain output to just three short sentences.
+3. Add a deterministic fallback: if generation exceeds a timeout or produces invalid output, serve a pre-written hint from the curated set.
+
+The final architecture is a hybrid: humans own the hard, high-stakes decisions (which words, which categories, which difficulty tiers); the LLM only handles low-stakes creative text generation where occasional weirdness is tolerable.
+
+## Key Results
+
+The paper is qualitative — no quantitative failure rates, latency numbers, or battery drain figures are reported. The results are architectural:
+
+- **Radical architecture pivot**: from LLM generating full structured puzzles (JSON with word, category, difficulty, five hints) to curated word lists + LLM generating only three short hints with deterministic fallback.
+- **Five categories of failures** specific to on-device SLM integration identified through a 5-day, 204-commit development sprint.
+- **Empirical evidence** that even 2.6B-parameter Gemma 4 E2B and 600M-parameter Qwen3 0.6B models struggle with structured generation reliability in production mobile contexts.
+- No concrete numbers (latency, failure rate, battery impact) are provided — qualitative practitioner observations only.
+
+## Limits and Unanswered Questions
+
+The study is honest about its scope:
+
+- **Single-app case study**: Palabrita is a word-guessing game. Whether these failure patterns generalize to, say, a note-taking app or a camera feature is genuinely unknown.
+- **5-day sprint**: The observations are concentrated and dense, but there's no longitudinal view. Do the failure patterns change after months of real-user traffic?
+- **No quantitative metrics**: The paper documents what broke but not how often, how slowly, or how much battery was consumed. This makes it hard to compare with alternatives.
+- **Qualitative only**: Without benchmarks or A/B comparisons, it's impossible to know whether the deterministic fallback is "good enough" or just "less visibly broken."
+
+## Further Reading
+
+If you're designing your own on-device AI feature, pair this with Google DeepMind's Gemma deployment guides and Apple's CoreML benchmarking reports — both vendors have published engineering notes on the thermal and memory constraints that practitioners in this paper are feeling firsthand.

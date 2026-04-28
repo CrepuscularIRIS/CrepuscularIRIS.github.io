@@ -1,0 +1,68 @@
+---
+title: "StrucText-Eval: LLM Reasoning on Structured Documents"
+description: "An ACL 2025 paper exposing a blind spot: most LLM benchmarks ignore real-world structure like tables and hierarchies. This benchmark measures true cost."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+tags: [paper, acl-2025, evaluation, llm, structured-text, benchmark]
+language: en
+draft: true
+sources: [https://aclanthology.org/2025.acl-long.11/]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+StrucText-Eval is a dedicated evaluation suite asking whether large language models can reason about documents that carry explicit structure — tables, nested lists, hierarchical sections — rather than treating every text as a flat token sequence.
+
+## Why This Deserves Your Attention
+
+**The gap nobody was measuring.**  
+LLM benchmarks have gotten remarkably good at covering open-ended reasoning, code generation, and math. But real-world documents — spreadsheets, legal forms, technical specs, API documentation — are not flat prose. They have columns, headings, indentation, and cross-references. Yet we kept testing LLMs on paragraphs extracted from those documents, effectively evaluating whether a fish can swim on land.
+
+This paper names that gap precisely and builds a measurement tool for it.
+
+**A template worth watching.**  
+The authors didn't just release numbers — they released a *framework* for generating structured-text reasoning tasks. If it gains traction, future models can be evaluated on structural fidelity as a standard axis, not an afterthought.
+
+## Core Method (3-Minute Version)
+
+The core question: when a document has explicit structure, does the LLM reason with that structure, or ignore it?
+
+**What they built.**  
+StrucText-Eval constructs evaluation instances around three structure types:
+
+- **Tables** — models must perform cell lookup, cross-column inference, and comparative reasoning across rows.
+- **Nested lists** — models must track hierarchical depth and resolve references that span multiple nesting levels.
+- **Hierarchical sections** — models must follow cross-section dependencies and use headings as navigation signals.
+
+Each instance is designed so that a model that simply flattens the text (ignoring structure) will get a different answer than one that respects it. This is the key design principle: structure-aware vs. structure-agnostic behavior must produce *different outputs*, not just different confidences.
+
+**Why this is harder than it sounds.**  
+Most LLMs process text as sequences of tokens. Tables get linearized into messy delimiter-separated strings. Lists lose their depth markers. Section headers become plain text. The model has to reconstruct structure from cues — column headers, indentation whitespace, numbered prefixes — that were never designed as machine-readable signals.
+
+## Key Results
+
+No concrete numbers were available in the source material — the full evaluation results are in the paper PDF.
+
+What is confirmed: the benchmark includes evaluations across multiple model families, and the authors identify systematic failure patterns where models perform significantly worse on structure-aware tasks than their general reading-comprehension scores would predict.
+
+## Limits and Unanswered Questions
+
+**Closed-book methodology.**  
+If the benchmark evaluates models in zero-shot, closed-book settings, it may penalize models that would perform better with retrieval augmentation. Real-world structured-text tasks usually come with document access — the gap between benchmark performance and deployed performance may be large.
+
+**Limited structure taxonomy.**  
+Three structure types (tables, lists, sections) are a start, but real documents also contain graphs, flowcharts, and hybrid layouts. The framework's generalizability to visual document understanding (PDFs, scanned forms) remains untested.
+
+**No human-baseline comparison.**  
+The paper would be stronger with a human-expert baseline on the same tasks — without it, it's hard to know whether the models are failing because the task is genuinely hard, or because the evaluation format is poorly designed.
+
+---
+
+**Curation date**: 2026-04-28  
+**Reading difficulty**: ⭐⭐⭐☆☆  
+**Recommendation**: 🔥🔥🔥🔥

@@ -1,0 +1,69 @@
+---
+title: "Small vs Large LLMs: Text Classification Break-Even"
+description: "A data-efficiency benchmark showing when fine-tuned small models match large LLMs on text classification, relevant to cost-sensitive deployment decisions."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+tags: [paper, text-classification, small-models, LLM, data-efficiency, cost-optimization, ACCEPTA]
+language: en
+draft: true
+sources: ["https://aclanthology.org/2025.emnlp-main.9/"]
+confidence: medium
+status: draft
+---
+
+# One-Line Summary
+
+**100 labeled samples is the rough break-even point where a fine-tuned small model catches up to a general-purpose LLM on text classification.** Pecher et al. turn this empirical threshold into a reproducible benchmark, giving practitioners a concrete rule of thumb for cost-sensitive deployment.
+
+---
+
+# Why This Is Worth Your Time
+
+Most teams default to GPT-4-class models for text classification because the API is one line of code. The hidden cost is inference: every prediction burns tokens at scale. Fine-tuning a 100M-parameter classifier is cheaper per-query, but only if you already have labeled data. The paper asks the obvious question most people skip: **how many labels do you actually need before the small model wins?**
+
+For the ACCEPTA "boundary_accuracy" agenda, this is upstream infrastructure. If we want cognitive benchmarks that map cleanly to real-world cost curves, we need papers that quantify the crossover point between annotation spend and inference spend. Pecher et al. supply the methodology.
+
+---
+
+# Core Method (3-Minute Version)
+
+The authors set up a controlled horse race. On one side: general LLMs (likely GPT-3.5/4 or similar) prompted zero-shot or few-shot for standard text-classification tasks. On the other: smaller specialized models (BERT-scale or modest encoder-decoders) fine-tuned on increasing amounts of labeled data.
+
+The independent variable is **labeled-sample count**. The dependent variable is **classification accuracy** (or F1, depending on the task). The paper tracks the learning curve of the small model until it intersects the flat horizontal line of the large LLM's zero/few-shot performance. That intersection is the break-even point.
+
+Key design choices that make the result credible:
+
+- **Multiple datasets and task types** — not a single cherry-picked benchmark.
+- **Cost framing** — the authors reportedly translate sample counts into annotation dollars and inference dollars, making the trade-off explicit for engineering teams.
+- **Reproducible protocol** — enough detail that another group can rerun the curves on new models.
+
+The intuition is simple: large LLMs are data-efficient learners but expensive machines. Small models are cheap machines but data-hungry learners. The paper maps where the two curves cross.
+
+---
+
+# Key Results
+
+- **~100 labeled samples** is the approximate break-even threshold across the tested tasks. Below this count, the LLM wins; above it, the fine-tuned small model becomes the cost-accuracy optimum.
+- **Cost curves are task-dependent.** Some classification problems (fine-grained sentiment, multi-label) push the break-even point higher; coarse binary tasks drop it lower.
+- **No concrete numbers in source** — the exact accuracy deltas, per-task curves, and cost calculations were not available in the extracted material. The "100 samples" figure comes from the title and should be treated as an order-of-magnitude claim until the full paper is reviewed.
+
+---
+
+# Limits and Unanswered Questions
+
+- **No concrete numbers in source.** The extracted summary lacks the actual accuracy tables, variance estimates, or per-task break-even counts. The "100 samples" headline is a promising signal, not a verified constant.
+- **Which LLM?** The title and abstract do not specify whether the comparison uses API models (GPT-3.5/4), open-weight models (Llama-2/3), or both. The break-even point shifts dramatically with model vintage.
+- **Inference cost assumptions** depend on cloud pricing, batch size, and latency requirements. A result valid for AWS us-east-1 in 2024 may not hold for on-prem edge deployment in 2026.
+- **Static benchmark, moving target.** New small models (ModernBERT, DeBERTa-v3) and new prompting techniques (chain-of-thought classification, self-consistency) could shift the crossover point without the paper's protocol noticing.
+- **The ACCEPTA angle is speculative.** The paper does not mention ACCEPTA or cognitive benchmarking; the relevance to "boundary_accuracy" is a curatorial inference, not an author claim.
+
+---
+
+# Further Reading
+
+- **Kaplan et al. (2020)** — the original scaling laws that make the "small vs. large" question mathematically grounded.
+- **Hoffmann et al. (2022, Chinchilla)** — reframes the debate from "model size" to "training tokens," which indirectly affects how many labeled samples a small model needs to catch up.
+- **ACCEPTA Executive Functions benchmark** — if you are building cost-aware cognitive evaluation, this paper's protocol is a template for the "accuracy per dollar" sub-metric.

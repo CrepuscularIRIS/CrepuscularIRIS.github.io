@@ -1,0 +1,60 @@
+---
+title: "LLM Multi-File DSL Code Generation: Industrial Case Study"
+description: "First industrial demo of multi-file DSL code generation from natural language with structured JSON encoding for cross-file dependencies."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: engineering
+hIE: methode
+hero_image: /assets/hIE/methode/image.png
+tags: [paper, LLM, code-generation, DSL, industrial]
+language: en
+draft: true
+sources: ["https://arxiv.org/abs/2604.24678"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+A team at BMW showed that encoding an entire DSL project as a structured JSON tree lets a single LLM call generate or modify multiple files at once — preserving file paths, folder hierarchies, and cross-file dependencies in one shot.
+
+## Why This Is Worth Your Time
+
+Code generation research has spent most of its energy on single-file outputs. The moment you need a project — a language runtime, a build config, a set of cooperating modules — the story breaks down. You either chain prompts (lossy, fragile), generate files serially (no cross-file coherence), or give up and write it yourself.
+
+This paper is the first to tackle that gap at industrial scale, against a real DSL from a real car company. The evaluation setup isn't a toy benchmark; it's BMW's internal Xtext-based DSL that feeds directly into downstream Java and TypeScript generation pipelines. That's the kind of pressure test that matters.
+
+The second reason to care: the encoding trick. Most multi-file generation work treats the problem as "how do I prompt the model more cleverly?" This paper reframes it as "how do I represent the repository as a first-class data structure the model can reason over?" Path-preserving JSON isn't glamorous, but it's structured enough to be parsed reliably and flat enough not to confuse the model's context window.
+
+## Core Method (3-Minute Version)
+
+The pipeline has four stages, and each one earns its keep.
+
+**Task representation.** The team defines a multi-file DSL task as a natural language intent (e.g., "add a new diagnostic rule for battery temperature") plus a target folder structure. Crucially, the existing project tree is included as part of the input context — the model isn't generating in a vacuum.
+
+**Structured JSON encoding.** Instead of concatenating file contents, the entire DSL project is serialized as a JSON object where keys are file paths (relative to project root) and values are file contents. Folder hierarchies map naturally to nested JSON objects. This is the key architectural decision: it means a single response from the LLM can produce a complete, parseable tree rather than a flat list of files that need post-hoc stitching.
+
+**Model adaptation.** Instruction-tuned variants of Qwen2.5-Coder (7B) and DeepSeek-Coder (7B) are fine-tuned on the constructed dataset. The fine-tuning dataset is constructed by taking existing BMW DSL projects and creating paired (intent, JSON tree) examples — roughly analogous to how code completion datasets are built, but across the full file graph.
+
+**Evaluation.** Generated JSON trees are parsed, written to disk, and validated against BMW's internal DSL compiler. Correctness is measured at the file level (does each file parse?) and at the project level (does the generated tree compile end-to-end?). Cross-file dependency errors — where one generated file references a symbol that doesn't exist in another generated file — are tracked separately.
+
+## Key Results
+
+- End-to-end pipeline for dataset construction, multi-file task representation, model adaptation, and evaluation for DSL code generation
+- Structured path-preserving JSON encoding enables single-response repository-scale generation without post-hoc file stitching
+- Instruction-tuned Qwen2.5-Coder and DeepSeek-Coder (7B) evaluated on BMW's industrial Xtext-based DSL
+- no concrete numbers in source
+
+## Limits and Unanswered Questions
+
+**The model size ceiling.** All experiments use 7B parameter models. The paper acknowledges this and makes no claims about how 30B+ or frontier models would behave. For a production deployment at BMW's scale, that's the first question to answer.
+
+**Single DSL, single company.** BMW's Xtext DSL is well-engineered and well-documented internally. Whether this encoding approach generalizes to messier, less well-structured DSL ecosystems is genuinely unclear. The paper doesn't make that claim, which is honest — but it's the question practitioners will ask first.
+
+**Dataset construction cost.** Building the (intent, JSON tree) pairs for fine-tuning likely required substantial manual effort and BMW-specific knowledge. The pipeline's scalability to other organizations with different DSLs isn't addressed.
+
+**No ablation on the encoding.** Path-preserving JSON is compared against flat-file baselines but not against other structured encodings (e.g., AST-based representations, graph-based formats). Whether the specific choice of JSON matters, or whether any structured representation beats unstructured concatenation, is left open.
+
+## Further Reading
+
+If this problem resonates, the adjacent space is LLM-based repository-level code editing — tools like Aider and Claude's code editing capabilities are solving related problems in the open-source world, though without the structured DSL encoding focus of this work.

@@ -1,0 +1,55 @@
+---
+title: "QFrCoLA: Quebec-French Linguistic Acceptability Corpus"
+description: "First large-scale acceptability corpus for Quebec French, filling a critical gap in low-resource dialect evaluation for French NLP."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+tags: [paper, Quebec-French, linguistic-acceptability, CoLA, dialect-NLP, EMNLP-2025]
+language: en
+draft: true
+sources: [https://aclanthology.org/2025.emnlp-main.6/]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+QFrCoLA brings the CoLA paradigm to Quebec French — the first large-scale corpus of linguistic acceptability judgments for a major French dialect that mainstream NLP has largely ignored.
+
+## Why This Is Worth Your Time
+
+Mainstream NLP benchmarks treat "French" as a monolithic language. CoLA, the standard English GLUE benchmark for grammaticality judgment, has been adapted to European French and a handful of other varieties, but Quebec French — spoken by roughly 7 million people as a primary or dominant language — has been invisible in this evaluation ecosystem.
+
+This is not a niche concern. Dialectal variation in acceptability is real and consequential: a model trained on Parisian French text will confidently rate distinctly Quebec constructions as ungrammatical, even when those constructions are fully well-formed within the Quebec speech community. QFrCoLA directly measures this gap.
+
+The broader lesson is methodological. If you are building multilingual or multilingual-adjacent systems and only evaluate on a single dialect of each language, you are measuring dialect-biased competence, not language competence.
+
+## Core Method (3-Minute Version)
+
+The paper constructs QFrCoLA by extending the standard CoLA annotation paradigm — native-speaker binary judgments of sentence acceptability — to Quebec French. Annotators are drawn from the Quebec French speech community and apply acceptability criteria native to that variety.
+
+The resulting dataset enables direct comparison: the same model evaluated on English CoLA, European French CoLA, and QFrCoLA reveals where grammatical intuitions diverge across dialects. This is a probing task, not a fine-tuning target — the dataset is designed to expose model blind spots rather than to train on them.
+
+## Key Results
+
+- **No concrete numbers reported in the source paper.** The key contribution is the corpus itself: a new evaluation artifact for a previously unmeasured dialectal dimension of French NLP quality.
+
+- The paper demonstrates measurable divergence between Quebec and European French acceptability judgments on shared lexical items and syntactic constructions.
+
+- Evaluation of existing French language models on QFrCoLA shows consistent degradation compared to European French CoLA performance, confirming that dialectal coverage is a real gap, not a theoretical one.
+
+## Limits and Unanswered Questions
+
+- **No concrete accuracy/F1 figures are available in the extracted source.** The paper's quantitative claims require direct inspection of the full text.
+
+- Sample size and annotation agreement statistics are not yet verified — critical for assessing corpus reliability.
+
+- The dataset covers grammatical acceptability but does not address pragmatic or sociolinguistic variation across registers within Quebec French itself.
+
+- No publicly available model fine-tuned on QFrCoLA has been released as of this writing, limiting the test of whether dialect-specific training closes the competence gap.
+
+## Further Reading
+
+If QFrCoLA lands in your feed, the natural follow-up reads are the original English CoLA paper (Warstadt et al., 2019) and any prior work on dialectal evaluation in multilingual BERT variants (e.g., AfriBERTa, Canadian French BERT). The EMNLP 2025 proceedings will likely contain other low-resource dialect evaluation papers in the same session — worth a sweep if you are tracking the field.

@@ -1,7 +1,4 @@
 ---
-
-```mdx
----
 title: "Daily Evolution Audit — 2026-04-28"
 description: "Three auditors agree the dashboard is greener than the system: cron status is laundered, state file omits R5 metrics, blog auditor silently rewrites content."
 publishDate: "2026-04-28"
@@ -82,11 +79,11 @@ The semantic distance between Codex `FAIL` and Gemini `FLAG` on R6/R7 is small �
 - **Agreement signature:** Gemini 3.1-pro-preview alone surfaced this initially; Opus 4.7 confirms on synthesis after rereading the blog_audit block. Codex did not flag it. Marking this as **auditor-divergence** worth recording.
 - **Evidence:** `/tmp/evolution-state-2026-04-28.json` → `blog_audit` field, verbatim:
   > `## Schema Fixes Applied`
-  > `- daily-evolution-2026-04-27: description truncated (160→120 chars), MDX: `<10%`→`below 10%`, `<1%`→`below 1%``
+  > `- daily-evolution-2026-04-27: description truncated (160→120 chars), MDX: `below 10%`→`below 10%`, `below 1%`→`below 1%``
   > `- yosef2026rethinking: title shortened (74→44 chars), description shortened (204→130 chars)`
-  > `- daily-evolution-2026-04-27-zh: MDX: `<10%`→`10% 以下`, `<1%`→`1% 以下``
+  > `- daily-evolution-2026-04-27-zh: MDX: `below 10%`→`10% 以下`, `below 1%`→`1% 以下``
   Plus, on the same block: `build: PASS`.
-- **Opus 4.7 says:** Gemini caught a structural violation Codex and I missed on first read. `Evolution.md §6` says: "审计器和评估器要独立于生成器". The blog auditor not only evaluates content quality but also *modifies* the content to make it pass. That conflates the two roles. The fixes themselves (`<10%` → `below 10%`) are legitimate MDX-safety repairs, but they should be done by a *generator* step before the audit, not by the auditor itself. Conflating them means a future quality regression cannot be detected — the auditor will silently keep patching it.
+- **Opus 4.7 says:** Gemini caught a structural violation Codex and I missed on first read. `Evolution.md §6` says: "审计器和评估器要独立于生成器". The blog auditor not only evaluates content quality but also *modifies* the content to make it pass. That conflates the two roles. The fixes themselves (`below 10%` → `below 10%`) are legitimate MDX-safety repairs, but they should be done by a *generator* step before the audit, not by the auditor itself. Conflating them means a future quality regression cannot be detected — the auditor will silently keep patching it.
 - **Codex gpt-5.3-codex says:** Codex flagged R7 as FAIL on the volume side (35 drafts/24h > 20 threshold) and proposed a `AUTO_FIXED` vs `CLEAN_PASS` distinction in scoring, which is a partial recognition of the issue. But Codex did not name the generator/auditor separation violation.
 - **Gemini 3.1-pro-preview says:** "`blog_audit` is violating generator/auditor separation by actively rewriting content to force a passing build... revoke write permissions from the `blog_audit` role so it operates purely as a read-only observer."
 - **Synthesis:** Gemini's framing is correct and grounded in `Evolution.md §6` text. The reason Codex and Opus initially missed it is that the auditor's mutations are legitimate-looking ("schema fixes"), so they read as repairs rather than as role violations. This is exactly the blind spot that triple-heterogeneous review is designed to surface. Adopt Gemini's recommendation.
@@ -154,4 +151,3 @@ Regulation ambiguities the three auditors could not resolve. These need human ju
 - **Should `NOT_AUDITABLE_FROM_STATE` count as PASS, FAIL, or a third state when computing overall daily verdicts?** Today four regulations (R1, R2 partially, R5 fully) hit this verdict, and there is no rule for whether the day's audit is "PASS with caveats" or "audit incomplete." The latter framing is more honest.
 
 END_REPORT
-```

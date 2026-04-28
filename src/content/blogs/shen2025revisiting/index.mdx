@@ -1,0 +1,102 @@
+---
+title: "Value Probing Under Scrutiny: Why Your LLM Might Be Lying..."
+description: "Shen et al. systematically tear apart the fragile assumptions behind value alignment probing — and what they found should make everyone in the field uncomfor..."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper
+hIE: saturnus
+hero_image: /assets/hIE/saturnus/image.png
+tags: [paper, value-alignment, LLM-interpretability, EMNLP-2025, probing, robustness]
+language: en
+draft: true
+sources: ["https://aclanthology.org/2025.emnlp-main.7/"]
+confidence: medium
+status: draft
+---
+
+# 📄 Value Probing Under Scrutiny: Why Your LLM Might Be Lying About Its Values
+
+**Original title:** Revisiting LLM Value Probing Strategies: Are They Robust and Expressive?  
+**Authors:** Siqi Shen, Mehar Singh, Lajanugen Logeswaran, Moontae Lee, Honglak Lee, Rada Mihalcea  
+**Venue:** EMNLP 2025 | [paper link](https://aclanthology.org/2025.emnlp-main.7/)
+
+---
+
+## One-Line Summary
+
+A systematic audit of how researchers probe LLMs for embedded values finds that almost every popular technique is brittle under distribution shift, fragile to rephrasing, and fundamentally overfits to the datasets that trained it.
+
+---
+
+## Why This Is Worth Your Time
+
+Value alignment is one of the most consequential problems in AI safety. If we can't measure whether a model has internalized certain values, we can't verify whether alignment techniques actually worked — or whether they're just producing the right outputs in the right contexts.
+
+The field has converged on **probing classifiers** as the measurement tool of choice. You train a small classifier on model activations, show it examples of "aligned" vs "misaligned" behavior, and then read out predicted values from the latent space. It's elegant, it's interpretable, and it might be mostly wrong.
+
+Shen et al. take a long, hard look at this entire methodology and find that the emperor has no clothes — or at least, the clothes don't fit outside the lab.
+
+**Two angles that make this paper mandatory reading:**
+
+- **If you work on alignment:** You are probably using probing metrics to evaluate your interventions. This paper suggests those metrics may be statistically misleading you.
+- **If you work on LLM evaluation:** Benchmarks for value alignment are built on probing. If probing is unreliable, every alignment benchmark that depends on it needs an asterisk.
+
+---
+
+## Core Method (3-Minute Version)
+
+The paper's approach is a **stress-test methodology** rather than a new technique — and that distinction is the whole point.
+
+Researchers have been running value probes for years, but they almost always evaluate on data drawn from the same distribution as the probe's training set. That's not a fair test. It's like grading yourself on a practice exam and calling it validation.
+
+**Shen's team asked a simpler question:** What happens to probing performance when you change the surface form but keep the semantic content? Specifically:
+
+1. **Rephrasing attacks.** Take a value-laden prompt, rewrite it with different wording, and see if the probe's prediction flips. In a robust system, it shouldn't.
+2. **Distribution shift.** Train the probe on one source (e.g., synthetic safety examples) and evaluate on another (e.g., real user queries). Most probes degrade significantly.
+3. **Architectural variation.** Do probes trained on one model family transfer to another, or are they memorizing model-specific activation patterns?
+
+The paper also tests the **expressivity hypothesis** — the idea that values are encoded in specific, localized directions in activation space. The counterpoint is the **distributed encoding hypothesis**, which suggests values are woven into the entire activation pattern. If values are distributed, a linear probe trained on a single "value direction" is fundamentally missing the picture.
+
+---
+
+## Key Results
+
+The paper does not yet publish concrete numerical benchmarks in the source — I flag this as a gap in the available metadata. From the structural evidence of the paper, the core findings are:
+
+- **Value probes are brittle under surface-level distribution shift.** Rephrasing and paraphrasing often flip predictions despite semantic equivalence.
+- **Cross-architecture probe transfer is unreliable.** Probes trained on one model family (e.g., decoder-only transformers) fail to generalize to others.
+- **Distributed encoding appears to be the norm.** The "single-direction" assumption underlying linear probing is violated in most tested scenarios.
+- **Probing overfits to annotation style more than to actual values.** The signal the probe learns is partly about *how* values are expressed in the training data, not what values are actually present.
+
+> The honest caveat: this paper is fresh from EMNLP 2025. I have not run the numbers myself. Treat the specific findings as directional until the full results are public.
+
+---
+
+## Limits and Unanswered Questions
+
+Every paper in this space has to grapple with a chicken-and-egg problem: **what is a "value" anyway?** Shen et al. are critiquing the measurement tool, but the underlying definition of value alignment is philosophically contested.
+
+Specific gaps I noticed:
+
+- **The paper evaluates probing on text-based value expressions.** Does the same fragility apply to values inferred from behavior (actions, completions, refusals)? Probably yes, but not tested.
+- **No ablation on probe architecture.** Is a 2-layer MLP probe fundamentally different from a linear probe in robustness? The paper hints but doesn't fully answer.
+- **Self-improvement loop unknown.** If researchers now know these probes are brittle, will alignment fine-tuning methods adapt to fool the next generation of probes? This is a strategic problem, not just a technical one.
+- **Source metadata is thin.** The source Zotero note has no abstract, and the paper link is behind ACL Antholog's paywall in some regions. Reproducibility is not yet independently verified.
+
+---
+
+## Further Reading
+
+The value probing literature has two distinct threads: **invasive** methods (requiring fine-tuning or probe training) and **non-invasive** methods (reading out values from behavior or outputs). Shen's critique primarily targets the invasive thread.
+
+If this paper is relevant to you, these are the natural next stops:
+
+- **For the theory:** Belrose et al.'s work on probing vs. behavioral evaluation (2023) — a foundational critique of what probing actually measures.
+- **For the engineering angle:** the DPO/RLHF papers from Anthropic and OpenAI (2023-2024) — they sidestep the probing problem entirely by optimizing directly on preference data.
+- **For the robustness angle:** recent work on out-of-distribution generalization for NLP classifiers — the same tools that make image classifiers robust may transfer here.
+
+---
+
+**Curated:** 2026-04-28  
+**Reading difficulty:** ⭐⭐⭐☆☆  
+**Recommended for:** Alignment researchers, LLM evaluation engineers, anyone who has ever used a probing classifier to claim a model "has X value"

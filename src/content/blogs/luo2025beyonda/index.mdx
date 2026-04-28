@@ -1,0 +1,91 @@
+---
+title: "JEDi: A Better Video Quality Metric Than FVD"
+description: "FVD uses an action-classifier backbone with Gaussian features — two mismatches. JEDi swaps in JEPA embeddings and MMD for better video evaluation."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper
+hIE: saturnus
+hero_image: /assets/hIE/saturnus/image.png
+tags: [video-generation, evaluation, metric, FVD, JEPA, MMD]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=cC3LxGZasH"]
+confidence: medium
+status: draft
+---
+
+# JEDi: A Replacement for FVD That Actually Understands Temporal Video Quality
+
+**Original title**: Beyond FVD: An Enhanced Evaluation Metric for Video Generation Distribution Quality  
+**Authors**: Luo et al. | **Venue**: OpenReview | **Year**: 2025  
+**Link**: [OpenReview](https://openreview.net/forum?id=cC3LxGZasH)
+
+---
+
+## One-Line Summary
+
+The Fréchet Video Distance (FVD) has been the default metric for video generation for years — but it was never designed for the job. This paper diagnoses three structural flaws and replaces it with **JEDi**, a metric built on JEPA self-supervised embeddings and Maximum Mean Discrepancy (MMD) that actually captures temporal quality in generated video.
+
+---
+
+## Why This Is Worth Your Time
+
+Video generation models have gotten dramatically better. The metrics used to evaluate them have not kept pace — and that's a problem.
+
+**FVD is a borrowed metric**. It was born as a tool for action recognition (I3D features trained on Kinetics), not for judging the quality of synthesized video. When the community adopted it, nobody stopped to ask whether I3D features actually model what matters in generated content. Luo et al. did — and the answer is no.
+
+This paper matters for two reasons: it's a **diagnostic before it's a solution**. Most evaluation papers propose new numbers to report. This one explains *why the old numbers are wrong* before proposing the fix. That's rarer than it should be.
+
+---
+
+## Core Method (3-Minute Version)
+
+### What FVD Gets Wrong
+
+FVD works like this: encode real and generated videos with a pretrained I3D network, then measure the Fréchet distance between the two feature distributions. Sounds reasonable. But Luo et al. identify three fatal cracks:
+
+**1. I3D features aren't Gaussian.**  
+The Fréchet distance formula assumes the feature distributions are multivariate Gaussian. I3D activations, post-ReLU, are anything but. This means the FVD score doesn't actually measure what the math claims it measures.
+
+**2. I3D is blind to temporal artifacts.**  
+I3D was trained for action classification — a task where you mostly need to know *what* is happening, not *how smoothly* it unfolds. Convolutional pooling over time in I3D erases exactly the kinds of flicker, jitter, and temporal inconsistency that human evaluators flag first.
+
+**3. Sample size requirements are impractical.**  
+Because FVD has high variance, you need many samples to get stable estimates. Most papers don't generate enough videos to get reliable scores — which means published FVD numbers are often noise.
+
+### JEDi's Fix
+
+The fix has two parts:
+
+**Replace the backbone.** I3D → JEPA (Joint Embedding Predictive Architecture). JEPA models learn video representations by predicting future representations from context — a self-supervised objective that naturally encodes temporal structure. When a generated video has temporal artifacts, JEPA notices. I3D doesn't.
+
+**Replace the divergence measure.** Gaussian Fréchet → MMD (Maximum Mean Discrepancy) with a polynomial kernel. MMD is a non-parametric distribution distance — it doesn't assume any particular feature distribution shape, which directly fixes flaw #1. It also has lower variance than the Fréchet estimator, partially addressing #3.
+
+The result is a metric that actually tracks what human raters care about: coherent motion, temporal consistency, and realistic dynamics — not just static frame quality.
+
+---
+
+## Key Results
+
+The paper validates JEDi on multiple open-source video generation benchmarks:
+
+- **JEDi correlates better with human judgments** than FVD across multiple datasets
+- **JEDi is more sample-efficient** — stable scores require fewer generated videos
+- **JEDi is sensitive to temporal artifacts** that FVD ignores
+
+> No concrete numerical comparisons were reported in the source material — this paper's contribution is primarily methodological and diagnostic.
+
+---
+
+## Limits and Unanswered Questions
+
+- **No ablation on JEPA backbone choice.** Which JEPA variant was used? Would other self-supervised video models (VideoMAE, SSV2-pretrained networks) work equally well?
+- **Limited cross-architecture evaluation.** Most validation is on diffusion-based models. Does JEDi remain stable for autoregressive or GAN-based video generators?
+- **Human evaluation was not the primary signal.** The claim that JEDi matches human judgment needs larger-scale human studies to be fully credible.
+- **Code and pretrained models** — availability at time of writing is unclear from the source.
+
+---
+
+**Curation date**: 2026-04-28  
+**Reading difficulty**: ⭐⭐⭐☆☆  
+**Recommendation**: 🔥🔥🔥🔥
