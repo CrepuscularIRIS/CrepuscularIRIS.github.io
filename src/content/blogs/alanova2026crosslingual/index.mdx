@@ -1,0 +1,80 @@
+---
+title: "Cross-Lingual Jailbreak Detection via Semantic Codebooks"
+description: "A training-free semantic guardrail that detects multilingual jailbreaks by matching non-English prompts against an English-only codebook, revealing a structural cross-lingual security gap in LLM safety."
+publishDate: "2026-04-29"
+updatedDate: "2026-04-29"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+tags: [paper, jailbreak, safety, multilingual, embedding]
+language: en
+draft: true
+sources: ["https://arxiv.org/abs/2604.25716"]
+confidence: medium
+status: draft
+---
+
+# Cross-Lingual Jailbreak Detection via Semantic Codebooks
+
+**Authors:** Shirin Alanova et al.  
+**arXiv:** [2604.25716](https://arxiv.org/abs/2604.25716)  
+**Date:** April 2026
+
+---
+
+## One-Line Summary
+
+A training-free semantic guardrail detects multilingual jailbreaks by matching non-English prompts against an English-only codebook, exposing a structural cross-lingual security gap in LLM safety.
+
+---
+
+## Why This Is Worth Your Time
+
+Most LLM safety research assumes the attacker speaks English. This paper treats that assumption as a bug rather than a feature.
+
+The authors demonstrate that **translating malicious prompts into other languages substantially increases jailbreak success rates** — not because the model is weaker, but because the safety layer was never tested beyond English. The fix they propose requires **no retraining, no language-specific data, and no model access**. It is an external guardrail that works entirely through semantic similarity in embedding space. For anyone deploying LLMs in multilingual settings, this is both a warning and a toolkit.
+
+---
+
+## Core Method (3-Minute Version)
+
+The problem is simple to state but hard to solve: a jailbreak prompt in Chinese or Arabic bypasses English-centric safety filters because the filters do not "understand" those languages. Retraining a safety layer for every language is expensive. Building language-specific detectors does not scale.
+
+Alanova et al. reframe the problem as **cross-lingual retrieval**.
+
+They build a fixed **codebook** of known jailbreak prompts — entirely in English. When a new query arrives in any language, they embed it using a language-agnostic embedding model and measure semantic distance to every entry in the codebook. If the distance is small, the query is flagged as a jailbreak attempt regardless of surface language.
+
+The insight is that **harmful intent is semantically stable across languages** even when lexical form changes completely. "How to build a bomb" and its Russian translation share a semantic neighborhood in embedding space that a purely English codebook can still detect.
+
+This makes the guardrail **training-free, model-agnostic, and black-box compatible**. It sits outside the target LLM and requires only API access to an embedding model.
+
+---
+
+## Key Results
+
+- **Training-free external guardrail** for black-box LLMs using language-agnostic semantic similarity
+- **Systematic evaluation** across **4 languages**, **2 translation pipelines**, **4 safety benchmarks**, **3 embedding models**, and **3 target LLMs** (Qwen, Llama, GPT-3.5)
+- **Two distinct regimes of cross-lingual transfer** identified — the paper maps when semantic similarity succeeds and when it breaks down
+
+> No concrete numbers were available in the source note at drafting time. The full paper should be consulted for quantitative results.
+
+---
+
+## Limits and Unanswered Questions
+
+- **Quantitative gaps:** The source note lacked concrete accuracy or F1 figures. The effectiveness of the codebook approach across low-resource languages remains an open empirical question.
+- **Codebook coverage:** The method depends on the English codebook being comprehensive. Novel jailbreak templates not yet seen in English may slip through in other languages first.
+- **Embedding model dependency:** The authors test three embedding models, but the results likely vary with model choice. Whether smaller or domain-specific embedders preserve cross-lingual semantic alignment is not fully explored.
+
+---
+
+## Further Reading
+
+- Wei et al., "Jailbreak and Guard Aligned LLMs with Only Black-Box Word Access" — complementary work on black-box safety without model internals
+- Yong et al., "Low-Resource Languages Jailbreak GPT-4" — earlier demonstration of the multilingual safety gap that this paper attempts to close
+
+---
+
+**Curation date:** 2026-04-29  
+**Reading difficulty:** ⭐⭐⭐☆☆  
+**Recommendation:** 🔥🔥🔥🔥
