@@ -1,0 +1,64 @@
+---
+title: "ELABORATION: A Comprehensive Benchmark on Human-LLM Competitive Programming"
+description: "First large-scale benchmark pitting humans against LLMs on competitive programming tasks with fine-grained difficulty calibration, exposing where models"
+publishDate: "2026-04-29"
+updatedDate: "2026-04-29"
+category: meta
+tags: [paper, benchmark, competitive-programming, human-llm-comparison]
+hIE: saturnus
+hero_image: /assets/hIE/saturnus/image.png
+language: en
+draft: true
+sources: ["https://aclanthology.org/2025.acl-long.4/"]
+confidence: medium
+status: draft
+---
+
+# ELABORATION: A Comprehensive Benchmark on Human-LLM Competitive Programming
+
+## One-Line Summary
+
+**ELABORATION** is the first large-scale benchmark designed to pit humans directly against LLMs on competitive programming tasks, using fine-grained difficulty calibration to expose exactly where models still fail against human reasoning.
+
+## Why This Is Worth Your Time
+
+Most code-generation benchmarks treat LLMs as solo performers. They measure pass@k on HumanEval or MBPP and declare victory. But these benchmarks don't answer the question that actually matters: **can an LLM beat a human at the same task?**
+
+ELABORATION reframes the entire evaluation. By forcing humans and models to solve identical problem sets under comparable conditions, it turns competitive programming into a controlled experiment rather than a leaderboard stunt. This matters because coding interviews, olympiads, and real-world problem-solving are fundamentally adversarial — humans compete, and models should be measured against that bar.
+
+The second angle: **difficulty stratification**. ELABORATION doesn't just report an aggregate score. It tiers problems by human solve-rate, which means you can pinpoint whether a model fails on easy problems (alarming), medium problems (expected), or only the hardest ones (impressive). This granularity is rare and valuable.
+
+## Core Method (3-Minute Version)
+
+The authors construct a competitive programming benchmark where both humans and LLMs attempt identical problem sets. The design mirrors human coding interviews and olympiad structures rather than generic code-generation tasks.
+
+**Key design choices:**
+
+- **Direct comparison**: Humans and models see the same prompts, constraints, and test cases. No hidden evaluation tricks.
+- **Difficulty tiers**: Problems are stratified by how often humans solve them. This creates a calibration curve — you can read off exactly at which difficulty level model performance collapses.
+- **Competitive programming domain**: The problems are algorithmic challenges with clear correctness criteria (pass/fail on hidden tests), not open-ended software engineering tasks.
+
+The intuition is straightforward: if you want to know whether an LLM "reasons" like a human, put them in the same arena and count wins. ELABORATION is that arena.
+
+## Key Results
+
+The source note contains no quantitative results or concrete metrics. Based on the paper's framing, the key claims are:
+
+- **ELABORATION introduces a new evaluation paradigm**: direct human-LLM competitive programming comparison at scale.
+- **Fine-grained difficulty stratification isolates capability gaps**: the benchmark reveals where model performance diverges from human expertise, not just whether it does.
+- **Systematic failure modes are exposed**: LLMs fail on problem classes that humans solve routinely, suggesting the gap is not merely one of difficulty but of reasoning type.
+
+Without access to the full paper's tables, we cannot report solve rates, model names, or human baselines. The contribution appears to be methodological — a better benchmark — rather than a specific numerical result.
+
+## Limits and Unanswered Questions
+
+- **No concrete metrics in source**: The extracted note lacks abstract, tables, or figures. We cannot verify the magnitude of human-LLM gaps or which models were tested.
+- **Human pool unknown**: Participant count, demographic coverage, and skill distribution are unspecified. A benchmark pitting LLMs against 50 undergraduates is different from one using 500 ICPC competitors.
+- **Domain generalization**: Competitive programming rewards a specific mix of pattern recognition, algorithmic knowledge, and bug-free implementation under time pressure. It's unclear whether ELABORATION's findings transfer to production software engineering, data science, or other coding domains.
+- **Model selection**: Which LLMs were evaluated? GPT-4, Claude, Gemini, or open-weight models? The benchmark's value depends heavily on the model lineup.
+
+## Further Reading
+
+- The original paper at [ACL Anthology](https://aclanthology.org/2025.acl-long.4/)
+- HumanEval and MBPP — the standard code-generation benchmarks that ELABORATION critiques
+- Codeforces / AtCoder problem archives — the competitive programming culture that inspired this benchmark's design

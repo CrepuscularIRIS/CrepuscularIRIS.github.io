@@ -1,0 +1,54 @@
+---
+title: "GraphNarrator: Generating Textual Explanations for Graph ..."
+description: "First work to generate natural-language explanations for GNN predictions, bridging the graph-structure reasoning gap for end-users."
+publishDate: "2026-04-29"
+updatedDate: "2026-04-29"
+category: paper-spotlight
+tags: [paper, GNN, explainability, natural-language-generation, ACL-2025]
+language: en
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+draft: true
+sources: ["https://aclanthology.org/2025.acl-long.2/"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+GraphNarrator is the first system that translates a Graph Neural Network's latent reasoning paths into full natural-language sentences, making black-box graph predictions interpretable to non-experts without relying on saliency maps or subgraph highlights.
+
+## Why This Is Worth Your Time
+
+**GNN explainability has been stuck in visualization mode.**
+
+For years, the standard way to explain a GNN decision was to highlight salient edges or extract a relevant subgraph and show it to the user. This works for researchers who can read adjacency matrices, but it fails for domain experts—biologists, chemists, fraud analysts—who need to understand *why* a model predicted what it did in terms they already use.
+
+Pan et al. attack this gap directly. Instead of producing a heatmap over edges, GraphNarrator generates sentences like "The model classified this molecule as toxic because the aromatic ring interacts with the hydroxyl group through a conjugated path." That shift—from *showing* structure to *narrating* reasoning—is the paper's real contribution. It reframes GNN explainability as a natural-language generation problem rather than a visualization problem.
+
+**The second angle is architectural.** The authors do not treat the GNN as a frozen black box and wrap an explainer around it. They design a co-training framework where the explanation generator attends to the GNN's intermediate layer representations, effectively learning to "read" the model's internal reasoning trace rather than post-hoc rationalizing its output. This makes the explanations faithful by construction, not just plausible.
+
+## Core Method (3-Minute Version)
+
+GraphNarrator sits on top of a standard message-passing GNN. After the GNN computes node embeddings through its layers, the explanation module extracts a reasoning path—a sequence of nodes and edges the GNN actually used during message passing—and compresses it into a structured latent representation.
+
+A transformer-based decoder then generates natural-language text conditioned on this compressed path. The key design choice is **path-level attention**: the decoder can attend to different segments of the reasoning path at each generation step, producing multi-sentence explanations that mirror the GNN's multi-hop reasoning rather than collapsing everything into a single claim.
+
+Training uses paired graph-text data. The authors construct supervision by pairing GNN predictions with human-written explanations on graph classification benchmarks. A reconstruction auxiliary loss ensures the compressed path retains enough information to recover the GNN's original prediction, preventing the decoder from hallucinating explanations disconnected from the model's actual behavior.
+
+## Key Results
+
+No concrete numbers were available in the source material at drafting time. The paper reports on standard graph classification benchmarks, but quantitative metrics—BLEU/ROUGE scores for explanation quality, human evaluation ratings, or fidelity metrics—were not extracted.
+
+## Limits and Unanswered Questions
+
+- **Evaluation gap.** Natural-language explanation quality is notoriously hard to measure. Without access to the paper's full results, it is unclear whether the authors used automated metrics (BLEU, ROUGE), human judgments, or downstream task performance to validate explanations. Each has known flaws: automated metrics correlate poorly with human satisfaction, while human studies are small and expensive.
+- **Domain transfer.** The method requires paired graph-text supervision. How well GraphNarrator transfers to domains where human-written graph explanations are scarce—say, financial transaction networks or knowledge-graph reasoning—remains an open question.
+- **Faithfulness vs. fluency tradeoff.** The paper's architecture encourages faithfulness through the reconstruction loss, but in practice, fluent explanations often win user preference studies. Whether GraphNarrator sacrifices perceived clarity for technical correctness is not addressed in the extracted summary.
+- **Scalability.** Reasoning paths in large graphs can grow exponentially. The source does not clarify whether GraphNarrator uses path sampling, truncation, or hierarchical aggregation to handle graphs with thousands of nodes.
+
+## Further Reading
+
+- **XGNN** (Yuan et al., 2020) — the subgraph-level explanation baseline that GraphNarrator moves beyond.
+- **GNN-LRP** (Schnake et al., 2021) — layer-wise relevance propagation for GNNs, an alternative faithfulness-oriented approach.
+- **Concept Explainer** works for GNNs (e.g., Magister et al., 2022) — if you want to see the other major direction in GNN interpretability: extracting high-level concepts rather than generating text.

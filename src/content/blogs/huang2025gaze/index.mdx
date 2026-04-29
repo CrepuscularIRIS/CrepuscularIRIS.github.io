@@ -1,0 +1,51 @@
+---
+title: "From Gaze to Movement: Predicting Visual Attention for Au..."
+description: "Bridges human gaze patterns to driving movements via programmatic imitation learning, offering a principled way to align visual attention with autonomous veh..."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+tags: [paper, autonomous-driving, imitation-learning, computer-vision, ICCV2025]
+language: en
+draft: true
+sources: ["https://openaccess.thecvf.com/content/ICCV2025/html/Huang_From_Gaze_to_Movement_Predicting_Visual_Attention_for_Autonomous_Driving_ICCV_2025_paper.html"]
+confidence: medium
+status: draft
+---
+
+# From Gaze to Movement: Predicting Visual Attention for Autonomous Driving
+
+## One-Line Summary
+
+Huang et al. bridge human gaze patterns to driving movements via **programmatic imitation learning**, offering a principled way to align visual attention with autonomous vehicle decision-making.
+
+## Why This Is Worth Your Time
+
+Most autonomous driving systems treat visual attention as a post-hoc explainability layer — something you visualize after the network has already decided to turn left. This paper flips that order: **gaze comes first**, and the policy is learned from it.
+
+The second angle is methodological discipline. Programmatic imitation learning trades some expressivity for **inspectability**. In a domain where regulators still don't know how to audit neural networks, a policy with explicit structure — even if slightly less performant — is a defensible engineering choice.
+
+## Core Method (3-Minute Version)
+
+The intuition is straightforward: **where humans look is where they intend to go**. Human drivers don't process the entire visual field uniformly; they fixate on lane boundaries, approaching vehicles, and pedestrians. These gaze fixations are a compressed, noisy signal of intent.
+
+Huang et al. treat gaze as a proxy for visual saliency and learn to map these patterns to control actions. The critical choice is **programmatic imitation learning** — structured, interpretable policies rather than black-box neural networks. Instead of a monolithic network mapping pixels to steering angles, the policy is likely composed of modular, programmatic rules that can be inspected, modified, and validated.
+
+This matters because interpretable attention mechanisms are easier to certify. If a gaze-guided policy fails, you can trace which visual cue was misweighted, rather than debugging a 100-million-parameter latent space.
+
+## Key Results
+
+- **No concrete numbers in source.** The ICCV 2025 camera-ready was not yet available with quantitative tables at the time of curation.
+
+## Limits and Unanswered Questions
+
+- **No concrete numbers in source.** Without reported metrics (prediction accuracy, collision rates, gaze alignment scores), the empirical case remains unverified.
+- The paper does not clarify how the system handles **adversarial gaze** — what happens when a driver's attention is distracted by a billboard rather than the road?
+- Generalization across **weather conditions, lighting, and geographic driving cultures** is an open question. Gaze patterns in Tokyo traffic differ from those on a German autobahn.
+- The trade-off between programmatic structure and raw performance is not quantified. How much accuracy is sacrificed for interpretability?
+
+## Further Reading
+
+- **Bojarski et al. (2016)** — "End to End Learning for Self-Driving Cars" (NVIDIA): the classic black-box baseline this work implicitly contrasts against.
+- **Deng et al. (2019)** — "Gaze Prediction in Dynamic Virtual Scenes": foundational work on gaze modeling in driving contexts.

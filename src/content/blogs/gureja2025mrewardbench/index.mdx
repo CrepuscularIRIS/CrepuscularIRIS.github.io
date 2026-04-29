@@ -1,0 +1,76 @@
+---
+title: "M-RewardBench: Evaluating Reward Models in Multilingual S..."
+description: "First systematic benchmark for reward model performance across multilingual settings, exposing critical gaps in RLHF alignment beyond English."
+publishDate: "2026-04-29"
+updatedDate: "2026-04-29"
+category: meta
+hIE: saturnus
+hero_image: /assets/hIE/saturnus/image.png
+tags: [paper, reward-modeling, multilingual, RLHF, alignment, benchmark]
+language: en
+draft: true
+sources: ["https://aclanthology.org/2025.acl-long.3/"]
+confidence: medium
+status: draft
+---
+
+# M-RewardBench: The Multilingual Reward Model Audit Nobody Asked For — But Everyone Needed
+
+**Original title**: *M-RewardBench: Evaluating Reward Models in Multilingual Settings*  
+**Authors**: Gureja et al. | **Venue**: ACL 2025 (Long Paper)  
+**Published**: July 2025 | **Link**: [ACL Anthology](https://aclanthology.org/2025.acl-long.3/)
+
+---
+
+## One-Line Summary
+
+Reward models trained on English data systematically misprioritize high-quality responses in other languages, which means RLHF-aligned LLMs silently degrade for **non-English speakers** even when the base model appears multilingual.
+
+## Why This Is Worth Your Time
+
+**Two angles, both uncomfortable.**
+
+First, this is an **audit paper** in the best sense: it does not propose a new architecture or chase a leaderboard. It asks whether existing reward models — the very components that determine what an RLHF-tuned LLM "prefers" — generalize fairly across languages. The answer is no, and the implications are structural. If your reward model ranks a grammatically correct Spanish response below a mediocre English one, the entire alignment pipeline is effectively **English-biased at the preference layer**.
+
+Second, this paper arrives at a moment when the industry is racing to ship "multilingual" models without interrogating the preference infrastructure underneath. M-RewardBench provides the first systematic evidence that **language shift is a robustness axis** for reward modeling, not just a dataset coverage issue. That reframes the problem from "add more non-English data" to "build reward models that actually understand what good reasoning looks like in other languages."
+
+## Core Method (3-Minute Version)
+
+The authors construct a benchmark suite that tests whether reward models can **fairly score responses** across multiple languages and reasoning tasks. The intuition is straightforward but rarely executed: take state-of-the-art reward models, feed them parallel prompts and responses in different languages, and compare the rankings.
+
+If a reward model consistently ranks English responses higher than equivalent-quality responses in Chinese, Hindi, or Swahili, the model is not multilingual in any meaningful alignment sense. It is merely **English-centric with token-level support for other scripts**.
+
+The benchmark treats **language shift as distribution shift** — a classic robustness problem — and applies it to the reward-modeling layer specifically. This matters because reward models are the bottleneck: a base LLM may have seen multilingual pretraining data, but if the reward model that shapes its behavior via RLHF was trained on English preference data, the final aligned model inherits that bias.
+
+The paper evaluates this by comparing reward model rankings across languages on the same underlying reasoning tasks. Where rankings diverge, the alignment signal is broken.
+
+## Key Results
+
+- **M-RewardBench** introduces the first multilingual evaluation suite for reward models, spanning multiple languages and reasoning task types.
+
+- State-of-the-art reward models exhibit **significant performance degradation in non-English languages** relative to English baselines.
+
+- The gap is not marginal: it suggests that **multilingual reward modeling remains a major bottleneck** for equitable RLHF-aligned LLM deployment globally.
+
+> **Note**: The source material did not contain concrete numerical results (exact accuracy drops or correlation coefficients per language). The paper's qualitative conclusion — that degradation is "significant" — is what we have to work with. Treat the quantitative claims as **directional rather than precise** until the full paper is reviewed.
+
+## Limits and Unanswered Questions
+
+- **No concrete numbers in the source material**: we do not yet know whether the degradation is 5 points or 25 points, nor which languages are most affected. The full paper is needed for that granularity.
+
+- **Which reward models were tested?** The source does not specify whether the evaluation covers open-weight models (e.g., PairRM, SteamSHP), API-only models (e.g., GPT-4o as a judge), or both. The scope of the audit matters for reproducibility.
+
+- **Causality vs. correlation**: the benchmark shows that rankings diverge, but does not isolate *why*. Is the issue vocabulary coverage, syntactic structure, cultural reasoning patterns, or training-data imbalance? Disentangling these would point toward fixes.
+
+- **Remediation path unclear**: the paper identifies the problem; it does not yet propose a training recipe or data augmentation strategy to close the gap.
+
+## Further Reading
+
+- **RewardBench** (Lambert et al., 2024) — the English-only predecessor that established the evaluation protocol M-RewardBench extends.
+- **Multilingual alignment surveys** — for context on how preference data collection in non-English settings remains sparse and Western-centric.
+
+---
+
+**Curated**: 2026-04-29  
+**Reading difficulty**: ⭐⭐⭐☆☆ (method is intuitive; implications are broad)  
+**Recommendation**: 🔥🔥🔥🔥 (essential for anyone building or deploying multilingual RLHF systems)

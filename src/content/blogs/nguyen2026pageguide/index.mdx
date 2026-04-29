@@ -1,0 +1,87 @@
+---
+title: "PageGuide: Grounding LLM Answers in the DOM"
+description: "A browser extension that grounds LLM answers directly in the HTML DOM via visual overlays, letting users verify evidence in-situ rather than blindly trusting..."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: engineering
+tags: [paper, browser-extension, grounding, LLM, human-AI-interaction, DOM]
+language: en
+draft: true
+sources: ["https://arxiv.org/abs/2604.23772"]
+confidence: medium
+status: draft
+hIE: methode
+hero_image: /assets/hIE/methode/image.png
+---
+
+# PageGuide: Grounding LLM Answers in the DOM
+
+**Original title**: PageGuide: Browser extension to assist users in navigating a webpage and locating information  
+**Authors**: Nguyen et al. | **arXiv**: 2604.23772 | **Date**: 2026-04  
+**Link**: https://arxiv.org/abs/2604.23772
+
+---
+
+## One-Line Summary
+
+PageGuide is a browser extension that anchors LLM-generated answers to specific DOM elements on a webpage, rendering **visual overlays** so users can see exactly where the information comes from instead of accepting opaque agent outputs on faith.
+
+---
+
+## Why This Is Worth Your Time
+
+Most browser agents today behave like oracles: they read a page, answer your question, and you have no idea whether they hallucinated half the response. PageGuide attacks the **trust gap** at its root—not by making the LLM more accurate, but by making its reasoning **inspectable**.
+
+This matters because the dominant UX pattern for AI assistants (chat-on-the-side) is fundamentally broken for high-stakes tasks. If an agent tells you a rental listing "has no pet restrictions," you need to see the clause yourself. PageGuide's overlay model turns verification from a chore into a glance.
+
+---
+
+## Core Method (3-Minute Version)
+
+The intuition is simple: **don't tell the user what the page says—show them**.
+
+PageGuide bridges the gap between an LLM's natural-language answer and the raw HTML DOM. When you ask a question ("Where do I click to reset my password?"), the system doesn't just generate instructions—it maps each claim to the actual element on the page and highlights it.
+
+The extension addresses three interaction modes.
+
+**Find** highlights the specific DOM nodes that contain evidence for an answer—think of it as "citation, but for HTML."
+
+**Guide** provides step-by-step instructions where each step is visually anchored to the button, link, or form field the user must interact with next.
+
+**Focus** dims or hides irrelevant page regions so the user isn't distracted by ads, sidebars, or unrelated content while following the guidance.
+
+The implementation runs as a browser extension, which gives it real-time access to the live DOM. This is critical: unlike a screenshot-based approach, PageGuide can track dynamic content, respond to SPA navigation, and maintain overlays as the page changes.
+
+---
+
+## Key Results
+
+The source material for this paper is limited to the arXiv abstract, which is truncated. Based on the available excerpt:
+
+- **Grounding mechanism**: LLM answers are explicitly linked to HTML DOM elements via visual overlays (highlight boxes, arrows, or focus rings).
+- **Three-mode design**: The extension supports Find, Guide, and Focus, covering the full spectrum from passive verification to active task completion.
+- **Browser-native deployment**: Built as an extension rather than a proxy or external tool, enabling real-time, low-latency interaction with live webpages.
+
+**No concrete evaluation metrics or user-study results were visible in the provided source.** The paper appears to be in early preprint form.
+
+---
+
+## Limits and Unanswered Questions
+
+- **Evaluation gap**: No user-study data, task-completion rates, or trust metrics are available in the excerpt. We don't yet know whether overlays actually reduce errors or just add visual noise.
+- **LLM dependency**: The quality of grounding is bounded by the LLM's ability to correctly map natural language to DOM selectors. A hallucinated element ID produces a misleading overlay—potentially worse than no overlay at all.
+- **Coverage**: The abstract doesn't clarify how PageGuide handles complex SPAs, shadow DOM, or dynamically injected content. These are the exact environments where users need help most.
+- **Comparison deficit**: No head-to-head against existing browser agents (e.g., Adept, Operator-class systems) or simpler baselines like screenshot + bounding-box prediction.
+
+---
+
+## Further Reading
+
+- **SeeClick** (arXiv 2401.10935) — Grounding GUI instructions via screenshot understanding; a useful contrast to PageGuide's DOM-native approach.
+- **WebArena** (EMNLP 2024) — Benchmark for autonomous web agents; highlights the evaluation standards PageGuide will eventually need to meet.
+
+---
+
+**Curation date**: 2026-04-28  
+**Reading difficulty**: ⭐⭐☆☆☆ (2/5 — concept is intuitive, implementation details sparse)  
+**Recommendation**: 🔥🔥🔥 (3/5 — high conceptual value, pending empirical validation)

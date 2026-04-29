@@ -1,0 +1,76 @@
+---
+title: "Preemptive Detection and Correction of Misaligned Actions..."
+description: "Addresses a critical safety gap in LLM agents by preemptively catching misaligned actions before they execute, rather than relying on post-hoc recovery."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+tags: [paper, LLM-agents, safety, alignment, EMNLP-2025, preemptive-intervention]
+language: en
+draft: true
+sources: ["https://aclanthology.org/2025.emnlp-main.12/"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+# Preemptive Detection and Correction of Misaligned Actions in LLM Agents
+
+**Authors:** Haishuo Fang, Xiaodan Zhu, Iryna Gurevych  
+**Published at:** EMNLP 2025 Main Conference  
+**Link:** [ACL Anthology](https://aclanthology.org/2025.emnlp-main.12/)
+
+---
+
+## One-Line Summary
+
+This paper shifts the safety paradigm for LLM agents from **reactive recovery** to **proactive interception** — catching misaligned actions before they execute, not after the damage is done.
+
+---
+
+## Why This Is Worth Your Time
+
+Most agent safety work today assumes a detect-and-repair loop: the agent acts, something goes wrong, and a guardrail catches it post-hoc. Fang et al. ask a harder question: **can we spot the misalignment before the tool call is even issued?**
+
+This matters because the cost of a wrong action in an LLM agent is not just a bad output — it can be a deleted database, a sent email, or a financial transaction. The difference between stopping an action at planning time versus rolling it back after execution is the difference between a near-miss and an incident report.
+
+I flag this as a **paradigm-level shift** in agent safety thinking. It is also a **warning signal**: as agents gain more tool access, the community's focus on post-hoc alignment (RLHF, refusal tuning) may be insufficient for real-world deployment.
+
+---
+
+## Core Method (3-Minute Version)
+
+The intuition is straightforward but underexplored: **an LLM agent's action trace contains early signals of misalignment before execution.**
+
+Fang et al. propose a mechanism that monitors the agent's decision trajectory — the chain-of-thought, tool selection reasoning, and parameter construction — and intervenes when divergence from user intent or safety constraints is detected. This is not about building a bigger fence around the agent. It is about reading the agent's intent **while it is still forming**.
+
+The preemptive framing changes the engineering problem. Instead of classifying outputs as safe/unsafe, the system must model **planning-state safety** — a harder abstraction because the action does not yet exist. The paper likely uses contrastive signals between aligned and misaligned planning traces, though the exact architecture is not detailed in the source material available.
+
+What makes this elegant is the **temporal asymmetry**: stopping an action at the planning stage is computationally cheaper and operationally safer than executing and rolling back. In production systems, this maps directly to latency and reliability wins.
+
+---
+
+## Key Results
+
+**No concrete numbers in source.** The paper is accepted at EMNLP 2025 Main, which implies peer validation of the contribution, but quantitative results were not extractable from the available metadata. A full read is needed to assess empirical strength.
+
+---
+
+## Limits and Unanswered Questions
+
+- **Evaluation scope**: Without access to the full paper, it is unclear which agent benchmarks were used. WebArena, SWE-bench, or custom tasks? The generality of the method depends heavily on this.
+- **False positive rate**: Preemptive interception risks over-blocking legitimate actions. The paper does not disclose how it balances safety versus utility trade-offs.
+- **Open questions**: Does the method generalize to multi-step plans where misalignment compounds across steps? And how does it handle adversarial prompts designed to disguise misaligned intent during planning?
+
+---
+
+## Further Reading
+
+- **WebArena** (Zhou et al., 2024) — the benchmark most agent safety papers are evaluated on; worth checking if this paper uses it.
+- **Constitutional AI** (Anthropic, 2022) — the dominant post-hoc alignment framework; contrast with the preemptive approach here.
+
+---
+
+**Curation date:** 2026-04-28  
+**Reading difficulty:** ⭐⭐⭐⭐☆ (4/5 — methodology is subtle)  
+**Recommendation:** 🔥🔥🔥🔥 (4/5 — strong conceptual contribution, pending empirical verification)

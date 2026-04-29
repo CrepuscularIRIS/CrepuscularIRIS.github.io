@@ -1,0 +1,79 @@
+---
+title: "MM-IFEngine：迈向多模态指令遵循"
+description: "ICCV 2025 的一项新基准或框架，推动多模态大模型真正执行复杂的视觉+文本指令，而非仅仅做图像描述或问答。"
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: engineering
+hIE: methode
+hero_image: /assets/hIE/methode/image.png
+tags: [paper, iccv-2025, multimodal, instruction-following, benchmark, vision-language]
+language: zh
+draft: true
+sources: ["https://openaccess.thecvf.com/content/ICCV2025/html/Ding_MM-IFEngine_Towards_Multimodal_Instruction_Following_ICCV_2025_paper.html"]
+confidence: medium
+status: draft
+---
+
+# MM-IFEngine：迈向多模态指令遵循
+
+**原文标题：** MM-IFEngine: Towards Multimodal Instruction Following  
+**作者：** Ding 等（Shengyuan Ding, Shenxi Wu, Xiangyu Zhao, Yuhang Zang, Haodong Duan, Xiaoyi Dong, Pan Zhang, Yuhang Cao, Dahua Lin, Jiaqi Wang）  
+**发表于：** ICCV 2025 | **年份：** 2025  
+**链接：** [CVF Open Access](https://openaccess.thecvf.com/content/ICCV2025/html/Ding_MM-IFEngine_Towards_Multimodal_Instruction_Following_ICCV_2025_paper.html)
+
+---
+
+## 一句话摘要
+
+MM-IFEngine 是一个系统性的引擎，用于评估或训练多模态指令遵循能力，瞄准的是「看得懂」和「做得到」之间的那道鸿沟。
+
+## 为什么选这篇
+
+**指令遵循是比理解更难的问题。** 今天的多模态大模型能描述图片、回答视觉问答、甚至做跨模态推理。但「理解」和「执行」是两个动词。一个能描述图表的模型，不等于一个能根据指令修改图表、调整区域大小、或按多步提示重组布局的模型。MM-IFEngine 瞄准的正是这个更难的层级。
+
+**ICCV 2025 的录用本身就是同行信号。** 源笔记中没有摘要，但从标题和作者阵容（Dahua Lin、Jiaqi Wang 等来自强势视觉实验室）来看，这项工作能在顶级视觉会议落地，说明其方法或基准具备分量。这不是一篇边缘预印本。
+
+## 核心方法（3 分钟版）
+
+标题本身就在讲故事。「Engine」暗示的是一套系统——不是单一数据集，不是单一指标，而是一个**可规模化的管道或框架**，能够生成、评估或训练多模态指令遵循能力。
+
+直觉上说，大多数视觉-语言模型优化的是「感知→描述」：你给一张图，模型输出文字。而指令遵循把这个箭头翻转了：你给出一个目标，模型必须**在视觉世界中执行动作**来满足它。这个动作空间可能是图像编辑、UI 操作、布局生成，或多轮视觉推理中的实际执行。
+
+MM-IFEngine 很可能在一个系统里同时解决三个子问题：
+
+1. **指令形式化** —— 如何把复杂的视觉任务表示成模型能消费的格式？自然语言充满歧义；这个引擎很可能定义了一套结构化语法或多模态提示模式。
+
+2. **执行评估** —— 遵循指令不是选择题。你需要把输出的图像、布局或状态与指令意图做比对。「引擎」很可能包含自动化评估器（也许是基于视觉的指标，或学习出来的评判模型）来打分执行保真度。
+
+3. **训练数据生成** —— 如果目标是提升模型，就需要可规模化的训练信号。引擎可能通过合成指令-执行对来启动学习，来源可能是现有图像编辑工具、网页 UI 轨迹，或程序化生成，从而摆脱对大规模人工标注的依赖。
+
+没有论文全文，以上仍是基于标题、会议和作者背景的合理重构。但「Towards Multimodal Instruction Following」这个定位，把它放在**基础性基准或工具链**的坐标上，而非某个狭窄任务专用模型。
+
+## 关键结果
+
+- 提取来源中没有具体数字。论文笔记缺少摘要和结果表格。
+- **已知信息：** 该工作被 ICCV 2025 录用，意味着作者至少在某个已有或新提出的基准上展示了相对基线的经验性提升。
+- **未知信息：** 测试了哪些模型、提升幅度多大、以及改进是否超出引擎自有的评估协议而具备泛化性，目前都不清楚。
+
+## 局限与未回答的问题
+
+**信息稀缺是当前最大的局限。** 源笔记没有摘要、没有结果、没有方法概述。上文所有内容都是从标题、会议和作者单位重构而来。因此置信度评为 **medium** —— 这篇策展是一个带方向的指针，而非经过全文验证的深度解读。
+
+**如果拿到 PDF，我会追问这几个问题：**
+
+- MM-IFEngine 是定义了一个新基准数据集，还是一个可在现有数据集上运行的元框架？这对社区采纳成本影响很大。
+- 动作空间具体是什么？图像编辑、UI 自动化、3D 场景操控，还是其他？「多模态指令遵循」这个表述覆盖范围太广。
+- 评估指标是自动的、人工的，还是混合的？自动化视觉评估 notoriously 困难——微小的视觉错位在某些任务里语义无关，在另一些任务里却是灾难性的。
+- 训练数据是否开源？没有燃料的引擎只是蓝图，不是工具。
+
+## 延伸线索
+
+- **LLaVA**（Liu 等，NeurIPS 2023）—— 视觉指令调优的基线框架，大多数后续工作的参照点。如果 MM-IFEngine 在 LLaVA 式调优之上做了改进，这就是对标基准。
+- **InstructPix2Pix**（Brooks 等，CVPR 2023）—— 通过指令进行图像编辑，是 MM-IFEngine 可能试图泛化的一个更窄但具体的实例。
+- **OSWorld**（Xie 等，ICML 2024）—— 在开放环境中基于视觉观察和 GUI 动作执行任务。如果 MM-IFEngine 涉及 UI 或具身任务，OSWorld 是现有最接近的基准。
+
+---
+
+**策展日期：** 2026-04-28  
+**阅读难度：** ⭐⭐⭐☆☆（3/5 — 方法可能偏密，但概念直觉上容易 grasp）  
+**推荐指数：** 🔥🔥🔥（3/5 — 方向 promising，待全文验证后上调）

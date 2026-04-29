@@ -1,0 +1,52 @@
+---
+title: "EcomScriptBench: A Multi-task Benchmark for E-commerce Sc..."
+description: "First dedicated benchmark for multi-turn e-commerce script planning, bridging product association with step-wise intention modeling — relevant for LLM-driven..."
+publishDate: "2026-04-29"
+updatedDate: "2026-04-29"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+tags: [paper, e-commerce, benchmark, dialogue-systems, recommendation, ACL-2025]
+language: en
+draft: true
+sources: ["https://aclanthology.org/2025.acl-long.1/"]
+confidence: medium
+status: draft
+---
+
+# EcomScriptBench: A Multi-task Benchmark for E-commerce Script Planning via Step-wise Intention-Driven Product Association
+
+## One-Line Summary
+
+This paper introduces the first dedicated benchmark for **multi-turn e-commerce script planning**, forcing models to map step-wise user intentions to product associations across structured dialogue — a task that sits at the intersection of recommendation systems and goal-oriented conversation.
+
+## Why This Is Worth Your Time
+
+Most recommendation benchmarks treat product suggestion as a **single-turn ranking problem**: given a user profile and a query, return a sorted list. EcomScriptBench breaks that assumption by asking models to **plan an entire conversational script** — a sequence of turns where each step must associate products with evolving user intentions. This matters because real-world shopping is rarely a one-shot decision; it is a negotiation between need, discovery, and constraint.
+
+The second angle is **intention-driven association**. The benchmark does not just test whether a model can retrieve relevant products; it tests whether the model can infer *why* a user is asking at each step and align the next product suggestion with that inferred motive. This is a harder cognitive task, and one that exposes the gap between retrieval accuracy and genuine dialogue competence.
+
+## Core Method (3-Minute Version)
+
+The authors frame e-commerce script planning as a **multi-task benchmark** with two coupled objectives:
+
+1. **Step-wise intention modeling.** At each turn, the model must infer the user's underlying intention — not just the surface query — from the dialogue history. This requires tracking implicit goals (e.g., "I want something cheaper" or "I need this for a gift") across multiple exchanges.
+
+2. **Product association under intention constraints.** Once the intention is modeled, the model must select or generate product associations that satisfy that intention, while maintaining coherence with the broader dialogue script. The association is not a flat retrieval score; it is a structured decision conditioned on the turn-level intention and the global script plan.
+
+The benchmark is multi-task because it evaluates both components jointly: intention modeling accuracy and product association quality. A model that fails at either subtask will produce scripts that feel either oblivious (wrong products) or incoherent (right products at the wrong time). The authors do not propose a new model architecture; instead, they provide the evaluation scaffold that makes it possible to measure progress on this specific competence.
+
+## Key Results
+
+- **No concrete numbers in source.** The extracted information does not include quantitative results, baselines, or leaderboards. The paper's primary contribution is the benchmark design and task formulation rather than a performance report.
+
+## Limits and Unanswered Questions
+
+- **No concrete numbers in source.** Without reported scores, it is impossible to judge how far current models are from human-level script planning, or even which architectures struggle most with intention modeling versus product association.
+- The benchmark's **coverage of product domains and dialogue styles** is unclear. E-commerce spans electronics, fashion, groceries, and services — each with different association logics and intention vocabularies. A narrow domain scope would limit generalization claims.
+- The paper does not clarify whether the evaluation is **fully automatic** or includes human judgment for script coherence. Automatic metrics for multi-turn dialogue quality remain brittle, and over-reliance on them could obscure real failure modes.
+
+## Further Reading
+
+- For the broader context of LLM-driven recommendation, see recent work on **conversational recommendation systems** that frame product suggestion as dialogue state tracking rather than ranking.
+- The intention-modeling subtask connects to **dialogue act recognition** and **user goal estimation** in task-oriented dialogue; papers from the DSTC and MultiWOZ lineages are relevant baselines.

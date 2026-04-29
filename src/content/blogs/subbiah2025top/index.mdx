@@ -1,0 +1,68 @@
+---
+title: "Is the Top Still Spinning? Evaluating Subjectivity in Nar..."
+description: "Subjectivity in narrative understanding is understudied despite being central to human interpretation; this paper proposes evaluation frameworks to surface w..."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+tags: [paper, narrative-understanding, subjectivity, evaluation, nlp, llm]
+language: en
+draft: true
+sources: ["https://aclanthology.org/2025.emnlp-main.10/"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+# Is the Top Still Spinning? Evaluating Subjectivity in Narrative Understanding
+
+**Authors:** Subbiah et al. | **Published at:** EMNLP 2025 | **Link:** [ACL Anthology](https://aclanthology.org/2025.emnlp-main.10/)
+
+---
+
+## One-Line Summary
+
+**Subjectivity in narrative understanding is understudied despite being central to human interpretation; this paper proposes evaluation frameworks to surface where LLM "understanding" diverges from human consensus.**
+
+---
+
+## Why This Is Worth Your Time
+
+Most NLP benchmarks treat narrative understanding as a multiple-choice test with a single correct answer. The authors argue this is a category error: human readers routinely disagree on what a story "means," who caused what, or whether an ending is ambiguous. If LLMs are scored against a forced consensus, we may be measuring compliance with majority opinion rather than genuine interpretive depth.
+
+This paper is a **warning signal** — it reveals a blind spot in how we validate "understanding" in language models. For anyone building evaluation pipelines, the framework here is a direct challenge to the assumption that ground truth in narrative tasks is objective.
+
+---
+
+## Core Method (3-Minute Version)
+
+The authors start from a simple observation: **narrative is inherently subjective**. Two readers can watch the same film (the title nods to *Inception*'s spinning top) and disagree on whether the ending is real or a dream. The same applies to causal chains in text, character motivations, and event salience.
+
+Their response is to **construct evaluation tasks that preserve disagreement rather than averaging it away**. Instead of asking "what is the correct answer?," they ask: **"does the model's prediction align with majority human judgment, or with minority/divergent views?"** This surfaces whether an LLM is merely regressing to the mean or capturing the full spectrum of plausible interpretation.
+
+The framework likely operates across multiple dimensions of narrative — event detection, causal reasoning, and meaning construction — though the exact task design is not fully detailed in the source material. The core move is methodological: **reframing evaluation from accuracy-against-consensus to fidelity-to-distribution**.
+
+---
+
+## Key Results
+
+No concrete numbers were available in the source material at the time of drafting. The paper is flagged for deeper reading to extract quantitative findings and benchmark comparisons.
+
+---
+
+## Limits and Unanswered Questions
+
+- **Source material was thin**: the Zotero note lacks abstract and extracted results, so this spotlight is based on the title, venue, and author framing alone. A full read is needed to verify whether the proposed tasks are implemented or remain conceptual.
+- **Scope of subjectivity**: the paper's title suggests broad ambition, but it is unclear whether the evaluation covers all narrative layers (plot, character, theme) or focuses on a specific level like event causality.
+- **Model coverage**: which LLMs were tested? The framework's value depends on whether it discriminates between model families or merely shows that all models converge to majority opinion.
+
+---
+
+## Further Reading
+
+- **"The Narrative Understanding Problem"** — broader discussion of why story comprehension remains unsolved in NLP.
+- **Human disagreement datasets** (e.g., DWAC, AmbigQA) — related efforts in QA and coreference that also treat annotation plurality as signal rather than noise.
+
+---
+
+**Curated:** 2026-04-28 | **Reading difficulty:** ⭐⭐⭐☆☆ | **Recommendation:** 🔥🔥🔥🔥☆

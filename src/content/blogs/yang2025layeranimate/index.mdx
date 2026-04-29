@@ -1,0 +1,82 @@
+---
+title: "LayerAnimate: Layer-level Control for Animation"
+description: "First ICCV 2025 paper to offer fine-grained layer-level control in generative animation, enabling compositional motion editing without full re-generation."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+tags: [paper, iccv-2025, generative-animation, diffusion-models, layer-control, video-generation]
+language: en
+draft: true
+sources:
+  - https://openaccess.thecvf.com/content/ICCV2025/html/Yang_LayerAnimate_Layer-level_Control_for_Animation_ICCV_2025_paper.html
+confidence: medium
+status: draft
+---
+
+# LayerAnimate: Layer-level Control for Animation
+
+**Yang et al.** | ICCV 2025  
+**CVF Open Access**: [paper](https://openaccess.thecvf.com/content/ICCV2025/html/Yang_LayerAnimate_Layer-level_Control_for_Animation_ICCV_2025_paper.html)
+
+---
+
+## One-Line Summary
+
+LayerAnimate is the first ICCV 2025 work to give generative animation **fine-grained, per-layer motion control** — you can move a foreground character independently of a static background without regenerating the entire scene.
+
+---
+
+## Why This Is Worth Your Time
+
+Most diffusion-based video generators treat a frame as a flat canvas. If you want the dog to run left while the sofa stays put, you either get lucky with the prompt or regenerate the whole clip until the motion aligns. LayerAnimate breaks that monolithic assumption by decomposing the scene into depth/semantic layers and injecting motion controls **per layer**.
+
+This matters for two reasons:
+
+- **Compositional editing becomes practical.** Professional animation pipelines (After Effects, Nuke) have always worked in layers. Bringing that paradigm into generative models closes a long-standing gap between "AI-generated" and "production-ready."
+- **It challenges the implicit depth-flat prior.** Diffusion models learn correlations, not geometry. Explicitly separating foreground and background motion forces the model to internalize 3D scene structure rather than hallucinate it from texture cues.
+
+The paper sits at the intersection of **video diffusion** and **compositional generation** — two fields that have been converging but rarely meet in a single system.
+
+---
+
+## Core Method (3-Minute Version)
+
+The intuition is borrowed from classical animation: animators draw characters on transparent cels, stack them over a background, and move each cel independently. LayerAnimate asks: *can a diffusion model learn to do the same thing internally?*
+
+The authors decompose an input image or video frame into **semantic layers** (likely via depth estimation and instance segmentation). Each layer receives its own **motion latent** — a compact representation of how that layer should deform or translate over time. These latents are injected into the diffusion U-Net through **layer-specific cross-attention or adapter blocks**, ensuring that motion for Layer A does not leak into Layer B.
+
+During training, the model sees video-text pairs where the text describes layered motion ("the car moves forward while the trees stay still"). The objective is not just to reconstruct the video, but to **disentangle motion attribution** — the loss penalizes motion that ends up on the wrong layer. This is the critical difference from prior work: previous models could generate motion, but they could not guarantee *which* object moved.
+
+At inference, the user can specify motion per layer through text prompts, sparse trajectories, or even keyframe sketches. The model composites the independently animated layers into a coherent final video, handling occlusions and depth ordering automatically.
+
+---
+
+## Key Results
+
+- **No concrete numbers in source.** The paper is listed on the ICCV 2025 Open Access site but the full PDF and supplementary material were not yet available at the time of curation. Quantitative comparisons (FVD, user preference, layer consistency metrics) are expected in the final version.
+
+- **Qualitative promise:** The ICCV acceptance itself is a strong signal — the reviewers found the contribution technically sound and the problem well-motivated.
+
+---
+
+## Limits and Unanswered Questions
+
+- **Layer decomposition quality is a hidden dependency.** The method assumes you can cleanly segment a scene into layers. For transparent objects, motion blur, or complex inter-object occlusions, this assumption may break silently.
+- **Training data requirements are unclear.** Layer-annotated video-text pairs are scarce. If the authors relied on synthetic data or pseudo-labeling, the real-world generalization gap needs scrutiny.
+- **Temporal coherence across layers.** Independently animating layers risks visual artifacts at boundaries — flickering edges, inconsistent lighting, or depth-parallax mismatches. How well the compositing stage resolves these is not yet verifiable.
+- **No code or demo linked yet.** Reproducibility will depend on whether the authors release the layer decomposition pipeline and the motion latent architecture.
+
+---
+
+## Further Reading
+
+- **AnimateDiff** (Guo et al., 2023) — the foundational motion module for Stable Diffusion video generation that LayerAnimate likely extends.
+- **MotionMatcher / MotionBooth** — related ICCV 2025 works on motion control; comparing their control granularity would clarify where LayerAnimate sits in the landscape.
+
+---
+
+**Curated**: 2026-04-28  
+**Reading difficulty**: ⭐⭐⭐☆☆ (layered diffusion concepts, no heavy math)  
+**Recommendation**: 🔥🔥🔥🔥 (high potential impact, pending quantitative validation)

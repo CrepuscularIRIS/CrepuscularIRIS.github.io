@@ -1,0 +1,79 @@
+---
+title: "MM-IFEngine: Towards Multimodal Instruction Following"
+description: "A new ICCV 2025 benchmark or framework pushing multimodal LLMs to actually follow complex visual-and-text instructions rather than just caption or answer."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: engineering
+hIE: methode
+hero_image: /assets/hIE/methode/image.png
+tags: [paper, iccv-2025, multimodal, instruction-following, benchmark, vision-language]
+language: en
+draft: true
+sources: ["https://openaccess.thecvf.com/content/ICCV2025/html/Ding_MM-IFEngine_Towards_Multimodal_Instruction_Following_ICCV_2025_paper.html"]
+confidence: medium
+status: draft
+---
+
+# MM-IFEngine: Towards Multimodal Instruction Following
+
+**Original title:** MM-IFEngine: Towards Multimodal Instruction Following  
+**Authors:** Ding et al. (Shengyuan Ding, Shenxi Wu, Xiangyu Zhao, Yuhang Zang, Haodong Duan, Xiaoyi Dong, Pan Zhang, Yuhang Cao, Dahua Lin, Jiaqi Wang)  
+**Published at:** ICCV 2025 | **Date:** 2025  
+**Link:** [CVF Open Access](https://openaccess.thecvf.com/content/ICCV2025/html/Ding_MM-IFEngine_Towards_Multimodal_Instruction_Following_ICCV_2025_paper.html)
+
+---
+
+## One-Line Summary
+
+MM-IFEngine is a systematic engine for evaluating or training multimodal instruction following, targeting the gap between vision-language understanding and precise execution of user instructions.
+
+## Why This Is Worth Your Time
+
+**The instruction-following gap is real.** Current multimodal LLMs can caption images, answer VQA questions, and even reason about visual content. But "understanding" and "following" are different verbs. A model that describes a chart is not the same as a model that edits the chart, resizes a region, or composes a new layout based on a multi-step prompt. MM-IFEngine appears to tackle exactly this harder problem.
+
+**ICCV 2025 selection signals peer validation.** With no abstract available in the source note, the fact that this work landed at a top-tier vision conference suggests the method or benchmark carries weight. The author list includes names from strong vision labs (Dahua Lin, Jiaqi Wang). This is not a fringe preprint.
+
+## Core Method (3-Minute Version)
+
+The title itself tells a story. "Engine" implies something systematic — not a single dataset, not a single metric, but a **pipeline or framework** that can generate, evaluate, or train multimodal instruction-following capability at scale.
+
+The intuition: most vision-language models are optimized for **perception-then-description**. You show an image; the model outputs text. Instruction following flips the arrow: you give a goal; the model must **act on the visual world** to satisfy it. That action space could be image editing, UI manipulation, layout generation, or multi-turn visual reasoning with execution.
+
+MM-IFEngine likely addresses three sub-problems in one system:
+
+1. **Instruction formalization** — How do you represent a complex visual task in a way a model can consume? Natural language is ambiguous; the engine probably defines a structured grammar or multi-modal prompt schema.
+
+2. **Execution evaluation** — Following an instruction is not a multiple-choice problem. You need to compare the output image, layout, or state against the instruction intent. The "engine" likely includes automated evaluators (possibly vision-based metrics or learned judges) that score execution fidelity.
+
+3. **Training data generation** — If the goal is to improve models, you need scalable training signals. The engine may synthesize instruction-execution pairs, perhaps using existing image-editing tools, web UI traces, or procedural generation, to bootstrap model learning without human annotation at scale.
+
+Without the paper text, this remains a reconstruction. But the framing — "Towards Multimodal Instruction Following" — positions it as a **foundational benchmark or toolchain** rather than a narrow task-specific model.
+
+## Key Results
+
+- No concrete numbers available in the extracted source. The paper note lacks abstract and results tables.
+- **What we know:** The work was accepted at ICCV 2025, which implies the authors demonstrated empirical improvements over prior baselines on at least one established or newly proposed benchmark.
+- **What we don't know:** Which models were tested, the magnitude of gains, or whether the improvements generalize beyond the engine's own evaluation protocol.
+
+## Limits and Unanswered Questions
+
+**Information scarcity is the primary limitation here.** The source note contains no abstract, no results, and no methodology summary. Everything above is reconstructed from the title, venue, and author affiliations. The confidence rating is **medium** for this reason — the post is a guided pointer, not a verified deep read.
+
+**Open questions I would probe if I had the PDF:**
+
+- Does MM-IFEngine define a new benchmark dataset, or is it a meta-framework that operates over existing ones? The difference matters for adoption.
+- What is the action space? Image editing, UI automation, 3D scene manipulation, or something else? "Multimodal instruction following" is broad.
+- Are the evaluation metrics automatic, human-based, or hybrid? Automated visual evaluation is notoriously hard — small misalignments can be semantically irrelevant or catastrophic depending on the task.
+- Is training data released? An engine without fuel is a blueprint, not a tool.
+
+## Further Reading
+
+- **LLaVA** (Liu et al., NeurIPS 2023) — The baseline visual instruction-tuning framework that most follow-up work builds on. If MM-IFEngine improves upon LLaVA-style tuning, this is the reference point.
+- **InstructPix2Pix** (Brooks et al., CVPR 2023) — Image editing via instruction following, a narrower but concrete instantiation of the problem MM-IFEngine may generalize.
+- **OSWorld** (Xie et al., ICML 2024) — Open-environment task execution with visual observation and GUI actions. If MM-IFEngine touches UI or embodied tasks, OSWorld is the closest existing benchmark.
+
+---
+
+**Curation date:** 2026-04-28  
+**Reading difficulty:** ⭐⭐⭐☆☆ (3/5 — method likely dense, but concept is intuitive)  
+**Recommendation:** 🔥🔥🔥 (3/5 — promising direction, pending full-text verification)

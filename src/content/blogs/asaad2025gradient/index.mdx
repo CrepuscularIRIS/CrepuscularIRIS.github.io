@@ -1,0 +1,103 @@
+---
+title: "Gradient Extrapolation for Debiased Representation Learning"
+description: "Proposes gradient extrapolation as a training-time intervention to remove dataset bias from learned representations without requiring explicit bias labels."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+tags: [paper, debiased-learning, representation-learning, gradient-methods, iccv2025]
+language: en
+draft: true
+sources: ["https://openaccess.thecvf.com/content/ICCV2025/html/Asaad_Gradient_Extrapolation_for_Debiased_Representation_Learning_ICCV_2025_paper.html"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+# Gradient Extrapolation for Debiased Representation Learning
+
+**Original title**: Gradient Extrapolation for Debiased Representation Learning  
+**Authors**: Asaad et al. | **Venue**: ICCV 2025 | **Date**: 2025  
+**Link**: [OpenAccess](https://openaccess.thecvf.com/content/ICCV2025/html/Asaad_Gradient_Extrapolation_for_Debiased_Representation_Learning_ICCV_2025_paper.html)
+
+---
+
+## One-Line Summary
+
+This paper proposes **gradient extrapolation** — a training-time intervention that pushes the optimization trajectory past the biased minimum so the model learns representations free of spurious correlations, **without needing explicit bias labels**.
+
+---
+
+## Why This Is Worth Your Time
+
+**Debiased learning is usually a data-labeling problem.** Most methods assume you can annotate the bias attribute (skin tone, background texture, gender cue) and then reweight or adversarially remove it. That assumption breaks in production: bias labels are expensive, sometimes privacy-sensitive, and often incomplete.
+
+Asaad et al. flip the problem. They ask: *what if we can debias using only the training dynamics themselves?* The answer is gradient extrapolation — nudging the optimizer past the point where spurious correlations are strongest. If this holds up, it removes a major deployment blocker for fair representation learning.
+
+The second reason to care is **elegance**. The method is a single training-time modification, not a new architecture or a multi-stage pipeline. That kind of parsimony usually means easier adoption and better ablation clarity.
+
+---
+
+## Core Method (3-Minute Version)
+
+### The Problem in One Picture
+
+Standard empirical risk minimization (ERM) finds the parameters that minimize average loss on the training set. But when the dataset contains **spurious correlations** — e.g., all "camels" appear on sand — ERM happily absorbs the background as a feature. The model learns "sand = camel" and fails on camels in snow.
+
+### The Intuition: Walk Past the Trap
+
+Asaad et al. observe that the biased minimum is usually reached **first** during training. The model latches onto easy, spurious signals before learning the true underlying concept. Their key move is:
+
+> **Extrapolate the gradient step beyond the empirical risk minimum**, as if the optimizer were continuing on a debiased distribution.
+
+Instead of stopping at the point of lowest training loss, they compute what the gradient would look like "further out" and step in that direction. The effect is to **overshoot the biased basin of attraction** and land in a parameter region where the true signal dominates.
+
+### How It Works in Practice
+
+The paper frames this as modifying the standard gradient update. Rather than
+
+```
+θ_{t+1} = θ_t - α ∇L(θ_t)
+```
+
+they extrapolate:
+
+```
+θ_{t+1} = θ_t - α ∇L(θ_t) + β * extrapolation_term
+```
+
+where the extrapolation term estimates the gradient direction on a hypothetical debiased distribution. The coefficients are chosen so the optimizer doesn't diverge but does escape the spurious-correlation attractor.
+
+This is conceptually close to **sharpness-aware minimization (SAM)** and **extrapolation-based optimization** in the ODE literature, but applied with a specific objective: bias removal rather than generalization or convergence speed.
+
+---
+
+## Key Results
+
+No concrete numbers were available in the source material at the time of drafting. The paper is accepted at ICCV 2025, which provides a quality signal, but quantitative claims (accuracy gaps on biased vs. unbiased test sets, comparison to prior debiasing methods) should be verified against the PDF before publication.
+
+---
+
+## Limits and Unanswered Questions
+
+**1. The extrapolation term needs careful calibration.**  
+Overshooting too far collapses training; too little leaves bias intact. The paper likely provides a heuristic or hyperparameter schedule, but how brittle this is across datasets remains an open question.
+
+**2. What happens when bias and signal are not cleanly separable?**  
+Gradient extrapolation assumes the biased minimum is a "shallow" attractor that can be escaped. In some domains (medical imaging, certain fairness settings), the spurious correlation may be deeply entangled with the true signal. The method's failure modes are not yet fully mapped.
+
+**3. No code or reproducibility details in the source note.**  
+Until the official repository or appendix is checked, treat the method as promising but unverified.
+
+---
+
+## Further Reading
+
+- **IRM / V-REx** (Arjovsky et al., 2019; Krueger et al., 2021): Invariant risk minimization and its variants — the classic approach to learning representations that discard spurious environment signals. Asaad et al.'s method is a training-dynamics alternative to IRM's explicit penalty.
+- **SAM** (Foret et al., 2021): Sharpness-Aware Minimization — another gradient-modification technique that seeks flat minima. The extrapolation mechanism here is spiritually related, though the objective differs.
+
+---
+
+**Curated**: 2026-04-28  
+**Reading difficulty**: ⭐⭐⭐☆☆  
+**Recommendation**: 🔥🔥🔥🔥☆

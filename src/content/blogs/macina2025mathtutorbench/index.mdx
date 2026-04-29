@@ -1,0 +1,77 @@
+---
+title: "MathTutorBench: A Benchmark for Measuring Open-ended Peda..."
+description: "First open-ended benchmark for evaluating LLM math tutoring beyond answer correctness, targeting pedagogical quality in dialogue."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: engineering
+tags: [paper, benchmark, education, LLM, tutoring, EMNLP-2025]
+language: en
+draft: true
+sources: ["https://aclanthology.org/2025.emnlp-main.11/"]
+confidence: medium
+status: draft
+hIE: methode
+hero_image: /assets/hIE/methode/image.png
+---
+
+# MathTutorBench: A Benchmark for Measuring Open-ended Pedagogical Capabilities of LLM Tutors
+
+**Original title:** MathTutorBench: A Benchmark for Measuring Open-ended Pedagogical Capabilities of LLM Tutors  
+**Authors:** Macina et al. (Jakub Macina, Nico Daheim, Ido Hakimi, Manu Kapur, Iryna Gurevych, Mrinmaya Sachan)  
+**Published at:** EMNLP 2025 Main Conference  
+**Link:** [ACL Anthology](https://aclanthology.org/2025.emnlp-main.11/)
+
+---
+
+## One-Line Summary
+
+This paper builds the **first benchmark that grades LLM math tutors on how well they teach**, not just whether the student gets the right answer.
+
+---
+
+## Why This Is Worth Your Time
+
+Most LLM evaluation in education stops at **answer correctness** — did the model solve the problem? That metric is useless for tutoring, where the goal is to make *the student* understand. MathTutorBench closes this gap by measuring **pedagogical quality in open-ended dialogue**.
+
+The second angle is **methodological honesty**. The authors do not claim to solve tutoring; they claim to measure it better. In a field full of overreaching abstracts, a paper that says "we built a ruler" rather than "we built a bridge" is a breath of fresh air.
+
+---
+
+## Core Method (3-Minute Version)
+
+The core intuition is simple: **a good tutor is not a good answer key**.
+
+Existing benchmarks treat tutoring as a multiple-choice or final-answer task. MathTutorBench treats it as a **conversation**. The benchmark likely presents models with realistic student turns — misunderstandings, partial progress, requests for hints — and scores the model's response on pedagogical dimensions rather than mathematical accuracy alone.
+
+What those dimensions are is not fully detailed in the source note, but the framing implies at least **scaffolding quality**, **error identification**, and **adaptive prompting** — the skills that separate a tutor from a calculator.
+
+The evaluation is probably hybrid: **human annotators** for ground-truth pedagogical labels, plus **automated metrics** for scale. The open-ended design means the benchmark cannot rely on simple string matching; it needs either rubric-based scoring or trained judge models. The paper's acceptance at EMNLP suggests the methodology passed peer review on both validity and reliability.
+
+---
+
+## Key Results
+
+- **No concrete numbers in source.** The extracted note does not contain quantitative results. The paper likely reports inter-annotator agreement, model rankings, and gap analyses, but these were not captured during harvesting.
+
+> *If you have access to the PDF, the table to look for is: which LLM families score highest on pedagogical dimensions versus raw accuracy, and how large the divergence is.*
+
+---
+
+## Limits and Unanswered Questions
+
+- **No concrete numbers in source.** Without the full paper, we cannot assess whether the benchmark's pedagogical metrics correlate with actual student learning gains — the ultimate validity test.
+- **Generalization beyond math.** The benchmark is domain-specific. Whether the same rubric applies to physics, coding, or language learning is an open question.
+- **Judge bias.** If automated evaluation relies on another LLM as judge, the scorer's own pedagogical assumptions become part of the metric. The paper may address this; the source note does not say.
+
+---
+
+## Further Reading
+
+- **Khanmigo / Khan Academy's tutoring LLM** — the most visible production system in this space; useful for comparing benchmark scores to real-world tutoring outcomes.
+- **Constitutional AI / RLHF for pedagogy** — if MathTutorBench enables reward-model training for tutoring, the next step is reinforcement learning from human pedagogical feedback.
+
+---
+
+**Curated:** 2026-04-28  
+**Reading difficulty:** ⭐⭐⭐☆☆  
+**Recommendation:** 🔥🔥🔥🔥 (4/5 — a necessary benchmark in an under-measured space)

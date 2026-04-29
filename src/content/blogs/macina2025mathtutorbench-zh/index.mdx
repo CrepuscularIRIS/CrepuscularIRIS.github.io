@@ -1,0 +1,77 @@
+---
+title: "MathTutorBench：首个衡量 LLM 数学辅导师开放式教学能力的基准"
+description: "首个超越答案正确性、以对话式教学质量为核心指标的 LLM 数学辅导评测基准。"
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: engineering
+tags: [paper, benchmark, education, LLM, tutoring, EMNLP-2025]
+language: zh
+draft: true
+sources: ["https://aclanthology.org/2025.emnlp-main.11/"]
+confidence: medium
+status: draft
+hIE: methode
+hero_image: /assets/hIE/methode/image.png
+---
+
+# MathTutorBench：首个衡量 LLM 数学辅导师开放式教学能力的基准
+
+**原文标题：** MathTutorBench: A Benchmark for Measuring Open-ended Pedagogical Capabilities of LLM Tutors  
+**作者：** Macina 等（Jakub Macina, Nico Daheim, Ido Hakimi, Manu Kapur, Iryna Gurevych, Mrinmaya Sachan）  
+**发表会议：** EMNLP 2025 Main Conference  
+**链接：** [ACL Anthology](https://aclanthology.org/2025.emnlp-main.11/)
+
+---
+
+## 一句话摘要
+
+这篇论文构建了**首个评测 LLM 数学辅导质量的基准**——评的不是模型会不会做题，而是它会不会教人。
+
+---
+
+## 为什么选这篇
+
+教育场景里的 LLM 评测，绝大多数停在**答案正确率**：模型算对了，就算高分。但辅导的本质不是给出正确答案，而是让**学生**理解。MathTutorBench 把评测对象从「答案」转向「对话」，直接测量开放式交互中的**教学品质**。
+
+第二个策展理由是**方法论上的克制**。作者没有宣称解决了智能辅导，而是说「我们造了一把更好的尺子」。在充斥着过度承诺的论文摘要里，这种诚实本身就是一种稀缺品质。
+
+---
+
+## 核心方法（3 分钟版）
+
+核心直觉很简单：**好辅导师 ≠ 好答案本**。
+
+现有基准把辅导当成多选题或最终答案任务。MathTutorBench 把它当成**对话**。基准很可能向模型呈现真实的学生回合——误解、半途而废、要提示——然后从教学维度给模型回复打分，而不是只看数学对错。
+
+具体维度在现有笔记中未完全展开，但框架暗示至少包括**脚手架质量**、**错误识别能力**和**适应性提示**——这些才是区分辅导师与计算器的技能。
+
+评测方式大概率是**混合式**：人类标注者提供教学质量的 ground-truth 标签，自动化指标负责规模扩展。开放式设计意味着它无法依赖简单字符串匹配，需要基于评分标准的打分或训练过的裁判模型。论文能被 EMNLP 主会接收，说明方法论在效度和信度上都过了同行评审。
+
+---
+
+## 关键结果
+
+- **来源笔记中无具体数字。** 论文很可能报告了标注者间一致性、模型排名和差距分析，但采集阶段未捕获这些数值。
+
+> *如果你有 PDF 原文，值得关注的表格是：哪些 LLM 家族在教学维度上得分最高，与它们在纯准确率上的排名差距有多大。*
+
+---
+
+## 局限与未回答的问题
+
+- **来源笔记中无具体数字。** 没有完整论文，我们无法判断该基准的教学指标是否与真实学生学习成绩提升相关——这是效度的终极检验。
+- **数学之外的泛化性。** 基准是领域专用的。同样的评分标准是否适用于物理、编程或语言学习，仍是开放问题。
+- **裁判偏差。** 如果自动化评测依赖另一个 LLM 当裁判，评分者自身的教学假设就成了指标的一部分。论文可能讨论了这一点，但来源笔记未提及。
+
+---
+
+## 延伸线索
+
+- **Khanmigo / Khan Academy 的辅导 LLM** —— 该领域最可见的生产级系统，可用于对比基准分数与真实辅导效果。
+- **Constitutional AI / 教学场景 RLHF** —— 如果 MathTutorBench 能支撑教学奖励模型的训练，下一步就是基于人类教学反馈的强化学习。
+
+---
+
+**策展日期：** 2026-04-28  
+**阅读难度：** ⭐⭐⭐☆☆  
+**推荐指数：** 🔥🔥🔥🔥（4/5 — 在一个测量不足的领域提供了必要的基准工具）

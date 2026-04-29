@@ -1,0 +1,84 @@
+---
+title: "Gradient Decomposition and Alignment for Incremental Obje..."
+description: "A principled gradient-level approach to mitigate catastrophic forgetting in incremental object detection by decomposing and aligning gradients across old and..."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+tags: [paper, incremental-learning, object-detection, catastrophic-forgetting, gradient-alignment, iccv-2025]
+language: en
+draft: true
+sources: ["https://openaccess.thecvf.com/content/ICCV2025/html/Luo_Gradient_Decomposition_and_Alignment_for_Incremental_Object_Detection_ICCV_2025_paper.html"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+# 📄 Gradient Decomposition and Alignment for Incremental Object Detection
+
+**Original title:** Gradient Decomposition and Alignment for Incremental Object Detection  
+**Authors:** Wenlong Luo et al. | **Venue:** ICCV 2025  
+**Link:** [CVF Open Access](https://openaccess.thecvf.com/content/ICCV2025/html/Luo_Gradient_Decomposition_and_Alignment_for_Incremental_Object_Detection_ICCV_2025_paper.html)
+
+---
+
+## One-Line Summary
+
+Instead of tweaking outputs or freezing features, this paper **operates directly on gradients** — decomposing them by class and aligning old-class gradients against new-class ones — to stop incremental object detectors from forgetting what they already knew.
+
+---
+
+## Why This Is Worth Your Time
+
+Incremental object detection is one of those problems that sounds niche until you realize every real-world vision system faces it: a warehouse robot trained on 50 SKUs suddenly needs to recognize 50 more, without re-labeling the entire historical dataset. The standard playbook — replay buffers, feature distillation, parameter freezing — treats the symptom (output drift) rather than the cause (gradient interference).
+
+This paper's bet is that **the interference happens in gradient space, so the fix should live there too.** That is a cleaner abstraction than most prior work. If the decomposition holds up empirically, it becomes a reusable primitive for any continual-learning detector, not just a one-off architectural tweak.
+
+---
+
+## Core Method (3-Minute Version)
+
+### The problem in one picture
+
+When you fine-tune a detector on new classes, the gradients that update the shared backbone do not "know" which classes they serve. A gradient step that improves detection for "new-class A" can silently degrade "old-class B" because both classes share the same weights. That is catastrophic forgetting at the gradient level.
+
+### The proposed fix
+
+The authors decompose the overall gradient **g** into class-specific components — roughly, projecting the full gradient onto directions that matter for each class. Once decomposed, they **align** the old-class gradient components with the new-class ones, ensuring that a step forward for new classes does not become a step backward for old classes.
+
+Think of it as negotiating a traffic intersection: instead of letting every car (class) enter the intersection (weight update) at once and crash, the method separates the traffic streams and synchronizes their green lights.
+
+### Why this is finer-grained than prior art
+
+- **Output-level methods** (e.g., distillation) only notice forgetting after the model has already produced wrong logits.
+- **Feature-level methods** (e.g., frozen backbones) stop learning in entire sub-networks, which hurts plasticity.
+- **Gradient-level alignment** intervenes at the exact moment knowledge would be overwritten, without sacrificing the model's ability to learn.
+
+The catch: gradient decomposition is not free. It requires either extra forward passes or careful approximation to avoid turning every training step into a compute bottleneck. The paper presumably addresses this, but the source note does not include architectural details.
+
+---
+
+## Key Results
+
+No concrete numbers were available in the source material at the time of curation. The ICCV 2025 proceedings page should contain the full experimental tables once the PDF is indexed.
+
+---
+
+## Limits and Unanswered Questions
+
+- **Scalability to many classes.** Decomposing and aligning gradients for 100+ classes could turn the training loop into an O(N²) affair. The paper likely proposes approximations, but the exact cost curve is unknown without the full text.
+- **Dependence on gradient linearity.** The method assumes that class-specific gradients can be cleanly separated. In deep networks with heavy feature reuse, this assumption may break — especially in the later layers of a detector where class semantics are highly entangled.
+- **No code or preprint link yet.** At curation time, only the CVF HTML landing page was available. Reproducibility will depend on whether the authors release code alongside the camera-ready.
+
+---
+
+## Further Reading
+
+- **iCaRL** (Rebuffi et al., CVPR 2017) — the classic rehearsal baseline that most incremental-classification work still compares against. The object-detection analogue is less settled, making this paper's contribution timely.
+- **EWC / Elastic Weight Consolidation** (Kirkpatrick et al., PNAS 2017) — another gradient-aware continual-learning method, but at the parameter level rather than the gradient-decomposition level. Comparing the two would clarify whether decomposition beats consolidation in detection settings.
+
+---
+
+**Curated:** 2026-04-28  
+**Reading difficulty:** ⭐⭐⭐⭐☆ (4/5 — gradient-level manipulation requires solid optimization background)  
+**Recommendation:** 🔥🔥🔥🔥 (4/5 — principled framing, but awaits empirical validation from the full paper)

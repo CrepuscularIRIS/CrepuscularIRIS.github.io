@@ -1,0 +1,55 @@
+---
+title: "One Polyp Identifies All: One-Shot Polyp Segmentation wit..."
+description: "One-shot polyp segmentation via SAM with cascaded priors and iterative prompt evolution — a practical medical imaging advance."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+tags: [paper, polyp-segmentation, SAM, one-shot-learning, medical-imaging, ICCV2025]
+language: en
+draft: true
+sources: ["https://openaccess.thecvf.com/content/ICCV2025/html/Mao_One_Polyp_Identifies_All_One-Shot_Polyp_Segmentation_with_SAM_via_ICCV_2025_paper.html"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+# One Polyp Identifies All
+
+## One-Line Summary
+
+One-shot polyp segmentation via SAM with cascaded priors and iterative prompt evolution — a practical medical imaging advance.
+
+## Why This Is Worth Your Time
+
+Most medical segmentation models demand **hundreds of annotated examples** per lesion type. Colonoscopy datasets are small, polyp morphology varies wildly, and annotating endoscopic video is expensive. Mao et al. sidestep this by treating SAM as a few-shot learner: **one annotated polyp** becomes the prior that bootstraps segmentation across the entire case. This is not a theoretical curiosity — it is a direct answer to the annotation bottleneck that stalls clinical deployment of vision foundation models.
+
+The second angle is architectural pragmatism. Instead of fine-tuning SAM's massive weights on a handful of endoscopy frames, the authors keep SAM frozen and manipulate its **prompt space**. Cascaded priors stack spatial and semantic cues; iterative prompt evolution refines them frame by frame. The model learns to ask better questions, not to rewrite its internal answers.
+
+## Core Method (3-Minute Version)
+
+SAM segments by responding to **prompts** — points, boxes, or masks. In one-shot polyp segmentation, the challenge is that a single example polyp must generalise to new polyps with different shapes, sizes, and lighting conditions.
+
+Mao et al. build a **cascaded prior pipeline**:
+
+1. **Spatial prior** — the one-shot mask anchors a rough region of interest.
+2. **Semantic prior** — features from the example polyp guide SAM's encoder toward polyp-like textures in the target frame.
+3. **Iterative prompt evolution** — the output mask from step *t* becomes the prompt for step *t+1*, refined by a lightweight correction network that learns to nudge SAM when it under-segments or over-segments.
+
+The key insight is **composability**. Each prior is weak alone; chained together they create a feedback loop that tightens boundaries without ever updating SAM's frozen parameters. This keeps the method fast and keeps it from overfitting to tiny datasets.
+
+## Key Results
+
+- **No concrete numbers in source.** The ICCV 2025 camera-ready PDF was not available at extraction time. The paper is accepted; quantitative results (Dice, mIoU, frame-rate) should be verified against the final PDF before citing specific figures.
+
+## Limits and Unanswered Questions
+
+- **No concrete limitations in source.** Anticipated concerns, pending the full paper:
+  - How does the method behave on **sessile serrated adenomas**, which are flat and visually subtle? The one-shot prior may not capture enough texture variation.
+  - **Temporal drift** in long videos: iterative evolution assumes frame-to-frame similarity. Sudden camera withdrawal or bowel prep artefacts could break the chain.
+  - The correction network is small, but it still needs **some training data**. The authors claim one-shot; the exact boundary between "zero" and "one" shot here deserves scrutiny.
+
+## Further Reading
+
+- SAM's original prompt-engineering design: [Kirillov et al., 2023](https://arxiv.org/abs/2304.02643)
+- Medical SAM adaptations (MedSAM, SAM-Med2D) for context on how the community is freezing foundation models and tuning prompts instead of weights.

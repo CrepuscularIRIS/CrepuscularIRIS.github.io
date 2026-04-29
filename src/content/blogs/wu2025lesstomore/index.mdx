@@ -1,0 +1,78 @@
+---
+title: "Less-to-More Generalization: Unlocking More Controllabili..."
+description: "Proposes an in-context generation paradigm that expands controllability scope by generalizing from fewer to more control conditions, relevant to conditional ..."
+publishDate: "2026-04-28"
+updatedDate: "2026-04-28"
+category: paper-spotlight
+tags: [paper, iccv-2025, conditional-generation, controllability, in-context-learning, computer-vision]
+language: en
+draft: true
+sources: ["https://openaccess.thecvf.com/content/ICCV2025/html/Wu_Less-to-More_Generalization_Unlocking_More_Controllability_by_In-Context_Generation_ICCV_2025_paper.html"]
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+confidence: medium
+status: draft
+---
+
+# Less-to-More Generalization: Unlocking More Controllability by In-Context Generation
+
+**Authors:** Shaojin Wu, Mengqi Huang, Wenxu Wu, Yufeng Cheng, Fei Ding, Qian He  
+**Published at:** ICCV 2025  
+**Link:** [CVF Open Access](https://openaccess.thecvf.com/content/ICCV2025/html/Wu_Less-to-More_Generalization_Unlocking_More_Controllability_by_In-Context_Generation_ICCV_2025_paper.html)
+
+---
+
+## One-Line Summary
+
+This paper proposes an **in-context generation** paradigm that teaches a model to expand its controllability from fewer control conditions to more—without needing full supervision for every dimension.
+
+---
+
+## Why This Is Worth Your Time
+
+Most conditional generation pipelines suffer from a scaling bottleneck: **every new control dimension requires its own labeled dataset.** Pose, depth, edge maps, semantic masks—each needs painstaking annotation. Wu et al. ask a counterintuitive question: *what if the model could generalize compositionally, learning to handle more controls from fewer examples?*
+
+This is a **paradigm-level shift** in how we think about controllability. Instead of treating each control signal as an isolated supervised task, the authors frame it as an emergent, compositional property. If it works robustly, it could dramatically reduce the annotation burden for video and image generation pipelines—an engineering value that is hard to overstate.
+
+---
+
+## Core Method (3-Minute Version)
+
+The intuition is elegant: **teach the model to "fill in the blanks" for missing control dimensions by observing sparse in-context examples.**
+
+Imagine you show a generative model a handful of image–caption pairs where only pose is labeled. Then you ask it to generate an image conditioned on *both* pose and depth—even though it has never seen joint pose+depth supervision. The "less-to-more" claim is that the model can infer the richer control signal from the sparse context, rather than requiring exhaustive multi-label training data.
+
+This relies on a key assumption: **controllability is compositional.** The model treats individual control dimensions as building blocks that can be recombined. If pose and depth are each learnable from separate sparse contexts, the model should be able to compose them when both are requested. The in-context framing means this happens at inference time, not through retraining.
+
+The authors frame this as **in-context generation**—an extension of in-context learning (ICL) from language modeling to the visual domain. Instead of prompting with text examples, the model is prompted with visual–control pairs, and generalizes to unseen control combinations.
+
+---
+
+## Key Results
+
+- **No concrete numbers available in the source note.** The CVF page does not expose quantitative results in the extracted metadata. A full read of the PDF would be needed to assess empirical gains.
+
+- Qualitatively, the method targets **expanded controllability scope**—the ability to handle control combinations not seen during training. This is a harder metric than single-dimension accuracy and, if demonstrated, would be more significant than marginal FID improvements.
+
+---
+
+## Limits and Unanswered Questions
+
+- **Empirical verification is missing from the source.** Without access to the full PDF, we cannot assess how well the "less-to-more" leap holds on standard benchmarks like COCO-Stuff, ADE20K, or video datasets. The claim is strong; the evidence needs scrutiny.
+
+- **Compositionality assumption.** The method assumes control dimensions are largely independent and compositional. For highly coupled controls—e.g., human pose and garment physics—this assumption may break, and the paper does not clarify where the boundary lies.
+
+- **Base model dependency.** In-context capabilities vary wildly across architectures. It is unclear whether this approach requires a specifically pretrained backbone or works off-the-shelf with standard diffusion transformers.
+
+---
+
+## Further Reading
+
+- **ControlNet** (Zhang et al., 2023) — the dominant engineering baseline for adding conditional controls to diffusion models; this paper directly challenges its "one-control-one-adapter" paradigm.
+- **In-Context Learning in Vision** — a growing thread (e.g., Painter, SegGPT) that applies ICL to visual tasks; this work extends it from segmentation to generation.
+
+---
+
+**Curated:** 2026-04-28  
+**Reading Difficulty:** ⭐⭐⭐☆☆  
+**Recommendation:** 🔥🔥🔥🔥☆ — high potential, pending empirical verification
