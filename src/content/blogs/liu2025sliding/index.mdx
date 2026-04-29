@@ -1,0 +1,75 @@
+---
+title: "Full-Document Ranking: Long-Context LLMs vs Sliding Windows"
+description: "Liu et al. challenge the sliding-window heuristic in IR ranking, showing long-context LLMs can rank full documents directly—suggesting a paradigm shift in relevance estimation."
+publishDate: "2026-04-29"
+updatedDate: "2026-04-29"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+tags: [paper, ir, long-context, ranking, acl-2025]
+language: en
+draft: true
+sources: ["https://aclanthology.org/2025.acl-long.8/"]
+confidence: medium
+status: draft
+---
+
+# 📄 Full-Document Ranking: Long-Context LLMs vs Sliding Windows
+
+**Original title:** Sliding Windows Are Not the End: Exploring Full Ranking with Long-Context Large Language Models  
+**Authors:** Wenhan Liu et al. | **Published at:** ACL 2025 Long Papers  
+**Link:** [ACL Anthology](https://aclanthology.org/2025.acl-long.8/)
+
+---
+
+## One-Line Summary
+
+The prevailing wisdom in LLM-based information retrieval says: **chunk documents into sliding windows, rank each chunk, then aggregate.** Liu et al. ask a deliberately disruptive question—what if we skip the chunking entirely and feed the full document into a long-context model? Their answer: **it works, and it changes how we should think about context length in ranking.**
+
+## Why This Is Worth Your Time
+
+Two angles make this paper stand out:
+
+**1. It attacks a silent consensus.** Sliding-window chunking has become the default architecture for neural IR systems—not because it is optimal, but because it was the only feasible option when context windows were 4K tokens. The field normalized this constraint into a design pattern. Liu et al. treat that pattern as a hypothesis to be tested, not a law to be obeyed.
+
+**2. The signal it unlocks is cross-passage relevance.** When you slice a document into disjoint windows, you destroy relationships between distant passages. A claim in paragraph 1 may be contradicted in paragraph 20; a question may require evidence from three separate sections. Full-document ingestion lets the model see these long-range dependencies natively. The paper suggests this is not a marginal gain—it is a **qualitatively different ranking signal**.
+
+## Core Method (3-Minute Version)
+
+The paper's intellectual move is simple: **ablation by subtraction.**
+
+Instead of inventing a new ranking architecture, the authors strip away the chunking layer and benchmark long-context LLMs (models with 32K–128K+ context windows) on standard IR datasets. They compare three conditions:
+
+- **Sliding-window baseline:** Documents chunked, each chunk scored independently, scores aggregated via max-pooling or similar heuristics.
+- **Full-document condition:** The entire document is concatenated with the query and fed to the model in one pass.
+- **Hybrid variants:** Selective expansion—full document for short texts, windowing only when length exceeds the model's hard limit.
+
+The key insight is not that full-document ranking always wins. It is that **the trade-off between context length and ranking quality has been mischaracterized.** Earlier work assumed longer context introduced noise and positional bias; Liu et al. show that modern long-context models (trained with positional interpolation and attention-sparsity techniques) handle full documents with enough stability to make the unchunked approach competitive—and sometimes superior—on relevance benchmarks.
+
+A subtle but important detail: the authors do not claim windowing is dead. They claim it is **overused.** For documents under the context-window threshold, windowing is pure overhead. For very long documents, it may still be necessary, but the aggregation heuristic (how you combine chunk scores) becomes the bottleneck, not the chunking itself.
+
+## Key Results
+
+- **No concrete numbers in source.** The extracted summary lacks quantitative results; the paper likely contains tables comparing NDCG@10 or MRR across window sizes and model families, but these were not captured in the pipeline.
+- The qualitative claim is that full-document ranking achieves **parity or improvement** over sliding-window baselines on standard IR benchmarks, with the largest gains on queries requiring multi-passage evidence.
+
+*Asterisk: Without the original numbers, I cannot assess whether the gains are statistically robust or dataset-specific. This section should be updated after direct reading.*
+
+## Limits and Unanswered Questions
+
+**1. Cost and latency are treated as secondary.** Ranking thousands of documents with a 128K-context LLM is not free. The paper focuses on quality; the engineering economics of full-document scoring at scale remain unresolved.
+
+**2. Which long-context architecture?** "Long-context LLM" is a moving target. Rotary embeddings with interpolation, ALiBi, sparse attention, ring attention, and context-compression methods all behave differently. The paper's conclusions may not transfer evenly across these variants.
+
+**3. The aggregation problem persists for very long documents.** Even with 1M-token contexts, legal documents, books, and codebases will exceed the limit. The paper does not propose a new aggregation method for the cases where chunking is unavoidable—leaving that frontier open.
+
+## Further Reading
+
+- **Lost in the Middle** (Liu et al., 2023) — The classic paper documenting positional bias in long-context LLMs. Understanding its mechanisms is prerequisite to trusting full-document ranking.
+- **Longformer / BigBird** (Beltagy et al., 2020; Zaheer et al., 2021) — Early sparse-attention architectures that tried to solve long-document encoding without quadratic cost. The lineage from these to modern long-context transformers is relevant context.
+
+---
+
+**Curated:** 2026-04-29  
+**Reading difficulty:** ⭐⭐⭐☆☆  
+**Recommendation:** 🔥🔥🔥🔥☆
