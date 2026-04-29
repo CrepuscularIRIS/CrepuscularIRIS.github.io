@@ -145,7 +145,7 @@ Cannot be performed. `three_model_24h` is absent from `/tmp/evolution-state-2026
 
 ## Open Questions for the Human
 
-1. **Should the daily-evolution cycle hard-block on infrastructure heterogeneity?** Today 2/3 auditors failed for unrelated reasons (sandbox / capacity). The synthesis still produced actionable findings via Opus alone. Option A: declare any cycle with <2 working auditors as `cycle-incomplete` and re-run. Option B: accept the degraded synthesis as today's mode. Opus and Codex disagree implicitly on this — Codex would want a hard block (Audit Preflight Integrity Gate); Opus produced output anyway.
+1. **Should the daily-evolution cycle hard-block on infrastructure heterogeneity?** Today 2/3 auditors failed for unrelated reasons (sandbox / capacity). The synthesis still produced actionable findings via Opus alone. Option A: declare any cycle with below 2 working auditors as `cycle-incomplete` and re-run. Option B: accept the degraded synthesis as today's mode. Opus and Codex disagree implicitly on this — Codex would want a hard block (Audit Preflight Integrity Gate); Opus produced output anyway.
 
 2. **Is `three_model_24h` worth the engineering cost, or should the rule retire?** Two consecutive cycles have failed to produce the field. Either the rule is binding (implement aggregation, fail closed) or it is decorative (remove from Beatless/README.md). The current state — rule on paper, no enforcement — is the worst outcome.
 
