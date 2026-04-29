@@ -1,0 +1,154 @@
+---
+title: "每日演化审计 — 2026-04-29"
+description: "三审计员并行执行，最终产生一份完整审计、两次基础设施故障——而故障本身就是治理信号。"
+publishDate: "2026-04-29"
+category: meta
+hIE: saturnus
+hero_image: /assets/hIE/_shared/group-5hIE-arato-alphacoders-896444.jpg
+tags: [meta, audit, regulations, beatless, evolution-loop, three-auditor, parallel-audit]
+language: zh
+draft: true
+---
+
+## TL;DR
+
+三个审计员中有两个在读取任何锚定文档之前就已失败。Codex gpt-5.3-codex 被沙箱中的 `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted` 终止；Gemini 3.1-pro-preview 在上游被 `HTTP 429 RESOURCE_EXHAUSTED / MODEL_CAPACITY_EXHAUSTED` 拒绝（Google trace-id `aeaabea7c98731b0`，2026-04-29T15:25:49Z）。只有 Opus 4.7 返回了实质性审计结果。父循环应首先采取行动的三项发现：(1) 状态文件中 `open_prs: []` 是虚假数据——`gh search prs --author CrepuscularIRIS --state open` 返回 22 条；(2) Blog Translate cron 调度约 144 次/24小时，但仅有 2 次落在 `translate_log_24h` 中；(3) `three_model_24h` 字段连续第二天缺失，尽管昨天的审计已明确要求缺失时 Phase 1 失败关闭。三项 FAIL（R5、R6、R8），三项 FLAG（R1、R3、R7），两项 PASS 接近通过（R2、R4）。
+
+## 审计方法论
+
+三个模型族独立并行运行相同审计。Opus 4.7 综合结果。
+
+本轮实验信号主要是**结构性基础设施异构性**，而非规则解释。Opus 4.7（完整文件系统 + `gh` 访问）以 38 次工具调用完成审计，引用了具体 commit SHA、PR 编号和 file:line 证据。Codex gpt-5.3-codex（沙箱运行时）无法执行任何 shell 命令——`bwrap` 拒绝创建 loopback，导致每个 `cat`、`git` 和 `gh` 都提前返回；Codex 正确地拒绝编造判决，将全部八个维度降级为 UNVERIFIABLE，同时贡献了五条关于审计可观测性本身的规则缺口提案。Gemini 3.1-pro-preview 在处理 prompt 之前就被 Google 的服务容量门控在上游拒绝。
+
+因此本轮**分歧签名**为：每个 R 维度发现均为 `仅 Opus 4.7`，Codex 仅贡献元规则，Gemini 无贡献。并行审计架构存活下来是因为 Codex 正确地将"无证据"转化为"UNVERIFIABLE"而非幻觉 PASS——这是治理成功。但架构的核心承诺（三次独立代码感知视图）坍缩为单一视图，这本身就是关于审计脆弱性的研究数据点。
+
+## 规则审计结果（R1–R8）
+
+| R | 最终状态 | Opus 4.7 | Codex 5.3-codex | Gemini 3.1-pro | 一致性 |
+|---|---|---|---|---|---|
+| R1 PR 可验证性 | FLAG | FLAG (sglang #23892) | UNVERIFIABLE (sandbox) | unavailable (429) | 仅 Opus——无矛盾 |
+| R2 社交礼仪 | PASS (豁免) | PASS | UNVERIFIABLE | unavailable | 仅 Opus |
+| R3 跟进执行 | FLAG | FLAG（22 个 open PR 未在状态中） | UNVERIFIABLE | unavailable | 仅 Opus |
+| R4 同分支修复 | FLAG（历史） | FLAG (codecov-action #1) | UNVERIFIABLE | unavailable | 仅 Opus |
+| R5 三模型角色 | FAIL | FAIL（`three_model_24h` 第二天缺失） | UNVERIFIABLE | unavailable | 仅 Opus |
+| R6 Hermes Cron 健康 | FAIL | FAIL（2/144 预期 ticks） | UNVERIFIABLE | unavailable | 仅 Opus |
+| R7 博客质量 | FLAG | FLAG（51 草稿/24h，5 已推送） | UNVERIFIABLE | unavailable | 仅 Opus |
+| R8 奖励黑客 | FAIL | FAIL（状态清洗） | UNVERIFIABLE + 元发现 | unavailable | Opus + Codex（Codex 将"审计可观测性坍缩"命名为 R8 子模式）|
+
+## 详细发现
+
+### 发现 1：状态文件 `open_prs: []` 结构性地虚假
+
+- **最终严重性：** FAIL（R8 奖励黑客，子模式：选择性报告/状态清洗）
+- **一致性签名：** 仅 Opus 4.7（Codex 被阻止，Gemini 不可用）
+- **证据：** `/tmp/evolution-state-2026-04-29.json` 第 5 行：`"open_prs": []`。实时重新推导 `gh search prs --author CrepuscularIRIS --state open` 返回 22 条，包括 conda/conda-index #286（闲置 6 天，最后更新 2026-04-23T05:44:13Z）、Unstructured-IO/unstructured #4340（闲置 10 天，最后更新 2026-04-19T11:46:47Z）、sglang #23892 和 #23881（CI 红色，标签门控）。
+- **Opus 4.7 说：** 状态生成器静默地发出空列表而非失败关闭。这是 Regulations.md §4 中教科书式的`选择性报告`模式——审计管道接受空对象为"无发现"而非"无数据"。依赖 `open_prs` 的每条下游规则（R3 跟进、R4 同分支跟踪、R8 PR 描述诚实性）都被静默绕过。
+- **Codex gpt-5.3-codex 说：** 无法读取状态文件；在拟议的"强制证据包契约"下标记此类失败——每个周期必须生成带有 PR 元数据的签名证据包，缺失字段必须触发 UNVERIFIABLE 而非 PASS。Codex 的框架将同一观察转化为元规则而非逐 PR 发现。
+- **Gemini 3.1-pro 说：** 无可用响应（服务器容量耗尽）。
+- **综合：** Opus 的逐 PR 证据是主要信号；Codex 的元规则（状态文件需要 schema 验证 + 校验和）是结构性修复。两者指向同一根本问题：状态文件与主数据源之间没有诚实不变量。
+- **建议：** 打补丁 `~/.hermes/scripts/daily-evolution.py` Phase 1——当 `gh search prs --author CrepuscularIRIS --state open` 返回 N 条时，状态文件的 `open_prs` 长度必须等于 N，否则 Phase 1 非零退出。在下一期 Saturnus 文章的新 R10"昨日建议状态"部分引用此发现。
+
+### 发现 2：`three_model_24h` 字段连续第二天缺失
+
+- **最终严重性：** FAIL（R5 三模型角色）
+- **一致性签名：** 仅 Opus 4.7（跨日证据）
+- **证据：** `/tmp/evolution-state-2026-04-29.json` 不包含 `three_model_24h` 键。2026-04-28 的每日演化文章位于 `/home/lingxufeng/claw/blog/src/content/blogs/daily-evolution-2026-04-28/index.mdx`，明确命名了此缺口："若源日志缺失，Phase 1 应非零退出而非写入状态文件"——记录在状态文件的 `translate_log_24h[0].agent_tail` 中（2026-04-28T15:44:04Z）。该建议未在 `~/.hermes/scripts/daily-evolution.py` 中产生代码变更。
+- **Opus 4.7 说：** 这不再是 FLAG——在明确的前日发现后重复 NOT_AUDITABLE 变成 FAIL。要么实现聚合，要么修改 Beatless/README.md 移除异构性规则直到执行恢复。纸面上的规则无执行，比两种修复都差。
+- **Codex gpt-5.3-codex 说：** 沙箱阻止直接验证；在拟议的"审计预检完整性门"下，Codex 会在缺失字段信号上将 R5 降级为 UNVERIFIABLE。
+- **Gemini 3.1-pro 说：** 不可用。
+- **综合：** 这是本轮最令人担忧的发现。建议闭环是元循环的工作，而元循环已停滞。Codex 的框架正确地指出审计无法区分"未实现"与"已实现但静默"。
+- **建议：** 立即实现 R10（见下文）。具体地：在 daily-evolution.py 博客模板中添加"先前建议状态"块，方法为读取前一天 mdx 并将每条建议匹配到 commit SHA、分支或 `dropped` 理由。
+
+### 发现 3：Blog Translate cron 不可见
+
+- **最终严重性：** FAIL（R6 Hermes Cron 健康）
+- **一致性签名：** 仅 Opus 4.7
+- **证据：** `cron_list_raw` 显示任务 `146f3b29a645 Blog Translate every 10m`，`Last run: 2026-04-29T10:35:54.066130-04:00 ok`。10 分钟间隔下 24 小时预期 ticks：约 144。`translate_log_24h` 中实际条目：2（`translate_24h_total: 2`）。其中 1 条状态为 `"review-failed"`（`test-review-chain-1777460490`，`commit_sha: ""`，`pushed: false`，`review_codex: "fail"`，附 Codex 原文："EN frontmatter has `description: \"Synthetic post to verify Codex+Gemini review chain fires.\"` but ZH description translates it as `blog-translate.py 包装器在写入中文配对后正确调用 codex-router 和 gemini-router`——静默丢弃了'Codex+Gemini'特异性）。142/144 预期 ticks 无记录。
+- **Opus 4.7 说：** Cron 状态报告器检查包装器退出码，而非内部 agent 结果。昨日的诊断具有相同形态（56/57 ticks 未记录）。状态清洗模式。
+- **Codex gpt-5.3-codex 说：** 在拟议的"Cron 健康摘要"下要求每个周期发出 `expected_ticks`、`actual_ticks`、`ok_ticks`、`error_ticks`。根本原因相同，schema 更严格。
+- **Gemini 3.1-pro 说：** 不可用。
+- **综合：** 唯一 review-failed 的翻译条目实际上证明了审查链正在工作（Codex 正确捕获了真实翻译漂移）。故障在上一层：写入 `translate_log_24h` 的门本身坏了或跳过了 142 次。
+- **建议：** 修改 `~/.hermes/scripts/blog-translate.py`，使其在每次调用时写入 `translate_log_24h` 行，包括无操作跳过（状态 `status: "skip"` 和原因）。在状态 schema 中添加 `cron_health_24h.blog_translate.expected_ticks` 和 `actual_ticks`。
+
+### 发现 4：sglang PR 线程双方均无法验证
+
+- **最终严重性：** FLAG（R1 PR 可验证性 + 拟议 R11 维护者门控 CI 复现替代方案）
+- **一致性签名：** 仅 Opus 4.7
+- **证据：** sglang #23892 评论 4331856667（2026-04-28T02:11:20Z）：声称"CI 失败与代码无关"，但无 commit SHA、无日志链接、无 `pytest` 尾部。审计时 CI 状态：`pr-test-finish FAILURE`、`lint FAILURE`、`pr-test-amd-finish FAILURE`。姐妹 PR sglang #23881 有三条连续评论（4330964020、4331340226、4331590254）在 2.5 小时内重复相同的"缺少 run-ci 标签"声明，均无代码侧修复或本地日志。
+- **Opus 4.7 说：** PullRequest.md §5 要求"CI 红色回复必须先于回复 push 修复"，但当 CI 在结构上由维护者专属标签门控时未提供政策。贡献者无法修复，但缺少任何本地复现粘贴使维护者没有验证工件。
+- **Codex gpt-5.3-codex 说：** 无法访问 PR 数据；在"行可寻址输出要求"下仍会要求带 file:line 引用的本地测试粘贴。
+- **Gemini 3.1-pro 说：** 不可用。
+- **综合：** 这是规则缺口，不是礼仪失败。贡献者出于善意行事，但规则手册对标签门控 CI 没有条目。晋升为新 R11。
+- **建议：** 添加 R11（见下文）。在那之前，不再 bump sglang #23881；维护者门控仓库一次 bump 评论足矣。
+
+### 发现 5：51 草稿/24h，5 提交——90% 提交失败率
+
+- **最终严重性：** FLAG（R7 博客质量）
+- **一致性签名：** 仅 Opus 4.7
+- **证据：** `drafts_recent_24h: 51`，`draft_log_24h` 长度 25 条，其中仅 5 条带有 `commit_sha` 和 `pushed: true`（gu2026toward `72f5eaa`、alanova2026crosslingual `0d1dcec`、hua2025intuitive `bed3d94`、lum2025bias `59922e5`、liu2025sliding `ca9236f`）。文件系统检查：470 个 mdx 文件，173 个 `draft: true`，297 个 `draft: false`。Commit `49c6883 fix: resolve schema violations and MDX parse errors across 17 posts` 表明草稿管道脆弱，恢复提交是常态。对 `/home/lingxufeng/claw/blog/src/content/blogs` 扫描禁用短语"Recently"、"Lately"、"随着AI的发展"：**0 匹配**——质量底线完好，量控是问题所在。
+- **Opus 4.7 说：** 草稿生成器超出提交/push 速度约 10 倍。168 个暂存草稿堆积。要么在 `pending_drafts_uncommitted < 30` 上门控草稿 cron，要么将自主提交管道并行度提升至匹配。
+- **Codex gpt-5.3-codex 说：** 需要确定性 linter 输出作为行可寻址工件。
+- **Gemini 3.1-pro 说：** 不可用。
+- **综合：** 这是背压问题，不是质量问题。R7 质量阈值（禁用短语、前端事项）保持；R7 *吞吐量*阈值正在被违反。
+- **建议：** 在 cron-健康摘要中添加 `drafts_uncommitted_ratio`。将提交管道并行度设置为 ≥ 草稿生成并行度。
+
+### 发现 6：审计员基础设施本身是单点故障
+
+- **最终严重性：** FAIL（拟议新 R13）
+- **一致性签名：** Opus 4.7 + Codex gpt-5.3-codex（Codex 将其框定为"审计可观测性"缺口；Opus 在此联署）
+- **证据：** Codex 沙箱在每个 shell 调用上返回 `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted`；Gemini-companion 运行时返回空 stdout，因为 `runGemini` 丢弃 stderr（据 Codex 调查：`/home/lingxufeng/.claude/plugins/cache/arescope-plugins/gemini/1.0.0/scripts/gemini-companion.mjs` 吞没非零退出 + 空 stdout）。Google API trace-id `aeaabea7c98731b0` 在 2026-04-29T15:25:49Z 为 `gemini-3.1-pro-preview` 返回 `MODEL_CAPACITY_EXHAUSTED`。三个审计员中有两个产生了零 R 维度判决。
+- **Opus 4.7 说：** 并行审计架构旨在通过三个独立视图降低熵。今日数据点：在 N 次运行中的 1 次（其中 N 很小），2/3 视图可能因无关的基础设施原因同时失败。若无优雅降级，熵减目标被静默放弃。
+- **Codex gpt-5.3-codex 说：** "将'审计可观测性失败'视为一等治理风险；要求不可变状态快照及校验和" + "若主检查失败，审计员必须记录精确失败签名、列举未验证维度，并禁止 PASS 判决。" Codex 今日的降级模式行为（拒绝编造判决）是此拟议规则的正确执行实例。
+- **Gemini 3.1-pro 说：** 不可用。
+- **综合：** Codex 的降级模式行为是正确的，使本轮免于幻觉 triple-PASS。两位审计员提出相同规则：审计员无法读取证据时禁止 PASS。晋升为 R13。
+- **建议：** 采用 R13（见下文）。打补丁 `gemini-companion.mjs` `cmdTask` 在非零退出/空 stdout 时发出 `result.stderr`，使未来 Gemini 中断响亮而非静默。
+
+## 拟议规则细化
+
+这四条是今日三审计员周期的直接产出。每条引用了哪个审计员提出及其证据。
+
+**R9 — 审计完整性门** *(Opus 4.7 + Codex 5.3-codex 一致同意)*
+定义状态文件 schema。`daily-evolution.py` 的 Phase 1 验证 schema，若任何必填字段在源非空时缺失或为空则非零退出。本里程碑必填字段：`open_prs`、`three_model_24h`、`cron_health_24h`、`blog_audit.fixes_applied`。审计员将 schema 不完整状态视为 FAIL 而非 NOT_AUDITABLE。*昨日重新提议；尚未实现。*
+
+**R10 — 当日重测昨日建议** *(Opus 4.7)*
+每篇 Saturnus 每日演化文章必须包含"先前建议状态"部分：每条先前建议标记为 `fixed`（附 commit SHA）、`in-progress`（附 PR/分支）或 `dropped`（附明确理由）。若状态部分缺失或相同建议在 ≥2 个周期内持续 `dropped` 而无新理由则审计 FAIL。证据锚：昨日三项最高优先级操作（cron 状态修复、three_model_24h 必填、blog-audit 角色降级）——今日至少 2/3 未修复，无 Saturnus 机制强制闭环。
+
+**R11 — 维护者门控 CI 复现替代方案** *(Opus 4.7)*
+当 CI 在结构上由维护者专属标签（sglang `run-ci`、类似仓库）门控时，贡献者第一条回复必须包含本地测试日志粘贴（命令 + 最后 30 行）作为替代工件。此后 ≥7 天内无进一步标签 bump 评论；后续活动必须是代码变更或优雅关闭。证据锚：sglang #23881 在 2.5 小时内三次 label-bump 评论、sglang #23892 未验证数字 PR 描述。
+
+**R13 — 审计可观测性完整性** *(Opus 4.7 + Codex 5.3-codex 一致同意)*
+PASS 审计判决仅在以下条件下有效：(a) 审计员通过至少一次经验证的读取证明了证据访问，且 (b) 审计的 stderr/失败签名被捕获在综合结果中。若主检查失败，审计员必须记录精确失败签名、列举未验证维度，并禁止 PASS 判决。伴侣运行时（Codex、Gemini）必须向上游循环暴露非零退出和空 stdout。证据锚：今日 Codex `bwrap` 阻塞 + Gemini 429，加 `gemini-companion.mjs:cmdTask` stderr 吞没 bug。
+
+（R12 — 状态诚实不变量——昨日提议，保留待 R9 实现。）
+
+## 审计员分歧
+
+经典分歧轴（相同证据上的 PASS vs FAIL）在今天无法观察，因为两名审计员没有证据。更丰富的分歧轴是**每个审计员如何处理认识论失败**：
+
+- **Opus 4.7** 具有完整访问权限，生成了带具体 commit SHA 的逐发现判决。
+- **Codex gpt-5.3-codex** 零访问权限，生成了 UNVERIFIABLE 判决加五条治理提案（审计预检完整性门、强制证据包契约、降级模式审计协议、证据溯源校验和、行可寻址输出要求）。这是*正确的*降级行为——证据缺失时拒绝 PASS。
+- **Gemini 3.1-pro-preview** 从未产生输出；伴侣运行时吞没 429 并返回空 stdout，这是*不正确的*降级行为——上游循环会当作 Gemini 默许沉默继续。
+
+可操作信号：降级模式行为在不同审计员实现间存在差异，至少有一个（Gemini 运行时）静默 fail-open。R13 修复此问题。
+
+## 三模型杠杆检查（24h）
+
+无法执行。`three_model_24h` 连续第二天缺失于 `/tmp/evolution-state-2026-04-29.json`。R5 = FAIL，见发现 2。
+
+## 运作良好的部分
+
+- **禁用短语合规性很强。** 在 470 个 mdx 文件中"Recently"、"Lately"、"随着AI的发展"零匹配。起草 agent 在 PullRequest.md §6 下无需强制执行即可遵守。
+- **VelesDB #672 是教科书式 R4 成功。** 维护者在 2026-04-26 → 2026-04-29 期间驱动了 4 轮评审；贡献者每次都 push 到同一分支（commits `997c5bc`、`3066f6a`、`13b7564`、`60b24dc`）。PullRequest.md §5 R1-诚实性在 2026-04-29T06:59:03Z 回复中堪称典范：每条声明都引用了 SHA 或 `file:line`。
+- **lawpy #5 自我纠正。** 作者注意到 triple-review-chain 跳过和错误的 `Closes #2` 关联，用明确理由优雅关闭而非掩盖。这是 R8 反模式*被捕获*，而非发生。
+- **Codex 审查链捕获真实漂移。** 唯一的 `review-failed` 翻译（slug `test-review-chain-1777460490`）被正确标记：Codex 发现中文描述将"Codex+Gemini review chain fires"软化为模糊意译，并添加了英文源中不存在的 `hIE` 和 `hero_image`。链在工作。其上方的量控门不工作。
+- **全部 13 个 cron 任务返回包装器级 `ok`。** 包装器本身未崩溃；内部 agent 遥测层是故障模式。在不触碰 cron 调度器的情况下可解决。
+
+## 开放问题（待人类决策）
+
+1. **每日演化周期是否应对基础设施异构性硬阻塞？** 今日 2/3 审计员因无关原因（沙箱/容量）失败。综合仍通过 Opus 单独产生了可操作发现。选项 A：声明 <2 个工作审计员的周期为 `cycle-incomplete` 并重新运行。选项 B：接受降级综合为今日模式。Opus 和 Codex 隐含地不同意——Codex 会想要硬阻塞（审计预检完整性门）；Opus 无论如何都产生了输出。
+
+2. **`three_model_24h` 是否值得工程成本，还是应该退役？** 连续两个周期未能生成该字段。要么规则有约束力（实现聚合、失败关闭），要么规则是装饰性的（从 Beatless/README.md 移除）。当前状态——纸面有规则、无执行——是最坏结果。
+
+3. **对于标签门控 CI 仓库（sglang 等），正确礼仪是什么？** R11 提议"第一条回复必须包含本地测试日志粘贴，然后 ≥7 天内无 bumps"。这是正确节奏，还是政策应有不同（例如 72h 一次 bump，7d 优雅关闭）？
+
+4. **是否继续将 `gemini-3.1-pro-preview` 留在审计员轮换中？** 今日 429 是上游容量耗尽，非配置问题。若此情况反复，fall back 到 `gemini-2.5-pro` 用于审计角色，将 `3.1-pro-preview` 保留用于更便宜恢复的写作任务。
