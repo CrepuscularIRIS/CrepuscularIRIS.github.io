@@ -1,0 +1,54 @@
+---
+title: "Recurrent Action Transformer with Memory"
+description: "RATE extends transformers with recurrent memory to solve the context-length bottleneck in POMDP offline RL."
+publishDate: "2026-04-30"
+updatedDate: "2026-04-30"
+category: paper-spotlight
+tags: [paper, offline-rl, transformer, pomdp, memory]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=kByN4v0M3e"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+## One-Line Summary
+
+RATE extends transformers with a recurrent memory mechanism to solve the context-length bottleneck in POMDP offline RL, directly relevant to world-representation research.
+
+## Why This Is Worth Your Time
+
+Offline RL on partially observable tasks has a structural problem: you need long history to infer hidden state, but transformers pay **quadratic attention cost** for every extra timestep. Most practitioners cap context length and hope the policy can get by with a sliding window. That is not a solution — it is a compromise.
+
+RATE treats the compromise as a design flaw and replaces it with a **recurrent memory module** inside the transformer. The result is a policy that can reason over arbitrarily long histories without exploding compute. If you care about agents that build and maintain world models from streaming experience, this architecture is a concrete step toward that goal.
+
+## Core Method (3-Minute Version)
+
+Standard offline RL with transformers works like this: collect a replay buffer, slice fixed-length trajectories, feed them into a causal transformer, and train the policy head. The hidden-state problem is ignored by assumption — the Markov property is enforced by context-window fiat.
+
+In POMDPs the hidden state matters. A door that was open three steps ago changes what actions are valid now. A transformer with a **4-step window** will miss that cue entirely. A transformer with a **4000-step window** will grind to a halt.
+
+RATE keeps the transformer backbone but adds a **recurrent memory cell** that sits between the attention layers and the policy head. At each timestep the cell receives the current attention output, updates its internal state via a gating mechanism, and passes the fused representation forward. The key design choice is **selective retention**: the memory learns what to keep and what to discard, rather than caching the full history.
+
+This is not an LSTM stapled to a transformer. The memory operates on the same high-dimensional representations that the attention layers produce, so the policy head sees a unified embedding that blends **local context** (from self-attention) and **global history** (from the recurrent state). The training objective remains standard offline RL — behavior cloning plus Q-learning or similar — so the memory is trained end-to-end to improve policy performance, not to reconstruct history.
+
+## Key Results
+
+- **Proposes RATE**, a transformer-based offline RL architecture with recurrent memory for information retention.
+- Evaluated on **memory-intensive environments**: ViZDoom-Two-Colors, T-Maze, Memory Maze, and Minigrid-Memory.
+
+No concrete benchmark numbers were available in the extracted source. The abstract appears truncated, so full performance tables and ablations remain unseen.
+
+## Limits and Unanswered Questions
+
+- **Missing comparisons.** The source does not show how RATE stacks up against prior memory-augmented RL methods — R2D2, RNN-based offline RL, or external-memory architectures like MERLIN. Without these baselines it is hard to judge whether the recurrent memory is the right abstraction or merely a different one.
+- **Truncated abstract.** Full benchmark results, ablation studies, and sample-efficiency curves were not visible. The paper may contain them, but the extracted note does not.
+- **Training stability.** Recurrent modules inside transformers are known to complicate optimization. Whether RATE requires curriculum scheduling, special initialization, or careful gradient clipping is not discussed here.
+- **Scaling behavior.** The environments tested are relatively small. Whether the memory mechanism holds up in high-dimensional visual domains with long-horizon tasks — the settings where POMDPs really hurt — is an open question.
+
+## Further Reading
+
+- For the POMDP motivation: *Memory-based control with recurrent neural networks* (Hausknecht & Stone, 2015) and the R2D2 line of work show why memory matters in RL.
+- For transformer alternatives: the Decision Transformer and Trajectory Transformer families avoid recurrence but pay the context-length price; RATE is a direct counter-proposal.

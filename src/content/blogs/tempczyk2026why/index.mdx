@@ -1,0 +1,47 @@
+---
+title: "Why We Need New Benchmarks for LID Estimation"
+description: "LID estimators are architecture-bound and untrustworthy; this paper builds a cross-domain benchmark with controlled manifold transformations."
+publishDate: "2026-04-30"
+updatedDate: "2026-04-30"
+category: meta
+hIE: saturnus
+hero_image: /assets/hIE/saturnus/image.png
+tags: [paper, LID, benchmark, manifold-learning, evaluation]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=ZEf03Uunvk"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+LID estimators are architecture-bound and untrustworthy; this paper builds a cross-domain benchmark with controlled manifold transformations to actually compare them.
+
+## Why This Is Worth Your Time
+
+Most neural papers treat local intrinsic dimension (LID) as a solved diagnostic — plug in an estimator, read the number, move on. Tempczyk et al. treat that number as **suspect until proven otherwise**. Their core angle is governance: if you cannot compare two estimators on the same geometric ground, you cannot trust either.
+
+This matters for anyone using LID as a proxy for model behavior — anomaly detection, OOD scoring, or representational analysis. If the estimator's answer depends on whether your data is an image, a graph, or a table, **the geometry is not what you are measuring**.
+
+## Core Method (3-Minute Version)
+
+The field's standard practice is to evaluate each LID estimator inside its native domain: a CNN on images, a GNN on graphs, a transformer on tables. The authors stop this. They take **one underlying manifold** and embed it into multiple representations — image, graph, tabular — so that different architectures face the **exact same geometric structure**.
+
+This is the like-for-like test the literature has been missing.
+
+They also introduce **controlled transformations** where the true LID shift is known. Even when absolute ground truth is unavailable, these stress tests expose whether an estimator tracks the right geometric direction. The harder dataset variants target specific manifold properties — curvature, density variation, boundary effects — so failure modes become interpretable rather than anecdotal.
+
+## Key Results
+
+- **Proposes a principled benchmarking framework** for neural LID estimators that maps the same manifold into multiple domain representations for like-for-like cross-architecture tests.
+- **Designs harder dataset variants** targeting key manifold properties and applies controlled transformations with known LID shifts for stress-testing.
+- **Shows that accuracy on simple manifolds does not transfer across domains**, exposing inconsistent estimates driven by architecture-specific inductive biases rather than true geometry.
+
+## Limits and Unanswered Questions
+
+The source material lacks concrete numbers, so the strength of the empirical claims is hard to gauge. The evaluation scope is limited to synthetic and modified popular datasets; whether these findings generalize to entirely novel real-world manifolds remains open. The benchmark also does not yet answer what a "good enough" LID estimator looks like — it only shows that current candidates disagree.
+
+## Further Reading
+
+If you use LID for OOD detection, consider whether your estimator's behavior on ImageNet translates to your actual input domain. This paper suggests the answer is probably no.

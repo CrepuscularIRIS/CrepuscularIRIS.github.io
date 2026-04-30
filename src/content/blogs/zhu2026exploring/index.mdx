@@ -1,0 +1,50 @@
+---
+title: "STARS: Inference-Time Stiefel Steering for Diverse LLM Generation"
+description: "A training-free inference-time method that uses Stiefel-manifold optimization to make concurrent LLM generations geometrically diverge, directly attacking mode collapse without retraining."
+publishDate: "2026-04-30"
+updatedDate: "2026-04-30"
+category: paper-spotlight
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+tags: [paper, LLM, diversity, Stiefel-manifold, inference-time, mode-collapse]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=v0QOVSVPtq"]
+confidence: medium
+status: draft
+---
+
+## One-Line Summary
+
+STARS is a training-free inference-time method that uses Stiefel-manifold optimization to make concurrent LLM generations geometrically diverge, directly attacking mode collapse without retraining.
+
+## Why This Is Worth Your Time
+
+Most diversity tricks for LLMs are either baked into training (expensive, irreversible) or bolted on at the surface (temperature scaling, top-p sampling) without touching the model's internal geometry. STARS sits in a rare middle ground: it intervenes on hidden activations during inference, yet it is principled enough to guarantee orthogonality of steering directions via manifold optimization.
+
+That matters because mode collapse is not just a sampling problem. When multiple parallel decoding runs all chase the same high-probability basin, they produce near-identical reasoning paths. STARS forces those paths to occupy genuinely different subspaces of the activation manifold — a structural fix, not a cosmetic one.
+
+## Core Method (3-Minute Version)
+
+At each generation step, STARS gathers the hidden activations from several parallel decoding runs and computes steering vectors that push those activations as far apart as possible. The key geometric constraint is the **Stiefel manifold**: the steering directions are forced to stay mutually orthogonal, so the interventions cannot collapse into the same subspace. This turns activation steering from a heuristic knob into an exploration engine with a volume-maximization objective.
+
+The result is a principled, geometry-driven way to make multiple LLM outputs explore different reasoning paths — all without any training or fine-tuning.
+
+## Key Results
+
+- **Joint Stiefel optimization**: STARS optimizes multiple additive steering directions on the Stiefel manifold concurrently at inference time.
+- **Orthogonality guarantee**: The Stiefel constraint ensures that parallel generation runs follow genuinely diverse activation paths rather than minor variants of the same trajectory.
+- **Volume maximization**: The objective maximizes the geometric volume of the steered activations, turning the steering mechanism into an explicit exploration engine.
+
+*Concrete diversity metrics (e.g., Self-BLEU, distinct-n, or downstream task gains) were not available in the source material reviewed.*
+
+## Limits and Unanswered Questions
+
+- **Empirical gaps**: The abstract-level source contained no quantitative numbers on diversity metrics or downstream task improvements. We do not yet know how much STARS actually helps in practice.
+- **Overhead unknown**: Stiefel optimization per token across concurrent decoding streams adds a non-trivial computational cost. The latency and memory trade-offs are unquantified.
+- **Fidelity risk**: Pushing activations off the high-probability manifold to maximize geometric spread may increase hallucination or factual drift. The effect on accuracy remains unstudied.
+
+## Further Reading
+
+- The concept of activation steering originates from representation-engineering work (e.g., Zou et al., "Representation Engineering"); STARS extends it with a differential-geometry objective.
+- Concurrent decoding with diversity objectives has been explored via mixture-of-experts and branching strategies, but rarely with a formal manifold constraint.

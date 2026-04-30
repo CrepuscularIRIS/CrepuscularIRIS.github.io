@@ -1,0 +1,54 @@
+---
+title: "Recurrent Action Transformer with Memory"
+description: "RATE 通过循环记忆扩展 Transformer，解决 POMDP 离线 RL 中的上下文长度瓶颈。"
+publishDate: "2026-04-30"
+updatedDate: "2026-04-30"
+category: paper-spotlight
+tags: [paper, offline-rl, transformer, pomdp, memory]
+language: zh
+draft: true
+sources: ["https://openreview.net/forum?id=kByN4v0M3e"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+## 一句话摘要
+
+RATE 为 Transformer 引入循环记忆机制，解决 POMDP 离线强化学习中的上下文长度瓶颈，与世界表征研究直接相关。
+
+## 为什么选这篇
+
+部分可观测环境下的离线强化学习有一个结构性难题：推断隐藏状态需要长历史，但 Transformer 的**自注意力成本随序列长度平方增长**。多数实践者选择限制上下文窗口，指望策略靠滑动片段蒙混过关。这不是解决方案，是妥协。
+
+RATE 将这种妥协视为设计缺陷，用 Transformer 内部的**循环记忆模块**取而代之。策略因此能在不爆炸计算量的前提下，对任意长的历史进行推理。如果你关心智能体如何从持续经验中构建并维护世界模型，这篇论文是朝该目标迈出的具体一步。
+
+## 核心方法（3 分钟版）
+
+标准 Transformer 离线 RL 的流程是：收集回放数据，切成固定长度轨迹，输入因果 Transformer，训练策略头。隐藏状态问题被假设抹除——通过上下文窗口强行满足马尔可夫性。
+
+在 POMDP 中隐藏状态至关重要。三步前打开的门，会改变当下合法动作集合。一个**4 步窗口**的 Transformer 会完全漏掉这个线索。一个**4000 步窗口**的 Transformer 则会直接卡死。
+
+RATE 保留 Transformer 主干，但在注意力层与策略头之间加入**循环记忆单元**。每一步，该单元接收当前注意力输出，通过门控机制更新内部状态，再将融合表示向前传递。关键设计是**选择性保留**：记忆学习该保留什么、该丢弃什么，而非缓存全部历史。
+
+这不是把 LSTM 钉到 Transformer 上。记忆直接操作注意力层产出的高维表示，策略头看到的是**局部上下文**（来自自注意力）与**全局历史**（来自循环状态）的统一嵌入。训练目标仍是标准离线 RL——行为克隆加 Q 学习或类似变体——因此记忆端到端地以提升策略性能为目标训练，而非重建历史。
+
+## 关键结果
+
+- 提出 **RATE**，一种基于 Transformer 的离线 RL 架构，具备用于信息保留的循环记忆。
+- 在**记忆密集型环境**上评估：ViZDoom-Two-Colors、T-Maze、Memory Maze、Minigrid-Memory。
+
+来源中未提供具体 benchmark 数字。摘要似乎被截断，完整性能表格与消融实验尚不可见。
+
+## 局限与未回答的问题
+
+- **缺少对比。** 来源未展示 RATE 与先前记忆增强 RL 方法——R2D2、基于 RNN 的离线 RL、或 MERLIN 等外部记忆架构——的对比。没有这些基线，很难判断循环记忆是否是正确的抽象，抑或只是另一种不同的抽象。
+- **摘要截断。** 完整 benchmark 结果、消融研究和样本效率曲线均不可见。论文本身可能包含这些内容，但提取笔记未能覆盖。
+- **训练稳定性。** Transformer 内部嵌入循环模块已知会加剧优化难度。RATE 是否需要课程调度、特殊初始化或谨慎的梯度裁剪，此处未作讨论。
+- **扩展行为。** 测试环境规模相对较小。记忆机制在**高维视觉域 + 长时程任务**——POMDP 真正造成痛苦的场景——中是否仍然成立，仍是开放问题。
+
+## 延伸线索
+
+- POMDP 动机方面：Hausknecht & Stone (2015) 关于基于记忆的循环神经网络控制的工作，以及 R2D2 系列，解释了为何记忆在 RL 中不可或缺。
+- Transformer 替代路线：Decision Transformer 与 Trajectory Transformer 家族回避循环但付出上下文长度代价；RATE 是直接的对案。
