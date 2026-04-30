@@ -1,0 +1,62 @@
+---
+title: "When to Retrieve During Reasoning"
+description: "Reasoning-aware retrieval that injects evidence mid-chain instead of pre-reasoning, solving the fundamental RAG-misalignment for long CoT models."
+publishDate: "2026-04-30"
+updatedDate: "2026-04-30"
+category: paper-spotlight
+tags: [paper, RAG, retrieval, reasoning, CoT, long-CoT, uncertainty]
+language: en
+draft: true
+sources: ["https://arxiv.org/abs/2604.26649"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+# When to Retrieve During Reasoning
+
+**One-line summary:** Reasoning-aware retrieval that injects evidence mid-chain instead of pre-reasoning, solving the fundamental RAG-misalignment for long CoT models.
+
+## Why This Is Worth Your Time
+
+Standard RAG front-loads all evidence before the first reasoning token is generated. That design assumes you can predict every knowledge gap upfront. But models like DeepSeek-R1 and o1 routinely produce thousands of tokens of chain-of-thought, and their knowledge needs shift unpredictably as the chain unfolds. ReaLM-Retrieve treats retrieval as a **decision made during reasoning**, not a pre-flight checklist. If this works at scale, it rewrites the retrieval contract for every long-CoT system.
+
+I flag this because the misalignment between static retrieval and dynamic reasoning is one of the quietest bottlenecks in current agent pipelines. Fixing it at the step level, rather than the query level, is the right granularity.
+
+## Core Method (3-Minute Version)
+
+The paper proposes **ReaLM-Retrieve**, an adaptive retrieval framework that operates inside an ongoing reasoning chain.
+
+**Step 1: Monitor uncertainty at each reasoning step.** The system tracks how confident the model is about the current inference step. High uncertainty signals a potential knowledge gap.
+
+**Step 2: Decide whether to retrieve.** A learned intervention policy evaluates whether external evidence would actually help the ongoing reasoning, not just whether the model is uncertain. This avoids noisy retrievals that derail the chain.
+
+**Step 3: Integrate without restarting.** Retrieved evidence is woven into the current reasoning state without discarding the tokens already generated. The chain continues from where it left off, rather than beginning anew.
+
+The key shift is **temporal**: retrieval timing aligns with the model's actual knowledge gaps as they emerge, rather than front-loading everything before reasoning starts.
+
+## Key Results
+
+- **Step-level uncertainty detection** identifies knowledge gaps at reasoning-step granularity, finer than traditional query-level or passage-level approaches.
+- **Retrieval intervention policy** learns when external evidence maximally benefits ongoing reasoning, filtering out low-value retrievals.
+- **Efficiency-optimized integration** reduces per-retrieval overhead by **3.2×** compared to naive integration strategies.
+- **No concrete numbers in source** on end-task accuracy or benchmark comparisons — the paper appears to be an early-stage technical report.
+
+## Limits and Unanswered Questions
+
+The extracted source did not list explicit limitations, but the gaps are visible:
+
+- **No end-to-end accuracy numbers.** The 3.2× efficiency gain is an integration-cost metric, not a task-performance metric. We don't know whether adaptive retrieval actually produces better answers than static RAG.
+- **Policy learning details are sparse.** How is the intervention policy trained? Is it fine-tuned on human annotations, learned from outcome reward, or distilled from a larger model? The training recipe matters for reproducibility.
+- **Scope of reasoning chains tested.** Long CoT can mean hundreds or thousands of steps. The paper doesn't clarify which regime they target, and step-level monitoring may behave differently at scale.
+- **Retrieval source assumptions.** The method assumes a retriever exists and is well-calibrated. If the retriever itself is noisy, the intervention policy may compound errors rather than filter them.
+
+## Further Reading
+
+- Self-RAG (Asai et al., 2023) — an earlier attempt at adaptive retrieval, but at the passage level rather than the reasoning-step level.
+- The long-CoT scaling literature (DeepSeek-R1, o1) — for context on why static retrieval is increasingly mismatched to modern reasoning models.
+
+---
+
+*Confidence: medium — the idea is well-motivated and the efficiency claim is concrete, but the absence of end-task accuracy numbers and limited methodological detail in the available source means the full picture is still incomplete.*

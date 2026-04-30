@@ -1,0 +1,60 @@
+---
+title: "Domain-Adapted SLMs for Clinical Triage"
+description: "Open-source SLMs can be domain-adapted to serve as reliable, privacy-preserving clinical triage decision-support tools, with Qwen2.5-7B showing the strongest balance."
+publishDate: "2026-04-30"
+updatedDate: "2026-04-30"
+category: paper-spotlight
+tags: [paper, clinical-triage, SLM, domain-adaptation, ESI, Qwen]
+language: en
+draft: true
+sources: ["https://arxiv.org/abs/2604.26766"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+## One-Line Summary
+
+Open-source small language models (SLMs) can be domain-adapted to serve as reliable, privacy-preserving clinical triage decision-support tools, with **Qwen2.5-7B** showing the strongest balance of accuracy and efficiency.
+
+## Why This Is Worth Your Time
+
+Two angles make this paper stand out.
+
+**First, it tackles a real deployment constraint.** Most clinical AI work chases benchmark scores on massive models. This team asks a harder question: can an open-source SLM run locally in a hospital, protect patient privacy, and still make triage decisions clinicians trust? That reframes the goal from "best possible accuracy" to "best *acceptable* accuracy under institutional constraints." It is a systems-level question, not a leaderboard question.
+
+**Second, the domain-adaptation pipeline is unusually thorough.** The authors do not just prompt a base model. They build expert-curated and silver-standard pediatric triage datasets, then fine-tune at scale. That combination of clinical input engineering plus supervised adaptation is the kind of end-to-end rigor rarely seen in SLM papers.
+
+## Core Method (3-Minute Version)
+
+The Emergency Severity Index (ESI) is a five-level triage scale used in emergency departments. Level 1 means "resuscitate immediately"; Level 5 means "non-urgent." Getting it wrong has real consequences: undertriage delays critical care; overtriage wastes resources.
+
+The authors test multiple open-source SLMs as ESI predictors. They experiment with different input formats — raw clinical notes, structured fields, and **clinical vignettes** (concise, standardized triage summaries). Vignettes win. A well-structured prompt with a condensed case summary outperforms dumping the full record into the context window.
+
+Once the input format is fixed, they pick **Qwen2.5-7B** as the backbone. It is not the largest model they test, but it shows the best accuracy-stability-efficiency trade-off. Then they domain-adapt it in two stages:
+
+1. **Expert-curated data** — pediatric triage cases labeled by clinicians.
+2. **Silver-standard data** — larger-scale synthetic or weakly-labeled pediatric triage data used to expand coverage.
+
+The fine-tuned model is evaluated on discordance (how often it disagrees with human experts) and clinically significant errors (disagreements that would actually change patient outcomes). Both metrics drop substantially after adaptation.
+
+## Key Results
+
+- **Clinical vignettes** yielded the most accurate ESI predictions across multiple SLMs and prompting pipelines. Format matters as much as model size.
+- **Qwen2.5-7B** demonstrated the best balance of accuracy, stability, and computational efficiency among the tested SLMs. It is the practical choice, not the theoretical best.
+- **Large-scale domain adaptation** using expert-curated and silver-standard pediatric triage data substantially reduced discordance and clinically significant errors in the fine-tuned Qwen2.5-7B models.
+
+*Note: the source material did not contain concrete numerical results (e.g., exact accuracy percentages or error-rate reductions). The claims above are qualitative summaries of the paper's reported findings.*
+
+## Limits and Unanswered Questions
+
+- **No concrete numbers in the source extract.** We cannot report exact accuracy, F1, or error-reduction rates without reading the full PDF. The improvements are described as "substantial" but remain unquantified here.
+- **Pediatric focus.** The domain-adaptation data is pediatric. Whether the same pipeline generalizes to adult emergency departments is an open question.
+- **Silver-standard quality.** The paper uses synthetic or weakly-labeled data at scale. The reliability of that data — and how much it contributes versus the expert-curated portion — is not broken out in the extract.
+- **Deployment validation.** The study evaluates model predictions against expert labels. It does not appear to report a live clinical pilot (prospective patient outcomes, clinician-in-the-loop feedback, or integration with hospital IT systems).
+
+## Further Reading
+
+- The **Qwen2.5** model family (Alibaba Cloud) is the backbone here. If you are building domain-specific SLMs, its Apache-2.0 license and efficient inference make it a pragmatic starting point.
+- For a broader view of clinical NLP evaluation, look at work on **ESI inter-rater reliability** in human triage — it sets the ceiling any model must approach.
