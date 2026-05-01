@@ -1,0 +1,46 @@
+---
+title: "Probabilistic Conformal Prediction with Approximate Conditional Validity"
+description: "Extends conformal prediction to approximate conditional coverage via estimated conditional distributions, addressing a critical gap in uncertainty quantification under heteroscedasticity."
+publishDate: "2026-05-01"
+updatedDate: "2026-05-01"
+category: paper-spotlight
+tags: [paper, conformal-prediction, uncertainty-quantification, heteroscedasticity, conditional-coverage]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=Nfd7z9d6Bb"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+## One-Line Summary
+
+Plassier et al. extend conformal prediction to achieve **approximate conditional coverage** by leveraging estimated conditional distributions, directly addressing the long-standing limitation that standard conformal prediction only guarantees marginal coverage regardless of input heteroscedasticity.
+
+## Why This Is Worth Your Time
+
+Conformal prediction has become the de facto standard for distribution-free uncertainty quantification, but its marginal coverage guarantee is a blunt instrument. A 90% prediction set that is correct 90% of the time *on average* can still be systematically overconfident on hard inputs and wastefully conservative on easy ones. This paper tackles the conditional coverage problem head-on: rather than demanding the impossible (exact conditional validity without distributional assumptions), it derives a practical framework where the quality of approximate conditional guarantees is **explicitly bounded by the total variation distance** between the true and estimated conditional distributions. If you care about calibration that actually respects local uncertainty, this is the most principled progress I have seen in this space.
+
+## Core Method (3-Minute Version)
+
+Standard conformal prediction constructs prediction sets by calibrating on a holdout set, ensuring that the true label falls within the set with probability $1-\alpha$ **marginally** over the data distribution. The catch: this guarantee averages over all inputs, meaning coverage can collapse on specific subpopulations.
+
+Plassier et al.'s move is conceptually simple but theoretically demanding. They assume access to an estimate $\hat{P}(Y|X)$ of the true conditional distribution $P(Y|X)$. Using this estimate, they construct prediction sets that adapt their size and shape to the local uncertainty at each input point $X$. The key theoretical result: the **deviation from exact conditional coverage** is controlled by the total variation distance between $P(Y|X)$ and $\hat{P}(Y|X)$. If your conditional density estimator is accurate in TV distance, your prediction sets are approximately conditionally valid. If it is poor, the bounds degrade gracefully rather than collapsing.
+
+This trades the unattainable goal of exact conditional validity for a **practical, verifiable approximation** with explicit non-asymptotic bounds.
+
+## Key Results
+
+- **Non-asymptotic coverage bounds** tied to total variation distance between true and estimated conditional distributions
+- **Approximately conditional coverage** rather than only marginal coverage, with explicit dependence on estimation quality
+- **Effectiveness under high heteroscedasticity** demonstrated through extensive simulations (no concrete numbers available in source)
+
+## Limits and Unanswered Questions
+
+Exact conditional guarantees remain infeasible without strong distributional assumptions — this is a feature, not a bug, but practitioners should not mistake approximate conditional coverage for the real thing. The coverage quality hinges entirely on the accuracy of the conditional distribution estimate, and the paper does not provide concrete guidance on which density estimators achieve sufficiently small TV distance in practice. The simulation results are promising but lack specific quantitative benchmarks for direct comparison.
+
+## Further Reading
+
+- Angelopoulos & Bates (2021), "A Gentle Introduction to Conformal Prediction and Distribution-Free Uncertainty Quantification" — the standard entry point
+- Barber et al. (2021) on the impossibility of exact conditional coverage without assumptions

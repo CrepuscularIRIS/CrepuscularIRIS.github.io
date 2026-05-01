@@ -1,0 +1,72 @@
+---
+title: "Offline MBO via Learning to Rank"
+description: "Reframes offline MBO as a learning-to-rank problem to sidestep the OOD overestimation trap that plagues regression-based surrogate models."
+publishDate: "2026-05-01"
+updatedDate: "2026-05-01"
+category: paper-spotlight
+tags: [paper, offline-mbo, learning-to-rank, iclr-2025, surrogate-model]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=sb1HgVDLjN"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+# Offline Model-Based Optimization by Learning to Rank
+
+**Authors:** Rong-Xi Tan et al. | **Venue:** ICLR 2025 | **Link:** [OpenReview](https://openreview.net/forum?id=sb1HgVDLjN)
+
+---
+
+## One-Line Summary
+
+Reframes offline MBO as a learning-to-rank problem to sidestep the out-of-distribution overestimation trap that plagues regression-based surrogate models.
+
+---
+
+## Why This Is Worth Your Time
+
+Offline model-based optimization (MBO) is the problem of finding the best design when you only have a fixed, pre-collected dataset and cannot query the true black-box function again. It is everywhere: drug discovery, chip design, material science. The standard pipeline trains a surrogate regressor via MSE, then runs gradient ascent on it. The flaw is obvious in hindsight: **the regressor hallucinates high scores for designs it has never seen**, and the optimizer chases those hallucinations straight into garbage.
+
+This paper's move is conceptually simple but structurally deep. Instead of asking "what is the absolute score?", it asks "which design is better?". That reframing collapses the OOD overestimation problem because **ranking is a relative task, and relative comparisons generalize far more robustly than absolute predictions**. The optimizer then searches on a preference surface rather than a brittle score landscape. If you work on any domain where data is expensive and exploration is impossible, this is a paper to internalize.
+
+---
+
+## Core Method (3-Minute Version)
+
+The standard offline MBO pipeline has two stages: (1) fit a surrogate model to the static dataset, (2) optimize designs against that surrogate. The failure mode occurs in the gap between these stages. A regression surrogate trained with MSE must extrapolate to designs far outside the training distribution, and neural networks are notoriously overconfident extrapolators. When the surrogate overestimates a novel design, the optimizer has no way to know it is being lied to.
+
+Tan et al. replace the regression objective with a **ranking objective**. The surrogate is trained to correctly order pairs of designs by their observed quality, not to predict their exact scores. The intuition is that knowing "A is better than B" is a much easier and more stable generalization target than guessing "A is 0.847 and B is 0.812". A ranker can be wrong about absolute magnitudes while still preserving the correct search gradient.
+
+The optimizer then operates on this learned preference structure. Rather than ascending a scalar score field, it navigates a **relative quality landscape** where the direction of improvement is well-defined even when absolute values are not. This is a classic example of changing the problem representation to make the downstream task tractable.
+
+---
+
+## Key Results
+
+- **Proposed method:** Replaces MSE regression with a ranking objective for the surrogate model in offline MBO.
+- **Target failure mode:** Directly addresses OOD overestimation, the core pathology that misleads gradient-based optimizers in prior work.
+- **Venue:** Evaluated and accepted at ICLR 2025 (A-tier conference).
+
+**Note:** The abstract in the source material is truncated, and no concrete quantitative results were available at curation time. The empirical scope and exact benchmark gains remain to be verified against the full paper.
+
+---
+
+## Limits and Unanswered Questions
+
+- **Truncated source:** The abstract was cut off mid-sentence in the available source, so the full empirical evaluation — datasets, baselines, and exact metrics — is unknown at this stage.
+- **No concrete numbers:** Without access to the full paper or supplementary material, I cannot assess whether the ranking approach delivers consistent gains across diverse task types or primarily on specific problem structures.
+- **Open question:** How does the ranking surrogate behave when the training data is extremely sparse or heavily biased toward low-quality designs? The robustness of pairwise preference learning under strong distributional skew is non-trivial.
+
+---
+
+## Further Reading
+
+- **Trabucco et al., 2021** — *Conservative Objective Models for Effective Offline Model-Based Optimization* (COMs): a regularization-based approach to the same OOD overestimation problem. Comparing COMs' explicit penalty against this paper's implicit ranking robustness would be instructive.
+- **Brookes & Listgarten, 2018** — *Design by adaptive sampling* (DbAS): an early generative-model approach to offline MBO that sidesteps regression entirely by learning a distribution over high-performing designs.
+
+---
+
+**Curated:** 2026-05-01 | **Reading difficulty:** ⭐⭐⭐☆☆ | **Recommendation:** 🔥🔥🔥🔥☆
