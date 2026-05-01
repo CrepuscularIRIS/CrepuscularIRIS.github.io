@@ -1,0 +1,61 @@
+---
+title: "ELMUR: External Layer Memory for Long-Horizon RL"
+description: "A transformer with per-layer external LRU memory extends RL horizons 100,000x beyond the attention window, tackling long-horizon partial observability in robotics."
+publishDate: "2026-04-30"
+updatedDate: "2026-04-30"
+category: paper-spotlight
+tags: [paper, reinforcement-learning, long-horizon, memory, transformer, robotics]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=bm3rbtEMFj"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+## One-Line Summary
+
+A transformer with per-layer external LRU memory extends effective RL horizons up to **100,000×** beyond the attention window, directly addressing the long-horizon partial observability bottleneck in robotics.
+
+## Why This Is Worth Your Time
+
+Long-horizon reinforcement learning has a memory problem that is deeper than context length. Even if you feed a transformer 128k tokens, the policy can still fail on tasks where a critical cue—say, the color of a door seen 50,000 steps ago—determines the correct action now. Standard attention decays or compresses such distant signals into noise.
+
+ELMUR attacks this at the architectural level. By giving **every transformer layer its own persistent memory bank** and updating it with an LRU policy, the model keeps structured long-term storage separate from the rolling attention window. This is not a bigger context window; it is a different memory mechanism entirely. If the claims hold up, it could become a standard component for any embodied agent that must remember across minutes or hours of real-world interaction.
+
+## Core Method (3-Minute Version)
+
+The key idea is **decoupling long-term storage from the attention window**.
+
+In a standard transformer, all history lives in the same self-attention context. As the sequence grows, old tokens get diluted by new ones, and eventually dropped when the context limit is reached. ELMUR changes this by attaching an **external memory embedding matrix** to each layer.
+
+Here is how a layer operates:
+
+1. **Read.** The layer performs **bidirectional cross-attention** between its current hidden states and its dedicated memory slots. This retrieves relevant historical cues without touching the attention window.
+
+2. **Write.** After processing, the layer updates its memory slots. ELMUR supports two update modes:
+   - **LRU replacement**: overwrite the least-recently-used slot with a new summary.
+   - **Convex blending**: merge new information into an existing slot, preserving some older content.
+
+Because every layer has its own bank, the memory hierarchy mirrors the representation hierarchy. Early layers can store low-level sensory patterns; deeper layers store abstract task states. The policy can therefore recall a cue from thousands of steps earlier without paying the quadratic cost of attending over the full trajectory.
+
+## Key Results
+
+- **100,000× horizon extension** — effective memory span reaches up to one hundred thousand times the native attention window, per the authors' claim.
+- **100% success rate** on the evaluated long-horizon tasks (reported in the truncated abstract; full benchmark list unavailable).
+- **Bidirectional cross-attention** between transformer layers and structured external memory embeddings is the core mechanism enabling the above.
+
+> **Caveat:** The source abstract is truncated. Exact task names, baseline comparisons, and standard deviation numbers are missing. Treat the 100% figure as a directional signal, not a verified bound.
+
+## Limits and Unanswered Questions
+
+- **Truncated evidence.** The full paper and quantitative tables are not in the provided excerpt. We do not know which baselines were beaten, or by what margin.
+- **LRU fidelity under pressure.** When memory slots are full and history is extreme, LRU replacement or convex blending may discard fine-grained details that become relevant later. The trade-off curve between slot count and recall accuracy is unexplored here.
+- **Cost opacity.** The 100,000× claim lacks an explicit compute or memory cost breakdown. External memory adds parameters and cross-attention overhead; the wall-clock penalty on a standard GPU setup is unstated.
+- **Write policy robustness.** The abstract mentions two update modes (replace vs. blend) but does not clarify how the policy chooses between them, or whether this choice is learned or hand-tuned.
+
+## Further Reading
+
+- For a broader survey of memory-augmented transformers in RL, see the RWKV and RetNet lines of work on sub-quadratic sequence modeling—though neither targets per-layer external banks.
+- The OpenReview page for this submission may eventually host the full PDF and reviewer discussion: https://openreview.net/forum?id=bm3rbtEMFj

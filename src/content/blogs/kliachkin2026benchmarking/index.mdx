@@ -1,0 +1,67 @@
+---
+title: "Fairness-Constrained DNNs: A Real-World Benchmark"
+description: "First large-scale benchmark for fairness-constrained DNN training on US Census data, comparing three stochastic approximation algorithms."
+publishDate: "2026-04-30"
+updatedDate: "2026-04-30"
+category: engineering
+tags: [paper, fairness, constrained-optimization, benchmarking, iclr-2026]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=JxmjzC6syB"]
+confidence: medium
+status: draft
+hIE: methode
+hero_image: /assets/hIE/methode/image.png
+---
+
+# Fairness-Constrained DNNs: A Real-World Benchmark
+
+**Original title:** Benchmarking Stochastic Approximation Algorithms for Fairness-Constrained Training of Deep Neural Networks  
+**Authors:** Kliachkin et al. | **Venue:** ICLR 2026 (OpenReview) | **Code:** https://github.com/humancompatible/train
+
+---
+
+## One-Line Summary
+
+This paper provides the **first large-scale real-world benchmark** for fairness-constrained deep neural network training, implementing and comparing three recently proposed stochastic approximation algorithms on US Census (Folktables) data.
+
+## Why This Is Worth Your Time
+
+Most fairness-aware ML papers stop at small synthetic datasets or toy models. This work does the unglamorous but critical job of **actually running algorithms on real census-scale data** and measuring both optimization convergence and fairness metrics simultaneously.
+
+The deeper value is methodological: fairness constraints in deep learning are theoretically well-studied, but practitioners have had no reliable way to compare approaches. By releasing a Python package with standardized tasks, this paper turns a scattered theoretical literature into an **empirical playing field**.
+
+## Core Method (3-Minute Version)
+
+Fairness-constrained training is fundamentally a **constrained optimization problem**: you want to minimize prediction error *subject to* demographic parity or equalized-odds constraints.
+
+The challenge is that these constraints are non-convex, noisy, and expensive to evaluate at scale. Stochastic approximation algorithms—methods that iteratively project gradients onto feasible regions—are the natural theoretical solution. But until now, **three promising algorithms existed only in proofs**, with no shared implementation or benchmark.
+
+This paper builds on the US Census Folktables dataset (Ding et al., 2021), which provides realistic income prediction tasks with protected attributes like race and sex. The authors implement the three algorithms, standardize evaluation protocols, and compare them across **both optimization performance** (loss convergence) and **fairness improvement** (constraint satisfaction).
+
+The key design choice is treating the benchmark itself as the contribution—not proposing yet another algorithm, but asking *which existing ones actually work*.
+
+## Key Results
+
+- **Introduces a challenging benchmark** for fairness-constrained DNN training built on US Census (Folktables) data
+- **Implements three previously unimplemented algorithms** and compares their stochastic approximation behavior
+- **Evaluates on dual criteria**: optimization performance and fairness improvement metrics
+- **Releases benchmark code as a Python package** at `humancompatible/train`
+
+*Note: The source note contains no concrete quantitative results or performance numbers. The paper likely includes detailed tables not captured in the excerpt.*
+
+## Limits and Unanswered Questions
+
+- **No quantitative numbers in the source excerpt.** The actual performance gaps between algorithms remain unclear without reading the full paper.
+- **Fairness metrics and dataset specifics are sparse.** Which exact Folktables tasks? Which fairness definitions (demographic parity, equalized odds, calibration)? The excerpt doesn't say.
+- **Generalization beyond census data.** A benchmark is only as good as its coverage. Does the same ranking hold on credit scoring, hiring, or healthcare?
+- **Computational cost.** Stochastic approximation with DNN constraints can be expensive. The trade-off between fairness gain and training overhead isn't discussed in the excerpt.
+
+## Further Reading
+
+- **Folktables** (Ding et al., 2021): The US Census-based dataset suite this benchmark builds on—currently the gold standard for fairness benchmarking in the US context.
+- **Stochastic approximation for constrained optimization** (various 2020–2024 works): The theoretical lineage the three algorithms belong to. The paper's related work section likely traces this.
+
+---
+
+**Curated:** 2026-04-30 | **Reading difficulty:** ⭐⭐⭐☆☆ | **Recommendation:** 🔥🔥🔥🔥☆

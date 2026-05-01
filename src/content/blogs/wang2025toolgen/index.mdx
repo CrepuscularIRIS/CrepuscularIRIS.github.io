@@ -1,0 +1,82 @@
+---
+title: "ToolGen: Unified Tool Retrieval & Calling by Generation"
+description: "Replaces retrieval-and-calling with one generative step: each tool is a unique LLM token, eliminating context-length limits for massive tool sets."
+publishDate: "2026-04-30"
+updatedDate: "2026-04-30"
+category: paper-spotlight
+tags: [paper, tool-use, llm, iclr-2025, generation]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=XLMAMmowdY"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+# ToolGen: Unified Tool Retrieval and Calling via Generation
+
+**Authors:** Wang et al. (Renxi Wang, Xudong Han, Lei Ji, Shu Wang, Timothy Baldwin, Haonan Li)  
+**Venue:** ICLR 2025 | **Link:** [OpenReview](https://openreview.net/forum?id=XLMAMmowdY)
+
+---
+
+## One-Line Summary
+
+ToolGen replaces the two-stage "retrieve then call" pipeline with a single generative step: every tool becomes a unique token inside the LLM vocabulary, so the model emits tool calls exactly like it emits any other next-token.
+
+---
+
+## Why This Is Worth Your Time
+
+Most tool-augmented LLMs waste context budget stuffing tool descriptions into the prompt, then pray a separate retriever picks the right ones. ToolGen asks a sharper question: *what if the model already knew every tool by heart?*
+
+The answer is elegant in its brutality. By baking tool knowledge into the model weights through continued pre-training, ToolGen removes the retriever entirely. This is not a marginal tweak — it is a **paradigm shift** from retrieval-augmented generation to pure parametric tool memory. For anyone building agents that must juggle thousands of APIs, the context-length savings alone are worth the read.
+
+---
+
+## Core Method (3-Minute Version)
+
+Traditional tool use works like a librarian who has to fetch books before reading them. The LLM receives a query, a retriever scans a library of tool descriptions, and the top-k matches are stuffed into the prompt. Two problems follow inevitably: context length explodes, and retrieval latency adds a pipeline stage that can fail silently.
+
+ToolGen burns the library and teaches the model to remember every book.
+
+**Step 1 — Tokenize the tool space.** Each tool is assigned a unique special token in the vocabulary. The tool's signature (name, arguments, behavior patterns) is embedded into the token's representation.
+
+**Step 2 — Bake into weights.** The LLM undergoes continued pre-training on tool invocation data. The model learns to predict tool tokens exactly like it predicts ordinary words, building an internal map of tool semantics and argument structures.
+
+**Step 3 — Generate end-to-end.** At inference time, the model emits a tool call as a natural next-token decision. No retrieval step, no context bloat, no external index. The authors report experiments with **over 47,000 tools** — a scale where traditional retrieval would choke on prompt length.
+
+The key insight is that tool selection and argument generation are unified under the same autoregressive objective. The model does not "decide to use a tool" as a separate phase; it simply generates the most probable sequence of tokens, and some of those tokens happen to be tool invocations.
+
+---
+
+## Key Results
+
+- **Scale:** Evaluated on **47,000+ tools** — far beyond the few-dozen scale of most prior work.
+- **Performance:** Achieves competitive or superior results against retrieval-based baselines, though the source note does not contain concrete numerical comparisons.
+- **Efficiency:** Eliminates the retrieval latency and context-length overhead entirely.
+
+*(The source material lacks detailed tables; the above is drawn from the abstract and method description. A full reading of the OpenReview page would be needed for precise metrics.)*
+
+---
+
+## Limits and Unanswered Questions
+
+- **No concrete numbers in source.** The abstract mentions "experimental results with over 47,000 tools" but cuts off before presenting metrics. We cannot assess whether the gains are marginal or transformative without the full paper.
+- **Training cost.** Continued pre-training on 47,000 tools is not cheap. The authors do not discuss compute budget or whether smaller models can absorb this scale of tool knowledge without catastrophic forgetting.
+- **Dynamic tool sets.** If new tools are added after deployment, the vocabulary must expand and the model must be re-trained — a harder update cycle than simply re-indexing a retriever.
+- **Generalization to unseen tools.** The paper's premise assumes the model has seen every tool during training. How it handles novel tools with similar semantics remains unclear.
+
+---
+
+## Further Reading
+
+- **Gorilla (Patil et al., 2023)** — The opposite philosophy: train a retriever to fetch API docs on demand. Comparing Gorilla and ToolGen maps the design space of parametric vs. retrieval-based tool memory.
+- **ToolLLM (Qin et al., 2023)** — Large-scale tool learning with explicit retrieval; useful baseline for understanding what ToolGen removes.
+
+---
+
+**Curated:** 2026-04-30  
+**Reading difficulty:** ⭐⭐⭐☆☆  
+**Recommendation:** 🔥🔥🔥🔥☆

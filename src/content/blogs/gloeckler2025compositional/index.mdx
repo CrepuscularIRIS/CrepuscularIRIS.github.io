@@ -1,0 +1,68 @@
+---
+title: "Compositional SBI for Time Series"
+description: "A principled way to break the curse of long-horizon time series in simulation-based inference by composing local Markov transition posteriors."
+publishDate: "2026-05-01"
+updatedDate: "2026-05-01"
+category: paper-spotlight
+tags: [paper, sbi, time-series, bayesian-inference, markov]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=uClUUJk05H"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+# Compositional SBI for Time Series
+
+**Original title**: Compositional simulation-based inference for time series  
+**Authors**: Gloeckler et al. | **Year**: 2025  
+**Link**: [OpenReview](https://openreview.net/forum?id=uClUUJk05H)
+
+---
+
+## One-Line Summary
+
+Instead of swallowing an entire time series whole, this paper breaks simulation-based inference into bite-sized local transitions and mathematically stitches them back together — a principled way to beat the curse of long horizons.
+
+## Why This Is Worth Your Time
+
+**It attacks the right bottleneck.** Most SBI methods for sequential data try to train a single neural network to map an entire trajectory to parameters. The longer the series, the more simulations you burn, and the harder the posterior becomes to approximate. Gloeckler et al. ask: what if we never had to look at the whole sequence at once?
+
+**The composition idea is transferable.** The technique exploits Markov structure, but the mindset — "infer locally, compose globally" — is directly relevant to any system that builds understanding incrementally from sequential observations. For ACCEPTA's dual-system architecture, where efficient posterior estimation over time-structured data is critical, this is a design pattern worth studying rather than just a method worth citing.
+
+## Core Method (3-Minute Version)
+
+**The problem.** You have a simulator that produces time series. You observe one full trajectory and want the posterior over the simulator's parameters. Standard amortized SBI would simulate thousands of full-length trajectories, train a neural posterior estimator on (trajectory, parameters) pairs, and hope it generalizes. For long series, this is expensive and brittle.
+
+**The insight.** If the simulator is Markovian — meaning each state depends only on the previous state and the parameters — then any single transition carries information about those parameters. Instead of one hard global problem, you get many easier local problems.
+
+**How it works.** The method runs local inference on each one-step transition independently, obtaining a posterior for the parameters given just that transition. Then it composes these local posteriors into a single global posterior consistent with the full time series. The composition is not heuristic averaging — it follows from the Markov factorization of the likelihood.
+
+**The payoff.** You simulate shorter runs, train simpler estimators, and still recover a principled global posterior. The authors show this yields better simulation efficiency than standard amortized SBI on time series tasks.
+
+## Key Results
+
+- **Compositional SBI** exploits Markovian simulators by identifying parameters consistent with individual state transitions.
+- Local posteriors are composed to obtain a **global posterior aligned with the full time series**.
+- The approach demonstrates **improved simulation-efficiency** over standard amortized SBI on time series data.
+
+*(No concrete quantitative numbers were available in the source material for this draft.)*
+
+## Limits and Unanswered Questions
+
+- **Markov-only.** The method assumes Markovian dynamics. Non-Markovian or long-range dependency simulators — common in real-world time series — may not benefit from this decomposition.
+- **Scalability unclear.** The paper does not discuss behavior in very high-dimensional parameter spaces, where local posteriors themselves might become intractable.
+- **No code or reproducibility details** were noted in the source; practical adoption depends on implementation availability.
+
+## Further Reading
+
+- *Papamakarios et al.*, "Sequential Neural Posterior Estimation" — the amortized SBI baseline this paper improves upon.
+- *Lueckmann et al.*, "Benchmarking Simulation-Based Inference" — for context on where time-series SBI sits in the broader landscape.
+
+---
+
+**Curated**: 2026-05-01  
+**Reading difficulty**: ⭐⭐⭐☆☆  
+**Recommendation**: 🔥🔥🔥🔥☆

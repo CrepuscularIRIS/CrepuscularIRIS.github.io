@@ -1,0 +1,63 @@
+---
+title: "When GNNs meet symmetry in ILPs"
+description: "First principled treatment of how GNN permutation invariance collides with ILP symmetry, and how to fix it via orbit-aware feature augmentation."
+publishDate: "2026-05-01"
+updatedDate: "2026-05-01"
+category: paper-spotlight
+tags: [paper, GNN, ILP, symmetry, combinatorial-optimization, orbit]
+language: en
+draft: true
+sources: ["https://openreview.net/forum?id=wVTJRnZ11Z"]
+confidence: medium
+status: draft
+hIE: snowdrop
+hero_image: /assets/hIE/snowdrop/image.png
+---
+
+## One-Line Summary
+
+GNNs treat symmetric variables as identical by design — a fatal mismatch for integer linear programs where symmetry groups must be distinguished. Chen et al. show why this happens and how orbit-aware feature augmentation fixes it.
+
+## Why This Is Worth Your Time
+
+**Angle 1: A genuine bug in the GNN+combinatorics pipeline.**  
+For years the community has thrown GNNs at ILPs (branching, cutting-plane selection, configuration) assuming permutation invariance is "free inductive bias." This paper proves the opposite: when an ILP contains symmetry orbits, that same invariance makes the network blind to structurally distinct variables that happen to sit in the same orbit. It is not a training-data issue; it is an architectural impossibility.
+
+**Angle 2: The fix is principled, not a hack.**  
+Rather than bolting on an attention layer and hoping, the authors derive *guiding principles* for what augmented features must satisfy to break the deadlock without destroying the useful inductive bias. The result is an orbit-based augmentation that is cheap to compute and theoretically grounded.
+
+## Core Method (3-Minute Version)
+
+The problem starts with a collision between two notions of "sameness."
+
+- **GNN permutation invariance** says: if I permute the node IDs, the output does not change. For molecules or social graphs this is a feature.
+- **ILP symmetry** says: two variables can be swapped without changing the feasible set or objective value. For branch-and-bound this is a liability, because you need to tell them apart to make good branching decisions.
+
+When both are present, the GNN sees variables in the same orbit as *literally the same node*. Their embeddings collapse, and downstream tasks (predicting branching scores, for example) fail.
+
+The authors' response is **orbit-based feature augmentation**. They compute the orbit structure of the ILP's symmetry group and inject orbit-aware descriptors into the node features. The key constraint is that the augmentation must:
+
+1. **Distinguish** variables in different orbits (break the deadlock).
+2. **Preserve** the useful relational inductive bias of the GNN (do not turn it into a fully-connected MLP).
+
+The paper formalizes these as guiding principles and shows how to construct features that satisfy both. The augmentation is deterministic, requires no additional training, and operates on the input side — so it plugs into any standard GNN architecture.
+
+## Key Results
+
+- **Identified the destructive interaction.** The paper proves that standard GNN permutation equivalence/invariance interacts destructively with ILP symmetry, rendering symmetric variables indistinguishable.
+- **Proposed guiding principles.** A set of formal criteria for constructing augmented features that break the symmetry deadlock while preserving GNN inductive bias.
+- **Designed orbit-based augmentation.** A concrete feature-augmentation scheme that enables GNNs to differentiate symmetric variables in ILPs.
+
+*Note: The source note contains no concrete numerical results (runtime, accuracy gains, or benchmark coverage). The evaluation scope and generalization to other combinatorial problem classes are also not discussed.*
+
+## Limits and Unanswered Questions
+
+- **No empirical numbers in the available source.** We do not know the magnitude of improvement on standard MILP benchmarks (MIPLIB, COR-LAT, etc.) or the overhead of orbit computation.
+- **Scope of evaluation.** Does the approach generalize beyond the tested ILP families? Symmetry structure varies wildly between set-covering, scheduling, and network-design problems.
+- **Orbit computation cost.** Computing full symmetry groups for large ILPs can be expensive. The paper does not clarify whether the augmentation is applied per-instance at test time or amortized.
+- **Interaction with modern GNN variants.** How does the augmentation behave with Transformers-over-sets, equivariant networks, or higher-order message-passing schemes?
+
+## Further Reading
+
+- Gasse et al., "Exact Combinatorial Optimization with Graph Convolutional Neural Networks" (NeurIPS 2019) — the foundational GNN-for-branching work that this paper implicitly critiques.
+- Bengio et al., "Machine Learning for Combinatorial Optimization" (NeurIPS 2020 tutorial) — broader survey of the GNN+ILP pipeline and its failure modes.
