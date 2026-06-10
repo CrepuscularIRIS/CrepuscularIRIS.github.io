@@ -50,6 +50,7 @@ export const theme: ThemeUserConfig = {
     menu: [
       { title: 'Engineering', link: '/blog/engineering' },
       { title: 'Research', link: '/blog/research' },
+      { title: 'MingJing', link: '/mingjing' },
       { title: 'Activity', link: '/activity' },
       { title: 'Projects', link: '/projects' },
       { title: 'Links', link: '/links' },

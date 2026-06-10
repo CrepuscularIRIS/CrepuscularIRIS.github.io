@@ -1,0 +1,124 @@
+---
+import CommonPage from '@/layouts/CommonPage.astro'
+
+const DEMO_BASE = '/mingjing-demo/'
+const REPO = 'https://github.com/CrepuscularIRIS/mingjing'
+
+const cases = [
+  {
+    id: '4fff4227cdce4661a654603566a0385e',
+    title: 'Notion × Linear · 竞品对比',
+    date: '2026-06-09',
+    badge: '旗舰 · 多竞品',
+    stats: [
+      { label: '提议 → 准入', val: '10 → 6' },
+      { label: '证据修复', val: '+42%' },
+      { label: '证据档位', val: '强 1 · 中 5' },
+      { label: 'QA 轮次', val: '4' }
+    ],
+    blurb:
+      '一条用户口碑结论从「弱(2 源)」经重新取证升级到「中(4 源)」,Linear 定价从「中」升到「强」;覆盖率 80%,每条结论可点开溯源到原始网页片段。'
+  },
+  {
+    id: '33835db0e51b4f2586c092e37efbf13f',
+    title: 'Notion · 单竞品(豆包模型实证)',
+    date: '2026-06-10',
+    badge: '豆包 Doubao-Seed-2.0-lite',
+    stats: [
+      { label: '提议 → 准入', val: '5 → 1' },
+      { label: '证据修复', val: '+20%' },
+      { label: '证据档位', val: '强 1' },
+      { label: 'LLM 调用', val: '18 · 全官方 EP' }
+    ],
+    blurb:
+      '全链路 18 次 LLM 调用均跑在字节官方豆包端点上;确定性 QA 门禁同样严格——5 条提议仅 1 条达到强档准入,4 条带判定码留存,绝不凑数。'
+  }
+]
+
+const headings = [
+  { depth: 2, slug: 'what', text: '这是什么' },
+  { depth: 2, slug: 'cases', text: '两个真实案例' },
+  { depth: 2, slug: 'how', text: '如何阅读' }
+]
+---
+
+<CommonPage title='MingJing 明镜' {headings} info={{ slug: '/mingjing', hideComment: true }}>
+  <div class='space-y-12'>
+    <section>
+      <h2 id='what' class='text-2xl font-semibold mb-3'>这是什么</h2>
+      <p class='text-muted-foreground leading-relaxed'>
+        <strong>明镜 (MingJing)</strong> 是一个证据可采信的竞品分析多 Agent 运行时:它联网检索 →
+        由独立的 QA Agent 当场打回证据不足的结论 → 真实地重新取证 → 仅把通过校验的结论写入报告。
+        LLM 只负责提议,真值由确定性代码裁定;证据强度只有透明的三档(弱 / 中 / 强),没有可信度小数。
+      </p>
+      <p class='text-muted-foreground leading-relaxed mt-3'>
+        下面是<strong>两个真实已完成的分析案例</strong>的静态回放——不是可交互的实时 Demo,而是把真实
+        run 的最终报告、证据链、弱→强升级、可信度面板原样冻结成只读快照。
+      </p>
+      <div class='flex flex-wrap gap-3 mt-6'>
+        <a
+          href={DEMO_BASE}
+          class='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium no-underline hover:opacity-90 transition'
+        >
+          打开可信分析工作台 →
+        </a>
+        <a
+          href={REPO}
+          class='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border/50 font-medium no-underline hover:bg-muted/50 transition'
+        >
+          源代码仓库
+        </a>
+        <a
+          href={`${REPO}/releases`}
+          class='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border/50 font-medium no-underline hover:bg-muted/50 transition'
+        >
+          演示视频
+        </a>
+      </div>
+    </section>
+
+    <section>
+      <h2 id='cases' class='text-2xl font-semibold mb-6'>两个真实案例</h2>
+      <div class='grid gap-6 md:grid-cols-2'>
+        {
+          cases.map((c) => (
+            <a
+              href={`${DEMO_BASE}?run=${c.id}`}
+              class='group block rounded-2xl border border-border/40 p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20 no-underline hover:border-primary/50 transition'
+            >
+              <div class='flex items-center justify-between mb-1'>
+                <span class='text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium'>{c.badge}</span>
+                <span class='text-xs text-muted-foreground'>{c.date}</span>
+              </div>
+              <h3 class='text-lg font-semibold mt-2 mb-4 group-hover:text-primary transition'>{c.title}</h3>
+              <div class='grid grid-cols-2 gap-3 mb-4'>
+                {c.stats.map((s) => (
+                  <div class='rounded-lg bg-background/60 px-3 py-2'>
+                    <div class='text-xs text-muted-foreground'>{s.label}</div>
+                    <div class='text-base font-semibold tabular-nums'>{s.val}</div>
+                  </div>
+                ))}
+              </div>
+              <p class='text-sm text-muted-foreground leading-relaxed m-0'>{c.blurb}</p>
+              <div class='mt-4 text-sm font-medium text-primary'>查看这个案例 →</div>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <section>
+      <h2 id='how' class='text-2xl font-semibold mb-3'>如何阅读</h2>
+      <ul class='text-muted-foreground leading-relaxed space-y-2 list-disc pl-5'>
+        <li><strong>最终报告</strong>:只包含通过 QA 准入的结论;每条可点开「证据抽屉」看被引用的原始网页片段(高亮)。</li>
+        <li><strong>QA 回放</strong>:看一条结论第 1 轮被打回(弱证据)、重新取证、第 2 轮升级的前后对比。</li>
+        <li><strong>可信度面板</strong>:<code>repair_delta</code> 是头号指标——正值代表跨轮证据接地度真实提升(真闭环)。</li>
+        <li><strong>留存清单</strong>:被 QA 正确打回、未进报告的结论及其判定码——诚实披露,不凑数。</li>
+      </ul>
+      <p class='text-xs text-muted-foreground mt-6'>
+        说明:本页为只读静态快照(数据冻结自真实 run),写操作(发起新分析 / 人工修正)在此模式下不可用;完整可交互版本见源代码仓库的
+        <code>docker compose up</code>。
+      </p>
+    </section>
+  </div>
+</CommonPage>
