@@ -36,6 +36,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build Astro site for GitHub Pages
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
         run: DEPLOYMENT_PLATFORM=github pnpm run build
 
       - name: Upload Pages artifact
