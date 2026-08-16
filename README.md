@@ -1,4 +1,14 @@
-﻿## Axi 的博客主题
+# CrepuscularIRIS.github.io
+
+> **现行产品需求（2026-08-16）**：[docs/spec/guarantor.md](docs/spec/guarantor.md)  
+> 短视觉故事《担保人》：岑遥必须在八分钟内关闭越权系统；系统把备用电源让给呼吸机。v1 默认签名。  
+> 本分支**只提交规格与验收**。不要把旧博客从 `main` 删掉上线，除非人明确要求公开部署。
+
+线上仍是旧 Astro-Axi 博客：https://crepusculariris.github.io/
+
+---
+
+## Axi 的博客主题（旧站，origin/main）
 
 本人博客链接：[Axi 的博客](https://axi404.top/)
 

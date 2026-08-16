@@ -1,0 +1,11 @@
+---
+description: 担保人前端必须带规格里的氛围层，禁止只交静态格子。
+globs: web/**/*.{astro,css,ts,js}
+alwaysApply: true
+---
+
+# 氛围不能省
+
+改 `web/` 视觉时先读 `.cursor/skills/cinematic-fx/SKILL.md` 和 `docs/spec/guarantor.md`。
+
+没有颗粒、扫描线、暗角、终端闪、倒计时 glitch、镜头扫线，就不算做完。扫描线必须盖住 HUD。动效用 `transform`/`opacity`，并尊重 `prefers-reduced-motion`。
