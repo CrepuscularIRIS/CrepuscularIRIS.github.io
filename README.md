@@ -1,13 +1,29 @@
 # CrepuscularIRIS.github.io
 
-本仓 **2026-08-16 起只留规格**。旧 Astro 博客源码、Pages 工作流、153 篇正文已从 GitHub 撤掉。默认分支是 `docs`，没有 `main`。
+本仓只留《担保人》规格。默认分支 `docs`。
 
-公开要做的产品是原创短视觉故事 **《担保人》**，不是原片逐镜复刻。
+另一台电脑要看「还不错的那版渲染」并按那个质感搭空模板，去 **私有仓**（刚传上）：
 
-| 先读 | 路径 |
+https://github.com/CrepuscularIRIS/bug-film
+
+```
+gh repo clone CrepuscularIRIS/bug-film
+```
+
+| 另一台电脑打开 | 是什么 |
 |---|---|
-| 产品需求 / 验收 | [docs/spec/guarantor.md](docs/spec/guarantor.md) |
+| `docs/preview.mp4` | 全片观感预览 |
+| `docs/seg_0.mp4` `seg_1.mp4` `seg_2.mp4` | 分段预览 |
+| `remotion/` | Studio：`npm i` 后 `npm run studio` |
+| `templates/self-intro/` | 空模板（`tokens.css` + `index.html`） |
+| `DESIGN.md` `GOAL-v2.md` `HANDOFF-v2.md` | 质感/验收 |
+
+本仓规格：
+
+| 文件 | 路径 |
+|---|---|
+| 产品需求 | [docs/spec/guarantor.md](docs/spec/guarantor.md) |
 | 视觉 token | [docs/design/DESIGN.md](docs/design/DESIGN.md) |
 | 目标 | [docs/GOAL.md](docs/GOAL.md) |
 
-本地 `E:\bug-film` 里的 4K 帧、61 镜、对白、`GOAL-v2.md` 复刻方案 **不上本仓**。
+Cursor 云端改这个仓：GitHub → Settings → Applications → Cursor，把 `CrepuscularIRIS.github.io` 和 `bug-film` 都勾上。我这边没法代点 OAuth。
