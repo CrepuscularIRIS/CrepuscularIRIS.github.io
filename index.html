@@ -16,11 +16,13 @@
     <link rel="alternate" type="application/rss+xml" title="Crepuscular Citadel" href="./feed.xml" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2305070a'/%3E%3Cpath d='M16 3 L19 29 L13 29 Z' fill='%23ff9a3c'/%3E%3Ccircle cx='16' cy='12' r='6' fill='none' stroke='%2346d4e8' stroke-width='1.4'/%3E%3C/svg%3E" />
-    <script type="module" crossorigin src="./assets/index-K1oX9g9Q.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-D4SMMZf0.css">
+    <script type="module" crossorigin src="./assets/index-BGaj2mga.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CeL5TaQy.css">
   </head>
-  <body>
+  <body style="margin:0;background:#05070a">
     <noscript><p style="color:#f4f4f2;padding:40px;font-family:serif">Crepuscular Citadel needs JavaScript and WebGL.</p></noscript>
-    <div id="root"></div>
+    <!-- static first paint while the bundle downloads (≈4 s on slow 4G);
+         React replaces it on mount. System font, no layout the app keeps. -->
+    <div id="root"><p style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;color:#8a93a0;font:12px/1.6 ui-monospace,monospace;letter-spacing:.2em">CREPUSCULAR CITADEL · LOADING</p></div>
   </body>
 </html>
