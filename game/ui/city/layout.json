@@ -1,0 +1,4276 @@
+{
+  "id": "CityUI",
+  "addressableKey": "UI/CityUI",
+  "ancestry": [],
+  "nodes": [
+    {
+      "name": "CityUI",
+      "path": "CityUI",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "LeftTopButton",
+      "path": "CityUI/LeftTopButton",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        167.6999969482422,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 14.0,
+        "childAlignment": 0,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 0,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          27,
+          0,
+          13,
+          0
+        ]
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Menu",
+      "path": "CityUI/LeftTopButton/Menu",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Menu_Btn",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Guide",
+      "path": "CityUI/LeftTopButton/Guide",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Tips_Btn",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Time",
+      "path": "CityUI/Time",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        1.0,
+        1.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "TimeText",
+      "path": "CityUI/Time/TimeText",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -130.3000030517578,
+        -73.5
+      ],
+      "sizeDelta": [
+        200.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 55.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "WeekAndLocation",
+      "path": "CityUI/Time/WeekAndLocation",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -50.29999923706055,
+        -124.4000015258789
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        1.0,
+        0.5
+      ],
+      "anchorMax": [
+        1.0,
+        0.5
+      ],
+      "pivot": [
+        1.0,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 7.590000152587891,
+        "childAlignment": 4,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Moon",
+      "path": "CityUI/Time/WeekAndLocation/Moon",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        25.15999984741211
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 18.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Week",
+      "path": "CityUI/Time/WeekAndLocation/Week",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        25.15999984741211
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 18.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "CityUI/Time/WeekAndLocation/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        16.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Coordinate_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Location",
+      "path": "CityUI/Time/WeekAndLocation/Location",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        25.15999984741211
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 18.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Landmark",
+      "path": "CityUI/Landmark",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "PersonalBranchPlot",
+      "path": "CityUI/Landmark/PersonalBranchPlot",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "Animator"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        -103.0
+      ],
+      "sizeDelta": [
+        80.0,
+        70.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "CityUI/Landmark/PersonalBranchPlot/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        -4.899999618530273
+      ],
+      "sizeDelta": [
+        100.0,
+        116.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Target_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "RightHoverWindow",
+      "path": "CityUI/Landmark/PersonalBranchPlot/RightHoverWindow",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        138.6999969482422,
+        -51.599998474121094
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "LeftHoverWindow",
+      "path": "CityUI/Landmark/PersonalBranchPlot/LeftHoverWindow",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -138.6999969482422,
+        -51.599998474121094
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "ImageBase",
+      "path": "CityUI/Landmark/PersonalBranchPlot/ImageBase",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        -28.299999237060547
+      ],
+      "sizeDelta": [
+        24.0,
+        12.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Dialogue_Icon_Bottom",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "WorldBranchPlot",
+      "path": "CityUI/Landmark/WorldBranchPlot",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "Animator"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        80.0,
+        70.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "CityUI/Landmark/WorldBranchPlot/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        -4.899999618530273
+      ],
+      "sizeDelta": [
+        104.0,
+        120.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Dialogue_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "RightHoverWindow",
+      "path": "CityUI/Landmark/WorldBranchPlot/RightHoverWindow",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        138.6999969482422,
+        -51.599998474121094
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "LeftHoverWindow",
+      "path": "CityUI/Landmark/WorldBranchPlot/LeftHoverWindow",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -138.6999969482422,
+        -51.599998474121094
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "ImageBase",
+      "path": "CityUI/Landmark/WorldBranchPlot/ImageBase",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        -28.299999237060547
+      ],
+      "sizeDelta": [
+        24.0,
+        12.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Dialogue_Icon_Bottom",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MainPlot",
+      "path": "CityUI/Landmark/MainPlot",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "UI Particle",
+      "path": "CityUI/Landmark/MainPlot/UI Particle",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "ParticleSystem",
+        "ParticleSystemRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        1.0,
+        112.80000305175781
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "UIParticle"
+      ]
+    },
+    {
+      "name": "Background",
+      "path": "CityUI/Landmark/MainPlot/Background",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        72.0
+      ],
+      "sizeDelta": [
+        124.0,
+        208.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Buildi_Bg",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Button",
+      "path": "CityUI/Landmark/MainPlot/Button",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        113.69999694824219
+      ],
+      "sizeDelta": [
+        124.0,
+        124.5999984741211
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Icon",
+      "path": "CityUI/Landmark/MainPlot/Button/Icon",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        104.0,
+        104.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "StarbugsCoffee",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "RightHoverWindow",
+      "path": "CityUI/Landmark/MainPlot/RightHoverWindow",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        165.6999969482422,
+        88.4000015258789
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "LeftHoverWindow",
+      "path": "CityUI/Landmark/MainPlot/LeftHoverWindow",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -165.6999969482422,
+        88.40000915527344
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "TimeJump",
+      "path": "CityUI/TimeJump",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -180.300048828125,
+        141.5
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        1.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "EndOneWay",
+      "path": "CityUI/TimeJump/EndOneWay",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        -46.900001525878906
+      ],
+      "sizeDelta": [
+        284.0,
+        84.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "sprite": "Jump_Btn",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Group",
+      "path": "CityUI/TimeJump/EndOneWay/Group",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.4000000059604645,
+        3.9000000953674316
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 13.0,
+        "childAlignment": 4,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Text",
+      "path": "CityUI/TimeJump/EndOneWay/Group/Text",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "结束一天",
+      "fontSize": 20.0,
+      "fontColor": [
+        0.1411764770746231,
+        0.1411764770746231,
+        0.1411764770746231,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "CityUI/TimeJump/EndOneWay/Group/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        24.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Finish_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "JumpToNext",
+      "path": "CityUI/TimeJump/JumpToNext",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        39.29999923706055
+      ],
+      "sizeDelta": [
+        284.0,
+        84.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "sprite": "Jump_Btn",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Group",
+      "path": "CityUI/TimeJump/JumpToNext/Group",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.4000000059604645,
+        3.9000000953674316
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 13.0,
+        "childAlignment": 4,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Text",
+      "path": "CityUI/TimeJump/JumpToNext/Group/Text",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "跳转至下一个时间段",
+      "fontSize": 20.0,
+      "fontColor": [
+        0.1411764770746231,
+        0.1411764770746231,
+        0.1411764770746231,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "CityUI/TimeJump/JumpToNext/Group/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        24.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "MapNext_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "FragmentPanel",
+      "path": "CityUI/FragmentPanel",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        159.99993896484375,
+        -214.20001220703125
+      ],
+      "sizeDelta": [
+        237.4600067138672,
+        431.0
+      ],
+      "anchorMin": [
+        1.0,
+        1.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 1.0,
+        "enterScale": 1.0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Background",
+      "path": "CityUI/FragmentPanel/Background",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        215.60000610351562
+      ],
+      "sizeDelta": [
+        352.0,
+        0.0
+      ],
+      "anchorMin": [
+        1.0,
+        0.5
+      ],
+      "anchorMax": [
+        1.0,
+        0.5
+      ],
+      "pivot": [
+        1.0,
+        1.0
+      ],
+      "sprite": "Fragment_Bg",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "layoutGroup": {
+        "spacing": 25.690000534057617,
+        "childAlignment": 2,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 0,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "VerticalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          10,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 0,
+        "verticalFit": 2
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Fragment_1",
+      "path": "CityUI/FragmentPanel/Background/Fragment_1",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        176.0,
+        63.70000076293945
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "TextContent",
+      "path": "CityUI/FragmentPanel/Background/Fragment_1/TextContent",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        46.20000076293945,
+        -1.2000000476837158
+      ],
+      "sizeDelta": [
+        0.0,
+        27.799999237060547
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 0.0,
+        "childAlignment": 4,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Current",
+      "path": "CityUI/FragmentPanel/Background/Fragment_1/TextContent/Current",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "1",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Slash",
+      "path": "CityUI/FragmentPanel/Background/Fragment_1/TextContent/Slash",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "/",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Total",
+      "path": "CityUI/FragmentPanel/Background/Fragment_1/TextContent/Total",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "6",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Icon",
+      "path": "CityUI/FragmentPanel/Background/Fragment_1/Icon",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -21.200000762939453,
+        -1.600000023841858
+      ],
+      "sizeDelta": [
+        64.69999694824219,
+        62.310001373291016
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "HoverWindowposition",
+      "path": "CityUI/FragmentPanel/Background/Fragment_1/HoverWindowposition",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -160.5,
+        -45.20000076293945
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Fragment_2",
+      "path": "CityUI/FragmentPanel/Background/Fragment_2",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        176.0,
+        63.70000076293945
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "TextContent",
+      "path": "CityUI/FragmentPanel/Background/Fragment_2/TextContent",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        46.20000076293945,
+        -1.2000000476837158
+      ],
+      "sizeDelta": [
+        0.0,
+        27.799999237060547
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 0.0,
+        "childAlignment": 4,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Current",
+      "path": "CityUI/FragmentPanel/Background/Fragment_2/TextContent/Current",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "1",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Slash",
+      "path": "CityUI/FragmentPanel/Background/Fragment_2/TextContent/Slash",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "/",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Total",
+      "path": "CityUI/FragmentPanel/Background/Fragment_2/TextContent/Total",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "6",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Icon",
+      "path": "CityUI/FragmentPanel/Background/Fragment_2/Icon",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -21.200000762939453,
+        -1.600000023841858
+      ],
+      "sizeDelta": [
+        64.69999694824219,
+        62.310001373291016
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "HoverWindowposition",
+      "path": "CityUI/FragmentPanel/Background/Fragment_2/HoverWindowposition",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -160.5,
+        -45.20000076293945
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Fragment_3",
+      "path": "CityUI/FragmentPanel/Background/Fragment_3",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        176.0,
+        63.70000076293945
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "TextContent",
+      "path": "CityUI/FragmentPanel/Background/Fragment_3/TextContent",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        46.20000076293945,
+        -1.2000000476837158
+      ],
+      "sizeDelta": [
+        0.0,
+        27.799999237060547
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 0.0,
+        "childAlignment": 4,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Current",
+      "path": "CityUI/FragmentPanel/Background/Fragment_3/TextContent/Current",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "1",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Slash",
+      "path": "CityUI/FragmentPanel/Background/Fragment_3/TextContent/Slash",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "/",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Total",
+      "path": "CityUI/FragmentPanel/Background/Fragment_3/TextContent/Total",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "6",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Icon",
+      "path": "CityUI/FragmentPanel/Background/Fragment_3/Icon",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -21.200000762939453,
+        -1.600000023841858
+      ],
+      "sizeDelta": [
+        64.69999694824219,
+        62.310001373291016
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "HoverWindowposition",
+      "path": "CityUI/FragmentPanel/Background/Fragment_3/HoverWindowposition",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -160.5,
+        -45.20000076293945
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Fragment_4",
+      "path": "CityUI/FragmentPanel/Background/Fragment_4",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        176.0,
+        63.70000076293945
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "TextContent",
+      "path": "CityUI/FragmentPanel/Background/Fragment_4/TextContent",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        46.20000076293945,
+        -1.2000000476837158
+      ],
+      "sizeDelta": [
+        0.0,
+        27.799999237060547
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 0.0,
+        "childAlignment": 4,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Current",
+      "path": "CityUI/FragmentPanel/Background/Fragment_4/TextContent/Current",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "1",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Slash",
+      "path": "CityUI/FragmentPanel/Background/Fragment_4/TextContent/Slash",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "/",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Total",
+      "path": "CityUI/FragmentPanel/Background/Fragment_4/TextContent/Total",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "6",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Icon",
+      "path": "CityUI/FragmentPanel/Background/Fragment_4/Icon",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -21.200000762939453,
+        -1.600000023841858
+      ],
+      "sizeDelta": [
+        64.69999694824219,
+        62.310001373291016
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "HoverWindowposition",
+      "path": "CityUI/FragmentPanel/Background/Fragment_4/HoverWindowposition",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -160.5,
+        -45.20000076293945
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Fragment_5",
+      "path": "CityUI/FragmentPanel/Background/Fragment_5",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        176.0,
+        63.70000076293945
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "TextContent",
+      "path": "CityUI/FragmentPanel/Background/Fragment_5/TextContent",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        46.20000076293945,
+        -1.2000000476837158
+      ],
+      "sizeDelta": [
+        0.0,
+        27.799999237060547
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 0.0,
+        "childAlignment": 4,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Current",
+      "path": "CityUI/FragmentPanel/Background/Fragment_5/TextContent/Current",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "1",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Slash",
+      "path": "CityUI/FragmentPanel/Background/Fragment_5/TextContent/Slash",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "/",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Total",
+      "path": "CityUI/FragmentPanel/Background/Fragment_5/TextContent/Total",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "6",
+      "fontSize": 23.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Icon",
+      "path": "CityUI/FragmentPanel/Background/Fragment_5/Icon",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -21.200000762939453,
+        -1.600000023841858
+      ],
+      "sizeDelta": [
+        64.69999694824219,
+        62.310001373291016
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "HoverWindowposition",
+      "path": "CityUI/FragmentPanel/Background/Fragment_5/HoverWindowposition",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -160.5,
+        -45.20000076293945
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Arrow",
+      "path": "CityUI/FragmentPanel/Arrow",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        30.600006103515625,
+        -21.0
+      ],
+      "sizeDelta": [
+        24.0,
+        40.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "sprite": "Arrow_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "HoverWindow",
+      "path": "CityUI/HoverWindow",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        182.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "WindowBackground",
+      "path": "CityUI/HoverWindow/WindowBackground",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        194.67999267578125,
+        150.47000122070312
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        0.0,
+        0.0,
+        0.0,
+        0.7529411911964417
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Segmentation",
+      "path": "CityUI/HoverWindow/WindowBackground/Segmentation",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        1.0500030517578125,
+        28.600000381469727
+      ],
+      "sizeDelta": [
+        179.64999389648438,
+        1.159999966621399
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        0.1764705926179886
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Title",
+      "path": "CityUI/HoverWindow/WindowBackground/Title",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        1.17120361328125,
+        51.79999923706055
+      ],
+      "sizeDelta": [
+        173.2899932861328,
+        27.700000762939453
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 16.399999618530273,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Content",
+      "path": "CityUI/HoverWindow/WindowBackground/Content",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        1.1699981689453125,
+        -23.969999313354492
+      ],
+      "sizeDelta": [
+        173.2899932861328,
+        83.12999725341797
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 16.399999618530273,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    }
+  ]
+}

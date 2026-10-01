@@ -1,0 +1,86 @@
+{
+  "source": "Scene/Title Global Volume",
+  "weight": 1.0,
+  "effects": {
+    "Bloom": {
+      "name": "Bloom",
+      "active": true,
+      "skipIterations": 1.0,
+      "skipIterationsOverride": false,
+      "threshold": 0.800000011920929,
+      "thresholdOverride": true,
+      "intensity": 1.5,
+      "intensityOverride": true,
+      "scatter": 0.800000011920929,
+      "scatterOverride": true,
+      "clamp": 65472.0,
+      "clampOverride": false,
+      "tint": [
+        1.0,
+        0.9669811129570007,
+        0.9669811129570007,
+        1.0
+      ],
+      "tintOverride": true,
+      "highQualityFiltering": 0.0,
+      "highQualityFilteringOverride": false,
+      "downscale": 0.0,
+      "downscaleOverride": false,
+      "maxIterations": 6.0,
+      "maxIterationsOverride": false,
+      "dirtTexture": {
+        "fileId": 0,
+        "pathId": 0
+      },
+      "dirtTextureOverride": false,
+      "dirtIntensity": 0.0,
+      "dirtIntensityOverride": false
+    },
+    "Vignette": {
+      "name": "Vignette",
+      "active": true,
+      "color": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "colorOverride": true,
+      "center": [
+        0.5,
+        0.5
+      ],
+      "centerOverride": true,
+      "intensity": 0.30000001192092896,
+      "intensityOverride": true,
+      "smoothness": 0.30000001192092896,
+      "smoothnessOverride": true,
+      "rounded": 0.0,
+      "roundedOverride": false
+    },
+    "ColorAdjustments": {
+      "name": "ColorAdjustments",
+      "active": true,
+      "postExposure": -0.10000000149011612,
+      "postExposureOverride": true,
+      "contrast": 30.0,
+      "contrastOverride": true,
+      "colorFilter": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "colorFilterOverride": false,
+      "hueShift": 0.0,
+      "hueShiftOverride": false,
+      "saturation": -10.0,
+      "saturationOverride": true
+    }
+  },
+  "enabledEffects": [
+    "Bloom",
+    "Vignette",
+    "ColorAdjustments"
+  ]
+}

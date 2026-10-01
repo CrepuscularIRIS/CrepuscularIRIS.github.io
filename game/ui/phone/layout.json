@@ -1,0 +1,8850 @@
+{
+  "id": "PhoneUI",
+  "addressableKey": "UI/PhoneUI",
+  "ancestry": [],
+  "nodes": [
+    {
+      "name": "PhoneUI",
+      "path": "PhoneUI",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "PhoneMask",
+      "path": "PhoneUI/PhoneMask",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "SmallPhone",
+      "path": "PhoneUI/SmallPhone",
+      "components": [
+        "RectTransform",
+        "CanvasGroup"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        80.20001220703125,
+        123.0
+      ],
+      "sizeDelta": [
+        115.5999984741211,
+        156.54998779296875
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "SmallPhone_Bg",
+      "path": "PhoneUI/SmallPhone/SmallPhone_Bg",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        60.0,
+        112.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Smallphone_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Message",
+      "path": "PhoneUI/SmallPhone/Message",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        40.0,
+        32.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "News_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "RedDot",
+      "path": "PhoneUI/SmallPhone/RedDot",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        27.700000762939453,
+        53.400001525878906
+      ],
+      "sizeDelta": [
+        24.0,
+        24.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Remind_Bg",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MessageNum",
+      "path": "PhoneUI/SmallPhone/RedDot/MessageNum",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        24.0,
+        24.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "1",
+      "fontSize": 16.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Phone",
+      "path": "PhoneUI/Phone",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "CanvasGroup"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        279.70001220703125,
+        493.20001220703125
+      ],
+      "sizeDelta": [
+        468.0,
+        868.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Mobile_Board",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MobileMask",
+      "path": "PhoneUI/Phone/MobileMask",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "Mask"
+      ]
+    },
+    {
+      "name": "Background",
+      "path": "PhoneUI/Phone/MobileMask/Background",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "ParticleSystem",
+        "ParticleSystemRenderer"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.8899999856948853,
+        0.8899999856948853,
+        0.89000004529953
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        0.7071068286895752,
+        0.7071068286895752
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        1200.0,
+        800.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "xkbg",
+      "color": [
+        0.7547169923782349,
+        0.7547169923782349,
+        0.7547169923782349,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "UI Particle1",
+      "path": "PhoneUI/Phone/MobileMask/Background/UI Particle1",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "ParticleSystem",
+        "ParticleSystemRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -8.0,
+        -6.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "UIParticle"
+      ]
+    },
+    {
+      "name": "UI Particle3",
+      "path": "PhoneUI/Phone/MobileMask/Background/UI Particle3",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "ParticleSystem",
+        "ParticleSystemRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        -55.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "UIParticle"
+      ]
+    },
+    {
+      "name": "Image2 (1)",
+      "path": "PhoneUI/Phone/MobileMask/Background/Image2 (1)",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        5.921347141265869,
+        10.068735122680664,
+        5.395277500152588
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.7071068286895752,
+        0.7071068286895752
+      ],
+      "anchoredPosition": [
+        43.82023239135742,
+        -26.966297149658203
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Starcloud_2",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        0.9098039269447327
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "UI Particle4",
+      "path": "PhoneUI/Phone/MobileMask/Background/UI Particle4",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "ParticleSystem",
+        "ParticleSystemRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.101123571395874,
+        1.853932499885559,
+        1.1235954761505127
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        39.32584762573242,
+        -8.988744735717773
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "UIParticle"
+      ]
+    },
+    {
+      "name": "backstation",
+      "path": "PhoneUI/Phone/MobileMask/Background/backstation",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        5.0337066650390625,
+        9.731831550598145,
+        1.118601679801941
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.7071068286895752,
+        0.7071068286895752
+      ],
+      "anchoredPosition": [
+        -19.10112762451172,
+        -11.235994338989258
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "backstation",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image2",
+      "path": "PhoneUI/Phone/MobileMask/Background/Image2",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        5.0449419021606445,
+        4.797751426696777,
+        4.9550557136535645
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        0.7071068286895752,
+        0.7071068286895752
+      ],
+      "anchoredPosition": [
+        -28.08990478515625,
+        -15.730339050292969
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "starspace_00000",
+      "color": [
+        0.24375218152999878,
+        0.7735849022865295,
+        0.6554208397865295,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image2 (3)",
+      "path": "PhoneUI/Phone/MobileMask/Background/Image2 (3)",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        5.0449419021606445,
+        -5.0674147605896,
+        4.9550557136535645
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        0.7071068286895752,
+        0.7071068286895752
+      ],
+      "anchoredPosition": [
+        197.3000030517578,
+        -16.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "starspace_00000",
+      "color": [
+        0.5805980563163757,
+        0.8381857872009277,
+        0.8867924213409424,
+        0.1764705926179886
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image2 (6)",
+      "path": "PhoneUI/Phone/MobileMask/Background/Image2 (6)",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        5.494380950927734,
+        4.337077617645264,
+        4.9550557136535645
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        0.7508031129837036,
+        0.6605261564254761
+      ],
+      "anchoredPosition": [
+        -234.0,
+        0.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "starspace_00000",
+      "color": [
+        0.50377357006073,
+        1.0,
+        0.851887047290802,
+        0.24313725531101227
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Pages",
+      "path": "PhoneUI/Phone/MobileMask/Pages",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        468.0,
+        868.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MainInterface",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Time",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/Time",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        279.6000061035156
+      ],
+      "sizeDelta": [
+        200.0,
+        77.55000305175781
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 71.08000183105469,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Date",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/Date",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -49.83700180053711,
+        215.1999969482422
+      ],
+      "sizeDelta": [
+        100.31999969482422,
+        21.6299991607666
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 18.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Week",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/Week",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        50.99000549316406,
+        215.1999969482422
+      ],
+      "sizeDelta": [
+        98.0199966430664,
+        21.6299991607666
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 18.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MiddleButton",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/MiddleButton",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        -172.6999969482422
+      ],
+      "sizeDelta": [
+        348.5,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 6.010000228881836,
+        "childAlignment": 4,
+        "childForceExpandWidth": 0,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 0,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "AddressBookButton",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/MiddleButton/AddressBookButton",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        68.24000549316406,
+        -50.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/MiddleButton/AddressBookButton/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        18.0
+      ],
+      "sizeDelta": [
+        28.0,
+        28.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "MailList_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Name",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/MiddleButton/AddressBookButton/Name",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "通讯录",
+      "fontSize": 13.760000228881836,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MessageButton",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/MiddleButton/MessageButton",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        174.25,
+        -50.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/MiddleButton/MessageButton/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        18.0
+      ],
+      "sizeDelta": [
+        32.0,
+        28.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Message_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Name",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/MiddleButton/MessageButton/Name",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "短信",
+      "fontSize": 13.760000228881836,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MusicButton",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/MiddleButton/MusicButton",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        280.260009765625,
+        -50.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/MiddleButton/MusicButton/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        18.0
+      ],
+      "sizeDelta": [
+        32.0,
+        28.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Music_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Name",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MainInterface/MiddleButton/MusicButton/Name",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "音乐",
+      "fontSize": 13.760000228881836,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MusicPlayer",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Phone_BGEffect",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/Phone_BGEffect",
+      "components": [
+        "RectTransform",
+        "Animator"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "BackGround_Effect",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/Phone_BGEffect/BackGround_Effect",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "ParticleSystem",
+        "ParticleSystemRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "UIParticle"
+      ]
+    },
+    {
+      "name": "BG_Effect2",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/Phone_BGEffect/BG_Effect2",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "ParticleSystem",
+        "ParticleSystemRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "UIParticle"
+      ]
+    },
+    {
+      "name": "Line",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/Phone_BGEffect/Line",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        10.300000190734863,
+        7.0,
+        16.610000610351562
+      ],
+      "rotation": [
+        -0.0,
+        -1.0,
+        -0.0,
+        0.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        79.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "line_25",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        0.43921568989753723
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Line_2",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/Phone_BGEffect/Line_2",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        6.989999771118164,
+        5.159999847412109,
+        7.610000133514404
+      ],
+      "rotation": [
+        -0.0,
+        -1.0,
+        -0.0,
+        0.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        13.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "lineblue",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        0.2980392277240753
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "UI Particle",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/Phone_BGEffect/UI Particle",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "ParticleSystem",
+        "ParticleSystemRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        2.1500000953674316,
+        2.0,
+        2.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        54.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "UIParticle"
+      ]
+    },
+    {
+      "name": "PlayMusic",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MusicName",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/MusicName",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -7.800000190734863,
+        -118.4000015258789
+      ],
+      "sizeDelta": [
+        344.1400146484375,
+        35.720001220703125
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 26.200000762939453,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Composer",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/Composer",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -7.800000190734863,
+        -156.39999389648438
+      ],
+      "sizeDelta": [
+        344.1400146484375,
+        35.720001220703125
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 21.100000381469727,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "PlayButton",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/PlayButton",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        2.700000047683716,
+        -324.29998779296875
+      ],
+      "sizeDelta": [
+        44.0,
+        44.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Play_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": [
+        "ToggleImage"
+      ]
+    },
+    {
+      "name": "NextSong",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/NextSong",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        99.0,
+        -324.29998779296875
+      ],
+      "sizeDelta": [
+        44.0,
+        44.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "sprite": "Next_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "PreviousSong",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/PreviousSong",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -97.55000305175781,
+        -324.29998779296875
+      ],
+      "sizeDelta": [
+        44.0,
+        44.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "sprite": "Previous_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Playlist",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/Playlist",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        175.8000030517578,
+        -324.29998779296875
+      ],
+      "sizeDelta": [
+        44.0,
+        44.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "sprite": "List_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "PlayMode",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/PlayMode",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -175.8000030517578,
+        -324.29998779296875
+      ],
+      "sizeDelta": [
+        44.0,
+        44.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Single_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": [
+        "StateSwitchImage"
+      ]
+    },
+    {
+      "name": "PlayTime",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/PlayTime",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -156.0,
+        -261.80999755859375
+      ],
+      "sizeDelta": [
+        61.38999938964844,
+        26.610000610351562
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 14.699999809265137,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "RemainingTime",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/RemainingTime",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        112.30000305175781,
+        -261.80999755859375
+      ],
+      "sizeDelta": [
+        150.0,
+        26.610000610351562
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 14.699999809265137,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "PlaybackProgress",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/PlaybackProgress",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.15800000727176666,
+        -233.60000610351562
+      ],
+      "sizeDelta": [
+        375.6960144042969,
+        20.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "Slider"
+      ]
+    },
+    {
+      "name": "Background",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/PlaybackProgress/Background",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        2.7799999713897705
+      ],
+      "anchorMin": [
+        0.0,
+        0.25
+      ],
+      "anchorMax": [
+        1.0,
+        0.75
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Timebar_9g",
+      "color": [
+        0.5849056243896484,
+        0.5849056243896484,
+        0.5849056243896484,
+        0.5529412031173706
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Fill Area",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/PlaybackProgress/Fill Area",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        3.0517578125e-05,
+        0.0
+      ],
+      "sizeDelta": [
+        -6.1034999816911295e-05,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.25
+      ],
+      "anchorMax": [
+        1.0,
+        0.75
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Fill",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/PlaybackProgress/Fill Area/Fill",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        2.308000087738037
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Timebar_9g",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Handle Slide Area",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/PlaybackProgress/Handle Slide Area",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        1.52587890625e-05,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Handle",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicPlayer/PlayMusic/PlaybackProgress/Handle Slide Area/Handle",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        8.447999954223633,
+        -11.552000045776367
+      ],
+      "anchorMin": [
+        0.6050000190734863,
+        0.0
+      ],
+      "anchorMax": [
+        0.6050000190734863,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Timebar_round",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MusicList",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicList",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -0.8999999761581421,
+        -129.3800048828125
+      ],
+      "sizeDelta": [
+        427.0,
+        557.280029296875
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "MusicList_Bg_9g",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Scroll View",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicList/Scroll View",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.38999998569488525,
+        15.270000457763672
+      ],
+      "sizeDelta": [
+        415.489990234375,
+        480.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "ScrollRect"
+      ]
+    },
+    {
+      "name": "Viewport",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicList/Scroll View/Viewport",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        -3.051800013054162e-05,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "sprite": "UIMask",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        0.35686275362968445
+      ],
+      "unknownComponents": [
+        "Mask"
+      ]
+    },
+    {
+      "name": "Content",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicList/Scroll View/Viewport/Content",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        4.0,
+        0.0
+      ],
+      "sizeDelta": [
+        -8.0,
+        58.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "layoutGroup": {
+        "spacing": 2.0,
+        "childAlignment": 0,
+        "childForceExpandWidth": 0,
+        "childForceExpandHeight": 0,
+        "childControlWidth": 0,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "VerticalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          4,
+          4
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 0,
+        "verticalFit": 2
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Music_1",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicList/Scroll View/Viewport/Content/Music_1",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour",
+        "CanvasRenderer"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        207.5,
+        -29.0
+      ],
+      "sizeDelta": [
+        415.0,
+        50.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": [
+        "Button"
+      ]
+    },
+    {
+      "name": "Content",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicList/Scroll View/Viewport/Content/Music_1/Content",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        400.0,
+        40.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 3.9000000953674316,
+        "childAlignment": 3,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 0,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Playing",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicList/Scroll View/Viewport/Content/Music_1/Content/Playing",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        6.0,
+        -20.0
+      ],
+      "sizeDelta": [
+        12.0,
+        16.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Playing_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Music",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicList/Scroll View/Viewport/Content/Music_1/Content/Music",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        16.525009155273438,
+        -20.0
+      ],
+      "sizeDelta": [
+        343.79998779296875,
+        40.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 10.899999618530273,
+        "childAlignment": 3,
+        "childForceExpandWidth": 0,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "MusicName",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicList/Scroll View/Viewport/Content/Music_1/Content/Music/MusicName",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        -20.0
+      ],
+      "sizeDelta": [
+        200.0,
+        40.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 20.0,
+      "fontColor": [
+        0.0896226167678833,
+        0.4134165048599243,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Composer",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicList/Scroll View/Viewport/Content/Music_1/Content/Music/Composer",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        176.0,
+        -20.0
+      ],
+      "sizeDelta": [
+        100.0,
+        40.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 20.0,
+      "fontColor": [
+        0.0896226167678833,
+        0.4134165048599243,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Time",
+      "path": "PhoneUI/Phone/MobileMask/Pages/MusicList/Scroll View/Viewport/Content/Music_1/Time",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -16.0,
+        0.0
+      ],
+      "sizeDelta": [
+        100.0,
+        40.0
+      ],
+      "anchorMin": [
+        1.0,
+        0.5
+      ],
+      "anchorMax": [
+        1.0,
+        0.5
+      ],
+      "pivot": [
+        1.0,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 20.0,
+      "fontColor": [
+        0.08018869161605835,
+        0.5396434664726257,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "AddressBook",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        468.0,
+        868.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Mobile_Bg",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "AnimationAlpha",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook/AnimationAlpha",
+      "components": [
+        "RectTransform",
+        "CanvasGroup"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Background_1",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook/AnimationAlpha/Background_1",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -0.6999800205230713,
+        -44.2400016784668
+      ],
+      "sizeDelta": [
+        468.0,
+        779.530029296875
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Header",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook/AnimationAlpha/Header",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        369.6000061035156
+      ],
+      "sizeDelta": [
+        200.0,
+        32.88999938964844
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "通讯录",
+      "fontSize": 22.0,
+      "fontColor": [
+        0.2980392277240753,
+        0.2980392277240753,
+        0.2980392277240753,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Scroll View",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook/AnimationAlpha/Scroll View",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -0.5,
+        -20.0
+      ],
+      "sizeDelta": [
+        417.4700012207031,
+        701.1900024414062
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "ScrollRect"
+      ]
+    },
+    {
+      "name": "Viewport",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook/AnimationAlpha/Scroll View/Viewport",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        -17.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "sprite": "UIMask",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": [
+        "Mask"
+      ]
+    },
+    {
+      "name": "Content",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook/AnimationAlpha/Scroll View/Viewport/Content",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0007441072375513613
+      ],
+      "sizeDelta": [
+        0.0,
+        82.32000732421875
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "layoutGroup": {
+        "spacing": -5.159999847412109,
+        "childAlignment": 1,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 0,
+        "childControlWidth": 0,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "VerticalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 0,
+        "verticalFit": 2
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Character",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook/AnimationAlpha/Scroll View/Viewport/Content/Character",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        38.24020004272461,
+        -41.15999984741211
+      ],
+      "sizeDelta": [
+        405.94000244140625,
+        82.31999969482422
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.07999999821186066,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        0.0
+      ],
+      "unknownComponents": [
+        "Button"
+      ]
+    },
+    {
+      "name": "Name",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook/AnimationAlpha/Scroll View/Viewport/Content/Character/Name",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -6.103515625e-05,
+        1.3351000234251842e-05
+      ],
+      "sizeDelta": [
+        405.94000244140625,
+        82.31999969482422
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "阿斯顿发发斯蒂芬",
+      "fontSize": 21.799999237060547,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Avatar",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook/AnimationAlpha/Scroll View/Viewport/Content/Character/Avatar",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -169.39999389648438,
+        0.0
+      ],
+      "sizeDelta": [
+        56.410003662109375,
+        56.40999984741211
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Wire",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook/AnimationAlpha/Scroll View/Viewport/Content/Character/Wire",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        47.13999938964844,
+        -37.399986267089844
+      ],
+      "sizeDelta": [
+        329.2900085449219,
+        4.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "line",
+      "color": [
+        0.9333333373069763,
+        0.9333333373069763,
+        0.9333333373069763,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "BackButton",
+      "path": "PhoneUI/Phone/MobileMask/Pages/AddressBook/AnimationAlpha/BackButton",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -181.8000030517578,
+        370.79998779296875
+      ],
+      "sizeDelta": [
+        36.0,
+        36.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Back_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.0499999523162842
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "CharacterInformation",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        2.479599970683921e-05,
+        1.0490000022400636e-05
+      ],
+      "sizeDelta": [
+        468.0,
+        868.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        0.9333333373069763,
+        0.9333333373069763,
+        0.9333333373069763,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Background_1",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_1",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -3.19479986501392e-05,
+        131.99000549316406
+      ],
+      "sizeDelta": [
+        468.0,
+        67.23999786376953
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Age",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_1/Age",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -198.16006469726562,
+        14.399999618530273
+      ],
+      "sizeDelta": [
+        56.15999984741211,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.0,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 0.0,
+        "childAlignment": 3,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Header",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_1/Age/Header",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        28.079999923706055,
+        0.0
+      ],
+      "sizeDelta": [
+        56.15999984741211,
+        27.690000534057617
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "年龄：",
+      "fontSize": 18.0,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Content",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_1/Age/Content",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        56.15999984741211,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        27.690000534057617
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 20.0,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Favorite",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_1/Favorite",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -198.16006469726562,
+        -13.600001335144043
+      ],
+      "sizeDelta": [
+        75.25,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.0,
+        0.5
+      ],
+      "layoutGroup": {
+        "spacing": 0.0,
+        "childAlignment": 3,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Header",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_1/Favorite/Header",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        37.625,
+        0.0
+      ],
+      "sizeDelta": [
+        75.25,
+        27.690000534057617
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "最喜欢：",
+      "fontSize": 18.0,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Content",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_1/Favorite/Content",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        75.25,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        27.690000534057617
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 20.0,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Background_2",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_2",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -3.19479986501392e-05,
+        21.5
+      ],
+      "sizeDelta": [
+        468.0,
+        131.3800048828125
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Secret",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_2/Secret",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -198.16006469726562,
+        44.5
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.0,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Header",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_2/Secret/Header",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        58.08497619628906,
+        0.0
+      ],
+      "sizeDelta": [
+        116.16999816894531,
+        27.690000534057617
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "秘密：",
+      "fontSize": 18.0,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Content",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_2/Secret/Content",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        196.94000244140625,
+        -58.709999084472656
+      ],
+      "sizeDelta": [
+        389.67999267578125,
+        81.9000015258789
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 20.0,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Background_3",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_3",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -3.19479986501392e-05,
+        -245.32000732421875
+      ],
+      "sizeDelta": [
+        468.0,
+        377.3599853515625
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Introduction",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_3/Introduction",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -198.16006469726562,
+        165.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.0,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Header",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_3/Introduction/Header",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        58.08497619628906,
+        0.0
+      ],
+      "sizeDelta": [
+        116.16999816894531,
+        27.690000534057617
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "简介：",
+      "fontSize": 18.0,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Content",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Background_3/Introduction/Content",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        198.49000549316406,
+        -150.5800018310547
+      ],
+      "sizeDelta": [
+        392.7799987792969,
+        265.6300048828125
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 20.0,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Avatar",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Avatar",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        282.6000061035156
+      ],
+      "sizeDelta": [
+        92.0,
+        92.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Name",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/Name",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -0.699999988079071,
+        208.3000030517578
+      ],
+      "sizeDelta": [
+        130.02000427246094,
+        34.34000015258789
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 25.829999923706055,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "BackButton",
+      "path": "PhoneUI/Phone/MobileMask/Pages/CharacterInformation/BackButton",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -181.8000030517578,
+        370.79998779296875
+      ],
+      "sizeDelta": [
+        36.0,
+        36.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Back_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.0499999523162842
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Message",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        -182.2799530029297
+      ],
+      "sizeDelta": [
+        468.0,
+        868.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.28999999165534973
+      ],
+      "sprite": "Mobile_Bg",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "AnimationAlpha",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha",
+      "components": [
+        "RectTransform",
+        "CanvasGroup"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Background_1",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Background_1",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -0.16910000145435333,
+        -44.2400016784668
+      ],
+      "sizeDelta": [
+        426.3049011230469,
+        779.530029296875
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Header",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Header",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        369.6000061035156
+      ],
+      "sizeDelta": [
+        200.0,
+        32.88999938964844
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "短信",
+      "fontSize": 22.0,
+      "fontColor": [
+        0.2980392277240753,
+        0.2980392277240753,
+        0.2980392277240753,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Scroll View",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Scroll View",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -0.5,
+        -20.0
+      ],
+      "sizeDelta": [
+        417.4700012207031,
+        701.1900024414062
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "ScrollRect"
+      ]
+    },
+    {
+      "name": "Viewport",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Scroll View/Viewport",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        -17.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "sprite": "UIMask",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": [
+        "Mask"
+      ]
+    },
+    {
+      "name": "Content",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Scroll View/Viewport/Content",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        684.1900024414062
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "layoutGroup": {
+        "spacing": -5.159999847412109,
+        "childAlignment": 1,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 0,
+        "childControlWidth": 0,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "VerticalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Character",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Scroll View/Viewport/Content/Character",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        38.24020004272461,
+        -41.15999984741211
+      ],
+      "sizeDelta": [
+        405.94000244140625,
+        82.31999969482422
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.07999999821186066,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        0.0
+      ],
+      "unknownComponents": [
+        "Button"
+      ]
+    },
+    {
+      "name": "Name",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Scroll View/Viewport/Content/Character/Name",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        30.600006103515625,
+        14.899999618530273
+      ],
+      "sizeDelta": [
+        316.0306091308594,
+        82.31999969482422
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 20.0,
+      "fontColor": [
+        0.2980392277240753,
+        0.2980392277240753,
+        0.2980392277240753,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Avatar",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Scroll View/Viewport/Content/Character/Avatar",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -169.39999389648438,
+        0.0
+      ],
+      "sizeDelta": [
+        56.410003662109375,
+        56.40999984741211
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "New",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Scroll View/Viewport/Content/Character/Avatar/New",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        17.799999237060547,
+        -24.600000381469727
+      ],
+      "sizeDelta": [
+        36.0,
+        20.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "New_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MessageText",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Scroll View/Viewport/Content/Character/MessageText",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        3.5,
+        -13.199999809265137
+      ],
+      "sizeDelta": [
+        262.6600036621094,
+        21.489999771118164
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 16.0,
+      "fontColor": [
+        0.6226415038108826,
+        0.6226415038108826,
+        0.6226415038108826,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Time",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Scroll View/Viewport/Content/Character/Time",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        148.00001525878906,
+        13.600000381469727
+      ],
+      "sizeDelta": [
+        95.08599853515625,
+        82.31999969482422
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 16.0,
+      "fontColor": [
+        0.6226415038108826,
+        0.6226415038108826,
+        0.6226415038108826,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Wire",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/Scroll View/Viewport/Content/Character/Wire",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        41.71000671386719,
+        -36.20000076293945
+      ],
+      "sizeDelta": [
+        336.30999755859375,
+        1.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "line",
+      "color": [
+        0.9333333373069763,
+        0.9333333373069763,
+        0.9333333373069763,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "BackButton",
+      "path": "PhoneUI/Phone/MobileMask/Pages/Message/AnimationAlpha/BackButton",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -181.8000030517578,
+        370.79998779296875
+      ],
+      "sizeDelta": [
+        36.0,
+        36.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Back_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.0499999523162842
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "ShortMessage",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        468.0,
+        868.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        0.9333333373069763,
+        0.9333333373069763,
+        0.9333333373069763,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "BackButton",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/BackButton",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -181.8000030517578,
+        370.800048828125
+      ],
+      "sizeDelta": [
+        36.0,
+        36.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Back_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.0499999523162842
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Background_1",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Background_1",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -0.6999800205230713,
+        -44.2400016784668
+      ],
+      "sizeDelta": [
+        468.0,
+        779.530029296875
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Header",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Header",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        369.6000061035156
+      ],
+      "sizeDelta": [
+        200.0,
+        32.88999938964844
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "美玲",
+      "fontSize": 22.0,
+      "fontColor": [
+        0.2980392277240753,
+        0.2980392277240753,
+        0.2980392277240753,
+        0.9882352948188782
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "BuzyText",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/BuzyText",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -192.0,
+        369.0
+      ],
+      "sizeDelta": [
+        392.5603942871094,
+        42.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.0,
+        0.5
+      ],
+      "text": "222222",
+      "fontSize": 16.0,
+      "fontColor": [
+        0.501960813999176,
+        0.501960813999176,
+        0.501960813999176,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Scroll View",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "CanvasGroup"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -0.5000247955322266,
+        330.59503173828125
+      ],
+      "sizeDelta": [
+        417.4700012207031,
+        577.0328979492188
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        1.0
+      ],
+      "unknownComponents": [
+        "ScrollRect"
+      ]
+    },
+    {
+      "name": "Viewport",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        -17.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "UIMask",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": [
+        "Mask"
+      ]
+    },
+    {
+      "name": "Content",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        11.470001220703125,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "layoutGroup": {
+        "spacing": 29.479999542236328,
+        "childAlignment": 1,
+        "childForceExpandWidth": 1,
+        "childForceExpandHeight": 0,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "VerticalLayoutGroup",
+        "padding": [
+          6,
+          0,
+          19,
+          12
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 0,
+        "verticalFit": 2
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "TimeEntry",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/TimeEntry",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        20.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Time",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/TimeEntry/Time",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        20.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Time_BG",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "layoutGroup": {
+        "spacing": 10.0,
+        "childAlignment": 4,
+        "childForceExpandWidth": 0,
+        "childForceExpandHeight": 1,
+        "childControlWidth": 1,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          10,
+          10,
+          10,
+          10
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Date",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/TimeEntry/Time/Date",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        17.3799991607666
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 14.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Time",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/TimeEntry/Time/Time",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        17.3799991607666
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 14.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "LeftItem",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/LeftItem",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        51.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Avatar",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/LeftItem/Avatar",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        35.29999923706055,
+        -24.065000534057617
+      ],
+      "sizeDelta": [
+        46.599998474121094,
+        48.130001068115234
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/LeftItem/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        67.4000015258789,
+        0.0
+      ],
+      "sizeDelta": [
+        243.88999938964844,
+        51.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "sprite": "Dialog_White_9g",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Information_Text",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/LeftItem/Image/Information_Text",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        14.999977111816406,
+        -12.00006103515625
+      ],
+      "sizeDelta": [
+        218.88999938964844,
+        26.0
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "text": "",
+      "fontSize": 19.799999237060547,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "RightItem",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/RightItem",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        51.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/RightItem/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -78.21002197265625,
+        3.0517578125e-05
+      ],
+      "sizeDelta": [
+        243.8900146484375,
+        51.0
+      ],
+      "anchorMin": [
+        1.0,
+        1.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        1.0,
+        1.0
+      ],
+      "sprite": "Dialog_Green_9g",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Information_Text",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/RightItem/Image/Information_Text",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -15.110015869140625,
+        -11.999984741210938
+      ],
+      "sizeDelta": [
+        218.8900146484375,
+        26.0
+      ],
+      "anchorMin": [
+        1.0,
+        1.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        1.0,
+        1.0
+      ],
+      "text": "",
+      "fontSize": 19.799999237060547,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Avatar",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/RightItem/Avatar",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        358.79998779296875,
+        -24.065000534057617
+      ],
+      "sizeDelta": [
+        46.599998474121094,
+        48.130001068115234
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "LeftImage",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/LeftImage",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        213.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Avatar",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/LeftImage/Avatar",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        35.29999923706055,
+        -24.065000534057617
+      ],
+      "sizeDelta": [
+        46.599998474121094,
+        48.130001068115234
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/LeftImage/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        67.4000015258789,
+        0.0
+      ],
+      "sizeDelta": [
+        128.72999572753906,
+        213.75999450683594
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "sprite": "Dialog_White_9g",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Viewport/Content/LeftImage/Image/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        2.1999969482421875,
+        0.0
+      ],
+      "sizeDelta": [
+        117.56999969482422,
+        203.83999633789062
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Misuzu_1",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.0,
+        "downScale": 1.0,
+        "enterScale": 1.0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Scrollbar Vertical",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Scrollbar Vertical",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        1.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        1.0,
+        1.0
+      ],
+      "sprite": "Background",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": [
+        "Scrollbar"
+      ]
+    },
+    {
+      "name": "Sliding Area",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Scrollbar Vertical/Sliding Area",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        -20.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Handle",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Scroll View/Scrollbar Vertical/Sliding Area/Handle",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "UISprite",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Reply",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Reply",
+      "components": [
+        "RectTransform",
+        "CanvasGroup"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.0
+      ],
+      "anchorMax": [
+        0.5,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Background_2",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Reply/Background_2",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        25.0
+      ],
+      "sizeDelta": [
+        467.29998779296875,
+        161.49000549316406
+      ],
+      "anchorMin": [
+        0.5,
+        0.0
+      ],
+      "anchorMax": [
+        0.5,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "sprite": "",
+      "color": [
+        0.9333333373069763,
+        0.9333333373069763,
+        0.9333333373069763,
+        1.0
+      ],
+      "layoutGroup": {
+        "spacing": 12.0,
+        "childAlignment": 1,
+        "childForceExpandWidth": 0,
+        "childForceExpandHeight": 0,
+        "childControlWidth": 0,
+        "childControlHeight": 0,
+        "reverseArrangement": 0,
+        "type": "VerticalLayoutGroup",
+        "padding": [
+          0,
+          0,
+          16,
+          48
+        ]
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Send",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Reply/Background_2/Send",
+      "components": [
+        "RectTransform",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        100.0,
+        43.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": [
+        "Button"
+      ]
+    },
+    {
+      "name": "SendButton",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Reply/Background_2/Send/SendButton",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        146.0,
+        0.0
+      ],
+      "sizeDelta": [
+        94.85000610351562,
+        42.4900016784668
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Option_Btn_9g",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": [
+        "Button"
+      ]
+    },
+    {
+      "name": "Text",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Reply/Background_2/Send/SendButton/Text",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        94.0,
+        42.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "发送",
+      "fontSize": 18.0,
+      "fontColor": [
+        0.4150943160057068,
+        0.4150943160057068,
+        0.4150943160057068,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "ClickReply",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Reply/Background_2/Send/ClickReply",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -55.0,
+        0.0
+      ],
+      "sizeDelta": [
+        273.6700134277344,
+        42.4900016784668
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Option_Btn_9g",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": [
+        "Button"
+      ]
+    },
+    {
+      "name": "Text",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Reply/Background_2/Send/ClickReply/Text",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        274.0,
+        42.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "点击以回复",
+      "fontSize": 16.0,
+      "fontColor": [
+        0.501960813999176,
+        0.501960813999176,
+        0.501960813999176,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Reply_1",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Reply/Background_2/Reply_1",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        374.3399963378906,
+        42.4900016784668
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Option_Btn_9g",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Text",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/Reply/Background_2/Reply_1/Text",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        374.3399963378906,
+        50.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 18.0,
+      "fontColor": [
+        0.21698111295700073,
+        0.21698111295700073,
+        0.21698111295700073,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "MessageImageMask",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/MessageImageMask",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": [
+        "Button"
+      ]
+    },
+    {
+      "name": "MessageImage",
+      "path": "PhoneUI/Phone/MobileMask/Pages/ShortMessage/MessageImageMask/MessageImage",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -0.527999997138977,
+        14.210000038146973
+      ],
+      "sizeDelta": [
+        424.0,
+        748.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Navigation",
+      "path": "PhoneUI/Phone/MobileMask/Navigation",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        1.0
+      ],
+      "anchorMax": [
+        0.5,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Navigation_White",
+      "path": "PhoneUI/Phone/MobileMask/Navigation/Navigation_White",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "PhoneUI/Phone/MobileMask/Navigation/Navigation_White/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        146.1999969482422,
+        -27.299983978271484
+      ],
+      "sizeDelta": [
+        84.0,
+        16.0
+      ],
+      "anchorMin": [
+        1.0,
+        1.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Mobile_Icon_Decorate",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Time",
+      "path": "PhoneUI/Phone/MobileMask/Navigation/Navigation_White/Time",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -144.5,
+        -28.19998550415039
+      ],
+      "sizeDelta": [
+        77.22000122070312,
+        20.459999084472656
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 15.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Navigation_Black",
+      "path": "PhoneUI/Phone/MobileMask/Navigation/Navigation_Black",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Image",
+      "path": "PhoneUI/Phone/MobileMask/Navigation/Navigation_Black/Image",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        146.1999969482422,
+        -27.299999237060547
+      ],
+      "sizeDelta": [
+        84.0,
+        16.0
+      ],
+      "anchorMin": [
+        1.0,
+        1.0
+      ],
+      "anchorMax": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Mobile_Icon_Decorate",
+      "color": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Time",
+      "path": "PhoneUI/Phone/MobileMask/Navigation/Navigation_Black/Time",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -144.5,
+        -28.19998550415039
+      ],
+      "sizeDelta": [
+        77.22000122070312,
+        20.459999084472656
+      ],
+      "anchorMin": [
+        0.0,
+        1.0
+      ],
+      "anchorMax": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 15.0,
+      "fontColor": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "BottomButton",
+      "path": "PhoneUI/Phone/MobileMask/BottomButton",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        434.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.0
+      ],
+      "anchorMax": [
+        0.5,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "SetButton",
+      "path": "PhoneUI/Phone/MobileMask/BottomButton/SetButton",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -105.0999984741211,
+        -385.1000061035156
+      ],
+      "sizeDelta": [
+        52.0,
+        36.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Set_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "HomeButton",
+      "path": "PhoneUI/Phone/MobileMask/BottomButton/HomeButton",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        -1.100000023841858,
+        -385.1000061035156
+      ],
+      "sizeDelta": [
+        52.0,
+        36.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Home_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "BackButton",
+      "path": "PhoneUI/Phone/MobileMask/BottomButton/BackButton",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        106.9000015258789,
+        -385.1000061035156
+      ],
+      "sizeDelta": [
+        52.0,
+        36.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Return_Icon",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "interactable": {
+        "duration": 0.07999999821186066,
+        "downScale": 0.949999988079071,
+        "enterScale": 1.100000023841858
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "PhoneImage",
+      "path": "PhoneUI/Phone/PhoneImage",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "CanvasGroup"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        233.99998474121094,
+        0.0
+      ],
+      "sizeDelta": [
+        468.0,
+        868.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.5
+      ],
+      "anchorMax": [
+        0.0,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Mobile_Board",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "Monologue",
+      "path": "PhoneUI/Monologue",
+      "components": [
+        "RectTransform"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        258.0,
+        69.20001220703125
+      ],
+      "sizeDelta": [
+        100.0,
+        100.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.0
+      ],
+      "anchorMax": [
+        0.5,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "unknownComponents": []
+    },
+    {
+      "name": "DialogBox_down",
+      "path": "PhoneUI/Monologue/DialogBox_down",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour",
+        "MonoBehaviour",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        68.0
+      ],
+      "anchorMin": [
+        0.5,
+        0.5
+      ],
+      "anchorMax": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "sprite": "Dialog_Black_9g",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "layoutGroup": {
+        "spacing": 0.0,
+        "childAlignment": 1,
+        "childForceExpandWidth": 0,
+        "childForceExpandHeight": 0,
+        "childControlWidth": 1,
+        "childControlHeight": 1,
+        "reverseArrangement": 0,
+        "type": "HorizontalLayoutGroup",
+        "padding": [
+          70,
+          70,
+          22,
+          0
+        ]
+      },
+      "contentSizeFitter": {
+        "horizontalFit": 2,
+        "verticalFit": 0
+      },
+      "unknownComponents": []
+    },
+    {
+      "name": "Text",
+      "path": "PhoneUI/Monologue/DialogBox_down/Text",
+      "components": [
+        "RectTransform",
+        "CanvasRenderer",
+        "MonoBehaviour"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "anchoredPosition": [
+        0.0,
+        0.0
+      ],
+      "sizeDelta": [
+        0.0,
+        0.0
+      ],
+      "anchorMin": [
+        0.0,
+        0.0
+      ],
+      "anchorMax": [
+        0.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "text": "",
+      "fontSize": 24.0,
+      "fontColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "unknownComponents": []
+    }
+  ]
+}
