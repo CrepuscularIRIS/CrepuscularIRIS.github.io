@@ -1,1 +1,0 @@
-import{d as e}from"./texlocal-eE-3lTCg.js";import"./index-Dy76UFLB.js";function m({tint:r=16777215,tile:f=1,rough:t=.55,metal:p=.2,normal:o=.5,side:a}={}){return e("Metal012",{repeat:[1/f,1/f],tint:r,rough:t,metal:p,normal:o,side:a})}export{m as paint};

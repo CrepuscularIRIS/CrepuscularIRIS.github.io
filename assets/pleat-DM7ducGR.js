@@ -1,0 +1,1 @@
+import{P as f}from"./index-Bv2GICNK.js";function g(n,s,r,a,c=1){const e=new f(n,s,r*6,8),o=e.attributes.position;for(let t=0;t<o.count;t++){const l=o.getX(t),p=o.getY(t),i=(l/n+.5)*r*Math.PI*2,u=1+(.5-p/s)*.4;o.setZ(t,Math.sin(i+c)*a*u+Math.sin(i*.37+c*2)*a*.4)}return e.computeVertexNormals(),e}export{g as pleat};
