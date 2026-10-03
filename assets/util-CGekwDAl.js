@@ -1,0 +1,1 @@
+import{f as u,z as M}from"./texlocal-eE-3lTCg.js";import"./index-Dy76UFLB.js";function c(t,n,o,a,r,m,b,i=1){return M(n-t,a-o,m-r,b,(t+n)/2,(o+a)/2,(r+m)/2,i)}function e(t,n,o,a,r,m,b,i,h){const x=t+n*o,f=t+n*a;return u(Math.min(x,f),Math.max(x,f),r,m,Math.min(b,i),Math.max(b,i),h)}export{e as fb,c as tb};
