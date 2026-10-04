@@ -1,0 +1,1 @@
+import{z as c}from"./texlocal-wL6qSmKn.js";import"./index-CqXY4KS-.js";function p(r,t,o,n,i,u,e,m=1){return c(t-r,n-o,u-i,e,(r+t)/2,(o+n)/2,(i+u)/2,m)}function a(r){let t=r>>>0||1;return()=>(t=Math.imul(t,1664525)+1013904223>>>0)/4294967296}export{a as lcg,p as tb};
