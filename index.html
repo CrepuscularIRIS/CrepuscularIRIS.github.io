@@ -16,13 +16,40 @@
     <link rel="alternate" type="application/rss+xml" title="Crepuscular Citadel" href="./feed.xml" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2305070a'/%3E%3Cpath d='M16 3 L19 29 L13 29 Z' fill='%23ff9a3c'/%3E%3Ccircle cx='16' cy='12' r='6' fill='none' stroke='%2346d4e8' stroke-width='1.4'/%3E%3C/svg%3E" />
-    <script type="module" crossorigin src="./assets/index-5BT7Rp0K.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DoFkJc7_.css">
+    <script>
+      // The title scene starts downloading with the page, not after the app and its 3D code have loaded:
+      // on the title route, preload its model, buffer and textures (the loaders then read them from the cache).
+      ;(function () {
+        if (location.hash && location.hash !== '#/' && location.hash !== '#') return
+        var base = 'game/title/'
+        // low priority: the app's own code comes first, so the black opening shows at once
+        function pre(href) { var l = document.createElement('link'); l.rel = 'preload'; l.as = 'fetch'; l.crossOrigin = 'anonymous'; l.fetchPriority = 'low'; l.href = href; document.head.appendChild(l) }
+        pre(base + 'title.bin'); pre(base + 'source-fx/Title_A03_windows_B.webp')
+        fetch(base + 'title.gltf').then(function (r) { return r.json() }).then(function (g) {
+          ;(g.images || []).forEach(function (i) { if (i.uri) pre(base + i.uri) })
+        }).catch(function () {})
+      })()
+    </script>
+    <script type="module" crossorigin src="./assets/index-CHp-q2Nb.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-RX6C6kH0.css">
   </head>
   <body style="margin:0;background:#05070a">
     <noscript><p style="color:#f4f4f2;padding:40px;font-family:serif">Crepuscular Citadel needs JavaScript and WebGL.</p></noscript>
-    <!-- static first paint while the bundle downloads (≈4 s on slow 4G);
-         React replaces it on mount. System font, no layout the app keeps. -->
-    <div id="root"><p style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;color:#8a93a0;font:12px/1.6 ui-monospace,monospace;letter-spacing:.2em">CREPUSCULAR CITADEL · LOADING</p></div>
+    <!-- static first paint while the bundle downloads: the opening's first card (the citadel mark on black) with a
+         moving load track, so a slow connection never shows an empty page; React replaces it with the same card -->
+    <div id="root"><div style="position:fixed;inset:0;display:grid;place-content:center;justify-items:center;gap:22px;background:#000">
+      <svg viewBox="0 -8 160 158" width="200" aria-label="Crepuscular Citadel" role="img">
+        <rect x="44" y="12" width="72" height="72" rx="15" transform="rotate(45 80 48)" fill="#cfd0d4"/>
+        <circle cx="93" cy="31" r="7.5" fill="#0b0b0d"/><circle cx="96.5" cy="28.5" r="6.5" fill="#cfd0d4"/>
+        <path d="M56 80V58h3v-3h3v3h3v-3h3v3h3V48l2-12 3-12 3 12 2 12v10h3v-3h3v3h3v-3h3v3h3v22Z" fill="#0b0b0d"/>
+        <path d="M80 42v4M80 52v4M62 66v4M98 66v4M74 70h12" stroke="#cfd0d4" stroke-width="2" stroke-linecap="round"/>
+        <path d="M76 80v-6a4 4 0 0 1 8 0v6" fill="#cfd0d4"/>
+        <text x="80" y="122" text-anchor="middle" style="font:700 15px system-ui,sans-serif;letter-spacing:.14em;fill:#d7d8dc">CREPUSCULAR</text>
+        <text x="80" y="138" text-anchor="middle" style="font:500 9px system-ui,sans-serif;letter-spacing:.5em;fill:#9a9ba0">CITADEL</text>
+      </svg>
+      <div style="width:180px;height:1px;background:#ffffff1f;overflow:hidden"><i style="display:block;width:40%;height:1px;background:#d8d8d8;animation:bootTrack 1.8s ease-in-out infinite"></i></div>
+      <p style="margin:0;color:#6f7378;font:11px system-ui,sans-serif;letter-spacing:.14em">PREPARING THE CITY</p>
+      <style>@keyframes bootTrack{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}</style>
+    </div></div>
   </body>
 </html>
