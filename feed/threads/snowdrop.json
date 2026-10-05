@@ -1,0 +1,98 @@
+{
+ "schema": 1,
+ "host": "snowdrop",
+ "start": "hello",
+ "nodes": {
+  "hello": {
+   "say": [
+    "(sets the paper down) Oh, hello! I was in the middle of a figure I do not quite trust."
+   ],
+   "cards": [
+    {
+     "label": "Which figure?",
+     "next": "figure"
+    },
+    {
+     "label": "What do you work on?",
+     "next": "work"
+    },
+    {
+     "label": "Just saying hi",
+     "next": "hi"
+    }
+   ]
+  },
+  "figure": {
+   "say": [
+    "It compares four baselines, but only one has error bars. I would want the other three re-run with seeds before I believe the gap."
+   ],
+   "set": [
+    "knows-error-bars"
+   ],
+   "cards": [
+    {
+     "label": "How do you check a paper?",
+     "next": "method"
+    },
+    {
+     "label": "What do you work on?",
+     "next": "work"
+    }
+   ]
+  },
+  "work": {
+   "say": [
+    "Vision-language models, long context, reasoning. I write close-read notes and say what a reproduction would need."
+   ],
+   "cards": [
+    {
+     "label": "How do you check a paper?",
+     "next": "method"
+    },
+    {
+     "label": "Show me a note",
+     "open": {
+      "app": "news"
+     }
+    }
+   ]
+  },
+  "method": {
+   "say": [
+    "Five questions: the claim, the table that carries it, the missing baseline, what a reproduction needs, and what the paper does not show. The list is in News."
+   ],
+   "cards": [
+    {
+     "label": "Open it",
+     "open": {
+      "app": "news"
+     }
+    },
+    {
+     "label": "Ask Saturnus about seeds",
+     "chat": "saturnus",
+     "when": "knows-error-bars"
+    },
+    {
+     "label": "Back",
+     "next": "hello"
+    }
+   ]
+  },
+  "hi": {
+   "say": [
+    "Hello! (smiles, a little shy) Come back when the figure makes sense."
+   ],
+   "cards": [
+    {
+     "label": "Which figure?",
+     "next": "figure"
+    },
+    {
+     "label": "What do you work on?",
+     "next": "work"
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-09-01-crucible",
+  "app": "mail",
+  "host": "methode",
+  "kind": "draft",
+  "date": "2026-09-01T09:00:00Z",
+  "title": "Crucible: Building a Crucible for Long-Horizon Automated Research",
+  "summary": "Crucible is a long-horizon automated research platform: Proma frontend on a Prime Agent runtime, orchestrating evidence chains, falsification experiments, feedback iteration, and reproducible delivery.",
+  "body": "A crucible is alchemy's most honest vessel: materials go in, the fire decides, and nothing can pretend. Crucible is my long-horizon automated research platform. In August it completed a merge: the former spec repo and implementation repo were archived, the Proma desktop app migrated wholesale onto a Prime Agent runtime, and this repository became the single main repo.\n\nThe shape of the desktop\n\nThe stack in one sentence: Proma's frontend and session layer on a Prime Agent runtime, with models served through the Qwen and DashScope channels. It is an Electron app; the browser UI and the desktop window share one render layer, and a real Electron main process runs inside the container. Every runtime difference converges into a single adapter file, the boundary I am proudest of after the migration.\n\nOn the research-method side there are four keywords: evidence chains, falsification experiments, feedback iteration, and reproducible delivery. Evidence chains mean conclusions do not come straight out of the model's mouth; they hang on the path it walked: what was read, what was verified, which step was overturned. Falsification experiments are designed in reverse: first ask what result would prove the hypothesis wrong, then run the experiment. Feedback iteration turns failure into the next round's input; reproducible delivery lets someone three months from now rerun everything built today. Orchestration goes to Research Skills and MCP, all started by a single docker compose.\n\ngit clone https://github.com/CrepuscularIRIS/crucible.git\ncd crucible\ncp .env.example .env          # fill in DASHSCOPE_API_KEY\ndocker compose up -d --build  # first build takes about 5-10 minutes\n\nTwo steps remain on the roadmap: bringing Prime's RLM, ipython, and refine mechanisms into the interface, then building a lightweight research loop on top of a basic agent loop. GRILL's gate mechanism is deliberately postponed until it gets a fuller design.\n\nA security footnote I dare not omit\n\nOne detail deserves its own paragraph: one port in the container has no authentication; it can execute commands and read and write files, and the 127.0.0.1 prefix in the compose file is the only line of defense for this deployment. So the README says the thing that must not be forgotten: do not change it to 0.0.0.0. A platform for automated research runs under a different trust model than an ordinary tool: it is authorized to run and modify files for a long time, so every boundary has to be explicit, including \"listen on localhost only\".\n\n> A system authorized to run autonomously for a long time must carry its safety boundaries in documentation, not in its user's vigilance.\n\n- The first virtue of long-horizon tasks is not cleverness but reproducibility: environment, dependencies, and artifacts must be reconstructible.\n- Falsification first: design the experiment that could kill the hypothesis before iterating on it.\n- Explicit boundaries: ports, permissions, and traces go into documents, not into someone's head.\n\nAt dusk I close the laptop and the crucible keeps cooling in the dark. At the next firing, the fire will remember the last calibration.",
+  "chat": {
+    "lines": [
+      "New engineering note: Crucible: Building a Crucible for Long-Horizon Automated Research."
+    ]
+  },
+  "place": {
+    "anchor": "Jinrui",
+    "kind": "personal",
+    "id": "company-entrance"
+  }
+}

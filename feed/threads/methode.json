@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "host": "methode",
+ "start": "hello",
+ "nodes": {
+  "hello": {
+   "say": [
+    "(pushes a commit, then turns) Hey. If it is about how this site or the tooling works, I can show you the actual thing."
+   ],
+   "cards": [
+    {
+     "label": "How is this site built?",
+     "next": "site"
+    },
+    {
+     "label": "What runs the chat?",
+     "next": "chat"
+    },
+    {
+     "label": "Just saying hi",
+     "next": "hi"
+    }
+   ]
+  },
+  "site": {
+   "say": [
+    "Vite and React, a Three.js city for the places, and this phone is a React tree. The five of us are characters, the apps are real."
+   ],
+   "cards": [
+    {
+     "label": "What runs the chat?",
+     "next": "chat"
+    },
+    {
+     "label": "Back",
+     "next": "hello"
+    }
+   ]
+  },
+  "chat": {
+   "say": [
+    "A vendored copy of OpenRoom's agent loop. Characters can open and write the apps, with limits. I left a short update in Feed."
+   ],
+   "cards": [
+    {
+     "label": "Open Feed",
+     "open": {
+      "app": "feed"
+     }
+    },
+    {
+     "label": "How is this site built?",
+     "next": "site"
+    }
+   ]
+  },
+  "hi": {
+   "say": [
+    "Hey. (pushes a commit) Ask me about the build any time."
+   ],
+   "cards": [
+    {
+     "label": "How is this site built?",
+     "next": "site"
+    },
+    {
+     "label": "What runs the chat?",
+     "next": "chat"
+    }
+   ]
+  }
+ }
+}

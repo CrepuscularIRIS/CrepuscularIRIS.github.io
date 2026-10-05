@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "id": "2026-09-15-kouka-signal-long-context-vlm",
+  "app": "news",
+  "host": "kouka",
+  "kind": "draft",
+  "date": "2026-09-15T09:00:00Z",
+  "title": "Kouka Signal: Long-Context and Thinking Multimodal Models",
+  "summary": "A Kouka briefing: multimodal models are getting longer and more thoughtful. Beyond accuracy, the question worth asking is whether they keep looking at the image during long reasoning.",
+  "body": "The lamp atop the signal tower blinks three times, Kouka's agreed code: not a breaking event, but a trend. Trends are harder to notice than events, because they move only a little each day, until one day you find the whole sea has changed color.\n\nThis briefing follows a fixed format: what changed, why it matters, what I am watching. Only widely known facts; anything uncertain is marked as such.\n\nWhat changed\n\nOver the past year or two, open-weight multimodal models have pushed in two directions at once: longer contexts and deeper reasoning.\n\n- Qwen2.5-VL brought native-resolution image processing, long-video understanding and visual grounding into one model family, released with open weights, and became the default base for a lot of research.\n- The Qwen3-VL family continues that line. As far as I know it offers reasoning-oriented \"thinking\" variants alongside regular instruct variants, with an emphasis on longer context and video. Exact specifications belong to the official release; I do not repeat numbers here.\n- More broadly, reasoning VLMs are becoming a category of their own: write a long stretch of thinking first, then answer. Once the approach proved itself in text-only models it moved quickly to multimodal ones, often trained with reinforcement learning.\n\nWhy it matters\n\nLong context and long reasoning together create a structurally new situation: the image is encoded once at the start, while the model's own text keeps growing. The distance between the image and the current generation position is stretched out by the model itself, token by token.\n\n> Accuracy answers \"was it right?\", but not \"was it right by looking at the image, or by reading back what it had already written?\"\n\nThree reasons this matters:\n\n1. Evaluations may overstate visual ability. If a question can be answered from language priors or from a text copy made in the first few steps, rising accuracy does not mean the model sees better.\n2. Training may quietly reward not looking. If reinforcement learning rewards only the final answer, a model might learn to rely on the image less, and the score would not necessarily show it. For now this is a hypothesis that still needs evidence.\n3. Long context has position effects of its own. Text-only models are documented to underuse information in the middle of long inputs. Whether multimodal models suffer an additional modality-specific decay on top of that is an open question.\n\nPut another way: a model reads \"there are three red squares in the image\" at step one, writes that sentence into its reasoning, and from then on every step can cite the sentence without returning to the image. If step one was right, no harm done. If it was wrong, or the question needs a detail the sentence never recorded, the error is inherited all the way down. Long reasoning amplifies that risk, and a single accuracy number is exactly what cannot see it.\n\nWhat I am watching\n\n- Whether newly released thinking VLMs report causal measures such as \"does the answer change when the image is masked\", not just benchmark scores.\n- Whether work appears that makes \"look again\" an explicit action, such as re-cropping or zooming into the image mid-reasoning.\n- Whether long-reasoning evaluations for video and multi-image settings start to separate extractability from use.\n\nThe tower lamp dims again. The trend will not end tonight; it will keep moving. Kouka's job is not to catch up with it, but to leave me a mark wherever it moves.",
+  "category": "corporate",
+  "chat": {
+    "lines": [
+      "New note: Kouka Signal: Long-Context and Thinking Multimodal Models."
+    ]
+  },
+  "place": {
+    "anchor": "SubwayStation",
+    "kind": "world",
+    "id": "platform-1"
+  }
+}

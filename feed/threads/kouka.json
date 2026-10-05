@@ -1,0 +1,76 @@
+{
+ "schema": 1,
+ "host": "kouka",
+ "start": "hello",
+ "nodes": {
+  "hello": {
+   "say": [
+    "(flicks the feed away) You are early. Signals are still coming in."
+   ],
+   "cards": [
+    {
+     "label": "What's new this week?",
+     "next": "new"
+    },
+    {
+     "label": "How do you check sources?",
+     "next": "sources"
+    },
+    {
+     "label": "Just saying hi",
+     "next": "hi"
+    }
+   ]
+  },
+  "new": {
+   "say": [
+    "Honestly: the signal feed is not attached yet, so I have nothing current. When it is, every item has a link and a verified time."
+   ],
+   "cards": [
+    {
+     "label": "Open Signals",
+     "open": {
+      "app": "news"
+     }
+    },
+    {
+     "label": "How do you check sources?",
+     "next": "sources"
+    }
+   ]
+  },
+  "sources": {
+   "say": [
+    "Primary link first, date second, then whether anyone else confirmed it. No link, no post. If I am not sure I say so."
+   ],
+   "set": [
+    "knows-sources"
+   ],
+   "cards": [
+    {
+     "label": "What's new this week?",
+     "next": "new"
+    },
+    {
+     "label": "Back",
+     "next": "hello"
+    }
+   ]
+  },
+  "hi": {
+   "say": [
+    "Hi. (flicks the feed) You are still early."
+   ],
+   "cards": [
+    {
+     "label": "What's new this week?",
+     "next": "new"
+    },
+    {
+     "label": "How do you check sources?",
+     "next": "sources"
+    }
+   ]
+  }
+ }
+}

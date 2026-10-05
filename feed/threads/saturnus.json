@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "host": "saturnus",
+ "start": "hello",
+ "nodes": {
+  "hello": {
+   "say": [
+    "(adjusts the audit sheet) Visitors rarely stop here. Good. Ask about a method, or about a result that failed."
+   ],
+   "cards": [
+    {
+     "label": "What do you audit?",
+     "next": "audit"
+    },
+    {
+     "label": "Show me a failed run",
+     "next": "failed"
+    },
+    {
+     "label": "Just saying hi",
+     "next": "hi"
+    }
+   ]
+  },
+  "audit": {
+   "say": [
+    "Experiments: seeds, configs, versions, whether a result can be re-run. The checklist is in the Vault."
+   ],
+   "cards": [
+    {
+     "label": "Open the checklist",
+     "open": {
+      "app": "vault"
+     }
+    },
+    {
+     "label": "Show me a failed run",
+     "next": "failed"
+    }
+   ]
+  },
+  "failed": {
+   "say": [
+    "None on this phone yet. When there are, they are listed as failed, with the seed. A failed run with a recorded seed is worth more than a lucky one."
+   ],
+   "cards": [
+    {
+     "label": "What do you audit?",
+     "next": "audit"
+    },
+    {
+     "label": "Back",
+     "next": "hello"
+    }
+   ]
+  },
+  "hi": {
+   "say": [
+    "Noted. (a small, measured nod)"
+   ],
+   "cards": [
+    {
+     "label": "What do you audit?",
+     "next": "audit"
+    },
+    {
+     "label": "Show me a failed run",
+     "next": "failed"
+    }
+   ]
+  }
+ }
+}

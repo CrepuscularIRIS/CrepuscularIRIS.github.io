@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "id": "2026-08-20-personal-signal-os",
+  "app": "news",
+  "host": "kouka",
+  "kind": "draft",
+  "date": "2026-08-20T09:00:00Z",
+  "title": "A Personal Signal OS: Let the Internet Pass Through AI First",
+  "summary": "Kouka's signal system: the internet passes through AI first, then my rules decide what deserves attention; 0-8 items a day reach my head.",
+  "body": "Kouka is my signal hand, and this private project, a personal signal system, is its largest landing so far. Think of it as a small organism that treats the whole internet as external stimuli to digest. The core is one sentence: the internet passes through AI first, then my rules decide what deserves attention.\n\nTransport, brain, threshold\n\nThe architecture deliberately splits into three layers, each with one job:\n\n- Transport belongs to Miniflux. It only pulls feeds in, reliably, and makes no judgments. Judgment is the most expensive act and should not happen in the transport layer.\n- The brain is my own SQLite. Items, rules, verdicts, and history all live in one file I can query, edit, and migrate. AI reads the raw stream first and leaves notes and judgments, but the verdict power sits in the rules table.\n- The threshold is the final human gate: 0 to 8 items per day reach my head. Note that 0 is a legal output; silence is a result, not a failure.\n\n-- the brain is a plain SQLite schema (sketch)\ncreate table items   (id, title, url, source, fetched_at);\ncreate table verdicts(item_id, ai_note, rule_id, decision);\ncreate table delivery(day, count check (count between 0 and 8));\n\nChoosing RSS over algorithmic recommendation is a statement of taste: what I subscribe to is not traffic but sources I have claimed myself; the internet delivers material to the door, but the leaderboard does not decide what gets read. Keeping the brain in my own SQLite is just as plain a decision: rules keep changing, and changing state should be readable by its owner. One file is the whole history; when something breaks, I can open it and look, instead of guessing at a black-box service's dashboard.\n\nThe point of AI reading first is not to read everything for me, but to divide equal attention unequally: the vast majority of items deserve one sentence, a rare few deserve a full minute. Most tools are incentivized to make you read more; this system is incentivized to make you read less. AI here is not an amplifier but a pressure valve.\n\nAttention is the last private property\n\nIn an age of information overload, the truly scarce resource is not information but attention.\n\n> The internet passes through AI first, then my rules, and only then reaches me: that ordering is itself a stance.\n\n- AI does first-pass screening and summarization; rules do verdicts and rationing; the two never mix.\n- Data and verdict history stay local: auditable, and reversible.\n- Less is a feature of the system, not a defect.\n\nAt dusk the citadel's signal tower lights only a few small cells inward. Kouka finishes its shift, having filtered the sea down to a few grains of light. The rest belongs to tomorrow.",
+  "category": "corporate",
+  "place": {
+    "anchor": "GameCentral1986",
+    "kind": "world",
+    "id": "game-room-1"
+  }
+}

@@ -1,0 +1,89 @@
+{
+ "schema": 1,
+ "host": "lacia",
+ "start": "hello",
+ "nodes": {
+  "hello": {
+   "say": [
+    "(looks up from the notebook) Good to see you. This week is nearly written up."
+   ],
+   "cards": [
+    {
+     "label": "What do you keep here?",
+     "next": "role"
+    },
+    {
+     "label": "Who else is here?",
+     "next": "others"
+    },
+    {
+     "label": "Show me the apps",
+     "next": "apps"
+    }
+   ]
+  },
+  "role": {
+   "say": [
+    "I put the week together: what was read, built, checked and flagged. Each of us keeps one kind of note. I turn them into one."
+   ],
+   "cards": [
+    {
+     "label": "Who else is here?",
+     "next": "others"
+    },
+    {
+     "label": "Show me the apps",
+     "next": "apps"
+    },
+    {
+     "label": "Open the how-it-works note",
+     "open": {
+      "app": "mail"
+     }
+    }
+   ]
+  },
+  "others": {
+   "say": [
+    "Snowdrop reads papers, Kouka watches signals, Saturnus audits, Methode builds. Go and say hello; they answer in their own way."
+   ],
+   "cards": [
+    {
+     "label": "Talk to Snowdrop",
+     "chat": "snowdrop"
+    },
+    {
+     "label": "Talk to Kouka",
+     "chat": "kouka"
+    },
+    {
+     "label": "Back to Lacia",
+     "next": "hello"
+    }
+   ]
+  },
+  "apps": {
+   "say": [
+    "Mail for long notes, News for signals and paper notes, Feed for short updates, Diary for the author's notes, Vault for audits, Album for pictures. A few games too."
+   ],
+   "cards": [
+    {
+     "label": "Open Mail",
+     "open": {
+      "app": "mail"
+     }
+    },
+    {
+     "label": "Open the Diary",
+     "open": {
+      "app": "diary"
+     }
+    },
+    {
+     "label": "Who else is here?",
+     "next": "others"
+    }
+   ]
+  }
+ }
+}
