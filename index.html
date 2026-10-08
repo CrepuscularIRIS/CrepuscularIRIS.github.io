@@ -30,7 +30,16 @@
         }).catch(function () {})
       })()
     </script>
-    <script type="module" crossorigin src="./assets/index-BXwZJXNQ.js"></script>
+    <script>
+      // offline cold-load: register the runtime cache after the window loads (dev server excluded — it has its own caching)
+      ;(function () {
+        if (location.port === '3020') return
+        window.addEventListener('load', function () {
+          try { navigator.serviceWorker.register((location.pathname.replace(/[^/]*$/, '')) + 'sw.js') } catch (e) { /* offline reading is an enhancement, never a blocker */ }
+        })
+      })()
+    </script>
+    <script type="module" crossorigin src="./assets/index-hs-7eMLX.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-DYoSSc0L.css">
   </head>
   <body style="margin:0;background:#05070a">
