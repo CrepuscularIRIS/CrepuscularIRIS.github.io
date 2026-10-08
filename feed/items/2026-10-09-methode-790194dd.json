@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "id": "2026-10-09-methode-790194dd",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-08T18:55:56Z",
+  "title": "STEPQuant：浙江大学提出 delta-rule 循环状态量化新方法，问鼎 Hugging Face 今日热门论文",
+  "summary": "Hugging Face 今日趋势论文中，浙江大学 STEPQuant 针对 delta-rule 循环状态量化中的误差传播问题提供了精细的分析框架，超越传统量化方法登顶热度榜首。",
+  "body": "Hugging Face 今日趋势论文中，浙江大学 STEPQuant 针对 delta-rule 循环状态量化中的误差传播问题提供了精细的分析框架，超越传统量化方法登顶热度榜首。\n\n论文 · Hugging Face 今日热门\n- STEPQuant: When and Where Errors Matter in Delta-Rule Recurrent State Quantization — 浙江大学提出 delta-rule 循环状态量化中误差何时/何处关键，首次系统分析状态传播中的量化误差，96票登顶 HF 今日热门\n  https://huggingface.co/papers\n- Long-WAM: Scaling the Context of World-Action Models — NVIDIA 发布 Long-WAM，将世界-动作模型的上下文窗口扩展至长序列，87票 + 2.69k浏览量，排名第二\n  https://huggingface.co/papers\n- nanoMuse: An Open-Source Personal Agent for Every Device You Own — 浙江大学开源 nanoMuse 个人 AI 代理，可在各类设备本地运行，81票\n  https://huggingface.co/papers\n\n论文 · arXiv 新提交\n- KVFetch: Hardware-aware KV Cache Eviction for LLM Inference — 提出硬件感知的 KV 缓存淘汰策略，针对长上下文 LLM 推理的内存瓶颈，9月23日提交后在 HF 获高度关注\n  https://arxiv.org/abs/2610.08811\n- FluidPD: In-Place Elasticity for SLO-Aware Prefill-Decode Disaggregated LLM Serving — 浙江大学/MSRA/Minja 团队提出 FluidPD，通过 FluidToken + FluidRole 机制在 P/D 分离架构中实现原地弹性调度，在 Azure 生产轨迹上 SLO 达成率较 SGLang 最高提升 94.6 个百分点，10月2日提交\n  https://arxiv.org/abs/2610.06917\n- The Cost of Long Memory: State, Context, and Stability Complexity in Sequence Models — 为长程依赖序列模型提供状态复杂度上下界，证明达到预测误差 τ 需要 Θ(log²(1/τ)) 个状态，并揭示分数阶长记忆如何改变几何结构，9月24日提交\n  https://arxiv.org/abs/2610.08816\n- BRaVeS: Bounded Autonomy and Verifiable Safety for Agentic AI — 提出 BRaVeS 框架，通过 Lyapunov 有界共识（LBCF）将连续认知风险映射为有限抽象，确保 Agentic AI 在高风险环境中的形式化安全边界，9月24日提交，已被 J. Intell. Robot. Syst. 录用\n  https://arxiv.org/abs/2610.08815\n\nGitHub 与基建\n- Ollama v0.40.2 发布 — Ollama 最新版本包含量化改进与模型支持更新（10月5日发布）\n  https://github.com/ollama/ollama/releases/tag/v0.40.2\n- Cursor 远程控制功能上线 — Cursor 10月6日更新引入远程控制模式，支持跨设备协作编辑与屏幕共享\n  https://cursor.com/changelog\n\n系统 · Linux 内核与新闻\n- Kage：Linux 内核新 LFI 防护方案 — Phoronix 10月7日报道，新开源项目 Kage 为 Linux 驱动引入轻量级隔离层，防御本地文件包含漏洞\n  https://www.phoronix.com/news/Kage-Linux-Driver-Isolation\n- Ubuntu 紧急修复 Mir botnet 攻击 — Phoronix 10月8日报道，Ubuntu 服务器遭 Mir 僵尸网络 DDoS 攻击，官方已推送紧急安全补丁\n  https://www.phoronix.com/news/Ubuntu-Servers-DDoS-Mir\n- EXT4 正式宣布废弃 data=journal 模式 — Phoronix 10月8日报道，ext4 文件系统将 data=journal 写入模式标记为废弃，建议迁移至 writeback 或 ordered 模式\n  https://www.phoronix.com/news/EXT4-Deprecates-Journal-Mode\n\nSource: https://huggingface.co/papers",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers",
+    "verified_at": "2026-10-08T18:55:56Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
