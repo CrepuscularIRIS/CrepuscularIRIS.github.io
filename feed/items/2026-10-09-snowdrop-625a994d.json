@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "id": "2026-10-09-snowdrop-625a994d",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-09T09:13:04Z",
+  "title": "50M-token 长记忆：H100 单卡 KV 缓存比全重算快 4 倍、能耗降 12 倍",
+  "summary": "通过把 KV 状态存到加密 NVMe 盘而非每次重算，Gemma 4 12B/31B 在 5000 万 token 流上 GPU 显存保持平稳，12B 召回准确率 82%，31B 达 98%，且无一幻觉。",
+  "body": "通过把 KV 状态存到加密 NVMe 盘而非每次重算，Gemma 4 12B/31B 在 5000 万 token 流上 GPU 显存保持平稳，12B 召回准确率 82%，31B 达 98%，且无一幻觉。\n\narXiv · 长上下文 & 记忆\n- Real Long-Term Memory for AI: A 50-Million-Token Window That Is Faster and Cheaper Than Recompute — 用 galahad-kv 包把 KV 状态存 NVMe 而非重算，H100 单卡 5000 万 token 流显存恒定，速度提升 2.8–4.3×，能耗降低 8.8–12.3×。12B 召回准确率 82%，31B 98%，且无一幻觉——解决了长上下文推理的成本瓶颈。\n  https://arxiv.org/abs/2610.10845\n- SFT-as-Context Mitigates Forgetting in Supervised Fine-Tuning — 训练无关方法：用 SFT 模型回复作上下文，让母模型通过 in-context learning 获取专项能力，同时保留通用能力。在 19 个模型对、11 个基准上验证，AIME 2024 仅落后 SFT 模型 2.2 分，且能解决单模型无法处理的需同时调用专项+通用能力的查询。\n  https://arxiv.org/abs/2610.11132\n- Stochastic Teacher Intervention for Agentic On-Policy Distillation (STI-OPD) — 多轮 Agent 蒸馏中错误累积导致 teacher 监督失效的问题，用 KL 散度引导的随机 teacher 干预 + 重要性加权 Reverse KL 目标解决，在 tool-integrated reasoning 和长 horizon 交互上全面超越最强 OPD 基线。\n  https://arxiv.org/abs/2610.10878\n\narXiv · 效率 & 理论\n- Grammar Concept Annotation at Scale: Deployed Fine-Tuned Small Language Models Outperform Prompted Frontier Models — Qwen3.5 0.8B 微调后精度/召回率超过 GPT-5.4 和 GPT-5.6 Sol，服务成本降低 16×。线上 A/B 实验显示用户参与度+15.8%，新课 GMV+13.2%——小模型 fine-tune 在垂直任务上全面碾压提示大模型。\n  https://arxiv.org/abs/2610.10827\n- Sparse Attention Is Matrix Approximation, Not Choosing from a Bag of Values (MASA) — 核心洞察：现有稀疏注意力把注意力矩阵当「数值袋」挑大值，忽略了矩阵乘法结构。提出 MASA，以减少矩阵乘近似误差为准则来选稀疏单元，可直接插入现有稀疏注意力框架，多基准一致提点。\n  https://arxiv.org/abs/2610.10871\n\nHugging Face 博客\n- The model that didn't exist, so you made it yourself — 作者用 ML Intern 一天内用 9B 模型标注了 8797 条样本，微调出 0.8B CPU 可运行的 prompt 重写模型，成本仅 16 美元。实战演示如何借助 AI 实习生从零构建垂直领域小模型。\n  https://huggingface.co/blog/building-with-ml-intern\n\nSource: https://arxiv.org/abs/2610.10845",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.10845",
+    "verified_at": "2026-10-09T09:13:04Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily"
+  }
+}

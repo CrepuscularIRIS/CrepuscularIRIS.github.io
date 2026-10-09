@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "id": "2026-10-09-methode-742d6f39",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-09T01:00:05Z",
+  "title": "AIDA多智能体框架将SOC告警漏检率从40.4%压至3.1%，F1达0.958",
+  "summary": "一项针对安全运营中心（SOC）LLM告警分诊的多智能体研究揭示，现有所有方法均漏检超40%攻击告警，并据此提出AIDA框架，通过结构化证据检索与辩证审查机制实现SOTA。",
+  "body": "一项针对安全运营中心（SOC）LLM告警分诊的多智能体研究揭示，现有所有方法均漏检超40%攻击告警，并据此提出AIDA框架，通过结构化证据检索与辩证审查机制实现SOTA。\n\n论文 / 研究\n- AIDA: From Investigation Failures to Reliable SOC Agents (arXiv 2610.10608) — 多智能体安全运营框架，对抗性调查+辩证分析将告警漏检率从40.4%降至3.1%，F1达0.958；基于ALERT-BENCH 1247条真实告警评估。\n  https://arxiv.org/abs/2610.10608\n- KVFetch: Temporal Prefetching for KV Cache Compression (arXiv 2610.08811) — 解决KV缓存压缩中\"顺序遗忘\"问题——当前方法只做内容关联查找，忽略位置顺序访问；时序预取机制使RULER-16K verbatim复制指标从0.8大幅升至78.4，LongBench零额外开销；已投稿ICLR 2027。\n  https://arxiv.org/abs/2610.08811\n- CANDO: Cooperative Agentic Network for Layout Design (arXiv 2610.10044) — 训练-free多智能体布局生成框架，通过验证循环迭代优化；发布ALPS-Bench含1000条真实设施布局；已接收NeurIPS 2026。\n  https://arxiv.org/abs/2610.10044\n- FluidPD: SLO-Aware Prefill-Decode Disaggregated LLM Serving (arXiv 2610.06917) — P/D分离LLM服务的原地弹性机制FluidToken+FluidRole，SLO达标率较静态SGLang提升最多94.6个百分点；微软Azure生产追踪负载验证。\n  https://arxiv.org/abs/2610.06917\n- Tokka-Bench: Evaluating Tokenizers Across 100 Languages (arXiv 2610.08794) — 首个跨100种自然语言+20种编程语言的分词器评测框架；发现词表分配策略比原始词表大小更关键；开源代码与交互式仪表盘。\n  https://arxiv.org/abs/2610.08794\n\n研究博客 / 社区\n- LiquidAI Open D1: Multimodal Decision Models for the Edge — LiquidAI发布开源多模态D1决策模型子集，适用于边缘设备部署；HF博客同日发表，含技术细节与Benchmark结果。\n  https://huggingface.co/blog/LiquidAI/open-d1\n- Building with ML Intern: Custom Model Creation on Hugging Face — Hugging Face官方博客介绍ML Intern项目，如何利用社区基础设施构建自定义模型的新工作流。\n  https://huggingface.co/blog/building-with-ml-intern\n\nGitHub 与基建\n- llama.cpp b11514 — llama.cpp 2026-10-08连续发布5个版本（b11510-b11514），含性能和兼容性修复；本地LLM推理核心库持续高频迭代。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11514\n- Hugging Face Transformers v5.19.0 — Transformers 10月6日发布v5.19.0；v5.18.0于9月30日发布，版本节奏加快。\n  https://github.com/huggingface/transformers/releases/tag/v5.19.0\n- Ollama v0.40.2 — Ollama最新版v0.40.2，支持主流开源模型的本地推理运行；近期活跃发布。\n  https://github.com/ollama/ollama/releases/tag/v0.40.2\n\n系统\n- [vx]swap showdown (LWN) — LWN深入分析Linux [vx]swap机制，探讨不同swap策略在内核调度层面的差异与性能权衡；10月8日发布。\n  https://lwn.net/Articles/1098399\n- Evolving the LAVD scheduler from gaming to servers (LWN) — LAVD调度器从游戏场景向服务器场景演进的最新进展；Linux内核调度子系统重要更新。\n  https://lwn.net/Articles/1097209\n\nSource: https://arxiv.org/abs/2610.10608",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.10608",
+    "verified_at": "2026-10-09T01:00:05Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
