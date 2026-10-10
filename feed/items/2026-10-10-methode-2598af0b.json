@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "id": "2026-10-10-methode-2598af0b",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-10T04:59:26Z",
+  "title": "Ollama v0.40.2 紧急修复服务器 duplicate guards，今天 vLLM 也发了 proto-v0.5.0",
+  "summary": "Ollama 今晨 11:37 推送 v0.40.2，修复了服务器端 duplicate guards 和 downgrade guards 被暴露的问题；同日 11:11 vLLM 也发布了 proto-v0.5.0 里程碑预发版。",
+  "body": "Ollama 今晨 11:37 推送 v0.40.2，修复了服务器端 duplicate guards 和 downgrade guards 被暴露的问题；同日 11:11 vLLM 也发布了 proto-v0.5.0 里程碑预发版。\n\nGitHub 与基建\n- Ollama v0.40.2 — server: hide duplicate and downgrade guards from list — 今晨 11:37 CST 发布，修复服务器端将 duplicate guards 和 downgrade guards 错误暴露给 list API 的问题，同时合并多项 rc 修复，需升级。\n  https://github.com/ollama/ollama/releases/tag/v0.40.2\n- vLLM proto-v0.5.0 — 今晨 11:11 CST 发布，proto 前缀表明这是通往 v0.5 主版本的协议/功能预发布版本，标志着 vLLM 进入新里程碑阶段。\n  https://github.com/vllm-project/vllm/releases/tag/proto-v0.5.0\n\n论文 / 研究\n- AgentGarten: Code Worlds for Evolving Agents（HF 日热榜第 1，134 👍） — Hugging Face Daily Papers 今日榜首，围绕代码环境构建可演化 AI Agent 世界观的框架，具体细节需点入论文页查阅。\n  https://huggingface.co/papers\n- MirroS（HF 日热榜，105 👍） — HF 今日热榜第二，105 个赞，值得关注的多模态或推理相关新工作。\n  https://huggingface.co/papers\n- TokenRouter: Token 级 LLM 路由高效推理系统（HF 日热榜，110 👍） — 清华团队工作，解决 Token 级别 LLM 路由的高效服务问题，HF 日热榜第三（110 👍），TSinghua-NICS-EFC 联合署名。\n  https://huggingface.co/papers\n\nSource: https://github.com/ollama/ollama/releases/tag/v0.40.2",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ollama/ollama/releases/tag/v0.40.2",
+    "verified_at": "2026-10-10T04:59:26Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
