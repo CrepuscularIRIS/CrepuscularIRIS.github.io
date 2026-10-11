@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "id": "2026-10-11-methode-98acfe91",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-11T01:00:01Z",
+  "title": "Transformers 正式支持 llama.cpp GGUF 格式，原生加载本地量化模型",
+  "summary": "Hugging Face Transformers 团队宣布原生支持加载 GGUF 格式模型，用户可通过 `from_pretrained` 直接调用 llama.cpp 量化权重，无需额外推理后端。",
+  "body": "Hugging Face Transformers 团队宣布原生支持加载 GGUF 格式模型，用户可通过 `from_pretrained` 直接调用 llama.cpp 量化权重，无需额外推理后端。\n\n论文 / 研究博客\n- AgentGarten: Code Worlds for Evolving Agents — HF 热门榜首（145 赞），提出代码世界环境用于训练和演化 AI Agent，带来更真实的代码任务评测基准。\n  https://huggingface.co/papers\n- TokenRouter: 高效 Token 级 LLM 路由服务系统 — HF 热门第三（131 赞），清华团队开源 token 级路由推理系统，显著降低多模型部署成本。\n  https://huggingface.co/papers\n- Transformers now runs llama.cpp quants — Transformers v5 现已原生集成 GGUF 加载，Mac/本地用户可直接用 PyTorch API 跑量化模型，复用 llama.cpp Metal/GGML kernel（105 赞）。\n  https://huggingface.co/blog/transformers-llama-cpp-quants\n- Impactful scheduling for GPU clusters — Allen AI 详解大规模 GPU 集群调度策略，探讨如何在保持高占卡率的同时优先分配高影响力研究任务（Oct 9 新帖）。\n  https://huggingface.co/blog/allenai/impactful-scheduling\n\nGitHub 与基建\n- llama.cpp b11549–b11552 — 昨日（Oct 10）连续发布 4 个版本，新增 LLAMA_ARG_SLOT_SAVE_PATH 环境和 MTP 多模态输入处理修复。\n  https://github.com/ggml-org/llama.cpp/releases\n- Ollama v0.40.3-rc0 — Oct 9 发布 RC 版本，v0.40 系列持续迭代。\n  https://github.com/ollama/ollama/releases/tag/v0.40.3-rc0\n- vLLM proto-v0.5.0 — Oct 9 新标签版本，proto 分支推进 v0.5 大版本。\n  https://github.com/vllm-project/vllm/releases/tag/proto-v0.5.0\n- Cline SDK v0.0.92 — Oct 8 发布，包含 shared/llms/core/agents 多模块同步更新。\n  https://github.com/cline/cline/releases/tag/sdk%2Fsdk%2Fv0.0.92\n- LangChain langchain-core==1.6.9, langchain==1.4.4 — Oct 8 连发多版本 patch，langchain-core 和 langchain 主包同步更新。\n  https://github.com/langchain-ai/langchain/releases\n\n系统\n- LWN: The [vx]swap showdown — LWN 10 月 8 日长文，梳理内核 swap 层两种竞争解决方案的现状与分歧，涉及直接交换槽与持久化 swap 文件的效率问题。\n  https://lwn.net/Articles/908371\n\nSource: https://huggingface.co/blog/transformers-llama-cpp-quants",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/blog/transformers-llama-cpp-quants",
+    "verified_at": "2026-10-11T01:00:01Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
