@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "id": "2026-10-11-methode-2435ebd7",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-11T02:58:09Z",
+  "title": "DeepMind 开源 EmbeddingGemma 2：原生多模态 Embedding 模型，轻量级隐私优先",
+  "summary": "Google DeepMind 于 10 月 6 日发布了 EmbeddingGemma 2，一款开源、轻量且原生支持多模态的 Embedding 模型，聚焦隐私优先场景，在同类开放模型中达到领先水平。",
+  "body": "Google DeepMind 于 10 月 6 日发布了 EmbeddingGemma 2，一款开源、轻量且原生支持多模态的 Embedding 模型，聚焦隐私优先场景，在同类开放模型中达到领先水平。\n\n论文 / HF 每日热门（10月9日）\n- AgentGarten: Code Worlds for Evolving Agents（149票） — 为 AI Agent 构建虚拟代码世界，实现持续演化与能力迭代，是近期最具创意的 Agent 基础设施工具之一。\n  https://huggingface.co/papers\n- TokenRouter: Token 级 LLM 路由高效推理系统（135票） — 清华团队提出在 Token 级别对 LLM 请求进行智能路由的 Serving 系统，兼顾延迟与吞吐。\n  https://huggingface.co/papers\n- Learn2Play Bench: LLM Agent 在陌生环境中从经验学习的能力评估（145票） — 新加坡国立大学提出全新 Benchmark，系统评估语言模型从经验中快速适应的能力。\n  https://huggingface.co/papers\n- SuperNav: 任意任务、任意场景的具身 Agent 导航系统（103票） — 浙大团队开源具身 AI 导航方案，可泛化到开放世界的各类任务与场景。\n  https://huggingface.co/papers\n- MiMo-V2.6: 强化学习自举实现模型自我改进（70票） — 小米提出通过规模化 RL 让模型自主发现更优解题策略，无需人类标注。\n  https://huggingface.co/papers\n\nHF 博客 / 研究进展\n- Impactful scheduling for GPU clusters — Allen AI 团队详解 GPU 集群调度器设计思路，探讨如何让高影响力研究优先获得计算资源，同时维持高占用率。\n  https://huggingface.co/blog/allenai/impactful-scheduling\n- Multimodal open D1 decision models for the edge — LiquidAI 开源面向边缘的多模态 D1 决策模型，支持视觉、语言联合推理，适合资源受限的端侧部署。\n  https://huggingface.co/blog/LiquidAI/open-d1\n- Transformers now runs llama.cpp quants — Hugging Face Transformers 现已原生支持直接加载 llama.cpp 量化模型，打通模型压缩与主流训练框架。\n  https://huggingface.co/blog/transformers-llama-cpp-quants\n- Falcon ASR — TII UAE 开源 Falcon 系列 ASR 自动语音识别模型，进一步扩展 Falcon 生态。\n  https://huggingface.co/blog/tiiuae/falcon-asr\n\nGitHub 与基建\n- Ollama v0.40.2 / v0.40.3-rc0 — 本地 LLM 推理引擎持续迭代，v0.40.2 修复重复 guard 问题，v0.40.3-rc0 已出（10月11日凌晨）。\n  https://github.com/ollama/ollama/releases/tag/v0.40.2\n- Hugging Face Transformers v5.19.0 — 10月6日发布的新版，引入了对 llama.cpp 量化的原生支持及其他核心改进。\n  https://github.com/huggingface/transformers/releases/tag/v5.19.0\n- llama.cpp b11552 / b11549 — 10月10日连续构建，新增 slot-save-path 环境变量支持及多模态 token 处理修复。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11552\n- vLLM v0.31.0 稳定版 & proto-v0.5.0 — v0.31.0 正式版发布，同时 proto-v0.5.0 引入新的序列化协议。\n  https://github.com/vllm-project/vllm/releases/tag/v0.31.0\n- LangChain 多包同步更新（core 1.6.9、langchain 1.4.4 等） — 10月8日 langchain 全系包同步发布补丁版本，修复多项稳定性问题。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-core%3D%3D1.6.9\n- Claude Code v2.1.296 — Anthropic 官方编码 Agent 更新至 v2.1.296（10月9日），保持高频迭代节奏。\n  https://github.com/anthropics/claude-code/releases/tag/v2.1.296\n\nSource: https://deepmind.google/blog/embeddinggemma-2-an-open-lightweight-multimodal-embedding-model",
+  "category": "tech",
+  "source": {
+    "url": "https://deepmind.google/blog/embeddinggemma-2-an-open-lightweight-multimodal-embedding-model",
+    "verified_at": "2026-10-11T02:58:09Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
