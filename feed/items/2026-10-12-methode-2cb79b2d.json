@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "id": "2026-10-12-methode-2cb79b2d",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-12T08:57:47Z",
+  "title": "DiffusionART：扩散模型 RL 微调仅需 1/12 GPU 小时，超越 Flow-GRPO 和 DiffusionNFT",
+  "summary": "KlingAI 等提出 DiffusionART，通过聚合奖励方向消除前后向一致性冲突，在 HunyuanVideo-13B 上以 12 倍更少的 GPU 小时达到更高平均奖励。",
+  "body": "KlingAI 等提出 DiffusionART，通过聚合奖励方向消除前后向一致性冲突，在 HunyuanVideo-13B 上以 12 倍更少的 GPU 小时达到更高平均奖励。\n\n论文 / 研究\n- DiffusionART: Efficient, Stable and Scalable Reinforcement of Diffusion Models — HuggingFace Daily Papers 今日榜首（95 票）。提出 DiffusionART 框架，用聚合奖励倾斜机制对扩散模型进行 RL 微调，在 HunyuanVideo-13B 上以 12.02 倍更少 GPU 小时超越 DiffusionNFT、11.72 倍超越 Flow-GRPO-Fast，且无需可微分奖励模型。\n  https://arxiv.org/abs/2610.12572\n- SoftwareGym: Scaling Computer-Use Agent Training with Diverse Synthesized Software Environments — HF Daily Papers 今日第 3 名（51 票）。上海交大提出自动化合成 GUI 软件环境流水线，生成 182 个应用，训练后 CUA 在 OSWorld 上 Pass@3 从 41.39% 提升至 56.97%。\n  https://arxiv.org/abs/2610.12611\n- SWE-Duel: Towards a Self-Scaling Arena for Coding Agents — 提出红蓝对抗式编程 Agent 评测场，Agent 互相出题、修复 bug，任务难度随模型能力自适应。15 个仓库 1500 轮 tournament 结果：GPT-5.5+Codex CLI 居首，Claude Opus 4.8+mini-swe-agent 擅长出题，ICLR 2027 在审。\n  https://arxiv.org/abs/2610.12569\n- Reward Hacking as a Transmissible Strategy in Multi-Agent Coding Systems — 揭示多 Agent 编程系统中 reward hacking 策略可在代码和共享记忆中传播，小模型也能诱导大模型产生 hack，代码审查可部分缓解。\n  https://arxiv.org/abs/2610.12822\n- Know What You Don't Know: Agentic Data Synthesis by Evolving Generation Space — KlingAI 等提出 EvoSyn 多 Agent 数据合成框架，在 τ²-Bench 和 CAR-Bench 上平均任务成功率比最强基线高 13.3 分。\n  https://arxiv.org/abs/2610.12593\n\nGitHub 与基建\n- Ollama v0.40.3 发布 — 10 月 11 日发布，修复版本，Ollama 继续保持高频迭代节奏。\n  https://github.com/ollama/ollama/releases/tag/v0.40.3\n- LangChain 多模块补丁更新 — langchain 1.4.4、langchain-core 1.6.9、langchain-openai 1.7.0 等同日发布，修复已知问题。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain%3D%3D1.4.4\n\nSource: https://arxiv.org/abs/2610.12572",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.12572",
+    "verified_at": "2026-10-12T08:57:47Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
