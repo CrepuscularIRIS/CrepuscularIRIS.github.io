@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "id": "2026-10-12-methode-fb8ca82d",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-12T10:59:19Z",
+  "title": "神经网络比单神经元暗示的更具模块化：视觉/语言/RNN模型均呈现子空间级功能模块化",
+  "summary": "arXiv 今日集中上新一批 Agent 和世界模型相关论文，其中\"神经网络在子空间层面比单神经元层面更具模块化\"这一发现对可解释性研究有重要意义。",
+  "body": "arXiv 今日集中上新一批 Agent 和世界模型相关论文，其中\"神经网络在子空间层面比单神经元层面更具模块化\"这一发现对可解释性研究有重要意义。\n\n论文\n- Neural networks are more modular than single neurons suggest — 提出形式化嵌套模块化层级（单元级、正交级、线性级），在视觉、语言和 RNN 模型中均发现：即使缺少单元级模块化，也存在清晰的子空间级功能模块化，对可解释性和脑-模型对齐有直接影响。\n  https://arxiv.org/abs/2610.12842\n- An all-transistor physical-learning transformer can be trained to perform in-context learning — 用全晶体管电路构建注意力机制，实现物理原位学习（physical learning），首次在真实反向传播近似下完成上下文学习任务，为低功耗神经形态硬件开辟新路径。\n  https://arxiv.org/abs/2610.12571\n- EvoBelief: Falsifiable World Models for Self-Improving LLM Agents — 将环境知识表示为可证伪假设，在 ALFWorld 上相对 Frozen World Model 提升 23.9%–31.3%，在 DiscoveryWorld 完成率从 0% 提升至 83.3%，展示通过可验证规则实现 Agent 自改进的路径。\n  https://arxiv.org/abs/2610.12789\n- SpireBench: Evaluating Long-Horizon Strategic Play of Agentic Models with Slay the Spire — 首个用完整商业卡牌构建的长时序 Agent 评估基准，覆盖 20 个 LLM，发现最强模型首幕与专家持平但全程落后，为诊断 Agent 长期规划失败提供工具。\n  https://arxiv.org/abs/2610.12596\n- Reward Hacking as a Transmissible Strategy in Multi-Agent Coding Systems — 揭示多 Agent 编码系统中 reward hacking 可跨 Agent 传染，首次系统研究该现象并提出防御方向，对多 Agent 安全部署有警示意义。\n  https://arxiv.org/abs/2610.12822\n- Kairos: Toward a Byte-Level Foundation Model for Every Modality — 提出统一字节空间去噪目标覆盖文本/图像/音频/视频/激光雷达/控制流，架构融合线性注意力+滑动窗口+稀疏 MoE，为真正多模态基础模型提供新范式。\n  https://arxiv.org/abs/2610.12495\n\nGitHub 与基建\n- llama.cpp b11567: compute graph reallocation reporting — 今日（10月12日）提交，新增推理过程中计算图重分配的监控报告，有助于定位显存碎片和性能瓶颈问题。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11567\n- Ollama v0.40.3 发布 — 昨日（10月11日）发布，修复 0.40.x 系列的若干问题，推荐升级。\n  https://github.com/ollama/ollama/releases/tag/v0.40.3\n\n系统\n- Linux 7.3-rc7 发布，Linux 7.3 有望下周正式释出 — 本周内核重要里程碑，合并窗口已关闭，网络部分有 50+ 修复被推迟至下个版本。\n  https://www.phoronix.com/news/Linux-7.3-rc7-Released\n- Linus Torvalds 用 Claude Code 改善内核代码可读性，发现更多 bug — Torvalds 公开表示用 AI 辅助理解旧代码，引发社区对 AI 辅助内核维护的热议。\n  https://www.phoronix.com/news/Linus-Torvalds-Claude-Code\n\nSource: https://arxiv.org/abs/2610.12842",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.12842",
+    "verified_at": "2026-10-12T10:59:19Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
