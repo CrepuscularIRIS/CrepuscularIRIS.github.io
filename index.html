@@ -16,6 +16,11 @@
     <link rel="alternate" type="application/rss+xml" title="Crepuscular Citadel" href="./feed.xml" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2305070a'/%3E%3Cpath d='M16 3 L19 29 L13 29 Z' fill='%23ff9a3c'/%3E%3Ccircle cx='16' cy='12' r='6' fill='none' stroke='%2346d4e8' stroke-width='1.4'/%3E%3C/svg%3E" />
+    <style>html[data-skip-boot="true"] #static-boot { display: none !important; }</style>
+    <script id="startup-route">
+      // Decide before the HTML fallback can paint; the app's guard runs after the bundle loads.
+      if (new URLSearchParams(location.search).has('skipboot') || !['', '#', '#/'].includes(location.hash)) document.documentElement.dataset.skipBoot = 'true'
+    </script>
     <script>
       // The title scene starts downloading with the page, not after the app and its 3D code have loaded:
       // on the title route, preload its model, buffer and textures (the loaders then read them from the cache).
@@ -39,14 +44,14 @@
         })
       })()
     </script>
-    <script type="module" crossorigin src="./assets/index-DZnqvd9W.js"></script>
+    <script type="module" crossorigin src="./assets/index-P-gl0Fnr.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-C8Ygf8hu.css">
   </head>
   <body style="margin:0;background:#05070a">
     <noscript><p style="color:#f4f4f2;padding:40px;font-family:serif">Crepuscular Citadel needs JavaScript and WebGL.</p></noscript>
     <!-- static first paint while the bundle downloads: the opening's first card (the citadel mark on black) with a
          moving load track, so a slow connection never shows an empty page; React replaces it with the same card -->
-    <div id="root"><div style="position:fixed;inset:0;display:grid;place-content:center;justify-items:center;gap:22px;background:#000">
+    <div id="root"><div id="static-boot" style="position:fixed;inset:0;display:grid;place-content:center;justify-items:center;gap:22px;background:#000">
       <svg viewBox="0 -8 160 158" width="200" aria-label="Crepuscular Citadel" role="img">
         <rect x="44" y="12" width="72" height="72" rx="15" transform="rotate(45 80 48)" fill="#cfd0d4"/>
         <circle cx="93" cy="31" r="7.5" fill="#0b0b0d"/><circle cx="96.5" cy="28.5" r="6.5" fill="#cfd0d4"/>
