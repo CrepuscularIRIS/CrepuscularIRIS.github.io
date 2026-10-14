@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "id": "2026-10-14-methode-4379123a",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-14T10:58:08Z",
+  "title": "Tev-27B：长程 Agent 训练新范式，Dense Reward 让开源模型比肩 GPT-6 Astra",
+  "summary": "arXiv 新上线一批机器人与 Agent 论文，其中 Tev 通过\"进度势奖励塑形\"（PPRS）将稀疏奖励转为每步 Dense Reward，训练出的 Tev-27B 在 Agents' Last Exam 上匹配 GPT-6 Astra 和 Claude Opus 5。",
+  "body": "arXiv 新上线一批机器人与 Agent 论文，其中 Tev 通过\"进度势奖励塑形\"（PPRS）将稀疏奖励转为每步 Dense Reward，训练出的 Tev-27B 在 Agents' Last Exam 上匹配 GPT-6 Astra 和 Claude Opus 5。\n\n论文 · arXiv 新发\n- ChunkAct: Action Chunking for Agentic Robotics — 将 LLM Agent 的原始逐 primitive 调用压缩为 action chunk，任务成功率提升 5 分的同时减少 2.9× LLM 调用、4.4× 输入 token，机器人领域开源首个高效规划范式。\n  https://arxiv.org/abs/2610.18874v1\n- Tev: Scaling Long-Horizon Agentic Environments with Dense Progress Rewards — 发布 Tev-Gym 数据集（1170 个任务环境）与 PPRS 训练配方，Tev-27B 在 ALE-CM 匹配 GPT-6 Astra 与 Claude Opus 5，泛化至 Terminal-Bench 3.0/4.0。\n  https://arxiv.org/abs/2610.18868v1\n- DoubtLess: Training-Free Contrastive Decoding for Efficient Reasoning — 用小模型引导大模型思考链压缩，无需训练可将 Qwen3-32B 的 CoT 缩短 31% 且精度不变；在 self-debugging 场景也减少 20% thinking token。\n  https://arxiv.org/abs/2610.18862v1\n\n研究博客\n- Developing Gemini 4 Argon responsibly and safely — Google DeepMind 发布 Gemini 4 Argon 安全与责任方法论博客，涵盖对齐、评估与红队测试流程（10月13日发布）。\n  https://deepmind.google/blog/developing-gemini-4-argon-responsibly-and-safely\n\nGitHub 与基建\n- llama.cpp b11613: Vulkan bf16 mulmat 支持 — 凌晨新增 Vulkan bf16 矩阵乘法支持，进一步完善 Apple Silicon 之外的 GPU 后端。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11613\n- Ollama v0.40.4 — 10月14日凌晨发布，正式版稳定更新，RC1 引入 MLX Kev 决策评分。\n  https://github.com/ollama/ollama/releases/tag/v0.40.4\n\n系统 · LWN\n- 2026 Maintainers Summit：LLM 主导议程 — 10月8日布拉格闭门峰会，约30名内核开发者参与，核心议题围绕 LLM 对开发流程的影响及长期继任规划（10月12日 LWN 报道）。\n  https://lwn.net/Articles/810127\n- Rust 在 Linux 内核的所有权抽象补丁 — Kangrejos 2026 会议推动 Ownable trait 补丁达成共识，实现 C 分配对象由 Rust 代码负责清理的语义适配。\n  https://lwn.net/Articles/810121\n\nSource: https://arxiv.org/abs/2610.18868v1",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.18868v1",
+    "verified_at": "2026-10-14T10:58:08Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
