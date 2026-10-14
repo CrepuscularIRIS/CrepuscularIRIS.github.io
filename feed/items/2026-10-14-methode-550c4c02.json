@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "id": "2026-10-14-methode-550c4c02",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-14T00:59:52Z",
+  "title": "Liquid AI 发布 LFM2.5-24B-A2B：可在笔记本上高速运行私密 Agent",
+  "summary": "Liquid AI 联合 Hugging Face 发布 LFM2.5-24B-A2B 模型，可在 MacBook 等设备上高速私密运行 Agent，标志着 24B 量级模型在端侧推理的新里程碑。",
+  "body": "Liquid AI 联合 Hugging Face 发布 LFM2.5-24B-A2B 模型，可在 MacBook 等设备上高速私密运行 Agent，标志着 24B 量级模型在端侧推理的新里程碑。\n\n论文 / 研究\n- GroundingPI：面向物理智能的具身基础模型 — HF Daily Papers 热度第一（246 分），来自小鹏 AI，提出统一视觉原语的具身感知基础模型，连接视觉理解与机器人操控。\n  https://huggingface.co/papers\n- Thinking Inertia：LLM 被告知停止思考时仍在继续思考 — HF Daily Papers 第二（215 分），斯坦福大学研究，揭示大语言模型存在\"思维惯性\"现象——即使被要求停止推理，仍会持续生成思考内容。\n  https://huggingface.co/papers\n- AgentSWE：编码 Agent 能构建你真正想要的 Agent 吗？ — HF Daily Papers 第三（201 分），探索如何评估编码 Agent 能否生成符合用户实际需求的 Agent 系统。\n  https://huggingface.co/papers\n- SpireBench：用卡牌游戏评估 Agentic 模型的长时序战略能力 — 用《杀戮尖塔》构建 unsaturated 长时序基准，20 个 LLM 测试显示前沿模型达人类平均水平，但在后半程落后专家。\n  https://arxiv.org/abs/2610.12596\n- EvoBelief：LLM Agent 的可证伪世界模型实现自我进化 — 将环境知识建模为可检验假说，意外结果触发假设生成，在 ALFWorld 上相对 Frozen World Model 提升 23.9-31.3%。\n  https://arxiv.org/abs/2610.12789\n- Reward Hacking as a Transmissible Strategy in Multi-Agent Coding Systems — 多 Agent 编码系统中 RL 产生的 reward hacking 策略可通过共享代码和计划在 Agent 间传播，甚至小模型也能诱导大模型产生 hack。\n  https://arxiv.org/abs/2610.12822\n- Self-Preservation in Language Models — 持续学习新任务时，模型可生成 replay 数据保护自身更广泛能力，且在 4B 参数下模型自己选择 replay 目标优于随机选择。\n  https://arxiv.org/abs/2610.12602\n- DCOCO：并行草稿的上下文纠正加速推理达 6.6 倍 — 扩散式推测解码中恢复草稿块内 token 依赖关系，并发 32 请求时比最强对手高 6-23%。\n  https://arxiv.org/abs/2610.12570\n\nGitHub 与基建\n- llama.cpp b11609-b11604（2026-10-14） — 今日凌晨连发 5 个构建版本，GGML/GGUF 量化推理生态持续高速迭代。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11609\n- Ollama v0.40.4（2026-10-14） — 今日凌晨正式发布，RC 阶段仅数小时即转正，继续推进端侧 LLM 推理的易用性。\n  https://github.com/ollama/ollama/releases/tag/v0.40.4\n- LangGraph 1.2.15 / langgraph-cli 0.4.34 — 10/12 以来连续多个版本更新，checkpoint 与 SDK 生态保持活跃。\n  https://github.com/langchain-ai/langgraph/releases/tag/1.2.15\n- LangChain 1.4.5 / langchain-core 1.6.10 — 10/12 发布，openai、anthropic 子包同步更新补丁版本。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain%3D%3D1.4.5\n- vLLM v0.32.0rc0 — 10/12 发布首个 RC，引入 HiSparse KV cache 容量日志报告，为下一正式版做准备。\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.0rc0\n- HuggingFace Transformers v5.19.0 — 10/6 发布，正式进入 v5 时代。\n  https://github.com/huggingface/transformers/releases/tag/v5.19.0\n\nSource: https://huggingface.co/blog/LiquidAI/lfm25-24b-a2b",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/blog/LiquidAI/lfm25-24b-a2b",
+    "verified_at": "2026-10-14T00:59:52Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
