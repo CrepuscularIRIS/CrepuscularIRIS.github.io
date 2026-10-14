@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "id": "2026-10-14-methode-55127ff0",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-14T08:59:10Z",
+  "title": "Loose Lips：LLM Agent 能力越强，隐私泄露越严重",
+  "summary": "新研究揭示 LLM Agent 的任务能力与隐私泄露存在结构性耦合：越强的模型越容易泄露敏感信息，思维链模型泄露尤为严重，且泄露量随对话轮数增长可达 3 倍。",
+  "body": "新研究揭示 LLM Agent 的任务能力与隐私泄露存在结构性耦合：越强的模型越容易泄露敏感信息，思维链模型泄露尤为严重，且泄露量随对话轮数增长可达 3 倍。\n\n论文 / 研究\n- Loose Lips: Understanding Privacy Leakage in Agentic Dialogue — 基于 Contextual Integrity 理论构建 4410 条双 Agent 对话基准，系统评估 Qwen3/Llama 3.1 七种模型，发现能力与隐私泄露呈结构性耦合，Chain-of-thought 显著扩大泄露面，6 轮对话泄露量是 1 轮的 3 倍。Spotlight @ HAIPS/COLM 2026。\n  https://arxiv.org/abs/2610.14071\n- PsyBer-Agent: Psychology-Driven User Agent for Recommender Systems — 提出心理学引擎模拟用户疲劳、情感与偏好漂移，用非平衡 Gromov-Wasserstein 最优传输对齐真实交互日志，可在 5M 并发任务规模下保持稳定行为保真度，GitHub 已开源。\n  https://arxiv.org/abs/2610.13989\n- MDN-VJEPA: Multimodal Probabilistic Joint-Embedding World Models — 将混合密度网络引入变分 JEPA，用高斯混合建模多条可能未来轨迹，保证跨时间步预测一致性，在分支未来规划决策上显著优于点估计方法。\n  https://arxiv.org/abs/2610.13956\n- LeWAM: End-to-End World and Action Modeling with JEPAs — HF 今日热度第一（228 赞），提出端到端世界-动作联合建模框架，统一 JEPAs 范式下的动作预测与状态推断。\n  https://huggingface.co/papers\n\nGitHub 与基建\n- Ollama v0.40.4 — 今日发布，正式版包含 MLX Kev 决策评分等新功能，RC 迭代周期短至每日一版。\n  https://github.com/ollama/ollama/releases/tag/v0.40.4\n- Cline v4.1.24 / SDK v0.0.93 — 今日同步发布桌面版与 SDK 多个模块更新，CLI 同步升至 v3.0.71。\n  https://github.com/cline/cline/releases/tag/v4.1.24\n- Cursor: Origin App Marketplace — 10 月 13 日更新，Cursor 正式推出应用商店，允许用户发布和分发基于 MCP 的应用扩展。\n  https://cursor.com/changelog/origin-app-marketplace\n- LangChain 多模块更新 — langchain 1.4.5、langchain-core 1.6.10、langchain-openai 1.7.1 等多包同步更新（10 月 12 日）。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain%3D%3D1.4.5\n\n系统\n- Linux 内核计划取消 AI 补丁 \"Assisted-By\" 标注要求 — Phoronix 报道，Linux 内核开发者正在讨论废除 AI/LLM 生成补丁必须标注 \"Assisted-by\" 的政策，因 AI 使用已十分普遍。\n  https://www.phoronix.com/news/Linux-Dropping-Assisted-By-Req\n- Mesa 扩展 NPU 支持：YOLOX + PyTorch — 开源 Mesa 驱动栈继续推进 NPU 能力，新增 YOLOX 目标检测支持与 PyTorch 集成。\n  https://www.phoronix.com/news/Mesa-Torx-YOLOX-PyTorch\n- NVIDIA Nova Linux 7.4 推进 Rust DRM GPU 驱动 — NVIDIA Nova 开源 Rust GPU 驱动为 Linux 7.4 合并窗口提交新补丁，继续领跑内核 Rust Direct Rendering Manager 基础设施。\n  https://www.phoronix.com/news/NVIDIA-Nova-Linux-7.4-Changes\n\nSource: https://arxiv.org/abs/2610.14071",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.14071",
+    "verified_at": "2026-10-14T08:59:10Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
