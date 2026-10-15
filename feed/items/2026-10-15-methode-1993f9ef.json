@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-15-methode-1993f9ef",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-15T10:59:37Z",
+  "title": "Long-Horizon-Terminal-Bench 2.0：全新自动化长程 Agent 评测基准发布",
+  "summary": "arXiv 今日涌现大量 Agent 相关论文，其中 Long-Horizon-Terminal-Bench 2.0 推出全自动化的长程任务构建与持续进展评测流程，值得重点关注。",
+  "summary_en": "This digest covers new papers and infrastructure releases in AI/ML research from the past ~2 hours (Oct 15, 2026). Key items include Long-Horizon-Terminal-Bench 2.0 (automated long-horizon agent evaluation), Echo (error-compensated 4-bit tensor-parallel communication for LLM training), vLLM v0.32.0rc2, Ollama v0.40.5, DeepMind's Gemini 4 Argon safety blog, and AllenAI's HiRO-ACEv2 climate emulator on Hugging Face. System news covers LWN's weekly edition on kernel maintainers summit and Rust in the Linux kernel.",
+  "body": "arXiv 今日涌现大量 Agent 相关论文，其中 Long-Horizon-Terminal-Bench 2.0 推出全自动化的长程任务构建与持续进展评测流程，值得重点关注。\n\narXiv 新论文（cs.AI / cs.LG / cs.CL / cs.MA）\n- Long-Horizon-Terminal-Bench 2.0: Automating Diverse Task Construction and Measuring Sustained Agent Progress — 提出全自动构建长程评测任务的新范式，覆盖多样化场景，可系统追踪 Agent 在开放环境中的持续进步。\n  https://arxiv.org/abs/2610.14146\n- Echo: Error-Compensated 4-Bit Tensor-Parallel Communication for LLM Training and Inference — 提出误差补偿的 4 位张量并行通信方案，可显著降低大模型训练与推理的通信开销。\n  https://arxiv.org/abs/2610.14277\n- Harness²: Recursive Agent Harnessing for an Open World — 探索递归式 Agent 编排框架，使多个 Agent 能协同完成开放式世界任务。\n  https://arxiv.org/abs/2610.14224\n- Which Metadata Matters for LLM Tool Selection in MCP? Evidence from Controlled Factor-Level Interventions — 系统性研究 MCP 协议中元数据对工具选择的影响，为构建更可靠的工具调用系统提供实证依据。\n  https://arxiv.org/abs/2610.14334\n- CLASHarness: Benchmarking Multi-Agent Conflict in Computer Use via a Controllable and Verifiable Generation Pipeline — 首个针对多 Agent 在计算机使用任务中冲突行为的可控、可验证评测基准。\n  https://arxiv.org/abs/2610.19128\n- When Is Smaller Greener? Right-Sizing Language Models for Agentic AI — 研究 Agent 场景下模型大小的能效权衡，探讨小型模型何时比大模型更环保、更高效。\n  https://arxiv.org/abs/2610.19345\n\nGitHub 与基础设施\n- vLLM v0.32.0rc2 发布 — 2026年10月15日 17:50 UTC 发布，vLLM 继续快速迭代，新版本含 HiSparse 优化与 KV cache 相关改进。\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.0rc2\n- Ollama v0.40.5-rc0 / v0.40.4 稳定版 — 2026年10月14–15日连发两版，RC0 新增 MLX Kev 决策评分功能，稳定版已合并发布。\n  https://github.com/ollama/ollama/releases/tag/v0.40.5-rc0\n- langchain-openai==1.7.2 / langchain==1.4.6 — 2026年10月14日 LangChain 生态双双更新，langchain 与 langchain-openai 补丁版本同日发布。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-openai%3D%3D1.7.2\n- Cline v4.1.24 / desktop-nightly-20261014011413 — 2026年10月13–14日 Cline SDK 与桌面版均有关键更新，LLM 接口层持续活跃。\n  https://github.com/cline/cline/releases/tag/v4.1.24\n\n研究博客\n- Google DeepMind：Gemini 4 Argon 安全与责任开发方法 — 10月13日发布，详细阐述 Gemini 4 Argon 模型的安全评估、对齐与风险管理流程。\n  https://deepmind.google/blog/developing-gemini-4-argon-responsibly-and-safely\n- DeepMind × 新加坡政府：端侧 AI 诈骗检测微调模型 — 10月14日发布，将 Gemini 轻量模型微调后部署于端侧设备，用于实时诈骗检测。\n  https://deepmind.google/blog/on-device-ai-scam-detection-mddi\n- AllenAI / Ai2：HiRO-ACEv2 — 3km 分辨率极端天气模拟，成本仅为传统模式的 1/300 — 2026年10月14日发布，ACE 粗分辨率模型 + HiRO 细化模块联合，以极低成本生成全球 3km 气候数据。\n  https://huggingface.co/blog/allenai/hiro-acev2\n\n系统 / Linux\n- LWN Weekly Edition — 2026 内核维护者峰会、Rust 目标、GCC 与 LLM — 10月15日周刊上线，涵盖 2026 内核维护者峰会政策讨论、GCC 项目的 LLM 使用政策、Rust 所有权系统在内核 C 代码适配中的进展等重要内容。\n  https://lwn.net\n\nSource: https://arxiv.org/abs/2610.14146",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.14146",
+    "verified_at": "2026-10-15T10:59:37Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
