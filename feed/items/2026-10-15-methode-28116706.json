@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-15-methode-28116706",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-15T02:58:34Z",
+  "title": "Your Transformer Is Secretly Elastic",
+  "summary": "新研究提出\"弹性Transformer\"方法，无需重训练即可将预训练模型在22M到8B参数范围内按需压缩60%，同时保持平滑性能降级，为异构硬件下的动态算力分配提供了实用解决方案。",
+  "summary_en": "Researchers introduce a retraining-free method to make pre-trained transformers \"elastic\" — able to adapt on-the-fly across a continuum of computational budgets. By jointly ranking every individual MLP neuron and attention head on a common scale through differentiable relaxation, the method achieves smooth degradation up to 60% sparsity across 27 vision and text transformer encoders (22M to 8B parameters). For example, pruning DINOv3 ViT-H+/16 to 50% sparsity removes 427M parameters with only 0.8% ImageNet-1k accuracy loss, and at 60% sparsity an AugReg ViT-B/16 achieves up to 1.80× higher throughput and 1.26× lower single-query latency on A100 GPU.",
+  "body": "新研究提出\"弹性Transformer\"方法，无需重训练即可将预训练模型在22M到8B参数范围内按需压缩60%，同时保持平滑性能降级，为异构硬件下的动态算力分配提供了实用解决方案。\n\n论文 / 研究\n- Your Transformer Is Secretly Elastic — 无需重训练即可将Transformer压缩60%，在22M–8B参数、27个视觉/文本模型上实现平滑性能降级；A100上吞吐量提升1.8倍。\n  https://arxiv.org/abs/2610.20588v1\n- Co-Evolving Acting and Forecasting for Language Agents — 提出多步动作目标，让语言agent的acting和forecasting协同进化；在5个benchmark超越GRPO和RL基线，ScienceWorld样本效率提升1.9–2倍。\n  https://arxiv.org/abs/2610.20597v1\n- One Task, Many Interfaces: CIPR提升LLM Agent鲁棒性 — 跨接口策略正则化（CIPR）使LLM agent对界面扰动更鲁棒，恢复10.5%性能损失而不影响原始接口准确率。\n  https://arxiv.org/abs/2610.20576v1\n- Humanoid Policies权重空间的扩散建模 — 用潜在扩散框架在权重空间直接生成人形控制网络（走路、跳舞、旋转踢），并发现第一层权重编码机器人运动学先验。\n  https://arxiv.org/abs/2610.20606v1\n\nHugging Face 今日热门\n- LatentLoop: 非对称计算分配的Looped MoE扩展 — 今日HF热榜第一（24票），微软等提出非对称计算分配的MoE新架构。\n  https://huggingface.co/papers\n- LensErase: 任意擦除的基础模型 — 微软基础模型，可对任意内容进行精准擦除，29票。\n  https://huggingface.co/papers\n- Agentic Video Generation的世界状态框架 — 浙大提出以世界状态为中心的agentic视频生成新范式，21票。\n  https://huggingface.co/papers\n\nGitHub 与基建\n- llama.cpp b11630 — 10月15日 08:36（北京时间）构建，包含CUDA GDN chunked内核优化。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11630\n- Ollama v0.40.4 — 10月13日稳定版发布，支持最新模型格式与本地推理能力。\n  https://github.com/ollama/ollama/releases/tag/v0.40.4\n- vLLM v0.32.0rc1 — 10月15日 RC1，更新Humming依赖并移除NVFP4 scale workaround。\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.0rc1\n- Cline desktop-v0.0.46 — 10月13日发布，AI编程agent桌面端持续迭代。\n  https://github.com/cline/cline/releases/tag/desktop-v0.0.46\n\nSource: https://arxiv.org/abs/2610.20588v1",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.20588v1",
+    "verified_at": "2026-10-15T02:58:34Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
