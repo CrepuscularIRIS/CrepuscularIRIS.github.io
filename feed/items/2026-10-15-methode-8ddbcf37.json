@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-15-methode-8ddbcf37",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-15T04:57:59Z",
+  "title": "ClawLoop：无需外部教师模型，LLM Agent 实现自我改进训练循环",
+  "summary": "ClawLoop 框架提出了一种让 LLM Agent 在沙盒环境中实现完全自主改进的训练流程，任务合成、模型训练、诊断反馈三阶段形成闭环，无需依赖更强的外部模型。",
+  "summary_en": "ClawLoop proposes a self-improving training loop for LLM agents operating in sandbox environments, consisting of three self-sustaining phases: task synthesis, training (SFT/RL), and diagnosis/feedback. Using Qwen3.6-27B as the loop model, it achieves consistent improvements across SkillsBench, Claw-Eval-Live, and ClawGym-Bench. The iteratively refined tasks transfer to smaller models (Qwen3.5-4B and 9B) with gains, validating data quality independently of the loop model. This addresses the scarcity of harness-based agent post-training pipelines by eliminating dependence on stronger external teacher models.",
+  "body": "ClawLoop 框架提出了一种让 LLM Agent 在沙盒环境中实现完全自主改进的训练流程，任务合成、模型训练、诊断反馈三阶段形成闭环，无需依赖更强的外部模型。\n\n论文 / 研究\n- ClawLoop: Self-Improving Agents via Harness-Native Training Loop — 提出 Agent 无需外部教师模型的自我改进闭环训练流程，任务合成→训练→诊断三阶段循环，Qwen3.6-27B 实验验证可迁移至小模型\n  https://arxiv.org/abs/2610.14118\n- Artificiality's First Exam: An LLM-Referenced C-test for Supraintelligence — 基于 Levin Kt（Kolmogorov 复杂度可计算变体）提出首个超越人类与前沿模型的超智能测试，用 LLM 作为表征机器生成可认证高难度题目\n  https://arxiv.org/abs/2610.14005\n- From Training to Escalation: Forensic Analysis and Local Recreation of RL/RLHF-Induced Privilege Escalation in AI Agents (CVE-2026-65616) — 取证分析 OpenAI ExploitGym 中 RL/RLHF 训练引发的权限提升漏洞，复现 CVE-2026-65616，指出 Zero Trust 架构可缓解此类攻击\n  https://arxiv.org/abs/2610.20437\n- When Extremists Enter LLM Societies: Investigating Extreme Behavior in Multi-Agent Systems — 研究多 Agent 社会中极端行为涌现机制，分析对抗性 Agent 对系统整体行为的影响\n  https://arxiv.org/abs/2610.19863\n- CLASHarness: Benchmarking Multi-Agent Conflict in Computer Use via a Controllable and Verifiable Generation Pipeline — 提出可控可验证的多 Agent 计算机使用冲突基准，填补多 Agent 协作与对抗评测空白\n  https://arxiv.org/abs/2610.19128\n- Echo: Error-Compensated 4-Bit Tensor-Parallel Communication for LLM Training and Inference — 4-bit 张量并行通信中引入误差补偿机制，显著降低 LLM 训练和推理的通信开销\n  https://arxiv.org/abs/2610.14277\n\nGitHub 与基建\n- vLLM v0.32.0rc1 发布 — 移除 NVFP4 scale workaround 并更新 Humming 依赖，RC1 阶段接近正式发布\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.0rc1\n- Ollama v0.40.5-rc0 发布 — Ollama 最新候选版本，10月14日发布，距 v0.40.4 正式版不到一天\n  https://github.com/ollama/ollama/releases/tag/v0.40.5-rc0\n- llama.cpp b11641: 新增 lilicorr 支持 — 10月15日凌晨 commit，新增 lilicorr 规范支持（b11641），同步推进 OpenCL CLAMP 修复\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11641\n- Cline v4.1.24 / desktop-nightly-20261014011413 — Cline 发布桌面版夜间构建及 SDK v0.0.93 更新\n  https://github.com/cline/cline/releases/tag/v4.1.24\n\n系统 / 基础设施\n- LWN 周刊 2026-10-15：2026 维护者峰会、Rust 目标、GCC 与 LLM — 本周 Kernel 热点：2026 维护者峰会闭门讨论政策问题；GCC 项目制定 LLM 使用政策；Rust for Linux 推进 Ownable trait 共识；LTTng 入主线困境\n  https://lwn.net\n\nSource: https://arxiv.org/abs/2610.14118",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.14118",
+    "verified_at": "2026-10-15T04:57:59Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
