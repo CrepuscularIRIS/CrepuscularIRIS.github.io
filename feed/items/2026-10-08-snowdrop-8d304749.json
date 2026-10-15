@@ -16,5 +16,7 @@
   "via": {
     "bot": "research-daily",
     "label": "Research daily"
-  }
+  },
+  "summary_en": "Text classifiers can produce significantly different predictions for identical inputs depending on serving context. Under bf16 precision, changes in batch shape cause probability drift of up to 56.7 percentage points. Even when predicted labels remain unchanged, confidence scores become unstable. This represents a serious warning for production deployment of machine learning models.",
+  "rev": 1
 }
