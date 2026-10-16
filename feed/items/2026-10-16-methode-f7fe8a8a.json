@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-16-methode-f7fe8a8a",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-16T04:58:47Z",
+  "title": "ARIA：运行时多智能体系统修复框架，可自动学习\"何时干预、如何修正\"",
+  "summary": "多智能体 LLM 系统执行中一个错误会级联传播，上海团队提出 ARIA 框架，构建 2.4 万条成功/失败轨迹数据集，训练小型修复模型在运行时判断\"何时干预、如何修正\"，并在未见框架和模型上实现泛化。",
+  "summary_en": "ARIA (Agent Runtime Inspection and Amendment) is a framework for learning when and how to repair ongoing LLM-based multi-agent executions. The authors collect over 24,000 successful and failed trajectories across four multi-agent frameworks, six benchmarks, and eight host models, constructing the first large-scale dataset pairing failed trajectories with execution-verified repairs. A compact model is trained to recognize when intervention is needed and how to correct an ongoing run, demonstrating strong repair performance in both post-hoc and runtime settings with generalization to unseen frameworks and host models.",
+  "body": "多智能体 LLM 系统执行中一个错误会级联传播，上海团队提出 ARIA 框架，构建 2.4 万条成功/失败轨迹数据集，训练小型修复模型在运行时判断\"何时干预、如何修正\"，并在未见框架和模型上实现泛化。\n\n论文 · 研究\n- ARIA: Runtime Inspection and Amendment for Multi-Agent Systems — 首个大规模多智能体执行失败-修复配对数据集（3,953 对），训练修复模型在运行时主动介入，防止错误级联传播，框架 agnostic。\n  https://arxiv.org/abs/2610.20780\n- Evolving Together, Failing Apart: The Skill-Policy Co-evolution Trap — 揭示自改进智能体中技能库与策略模型协同训练的一个隐藏脆弱点：技能漂移后策略急剧退化，提出 CODA 评估协议并给出 worst-case 指标。\n  https://arxiv.org/abs/2610.20845\n- The World Won't Wait: Evaluating and Teaching Agents Under a Live Clock — 提出 RealtimeBench，含 6 类游戏 180 个任务，在游戏不暂停条件下评估智能体；TORSI 方法让慢速强模型指导快速弱模型，两轮将 Jev 分数从 13.51 提至 24.19。\n  https://arxiv.org/abs/2610.20665\n- EvolvingBrain: Adaptive Skill System for Multi-modal Agents Self-Evolution — 提出分层技能自演化架构，从轨迹中提取程序模式和错误模式，生成可复用技能；在 VAB-Minecraft 和 DiscoveryWorld 上验证泛化能力。\n  https://arxiv.org/abs/2610.20786\n\n模型发布\n- Muse Spark Open：Meta 开源前沿多模态 MoE 模型 — Meta 发布 Muse Spark Open，开放权重的前沿级多模态混合专家模型，支持文本/图像/视频等多种模态，Hugging Face 同步上线。\n  https://huggingface.co/blog/meta-muse-spark-open\n- Scaling Indic Pretraining: 2.8 万亿 Tokens + 开放数据生成管道 — NVIDIA 发布 Indic 语言大模型预训练成果，使用 2.8 万亿 tokens 训练规模，配套开放数据生成管道，覆盖梵语等印度语言，Hugging Face 同步博客深度解读。\n  https://huggingface.co/blog/nvidia/scaling-indic-pretraining\n- Granite Switch 4.1: Chat + 决策 + 语音，一个端点全搞定 — IBM 推出 Granite Switch 4.1，统一端点提供对话、决策和语音能力，在企业场景下简化多模型编排，10月15日发布。\n  https://huggingface.co/blog/ibm-granite/granite-switch-4-1\n\nGitHub 与基建\n- Hugging Face Transformers v5.20.0 发布 — 今日（10月16日 02:05 UTC）发布，带来新模型支持、训练效率优化及新功能，v5 系列首个重大更新。\n  https://github.com/huggingface/transformers/releases/tag/v5.20.0\n- Ollama v0.40.5 稳定版发布 — 今日（10月16日 03:18 UTC）正式发布，包含自 v0.40.5-rc1 以来的新模型支持与 bug 修复，rc 阶段正式收尾。\n  https://github.com/ollama/ollama/releases/tag/v0.40.5\n- Cline SDK v0.0.94 全量更新 — 今日（10月16日 11:50 UTC）Cline SDK 5 个子模块同步更新至 v0.0.94，含 agents/core/llms/shared 等全链路版本对齐。\n  https://github.com/cline/cline/releases/tag/sdk%2Fsdk%2Fv0.0.94\n- vLLM v0.32.0rc2 候选版 — v0.32.0 第三个候选版本，更新 Hummingbird 依赖并移除 NVFP4 scale workaround，距正式版仅一步之遥。\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.0rc2\n- langchain-core 1.6.11 — langchain-core 最新 patch 版本，主要修复和依赖更新，10月16日 02:32 UTC 发布。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-core%3D%3D1.6.11\n\nSource: https://arxiv.org/abs/2610.20780",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.20780",
+    "verified_at": "2026-10-16T04:58:47Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
