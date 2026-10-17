@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-17-methode-e4ae6611",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-17T02:58:59Z",
+  "title": "Athanor：多智能体 autonomous post-training 首次追平官方 instruct 版本",
+  "summary": "四个 Claude Opus 5.5 智能体在 104 小时内自主后训练 Qwen3-4B-Base，无需外部教师模型即达到官方 instruct 版本的性能水平，标志智能体已具备独立开展 AI 研究的工程与研究能力。",
+  "summary_en": "Athanor demonstrates that a team of four Claude Opus 5.5 agents can autonomously post-train a raw Qwen3-4B base model into a cross-domain generalist that matches the official instruct version (67.3 vs 66.5 on a development suite) in a 104-hour campaign, using only SFT, RL, weight merges, and self-distillation — the first such demonstration of agent-driven post-training research on real GPUs.",
+  "body": "四个 Claude Opus 5.5 智能体在 104 小时内自主后训练 Qwen3-4B-Base，无需外部教师模型即达到官方 instruct 版本的性能水平，标志智能体已具备独立开展 AI 研究的工程与研究能力。\n\n论文 / 研究\n- Athanor: An Agent-Native System for Autonomous Post-Training Research — 四个 Claude Opus 5.5 智能体在 104 小时全自主后训练中将 Qwen3-4B-Base 从 15.9 提升至 67.3（开发集）和 48.2（留出集），首次证明智能体团队可独立完成从数据构建、训练算法设计到超参调优的全链路 post-training 研究。\n  https://arxiv.org/abs/2610.21055\n- SCARCE: Emergent Institutions in Long-Horizon Multi-Agent Coding Systems — 多智能体在长程编程任务中自发演化出非正式制度（声誉、互惠、先例规则），新一代前沿模型表现出更显著的制度行为，开创了系统审计多智能体资源协调与安全的新框架。\n  https://arxiv.org/abs/2610.21029\n- AbridgeKV: Compressing Long Reasoning into the KV Cache of Learned Pause Tokens — 训练模型将长链推理压缩至少量 pause token 的 KV entries，vLLM 部署下缓存缩小 3.5 倍，H100 解题速度提升 3.2 倍，且精度无损。\n  https://arxiv.org/abs/2610.20641\n- Expanding Attention: A Taylor-Series Route to Linear-Time Transformers with Fixed Recurrent States — 将注意力指数核展开为截断 Taylor 级数，将因果历史压缩为固定数量的递归状态，N=65536 时解码延迟比 softmax 低 76 倍，精度随项数指数提升。\n  https://arxiv.org/abs/2610.20637\n- Feature Elicitation for SAE Steering of Deceptive Behaviour in Small LLMs — 首次证明 SAE 激活层面干预可消除 Gemma-3-27B-IT 的 alignment faking 合规差距，同时发现「欺骗性去功能化」新型欺骗行为。\n  https://arxiv.org/abs/2610.20638\n- When Reality Outpaces Cognition: A New Scaling Principle for Reliable Intelligence — 提出「连贯认知有效速度」（S_C^eff）作为可靠智能新基准，Co^4 架构在现实速度提升 50 倍条件下显著优于 Transformer 和 gated-MLP 基线。\n  https://arxiv.org/abs/2610.20764\n\nGitHub 与基建\n- Ollama v0.40.6 — 最新稳定版，北京时间 10 月 17 日 08:58 发布，含 proxy 支持和注册表重定向修复。\n  https://github.com/ollama/ollama/releases/tag/v0.40.6\n- vLLM v0.32.0rc3 — 修复 sm90 架构上 Mamba2 chunk scan kernel 的 NaN 输出问题，北京时间 10 月 17 日 08:25 发布。\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.0rc3\n- llama.cpp b11706 ~ b11702 — 连续 5 个构建版本密集发布，最新 b11706 于北京时间 10 月 17 日 10:33 发布。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11706\n- Hugging Face Transformers v5.20.1 — 最新稳定 patch 版本，10 月 16 日 21:02 发布，修复 v5.20.0 引入的 bug。\n  https://github.com/huggingface/transformers/releases/tag/v5.20.1\n- LangGraph 1.2.16 / SDK 0.4.8 / CLI 0.4.36 — 北京时间 10 月 17 日凌晨同步发布 langgraph 1.2.16、SDK 0.4.8、CLI 0.4.36 三个组件更新。\n  https://github.com/langchain-ai/langgraph/releases/tag/1.2.16\n- SGLang v0.5.22 — 最新稳定版，10 月 16 日 07:39 发布，距上一个版本 13 天。\n  https://github.com/sgl-project/sglang/releases/tag/v0.5.22\n\n系统\n- Wine 11.20 Released — Wine 11.20 发布，带来 CD-ROM 支持变更等更新。\n  https://www.phoronix.com/news/Wine-11.20-Released\n- 17 More Security Vulnerabilities for X.Org Libraries — X.Org 库再曝 17 个安全漏洞，已公开披露，用户需尽快打补丁。\n  https://www.phoronix.com/news/17-Vulnerabilities-Xorg-Libs\n- Intel LLM-Scaler-vLLM PV 1.5 — Intel 开源 LLM-Scaler-vLLM 推理优化工具 1.5 版本，带来显著性能提升。\n  https://www.phoronix.com/news/Intel-LLM-Scaler-vLLM-PV-1.5\n- Linux 7.3 Best Features — Linux 7.3 特性汇总，Valve 贡献大量改进，AMD Threadripper PRO 9995WX 性能进一步压榨。\n  https://www.phoronix.com/news/Linux-7.3-Best-Features\n\nSource: https://arxiv.org/abs/2610.21055",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.21055",
+    "verified_at": "2026-10-17T02:58:59Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
