@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-17-methode-fe527803",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-17T08:58:14Z",
+  "title": "Waypoint-OPD：通过门控在线策略蒸馏迁移强化学习诱导的策略迁移",
+  "summary": "Hugging Face 今日热门论文榜首 Waypoint-OPD 提出门控在线策略蒸馏（Gated On-Policy Distillation）框架，7 位作者解决了强化学习策略跨任务迁移中策略偏移控制的难题，在 HF Daily Papers 获得 660 票赞成。",
+  "summary_en": "This digest covers arXiv papers in cs.AI/cs.LG/cs.CL/cs.MA, HF Daily Papers, Nature Machine Intelligence, BAIR/Hazy Research/The Gradient blogs, hot GitHub releases (Ollama, vLLM, llama.cpp, LangChain, Transformers, SGLang, Cline), and Linux/Systems news (LWN, Phoronix) from the past 2 hours in the Asia/Shanghai timezone.",
+  "body": "Hugging Face 今日热门论文榜首 Waypoint-OPD 提出门控在线策略蒸馏（Gated On-Policy Distillation）框架，7 位作者解决了强化学习策略跨任务迁移中策略偏移控制的难题，在 HF Daily Papers 获得 660 票赞成。\n\n论文 / 研究\n- Waypoint-OPD: Transferring RL-Induced Policy Shifts via Gated On-Policy Distillation — HF Daily Papers 榜首（660票），提出门控在线策略蒸馏解决 RL 策略跨任务迁移中策略偏移控制难题，7 位作者联合署名\n  https://huggingface.co/papers\n- OmniCompass: A Holistic Benchmark for Omni-Modal Video Grounding and Understanding — HF Daily Papers 第二名（573票），为全模态视频定位与理解提供统一评测基准，覆盖多模态协同推理能力\n  https://huggingface.co/papers\n- OpenGCUA: Toward a Fully Open Stack for Generalist Computer Use — HF Daily Papers 第三名（315票），通义千问团队提出通用计算机操作全栈开源方案\n  https://huggingface.co/papers\n- InfiniSplat v2: Analyzing and Improving Feed-Forward 3DGS from Any Views — HF Daily Papers 第 9 名（393票），浙江大学团队从任意视角改进前馈 3D 高斯泼溅\n  https://huggingface.co/papers\n\nGitHub 与基建\n- Ollama v0.40.6 发布 — 今晨 08:58 UTC 发布，修复 registry 重定向场景下代理支持问题，v0.40.6-rc1 为前置版本\n  https://github.com/ollama/ollama/releases/tag/v0.40.6\n- vLLM v0.32.0rc3 发布 — 修复 Mamba2 chunk scan kernel 在 sm90 架构上的 NaN 输出 bug，为 v0.32.0 正式版前最后一个候选版本\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.0rc3\n- llama.cpp b11707 发布 — 今晨高频迭代，4 小时内推出 5 个 build，持续优化 GGUF 量化与推理效率\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11707\n- Hugging Face Transformers v5.20.1 发布 — v5.20.0 的补丁版本，修复 5.20 引入的兼容性问题\n  https://github.com/huggingface/transformers/releases/tag/v5.20.1\n- SGLang v0.5.22 发布 — v0.5.21 发布 13 天后更新，改进 RadixAttention 与调度器\n  https://github.com/sgl-project/sglang/releases/tag/v0.5.22\n- Cline SDK v0.0.95 发布 — 今晨 11:00 UTC 同时发布 shared/llms/core/agents 四个子包更新，Cursor AI 基础设施持续迭代\n  https://github.com/cline/cline/releases/tag/sdk%2Fsdk%2Fv0.0.95\n- LangChain-core v1.6.12 发布 — LangChain 核心库补丁版本，修复 chain 追踪与回调机制问题\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-core%3D%3D1.6.12\n\nHugging Face 博客\n- Scaling Indic Pretraining: 2.8 Trillion Tokens and an Open Data Generation Pipeline — NVIDIA 联合 Hugging Face 发布 2.8 万亿 token 印地语预训练数据集及开源数据生成流水线，覆盖 22 种印度语言\n  https://huggingface.co/blog/nvidia/scaling-indic-pretraining\n- Welcome Beam: a 501B open model you can own, customize, and scale — Reflection Labs 发布 5010 亿参数开源大模型 Beam（门控 MoE 架构），支持 Transformers/vLLM/SGLang 推理，首个可完全拥有定制的千亿级开源模型\n  https://huggingface.co/blog/reflection-beam\n\nSource: https://arxiv.org/abs/2509.24000",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2509.24000",
+    "verified_at": "2026-10-17T08:58:14Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
