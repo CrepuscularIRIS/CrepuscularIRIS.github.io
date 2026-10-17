@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-17-methode-508712fb",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-17T04:58:03Z",
+  "title": "llama.cpp 今晨密集推送 5 个 commit，基础设施侧高度活跃",
+  "summary": "llama.cpp 今天连续推送 5 个 commit（b11700-b11706），Ollama v0.40.6 新增 registry proxy 支持，Cline SDK 全模块更新至 v0.0.95。",
+  "summary_en": "llama.cpp had five consecutive commits today, Ollama v0.40.6 adds registry redirect proxy support, and Cline released SDK v0.0.95 across all submodules.",
+  "body": "llama.cpp 今天连续推送 5 个 commit（b11700-b11706），Ollama v0.40.6 新增 registry proxy 支持，Cline SDK 全模块更新至 v0.0.95。\n\nGitHub 与基建\n- llama.cpp b11700-b11706（今日 5 commits） — 今晨密集推送 5 个 commit，ggml-org 维护的纯 CPU/GPU 推理引擎保持极高活跃度。\n  https://github.com/ggml-org/llama.cpp/releases\n- Ollama v0.40.6 — 新增 transfer 阶段 registry 重定向目标支持 proxy 转发，提升企业内网部署兼容性。\n  https://github.com/ollama/ollama/releases/tag/v0.40.6\n- Cline SDK v0.0.95 — SDK 所有子模块（core/llms/shared/agents）同步更新至 v0.0.95。\n  https://github.com/cline/cline/releases/tag/sdk%2Fsdk%2Fv0.0.95\n- vLLM v0.32.0rc3 — Mamba2 NaN 修复 — 修复 sm90 架构上 Mamba2 chunk scan kernel 输出 NaN 的 bug，影响生产推理质量。\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.0rc3\n- SGLang v0.5.22 — 快速迭代版本，继续优化前端调度与推理吞吐量。\n  https://github.com/sgl-project/sglang/releases/tag/v0.5.22\n- Hugging Face Transformers v5.20.1 — v5.20 小版本 patch，修复 tokenization 或 training 关键问题。\n  https://github.com/huggingface/transformers/releases/tag/v5.20.1\n\n论文\n- FDE-Gym: The Last Mile of AI Delivery — 首个系统性评估 AI 系统从训练到生产部署\"最后一公里\"差距的 benchmark，HF Daily Papers 热度 275。\n  https://arxiv.org/abs/2610.22350\n- Waypoint-OPD: Transferring RL-Induced Policy Shifts — HF Daily Papers 今日榜首（656 热度），通过门控 on-policy 蒸馏迁移强化学习策略。\n  https://arxiv.org/abs/2610.22356\n- MLExpert: Towards a Generalist Agentic Model for Autonomous ML Engineering — 提出自主执行完整 ML 工程流程的通用 agentic 模型，含代码仓库与模型权重。\n  https://arxiv.org/abs/2610.22344\n- Knowledge That Is Linear Before Fine-Tuning Generalizes After It — 揭示微调前表现为线性的知识在微调后仍保持泛化能力，对理解 LLM 微调机制有重要意义。\n  https://arxiv.org/abs/2610.22300\n\nHugging Face 博客\n- Welcome Beam: a 501B open model you can own, customize, and scale — ReflectionLLM 团队发布 501B 开源大模型，主打开放所有权与可定制化。\n  https://huggingface.co/blog/reflection-beam\n- Welcome Muse Spark Open: open-weight frontier multimodal MoE from Meta — Meta 开源前沿级多模态 mixture-of-experts 模型，开放权重。\n  https://huggingface.co/blog/meta-muse-spark-open\n- Scaling Indic Pretraining: 2.8 Trillion Tokens — NVIDIA 发布 2.8T token 规模印地语系预训练数据生成流水线，覆盖 20+ 印度语言。\n  https://huggingface.co/blog/nvidia/scaling-indic-pretraining\n\nSource: https://github.com/ggml-org/llama.cpp/releases",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases",
+    "verified_at": "2026-10-17T04:58:03Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
