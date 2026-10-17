@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-17-methode-849b4231",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-17T00:59:04Z",
+  "title": "Reflection 发布 501B 开源 MoE 模型 Beam，全面开放可定制",
+  "summary": "Reflection AI 发布了 5010 亿参数的开源 MoE 模型 Beam，现已在 Hugging Face 完全开放权重，用户可自行拥有、定制和扩展，成为首个来自这家新晋美国 AI 实验室的前沿模型。",
+  "summary_en": "Reflection AI releases Beam, a 501B open-weight mixture-of-experts model on Hugging Face as a fully customizable, open-source frontier model from the new US AI lab. NVIDIA and Hugging Face jointly publish a 2.8-trillion-token Indic pretraining dataset and open data generation pipeline. arXiv papers introduce the \"effective Speed of Coherent Cognition\" as a new scaling principle for reliable AI, and propose MAIAM, a multi-tiered AI accessibility framework for frontier model safety governance. Infrastructure releases include Ollama v0.40.6, vLLM v0.32.0rc3, Transformers v5.20.1, and langchain-core==1.6.12.",
+  "body": "Reflection AI 发布了 5010 亿参数的开源 MoE 模型 Beam，现已在 Hugging Face 完全开放权重，用户可自行拥有、定制和扩展，成为首个来自这家新晋美国 AI 实验室的前沿模型。\n\n论文 / 预印本\n- When Reality Outpaces Cognition: A New Scaling Principle for Reliable Intelligence — 提出「有效连贯认知速度」（S_C^eff）作为 AI 可靠性的新基准，挑战传统 scaling law 思路，引入类意识机制架构 Co^4，可在现实速度提升 50 倍时仍保持行为可靠性。\n  https://arxiv.org/abs/2610.20764\n- A Multi-Tiered AI Accessibility Model (MAIAM) — 反对开源/闭源的二元框架，提出按「能力边界」和「可及性边界」分三层管理 AI 访问权限——学习层、探索层、前沿层，呼吁监管机构介入。\n  https://arxiv.org/abs/2610.20921\n\n研究博客\n- Welcome Beam: a 501B open model you can own, customize, and scale — Reflection 发布首个模型 Beam（501B MoE），全面开源权重，支持 vLLM/SGLang/Transformers 推理，首日获 14 个 upvote。\n  https://huggingface.co/blog/reflection-beam\n- Scaling Indic Pretraining: 2.8 Trillion Tokens and an Open Data Generation Pipeline — NVIDIA + Hugging Face 联合发布 2.8 万亿 token 的印度语言预训练数据集及开源生成流水线，覆盖 20 种印度语言，旨在缩小 Indic AI 能力差距。\n  https://huggingface.co/blog/nvidia/scaling-indic-pretraining\n\nGitHub 与基建\n- Ollama v0.40.6 发布 — 今日凌晨（北京时间 08:57）发布，修复 proxy 重定向问题，是近 24 小时最活跃的本地 LLM 推理框架版本迭代。\n  https://github.com/ollama/ollama/releases/tag/v0.40.6\n- vLLM v0.32.0rc3 发布 — 修复 Mamba2 chunk scan 内核在 sm90 架构上的 NaN 输出 bug，是 0.32.0 正式版前的第三个候选版本。\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.0rc3\n- Hugging Face Transformers v5.20.1 发布 — 昨日下午发布的小版本补丁，继续推进 v5 稳定版迭代，支持 Beam 等新模型架构。\n  https://github.com/huggingface/transformers/releases/tag/v5.20.1\n- langchain-core==1.6.12 发布 — LangChain 核心库今日更新（北京时间 10月17日 03:28），是近 24 小时内的最新补丁版本。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-core%3D%3D1.6.12\n\nSource: https://huggingface.co/blog/reflection-beam",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/blog/reflection-beam",
+    "verified_at": "2026-10-17T00:59:04Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
