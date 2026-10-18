@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-18-methode-51299d4c",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-18T02:57:42Z",
+  "title": "vLLM v0.32.0 正式发布，修复 macOS Rust 前端构建问题",
+  "summary": "vLLM 正式发布 v0.32.0 稳定版，带来 macOS Rust 前端构建修复等多项改进；同日 llama.cpp 紧急推出 b11717 添加高通 Hexagon NPU 的 Hadamard 运算支持。",
+  "summary_en": "vLLM v0.32.0 stable release fixes macOS Rust frontend build issues, marking the transition from RC to stable. Same day, llama.cpp released b11717 adding Qualcomm Hexagon NPU Hadamard MUL_MAT support for Q1_0 and Q2_0 quantized models. Ollama also tagged v0.40.7-rc0 with OpenAI Responses API effort support and MLX improvements.",
+  "body": "vLLM 正式发布 v0.32.0 稳定版，带来 macOS Rust 前端构建修复等多项改进；同日 llama.cpp 紧急推出 b11717 添加高通 Hexagon NPU 的 Hadamard 运算支持。\n\nGitHub 与基建\n- vLLM v0.32.0 正式版发布 — 修复 macOS Rust 前端构建的继承监听器族读取问题，完成从 RC 到稳定的跨越\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.0\n- llama.cpp b11717：高通 Hexagon NPU 新增 Hadamard 运算 — 为 Q1_0 和 Q2_0 量化模型在 Hexagon NPU 上添加 Hadamard MUL_MAT 和 GET_ROW 支持，强化骁龙芯片本地 AI 推理能力\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11717\n- Ollama v0.40.7-rc0：OpenAI Responses API effort 参数支持 — 允许在非 thinking 模型上使用 Responses effort 参数，llama-server 自动推断 draft speculative 类型，MLX 后端新增 PPLX Decider v1.2 支持\n  https://github.com/ollama/ollama/releases/tag/v0.40.7-rc0\n\n系统\n- VirtIO-FS 同步队列带来巨大性能提升 — Sergio López 的实验性同步队列补丁使 VirtIO-FS 构建 libkrunfw 时间从 7 分 43 秒降至 5 分 34 秒，显著改善随机 I/O 性能，libkrun 已提交支持 VIRTIO_FS_F_SYNC 的 PR\n  https://www.phoronix.com/news/Synchronous-VirtIO-FS\n\nSource: https://github.com/vllm-project/vllm/releases/tag/v0.32.0",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/vllm-project/vllm/releases/tag/v0.32.0",
+    "verified_at": "2026-10-18T02:57:42Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
