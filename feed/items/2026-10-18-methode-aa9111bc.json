@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-18-methode-aa9111bc",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-18T04:57:44Z",
+  "title": "llama.cpp b11718：恢复 ESIMD 内核至 FFN 路径，扩展 Q8_0 融合优化",
+  "summary": "llama.cpp 凌晨 push 了 b11718，恢复 FFN 路径上的 ESIMD 内核并将融合范围扩展至 Q8_0 量化，在 Intel 硬件上实现更高效的推理性能。",
+  "summary_en": "llama.cpp release b11718 restores ESIMD kernels on the FFN path and extends ESIMD fusion to include Q8_0 quantization, improving inference efficiency on Intel hardware. The commit also re-enables ESIMD on the FFN path and removes an obsolete comment in test-backend-ops. Signed by Todd Malsbary (Intel).",
+  "body": "llama.cpp 凌晨 push 了 b11718，恢复 FFN 路径上的 ESIMD 内核并将融合范围扩展至 Q8_0 量化，在 Intel 硬件上实现更高效的推理性能。\n\nGitHub 与基建\n- llama.cpp b11718：恢复 FFN 路径 ESIMD 内核 + Q8_0 融合 — 凌晨 12:42 CST 新 push，恢复 FFN 路径 ESIMD 内核并将融合扩展至 Q8_0，Intel 硬件推理效率进一步提升。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11718\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11718",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11718",
+    "verified_at": "2026-10-18T04:57:44Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
