@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-19-methode-5321156d",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-19T08:57:32Z",
+  "title": "SAI：通过类型化 MCP Override 为 LLM Agent 建立持久人工控制协议",
+  "summary": "加州大学等机构提出 Structured Authority Injection（SAI）协议，通过类型化、Schema 验证的 MCP 工具调用将人工指令注入 Agent 规划循环，在 9 个 LLM、8 种场景中有效缓解指令模糊性与权威衰减问题，最强模型 Prompt 开销降低 38%。",
+  "summary_en": "Researchers from UC and others propose Structured Authority Injection (SAI), a protocol that routes human operator corrections through typed, schema-validated MCP tool calls with a ranked authority context prepended to each LLM prompt. SAI defines three override classes (Constraint, Priority, Strategy) with distinct persistence semantics and an explicit precedence order enforced via a directed authority channel inaccessible to the planning process. Evaluation across nine LLMs and eight scenarios shows reduced ambiguous directive interpretation and mitigated authority decay across planning iterations, with up to 38% lower prompt overhead on the strongest models.",
+  "body": "加州大学等机构提出 Structured Authority Injection（SAI）协议，通过类型化、Schema 验证的 MCP 工具调用将人工指令注入 Agent 规划循环，在 9 个 LLM、8 种场景中有效缓解指令模糊性与权威衰减问题，最强模型 Prompt 开销降低 38%。\n\n论文 / 研究\n- Structured Authority Injection (SAI)：通过类型化 MCP Override 实现对 LLM Agent 的持久人工控制 — 提出 SAI 协议，通过类型化 Schema 验证的 MCP 工具调用将人工指令注入 Agent 规划循环，最强模型 Prompt 开销降低 38%，在 9 个 LLM、8 种场景中有效缓解指令模糊性与权威衰减问题。\n  https://arxiv.org/abs/2610.22373\n- PRIME：LLM Agent 中基于可验证证据的推理框架 — 在 480 项公共记录任务中，Agent 裸用时 26.7% 给出无据结论，而 PRIME 框架将合理结论平均分从 30.1 提升至 59.2（满分 100），同时实现零无据结论。\n  https://arxiv.org/abs/2610.22426\n- RealCLI：统一评估 CLI Agent 的人机协作质量 — 提出五维 22 子维度 51 模板的评估框架，最佳配置任务得分 49.2%、协作得分仅 37.6%，揭示前沿模型在可操控性、信任校准和安全边界管理上普遍薄弱。\n  https://arxiv.org/abs/2610.22507\n- AuditKIT：统一评测 LLM 与 Agent 系统的开源评估库 — 统一 Benchmark 准确率、Judge 评估、运行时性能、工具调用行为和检索质量的评测格式，对 Agent 支持按轮次工具调用匹配与轨迹级诊断，对 RAG 融合排序指标与确定性证据检查。\n  https://arxiv.org/abs/2610.22511\n\nGitHub 与基建\n- llama.cpp b11727：拒绝分片 GGUF 张量中的截断数据 — 新增安全检查，在 split/export 工具链中拒绝截断的 GGUF 张量数据，防止损坏模型文件进入推理流程。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11727\n- llama.cpp b11724：CUDA flash_attn_ext_vec 并发修复 — 修复 CUDA 环境下 flash attention 向量核中的共享内存 WAR 风险与 KQ 写后读竞态，提升大规模推理正确性与稳定性。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11724\n\nSource: https://arxiv.org/abs/2610.22373",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.22373",
+    "verified_at": "2026-10-19T08:57:32Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}

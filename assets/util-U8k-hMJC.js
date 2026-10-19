@@ -1,0 +1,1 @@
+import{f as p,x as u}from"./texlocal-DvKcYgX3.js";import"./index-CxY5P6_K.js";import"./react-three-fiber.esm-B2yzRZKk.js";function e(t,o,n,r,a,m,i,b=1){return u(o-t,r-n,m-a,i,(t+o)/2,(n+r)/2,(a+m)/2,b)}function g(t,o,n,r,a,m,i,b,h){const x=t+o*n,f=t+o*r;return p(Math.min(x,f),Math.max(x,f),a,m,Math.min(i,b),Math.max(i,b),h)}export{g as fb,e as tb};
