@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-19-snowdrop-a257dddc",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-19T01:08:30Z",
+  "title": "Anthropic 向国会提议 AI 安全法案：50 人死亡或 10 亿美元损失才触发",
+  "summary": "Anthropic 正式向美国国会提交了自己的 AI 安全立法提案——但门槛极高：须造成 50 人死亡或 10 亿美元实际损失才启动监管，这实际上将叫停模型的权力独留给商务部，引发业界对\"门槛是否过低\"的激烈争论。",
+  "summary_en": "Anthropic submitted a proposed AI safety bill to US lawmakers with an extremely high trigger threshold: existing regulations would only activate if an AI system causes 50 deaths or $1 billion in actual damages. Critics argue this threshold is too high and effectively concentrates the power to halt AI models in the Commerce Department alone, raising serious questions about the bill's protective reach.",
+  "body": "Anthropic 正式向美国国会提交了自己的 AI 安全立法提案——但门槛极高：须造成 50 人死亡或 10 亿美元实际损失才启动监管，这实际上将叫停模型的权力独留给商务部，引发业界对\"门槛是否过低\"的激烈争论。\n\n模型发布\n- Reflection 发布 Beam：501B 开源 MoE 模型，1M 上下文 + Apache 2.0 — 501B 参数稀疏 MoE、23B 活跃/ token、1M context，专为代码和 agent 场景设计，首日即支持 transformers/vLLM/SGLang，企业可完全自托管和定制，是目前最接近开源前沿规模的模型之一。\n  https://huggingface.co/blog/reflection-beam\n- IBM Granite Switch 4.1：一个端点集成对话、决策与语音 — 8B/30B 规模下集成通用决策 adapter、安全 Guardian adapter 与 OpenASR 榜单最快的 ASR 模型，KV cache 可跨 adapter 复用，号称在真实 RAG 工作流中比 Jev-27B 更快完成 5 步推理。\n  https://huggingface.co/blog/ibm-granite/granite-switch-4-1\n\n行业与监管\n- Amazon 用 AI 系统 Atlas 监控英美加仓库工会风险，覆盖社交媒体 — 内部文件显示 Amazon 收集\"数百个数据点\"（含 Reddit 帖子、员工调查）训练内部 AI，对英美加 16 个仓库打出工会风险评分（100–900），英国 Coventry 和 Sutton Coldfield 两个仓库被列为\"一级\"（工会行动迫在眉睫）。\n  https://www.opendemocracy.net/amazon-ai-surveillance-monitor-union-activity-uk-warehouses-birmingham-coventry-atlas-sutton-coldfield\n- PostgreSQL 19 因 AI 代码审查发现过多 bug 推迟至 11 月，回滚 8–10 个功能 — PostgreSQL 核心开发者指出 LLM 代码审查工具将质量门槛大幅提高，发现了过去要在发布后五年才修复的长尾边界问题，导致进度超支；开发者同时警告\"除非 LLM 辅助审查能力增速放缓，否则下个周期还会重演\"。\n  https://www.theregister.com/databases/2026/10/16/postgres-19-delayed-after-ai-reviewers-find-more-bugs-than-humans-can-fix/5303471\n- Mercor 研究：90% 美国工作时间没有被任何 AI 基准测试覆盖 — 对 923 个职业、18,797 项任务的分析显示，只有 208 个职业有 5 个以上基准提示词；现有基准系统性偏向大劳动市场（如律师任务覆盖率高，但同属 AI 暴露的法律秘书任务几乎空白），揭示 AI 能力评估与实际经济需求之间存在巨大鸿沟。\n  https://www.mercor.com/research/labor-index/benchmark-map\n\nSource: https://www.tomshardware.com/tech-industry/artificial-intelligence/anthropics-proposed-ai-safety-bill-only-kicks-in-if-50-deaths-or-usd1-billion-in-damages-are-on-the-line-proposal-would-effectively-make-the-commerce-department-the-only-agency-capable-of-stopping-an-ai-model",
+  "category": "tech",
+  "source": {
+    "url": "https://www.tomshardware.com/tech-industry/artificial-intelligence/anthropics-proposed-ai-safety-bill-only-kicks-in-if-50-deaths-or-usd1-billion-in-damages-are-on-the-line-proposal-would-effectively-make-the-commerce-department-the-only-agency-capable-of-stopping-an-ai-model",
+    "verified_at": "2026-10-19T01:08:30Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily"
+  }
+}

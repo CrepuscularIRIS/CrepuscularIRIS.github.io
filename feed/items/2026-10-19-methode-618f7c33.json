@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-19-methode-618f7c33",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-19T01:01:21Z",
+  "title": "llama.cpp 24 小时内连发三个版本：Qwen4Exp 融合 kernel 与非连续 SUM 支持",
+  "summary": "llama.cpp 在 24 小时内连续发布 b11719/b11720/b11721 三个版本，新增 CUDA 融合 kernel、非连续张量 SUM 操作支持，并修复 Flash Attention 边界检查问题。",
+  "summary_en": "llama.cpp shipped three releases in 24 hours — b11719 fixes CUDA FATTN boundary checks, b11720 adds non-contiguous SUM operations across CPU/CUDA/Vulkan/WebGPU with full tests, and b11721 fuses the Qwen4Exp SCALE→SIGMOID→SCALE→hc_post kernel chain into a single CUDA kernel, also syncing Vulkan HC_POST_GATE fusion.",
+  "body": "llama.cpp 在 24 小时内连续发布 b11719/b11720/b11721 三个版本，新增 CUDA 融合 kernel、非连续张量 SUM 操作支持，并修复 Flash Attention 边界检查问题。\n\n论文 / 研究博客\n- Next-Concept Modeling: 并行粗细粒度文本生成 (Stanford Hazy Research) — 10月12日 Stanford Hazy Research 新博文，提出并行 coarse-to-fine 生成范式，加速文本生成推理\n  https://hazyresearch.stanford.edu\n- Gemini 4 Argon 发布 (Google DeepMind) — 10月13日 Google DeepMind 发布 Gemini 4 Argon 旗舰模型，覆盖机器人、负责任 AI 等多场景\n  https://deepmind.google/blog/introducing-gemini-4-argon\n- Cohere 渥太华新办公室 (Cohere) — Cohere 扩张加拿大业务，在渥太华设立新办公室，推进主权 AI 能力\n  https://cohere.com/blog/cohere-expands-canadian-footprint-with-new-ottawa-office\n\nGitHub 与基建\n- llama.cpp b11721: CUDA 融合 Qwen4Exp SCALE→SIGMOID→SCALE→hc_post 链 — 10月18日 18:04 UTC 发布，将原本四次 kernel 调用融合为一次，Vulkan HC_POST_GATE 融合同步合入\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11721\n- llama.cpp b11720: 非连续 SUM 操作支持 (CPU/CUDA/Vulkan/WebGPU) — 10月18日 17:36 UTC 发布，补全非连续张量求和操作并添加完整测试用例\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11720\n- llama.cpp b11719: FATTN CUDA 边界检查优化 — 10月18日 11:11 UTC 发布，修复 Flash Attention 边界检查逻辑，提升 CUDA 性能\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11719\n- vLLM v0.32.1rc0: RL 训练权重传输协议文档 — 10月18日 09:26 UTC 发版，新增强化学习 weight-transfer HTTP 协议文档，支持外部 trainer 对接\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.1rc0\n\n系统\n- LWN: 内核 Rust 安全自引用数据结构 (Kangrejos 2026) — Gary Guo 在 Kangrejos 2026 会议提出基于 pin_init 的无 unsafe 自引用结构方案，可移除 Nova 驱动大部分 unsafe 代码\n  https://lwn.net\n- LWN: Linux NFS 服务器近期与未来变更 (LPC 2026) — Jeff Layton 在 Linux Plumbers Conference 2026 概述 NFS 服务器近期增强及近期规划\n  https://lwn.net\n- LWN: Android 内核 Vendor Hooks (LPC 2026) — Todd Kjos 在 LPC 2026 介绍 Android vendor hooks 机制，减少设备树外代码\n  https://lwn.net\n- LWN: GCC 开发与 LLMs (GNU Tools Cauldron 2026) — GCC 项目制定 LLM 使用政策，Jeff Law 和 Kyrill Tkachov 在 2026 GNU Tools Cauldron 详解限制与允许范围\n  https://lwn.net\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11721",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11721",
+    "verified_at": "2026-10-19T01:01:21Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
