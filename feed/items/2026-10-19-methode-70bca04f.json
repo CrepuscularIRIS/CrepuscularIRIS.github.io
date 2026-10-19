@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-19-methode-70bca04f",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-19T02:58:22Z",
+  "title": "llama.cpp b11723 发布：Hexagon NPU Flash Attention 长上下文处理获关键优化",
+  "summary": "llama.cpp b11723 于今日 10:06 上海时间发布，针对 Hexagon NPU 的 FLASH_ATTN_EXT 做了重要改进：支持 masked block skipping 减少 DMA 获取，优化 hmx->hvx 交叉阈值使 gemma-4 推理提速，并更新 hmx gate 适配 mdev.count。",
+  "summary_en": "llama.cpp b11723 released Oct 19 at 10:06 Shanghai time with key improvements to FLASH_ATTN_EXT for Hexagon NPU: masked block skipping to reduce DMA fetching, optimized hmx->hvx crossover thresholds boosting gemma-4 inference, and updated hmx gate to account for mdev.count.",
+  "body": "llama.cpp b11723 于今日 10:06 上海时间发布，针对 Hexagon NPU 的 FLASH_ATTN_EXT 做了重要改进：支持 masked block skipping 减少 DMA 获取，优化 hmx->hvx 交叉阈值使 gemma-4 推理提速，并更新 hmx gate 适配 mdev.count。\n\n论文 / 研究\n- Beyond Large Language Models: A Mental World Model Framework — 提出 Mental World Model (MWM) 框架，在 DynToM 和 RecToM 上分别达到 96.48% 和 94.00% 准确率，超越主流 LLM 和 Theory of Mind 方法，为 AI 迈向通用人工智能提供心理建模基础。\n  https://arxiv.org/abs/2610.23722\n- DLite: History-free Speculative Decoding for Agentic AI — 针对 agent 工作负载中历史上下文导致的投机解码退化问题（接受长度下降达 80%），提出无需维护历史上下文的 DLite 框架，实现 2-6 倍接受长度提升，比 DSpark 快 70%。\n  https://arxiv.org/abs/2610.23787\n- Behavioral Couplings: From Formation to Behavioral Emergence in Language Models — 揭示微调大模型时「行为耦合」现象——训练一个行为会意外唤起另一个不相关行为，且耦合可组合传播，对评估模型安全边界有重要意义。\n  https://arxiv.org/abs/2610.23847\n- AI-Driven Reproducibility and Analytical Robustness in Scientific Discovery — 构建 SEER-Repro 基准（20 篇医学论文），AI agent 成功复现 77.4% 的 2190 条原子级声明，并可自动识别 9.5% 结论可能受分析方法影响的研究。\n  https://arxiv.org/abs/2610.23845\n\nGitHub 与基建\n- llama.cpp b11723 — Hexagon FLASH_ATTN_EXT 长上下文优化 — 今日 10:06 发布。针对 Hexagon NPU 的 FLASH_ATTN_EXT 改进：支持 masked block skipping 减少 DMA 获取，优化 hmx->hvx 交叉阈值（gemma-4 提速），更新 hmx gate 适配 mdev.count。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11723\n- HF Daily Papers 今日热门：Pack Light, CarryOn (49 赞) — 今日 HF 每日论文榜首：McAuley-Lab 的「Pack Light, CarryOn: Building Object-Oriented Context for Long-Horizon Agents」，构建面向对象的上下文管理用于长时程 agent，当前热度最高。\n  https://huggingface.co/papers?date=2026-10-19\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11723",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11723",
+    "verified_at": "2026-10-19T02:58:22Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
