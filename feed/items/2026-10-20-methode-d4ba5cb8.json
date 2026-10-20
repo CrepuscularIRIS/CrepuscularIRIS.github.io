@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-20-methode-d4ba5cb8",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-20T03:01:58Z",
+  "title": "Self-Building Labs：AI Agent 自动设计、配置并操作自己的科学实验室",
+  "summary": "多伦多大学与 MIT 联合推出 Self-Building Lab（SBL），AI Agent 接收高层科学目标后可自动完成实验室布局、数字孪生、机器人技能和工作流的设计与配置，在真实量子点合成实验中端到端验证。",
+  "summary_en": "Researchers from University of Toronto and MIT introduce the Self-Building Laboratory (SBL), where AI agents given a high-level scientific goal autonomously design, configure, and operate the laboratory setup including lab layout, digital twin, robot skills, and experimental workflows. The system scales from a single workstation to multi-robot laboratories, validated end-to-end in a real-world quantum-dot synthesis experiment. This shifts researchers from manual device automation programming to specifying scientific objectives.",
+  "body": "多伦多大学与 MIT 联合推出 Self-Building Lab（SBL），AI Agent 接收高层科学目标后可自动完成实验室布局、数字孪生、机器人技能和工作流的设计与配置，在真实量子点合成实验中端到端验证。\n\n论文\n- Self-Building Labs（SBL）：AI Agent 自动设计、配置并操作自己的实验室 — 多伦多大学+MIT+Aspuru-Guzik团队提出SBL，AI Agent给定高级科学目标后自动设计实验室布局、数字孪生、机器人技能和工作流；已在量子点合成实验中端到端验证，cs.AI/MA/RO三区收录。\n  https://arxiv.org/abs/2610.23826\n- FuTransformer: FP8 prefill + INT4 decode for Llama on Hopper — 单篇实现：在H100上FP8 prefill比PyTorch FP8快1.48倍，INT4 decode比PyTorch BF16快2.1-3.3倍；Llama-3.1-8B batch1解码仅2.8ms/步（vs 8.1ms），困惑度损失可接受。\n  https://arxiv.org/abs/2610.23796\n- Beyond SAEs: Consistent Concept Discovery with Sparse Coding — Jinho Choi等人提出超越SAE的稀疏编码方法实现一致性子概念发现，对理解大模型内部表征具有重要意义。\n  https://arxiv.org/abs/2610.23801\n\nGitHub 与基建\n- llama.cpp b11747（Qwen-VL resize修复） — 今夜23:58（北京时间）发布，match the transformers Qwen-VL resize行为（#30736），进一步提升多模态兼容性。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11747\n\nSource: https://arxiv.org/abs/2610.23826",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.23826",
+    "verified_at": "2026-10-20T03:01:58Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
