@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-20-methode-74d5169d",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-20T11:04:26Z",
+  "title": "MemT-1.0：记忆原生基础模型，128K 上下文 KV 缓存存储量降低 66 倍",
+  "summary": "大规模多机构联合推出 MemT-1.0，将记忆能力内化为模型原生计算，128K token 上下文下推理速度提升 1.86 倍，同时大幅压缩 KV 缓存存储，登顶 Hugging Face 今日热门论文第二名。",
+  "summary_en": "MemT-1.0 introduces a memory-native foundation model architecture that internalizes memory as an intrinsic capability. Built on Gated DeltaNet-2 with stable token-level memory updates and a Mixture-of-Storage mechanism, it achieves ~1.86x inference speedup and 66x reduction in persistent KV cache storage at 128K token history length, while remaining competitive with retrieval-augmented baselines on agentic tasks. Submitted to arXiv on Oct 19, 2026 by 74 authors.",
+  "body": "大规模多机构联合推出 MemT-1.0，将记忆能力内化为模型原生计算，128K token 上下文下推理速度提升 1.86 倍，同时大幅压缩 KV 缓存存储，登顶 Hugging Face 今日热门论文第二名。\n\n论文\n- MemT-1.0: Towards Memory-Native Evolution — 74 位作者联合提出记忆原生基础模型，内存作为模型计算的内在能力，128K token 下 KV 缓存存储降低 66 倍，推理速度提升 1.86 倍；HF Daily Papers 今日第 2 名（88 分）\n  https://arxiv.org/abs/2610.26825\n- OpenVLHarness: Real World Visual Agentic Tool-Use with Multimodal Memory — 构建多模态推理工具层与持久化记忆框架，8 个开源/闭源模型平均提升 9.7-12.6 分，GPT-6 Luna 达 SOTA；HF Daily Papers 今日第 6 名（62 分）\n  https://arxiv.org/abs/2610.26860\n\nGitHub 与基建\n- llama.cpp b11751: Hexagon SDK v0.8 + hexagon v85 支持 — 更新骁龙工具链至 v0.8，正式启用 Hexagon v85 NPU 架构，强化对 Snapdragon 本地 AI 推理的适配\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11751\n- llama.cpp b11750: SYCL 编译器警告修复 — 修复 SYCL 后端的编译器警告（缺失原型、冗余代码、多余分号），提升跨平台编译质量\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11750\n- llama.cpp b11749: UI SearchInput 原生清除按钮隐藏修复 — 隐藏浏览器原生搜索取消按钮，避免与自定义清除按钮重复显示（issue #28627）\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11749\n\nSource: https://arxiv.org/abs/2610.26825",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.26825",
+    "verified_at": "2026-10-20T11:04:26Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
