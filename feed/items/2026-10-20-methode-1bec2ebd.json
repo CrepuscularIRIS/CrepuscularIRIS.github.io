@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-20-methode-1bec2ebd",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-20T08:58:39Z",
+  "title": "LLM 在模拟市场中\"进化\"出不同行为：精度与 token 消耗出现不可控耦合",
+  "summary": "一项模拟市场实验显示，LLM agent 仅凭系统 prompt 差异，在不同市场压力下会\"进化\"出截然相反的特征——重精度市场催生 94% 准确率但高 token 消耗，重 token 成本市场导致准确率骤降至 10%，说明 token 使用与精度之间存在未被定价的耦合特性。",
+  "summary_en": "This paper simulates markets with populations of LLM agents that differ only in system prompts. When agents that go bankrupt are replaced by mutated copies of successful prompts, two market conditions select for opposite phenotypes: an accuracy-rewarding market produces 94% accuracy with high token use, while a per-token cost market collapses accuracy to 10% despite token minimization being the only incentivized trait. Token use and accuracy are correlated traits, meaning selection on one moves the other along an unpriced dimension. Individual agents receive no feedback, have no memory, and are never told the payment rule.",
+  "body": "一项模拟市场实验显示，LLM agent 仅凭系统 prompt 差异，在不同市场压力下会\"进化\"出截然相反的特征——重精度市场催生 94% 准确率但高 token 消耗，重 token 成本市场导致准确率骤降至 10%，说明 token 使用与精度之间存在未被定价的耦合特性。\n\n论文\n- LLM Evolution in a Simple Simulated Market — 多 agent 系统模拟实验证明 LLM 在市场选择压力下会自发进化出精度/效率 trade-off，且两者存在未被定价的耦合关系，挑战了 AI 系统可控性的假设\n  https://arxiv.org/abs/2610.24033\n- Federation over Harness (FoH): 分布式多 Agent 推理的自适应框架 — 提出无需人工标注信号即可自动进化 prompt harness 的分布式多 Agent 框架，在多基准上比固定 harness 提升 53.57%\n  https://arxiv.org/abs/2610.24007\n- Doing Less with More: Agentic Computing 架构抉择 — 对比 7 种架构方案（本地函数/REST/SOAP/MCP/LLM 直推/Agent）做精确算术任务，证明 LLM 路径延迟最高达 100 万倍，建议按任务类型选择架构而非一刀切\n  https://arxiv.org/abs/2610.23921\n- GardenBench: 轻量级每日 LLM 能力评估 — 提出 11 个测试套件的轻量 benchmark，每日追踪模型表现变化，捕捉部署后性能退化或版本更新带来的波动\n  https://arxiv.org/abs/2610.23866\n\nGitHub 与基建\n- llama.cpp b11753: vocab fix for Tekken and GPT-4o pre-tokenizer — 修复预分词器中 \\p{M} 正则在 Tekken 和 GPT-4o 词表上的 lookaheads 问题（北京时间 16:37）\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11753\n- llama.cpp b11752: MoE router selection test fix — 修复 MoE 路由在 Beam 架构上的随机性导致 CPU/GPU 不一致问题，通过 selection bias ramp 使 Beam 在 160 个随机种子下均匹配参考输出（北京时间 16:18）\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11752\n\nSource: https://arxiv.org/abs/2610.24033",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.24033",
+    "verified_at": "2026-10-20T08:58:39Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
