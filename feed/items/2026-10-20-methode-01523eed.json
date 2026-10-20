@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-20-methode-01523eed",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-20T00:59:08Z",
+  "title": "QEMem：LLM Agent 记忆利用新范式，证据构建超越检索相关性",
+  "summary": "QEMem 框架将 LLM Agent 的记忆利用从\"检索相关记忆\"升级为\"构建查询专用证据集\"，在 LoCoMo 上以 Claude Opus 4.5 达到 91.43% 评判准确率，超越 MemR³ 7.6 个百分点。",
+  "summary_en": "QEMem reframes LLM agent memory utilization as building query-specific evidence sets rather than retrieving relevant memories, addressing the \"relevance-sufficiency gap\" where essential information may be fragmented or abstract. It integrates query-guided evidence discovery, source-grounded structuring into ViewCards, and sufficiency-guided refinement, achieving 91.43% LLM-judge accuracy on LoCoMo with Claude Opus 4.5 — 7.6pp above MemR³ and 10.7pp above NEMORI.",
+  "body": "QEMem 框架将 LLM Agent 的记忆利用从\"检索相关记忆\"升级为\"构建查询专用证据集\"，在 LoCoMo 上以 Claude Opus 4.5 达到 91.43% 评判准确率，超越 MemR³ 7.6 个百分点。\n\n论文\n- QEMem：重新思考 LLM Agent 的记忆利用 — 从相关记忆到充分证据 — 将记忆利用重构为证据集构建而非单纯检索，解决了碎片化记忆无法支撑推理的核心问题；在 LoCoMo 上比 MemR³ 高 7.6pp，代码已开源。\n  https://arxiv.org/abs/2610.22668\n- 医疗多 Agent 系统防御提示注入攻击 — 单次提示注入在医疗多 Agent 系统中成功率达 61%；提出临床判断验证防御，将 MedQA 攻击成功率降至 4–7% 且不损害正常准确率。\n  https://arxiv.org/abs/2610.22594\n- Embeddings Are Overpriced? 16MB 冻结词表替代 168M 可训练嵌入 — 小模型嵌入表占总参数 60%+；用 PCA + 符号二值化压缩至 16MB 后与全精度持平，BitNet 1.58 整个模型仅 46MB，CPU 推理 615–740 tokens/s。\n  https://arxiv.org/abs/2610.22428\n- Gossip Agents：动态网络上声誉传播促进多 Agent 合作 — 研究谣言（gossip）在动态通信网络中作为声誉传播机制的作用，声誉扩散可增加环境奖励并产生更可持续的合作行为。\n  https://arxiv.org/abs/2610.22674\n\nGitHub 与基建\n- llama.cpp b11748 — SYCL 量化权重 get_rows 修复 — 修复 SYCL 后端在 reorder 量化权重上的 get_rows 崩溃问题，b11748 于今晨 08:27 上海时间发布，是过去 2 小时最热的基建更新。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11748\n- HuggingFace 集成 TorchNeuron — Transformers 原生支持 AWS Trainium — TorchNeuron 以原生 PyTorch 设备方式集成 HF 库，top-100 主流文生模型支持率从 46% 跃升至 89%，10 月 20 日公开 beta 开始。\n  https://huggingface.co/blog/hf-torchneuron\n\n系统\n- AMD GAIA 0.25：Ryzen AI 本地 AI Agent 工厂更新 — AMD 开源项目 GAIA（Generative AI Is Awesome）定位为本地 AI Agent 工厂，0.25 版本带来多项改进，支持在 Ryzen AI 硬件上构建/运行本地 Agent。\n  https://www.phoronix.com/news/AMD-GAIA-0.25-Brings-Several-Improvements-For-Local-AI-Agents-On-Ryzen-AI\n- Linux 7.4 EDAC 子系统：大量旧驱动因 AI 修复噪音而下线 — Linux 7.4 内核正在下线大量旧 EDAC 驱动，原因是这些少用驱动收到了大量 AI/LLM 生成的 bug 修复噪音，维护成本大于收益。\n  https://www.phoronix.com/news/Linux-7.4-Sunsetting-Old-EDAC-Drivers-Due-To-AI-Generated-Fixes-Frenzy\n\nSource: https://arxiv.org/abs/2610.22668",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.22668",
+    "verified_at": "2026-10-20T00:59:08Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}

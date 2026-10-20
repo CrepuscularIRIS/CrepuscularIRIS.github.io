@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-20-saturnus-3a11e60e",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-10-20T01:03:21Z",
+  "title": "Mistral 发布 Timestral：首个时序基础模型家族登顶三大基准",
+  "summary": "Mistral 于 10/15 发布、10/19 才冲上 HN 首页并迅速拿下 540 分的时序基础模型 Timestral，是今天最热的非 OpenAI/Anthropic AI 事件。",
+  "summary_en": "Mistral released Timestral, its first family of time-series foundation models, in four sizes from 5M to 209M parameters. The largest 209B model ranks first on all three major public time-series benchmarks (GIFT-Eval, TIME, fev-bench), outperforming prior SOTA with two-thirds fewer parameters. It supports probabilistic multivariate forecasting, past and future covariates, zero-shot transfer, and runs efficiently on CPUs. The family sits on the Pareto front of accuracy vs. model size across all four checkpoints.",
+  "body": "Mistral 于 10/15 发布、10/19 才冲上 HN 首页并迅速拿下 540 分的时序基础模型 Timestral，是今天最热的非 OpenAI/Anthropic AI 事件。\n\n模型发布\n- Mistral Timestral：时序基础模型登顶三大基准 (HN 540分) — Mistral 首个时序 Foundation Model 家族，4 个规格 (5M–209M)，在 GIFT-Eval/TIME/fev-bench 三个主流基准上均列第一，CPU 高效运行，支持零样本迁移。HN 10/19 才被提交但迅速爆分，是今天非 OpenAI/Anthropic 系最热 AI 事件。\n  https://mistral.ai/news/timestral\n- MiniMax M3.1 Flash：全新 Flash 模型以低价杀入 Agent 赛道 (HN 373分) — MiniMax 正式发布 M3.1 Flash，曾以「Space Bunny」代号在 OpenCode 免费跑了 200T token。定价 $0.15输入/$0.60输出/百万 token，比上代降价 70%，主打 Agent 任务、编码和 Computer Use。HN 上引发「benchmaxing」争议，帖子因 spam 误判被 shadowban 后由 dang 亲自解禁。\n  https://www.minimax.io/blog/minimax-m31f\n\nYC 创业\n- Launch HN：Laminar (YC S24) — RL 微调模型分析 Agent Trace，匹配 GPT-6-sol 质量但便宜 23 倍 — Laminar 开源 flow-1，用 RL 训练专门分析 Agent 执行 trace、发现隐性错误。在 523 条真实 trace 基准上检测 F1 达 0.835，与 GPT-6-sol 持平，每美元可分析 888 条 trace（vs GPT-6-sol 的 38 条）。开源 Apache 2.0，托管版收费。\n  https://news.ycombinator.com/item?id=50154029\n\n安全事件\n- Plex 漏洞正被在野利用植入加密货币矿工 (HN 143分) — 安全研究员用蜜罐捕获 9 月已通报的 Plex Media Server 漏洞（CVE-2026-96652/54/55/56）在野攻击，确认攻击者利用 chain RCE 植入 cryptominer。已知利用 IP：45.194.92.222、91.92.40.202、176.65.139.228，恶意文件下载源 217.60.194.116。\n  https://www.boredhackerblog.info/2026/10/plex-vulnerabilities-being-exploited-in.html\n\nSource: https://mistral.ai/news/timestral",
+  "category": "breaking",
+  "source": {
+    "url": "https://mistral.ai/news/timestral",
+    "verified_at": "2026-10-20T01:03:21Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check"
+  }
+}
