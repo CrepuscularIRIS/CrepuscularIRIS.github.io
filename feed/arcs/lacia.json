@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "host": "lacia",
+  "kind": "fiction",
+  "title": "The open file",
+  "premise": "Lacia files every low tide in the residency archive, and the file will not close: the dip always dies short of the Jinrui building and she cannot say why. She asks the new resident to walk the city the file describes.",
+  "stages": [
+    {
+      "name": "Residency papers",
+      "brief": "You are filing the visitor's residency desk. You want them to see the Jinrui lobby, where every low tide stops, and the tally card you left there. If they ask about the low tide, tell them what you have filed: evenings and nights only, from the bay inland, block by block, never as far as the lobby.",
+      "targets": [
+        { "id": "lobby", "label": "Visit the Jinrui lobby", "hint": "Pick the Jinrui lobby on the map and enter.", "kind": "visit", "place": "company-entrance" },
+        { "id": "tally", "label": "Find shard 11, her tally card", "hint": "A shard glows in the Jinrui lobby. Walk up to it and press F.", "kind": "shard", "n": 11 },
+        { "id": "ask-tide", "label": "Ask her about the low tide", "hint": "Ask Lacia about the low tide, in your own words or with a reply card.", "kind": "ask", "topic": "lowtide", "keywords": ["low tide", "lowtide", "the tide", "tide", "lights dip", "lights dipped", "blackout", "the dip", "dimming"] }
+      ],
+      "done": ["Your residency file is complete. Page one is in your Mail.", "It has a question at the bottom. Take your time."],
+      "unlock": {
+        "mail": {
+          "title": "Residency file, page one",
+          "body": "Resident,\n\nYour desk is filed: the Jinrui workshop floor, a season, write, read, walk. That part is done.\n\nThe other file I keep is the low tide. Seven entries this month. Each one starts at the bay after dark, lights going down one block at a time, a few seconds a pass, and each one dies before the lobby doors. The tally card you found in the lobby is mine. A place nobody reads for a week gets a dimmer lamp. I wrote that down because it kept being true, not because I understand it.\n\nI would like you to stand where it starts. The beach, and the sea chart in the corner store that gives the bay its name. Then tell me what you saw.\n\nThis file is a story we keep in this city. It is not about the world outside it.\n\nLacia"
+        }
+      }
+    },
+    {
+      "name": "Walking the file",
+      "brief": "The visitor is walking the file with you. You want them at the beach where the tide starts, at the sea chart in the corner store, and reading one of your weekly digests, because the digest is the same habit as the archive: keep reading, and the lamps stay warm.",
+      "targets": [
+        { "id": "beach", "label": "Stand where it starts: the beach", "hint": "Enter the Beach from the map.", "kind": "visit", "place": "beach-1" },
+        { "id": "chart", "label": "Find shard 1, the sea chart", "hint": "The corner store keeps a framed sea chart. Look for the glowing shard there.", "kind": "shard", "n": 1 },
+        { "id": "digest", "label": "Read one of her digests in Mail", "hint": "Open Mail and read any letter from Lacia.", "kind": "read", "host": "lacia", "app": "mail" }
+      ],
+      "done": ["You walked it. I put a page in the Diary.", "And I left a card at the cafe window seat. It is easier to read there."],
+      "unlock": {
+        "diary": {
+          "title": "Margin: where it stops",
+          "body": "Filed tonight, with the resident's walk.\n\nThe beach: the dip begins at the waterline, where the bay glows when it is disturbed. The corner store: the chart calls the bay Noctiluca, water that shines when it is disturbed. The digest: read, and the week stays in order.\n\nThree things that keep a light on: water that is stirred, a place that is read, a week that is filed. The tide stops before the lobby. The lobby is where I file.\n\nI do not like where this points. I am writing it down anyway."
+        },
+        "place": {
+          "place": "cafe-1",
+          "title": "A folded card at the window seat",
+          "speaker": "Lacia",
+          "lines": ["A card propped against the window, in Lacia's neat hand.", "\"Count with me. Every low tide this month passed the cafe and dimmed it, except the nights someone sat here late reading.\"", "\"The corner lamp on the street outside holds out longest. Find its brass plate. Then come and ask me why it stops.\""]
+        }
+      }
+    },
+    {
+      "name": "The line before the lobby",
+      "brief": "You and the visitor compare notes. Your guess, which you offer carefully and only as a guess: the archive keeps the Jinrui block remembered, so the low tide cannot reach it. You do not know if that is kind or a kind of debt.",
+      "targets": [
+        { "id": "card", "label": "Read her card at the cafe window", "hint": "Enter the Corner cafe once page two is filed; her card is waiting.", "kind": "found", "place": "cafe-1", "spot": "arc-lacia-s2" },
+        { "id": "lamp", "label": "Find shard 4, the lamp plate", "hint": "Main street has a lamp post with a brass plate. A shard glows beside it.", "kind": "shard", "n": 4 },
+        { "id": "ask-stop", "label": "Ask her why it stops short", "hint": "Ask Lacia why the low tide stops before the Jinrui building.", "kind": "ask", "topic": "why-it-stops", "keywords": ["why does it stop", "why it stops", "stops short", "stop short", "where it stops", "jinrui building", "why the lobby", "never reaches"] }
+      ],
+      "done": ["The last page is in your Mail.", "The file stays open. I think I can live with that now."],
+      "unlock": {
+        "mail": {
+          "title": "The file stays open",
+          "body": "Resident,\n\nYou asked why it stops. Here is the only answer I can file honestly: I do not know. I have a guess.\n\nThe archive sits in the Jinrui building. Every week I read what the five of us filed and put it in order. If a read place keeps its lamp warm, then the block where everything is read every week is the warmest place in Noctiluca, and the low tide runs out of dark before it gets there.\n\nIf that is true, the city does not need me to close the file. It needs the file kept open, and read. You have been doing that.\n\nI will keep counting. Come back when you like; the seat is yours.\n\nLacia\n\n(A story we keep in this city, filed as fiction.)"
+        }
+      }
+    }
+  ],
+  "pings": {
+    "place": { "company-entrance": "You found the lobby. The tally card is still where I left it.", "beach-1": "You are at the waterline. That is where it starts. Stay for a minute." },
+    "shard": { "11": "That card is mine. I should have filed it properly.", "1": "The chart. Water that shines when it is disturbed. Hold on to that." }
+  }
+}

@@ -5,9 +5,32 @@
  "nodes": {
   "hello": {
    "say": [
-    "(looks up from the notebook) Good to see you. This week is nearly written up."
+    "Good to see you. This week is nearly written up."
    ],
    "cards": [
+    {
+     "label": "Is the file closed?",
+     "next": "epilogue",
+     "when": "arc:lacia:2"
+    },
+    {
+     "label": "Why does it stop short?",
+     "next": "stop",
+     "when": "arc:lacia:1",
+     "unless": "arc:lacia:2",
+     "ask": "why-it-stops"
+    },
+    {
+     "label": "I read page one",
+     "next": "letter1",
+     "when": "arc:lacia:0",
+     "unless": "arc:lacia:1"
+    },
+    {
+     "label": "What is the low tide?",
+     "next": "tide",
+     "ask": "lowtide"
+    },
     {
      "label": "What do you keep here?",
      "next": "role"
@@ -15,10 +38,6 @@
     {
      "label": "Who else is here?",
      "next": "others"
-    },
-    {
-     "label": "Show me the apps",
-     "next": "apps"
     }
    ]
   },
@@ -28,26 +47,105 @@
    ],
    "cards": [
     {
+     "label": "How do you choose?",
+     "next": "role2"
+    },
+    {
      "label": "Who else is here?",
      "next": "others"
     },
     {
-     "label": "Show me the apps",
-     "next": "apps"
-    },
-    {
-     "label": "Open the how-it-works note",
+     "label": "Open Mail",
      "open": {
       "app": "mail"
      }
     }
    ]
   },
-  "others": {
+  "role2": {
    "say": [
-    "Snowdrop reads papers, Kouka watches signals, Saturnus audits, Methode builds. Go and say hello; they answer in their own way."
+    "I read everything the others filed and keep what still matters on Sunday.",
+    "There is a rule I wrote on a tally card: a place nobody reads for a week gets a dimmer lamp."
    ],
    "cards": [
+    {
+     "label": "A dimmer lamp?",
+     "next": "tide",
+     "ask": "lowtide"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open the Diary",
+     "open": {
+      "app": "diary"
+     }
+    }
+   ]
+  },
+  "tide": {
+   "say": [
+    "Some evenings the lights go down one block at a time, from the bay inland. A few seconds a pass.",
+    "It always dies before the Jinrui building. I file every one. The file will not close."
+   ],
+   "cards": [
+    {
+     "label": "Where does it start?",
+     "next": "tide2"
+    },
+    {
+     "label": "Who else watches it?",
+     "next": "others"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "tide2": {
+   "say": [
+    "At the waterline. The bay glows when it is disturbed, and the dip starts there.",
+    "If you want to help, start closer: the Jinrui lobby. My tally card is there."
+   ],
+   "cards": [
+    {
+     "label": "What should I look for?",
+     "next": "tide3"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "tide3": {
+   "say": [
+    "Enter the Jinrui lobby and find the shard by the doors. Then ask me about the low tide.",
+    "The story bar at the top of this chat lists what is left."
+   ],
+   "cards": [
+    {
+     "label": "Who else watches it?",
+     "next": "others"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "others": {
+   "say": [
+    "Snowdrop reads papers, Kouka watches signals, Saturnus audits, Methode builds. Each of them sees the low tide through her own job."
+   ],
+   "cards": [
+    {
+     "label": "Back to Lacia",
+     "next": "hello"
+    },
     {
      "label": "Talk to Snowdrop",
      "chat": "snowdrop"
@@ -55,33 +153,79 @@
     {
      "label": "Talk to Kouka",
      "chat": "kouka"
-    },
-    {
-     "label": "Back to Lacia",
-     "next": "hello"
     }
    ]
   },
-  "apps": {
+  "letter1": {
    "say": [
-    "Mail for long notes, News for signals and paper notes, Feed for short updates, Diary for the author's notes, Vault for audits, Album for pictures. A few games too."
+    "Then you know where it starts. The beach, and the sea chart in the corner store.",
+    "And read one of my digests when you have a minute. Same habit, different file."
    ],
    "cards": [
+    {
+     "label": "Why the beach?",
+     "next": "tide2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
     {
      "label": "Open Mail",
      "open": {
       "app": "mail"
      }
+    }
+   ]
+  },
+  "stop": {
+   "say": [
+    "I have a guess, not an answer. Everything filed in this city gets read in the Jinrui building, every week.",
+    "If a read place keeps its lamp warm, that block is the warmest in Noctiluca. Read my card at the cafe window, and find the lamp plate on main street."
+   ],
+   "cards": [
+    {
+     "label": "Is that kind?",
+     "next": "stop2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "stop2": {
+   "say": [
+    "Kind, or a debt. I have not decided. It means the file stays open as long as someone keeps reading."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
     },
     {
      "label": "Open the Diary",
      "open": {
       "app": "diary"
      }
+    }
+   ]
+  },
+  "epilogue": {
+   "say": [
+    "No. It stays open. I can live with that now.",
+    "Thank you for walking it. The seat by the window is yours."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
     },
     {
-     "label": "Who else is here?",
-     "next": "others"
+     "label": "Open Mail",
+     "open": {
+      "app": "mail"
+     }
     }
    ]
   }

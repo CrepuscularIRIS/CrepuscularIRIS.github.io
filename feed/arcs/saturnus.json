@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "host": "saturnus",
+  "kind": "fiction",
+  "title": "The last line",
+  "premise": "Saturnus audits the low tide like any other account. Every line balances except the last one, the source of the glow, and an unbalanced last line is to her a moral event.",
+  "stages": [
+    {
+      "name": "Open the ledger",
+      "brief": "You are opening the audit with the visitor as a second counter. You want them in the meeting room where you pinned your audit note, and holding that note (a shard). If asked about the low tide, give the audit so far in numbered points: evenings and nights, bay inland, stops short of the Jinrui building, source unaccounted for.",
+      "targets": [
+        { "id": "room", "label": "Visit the meeting room", "hint": "Enter the Meeting room in the Jinrui building.", "kind": "visit", "place": "company-meetingroom" },
+        { "id": "note", "label": "Find shard 10, her audit note", "hint": "A shard glows in the meeting room. Press F near it.", "kind": "shard", "n": 10 },
+        { "id": "ask-tide", "label": "Ask her about the low tide", "hint": "Ask Saturnus about the low tide, by text or with a reply card.", "kind": "ask", "topic": "lowtide", "keywords": ["low tide", "lowtide", "the tide", "tide", "lights dip", "the dip", "blackout", "audit", "dimming"] }
+      ],
+      "done": ["The audit is open. Item one is in your Mail.", "Read it properly. With tea, ideally."],
+      "unlock": {
+        "mail": {
+          "title": "Audit memo: the low tide, item 1",
+          "body": "Second counter,\n\nThree things.\n\nOne. The low tide occurs in the evening and night slots only. No maintenance schedule matches it. I checked them all.\n\nTwo. It travels from the bay inland, block by block. Every pass is accounted for in Kouka's timing, which I have audited, to her irritation.\n\nThree. No cable, no fuel and no battery feeds the glow it takes away. Source: unaccounted for. Status: do not close.\n\nNext I want a second count from the police office ledger, and the back alley, where somebody wrote about the first night without lamps.\n\nSaturnus\n\n(An audit of this city's story. Fiction, filed as such.)"
+        }
+      }
+    },
+    {
+      "name": "Count it twice",
+      "brief": "You are recounting from independent records. You want the visitor at the police office, at the back alley's plaster note about the first night, and reading one of your notes so they see how you count.",
+      "targets": [
+        { "id": "office", "label": "Visit the police office", "hint": "Enter the Police office from the map.", "kind": "visit", "place": "police-office-1" },
+        { "id": "first-night", "label": "Find shard 2, the first night", "hint": "The back alley has words scratched into the plaster. A shard glows there.", "kind": "shard", "n": 2 },
+        { "id": "record", "label": "Read one of her notes", "hint": "Open one of Saturnus's notes: the Vault, the Case board or a card in her chat.", "kind": "read", "host": "saturnus" }
+      ],
+      "done": ["The second count is in the Diary.", "I also annotated the meter box in the back alley. Do read the annotation."],
+      "unlock": {
+        "diary": {
+          "title": "Ledger page: what balances",
+          "body": "Second count, independent records.\n\nBalances: the timing. The direction. The slots. The stopping point, a block short of Jinrui, on every night recorded.\n\nDoes not balance: the source. The first night, the alley says, there were no lamps and the water gave just enough light to lay the street. So the light came before the lamps. The lamps hold it; they do not make it.\n\nA well-kept record is warm to the touch. I am aware that is not a sentence an auditor should write."
+        },
+        "place": {
+          "place": "alley-2",
+          "title": "The meter box, annotated",
+          "speaker": "Saturnus",
+          "lines": ["Under the old card on the meter box, a second card in gold ink.", "\"Audited. This box feeds nothing measurable. It has never been switched off, and the block around it has never dimmed.\"", "\"Someone reads this card every week. Hypothesis: that is the supply. Bring me the last line.\""]
+        }
+      }
+    },
+    {
+      "name": "Do not close",
+      "brief": "You are ready to write the last line and you want the visitor's judgement before you do. Your finding, stated with care: the only input that matches every record is attention, places read and remembered. You do not like an account balanced by people, but you will not falsify it.",
+      "targets": [
+        { "id": "annotation", "label": "Read her annotation in the back alley", "hint": "Enter the Back alley once her ledger page is filed.", "kind": "found", "place": "alley-2", "spot": "arc-saturnus-s2" },
+        { "id": "lab", "label": "Visit her hospital lab", "hint": "Enter the Hospital lab from the map.", "kind": "visit", "place": "hospital-1" },
+        { "id": "ask-line", "label": "Ask her about the last line", "hint": "Ask Saturnus whether the audit balances, or what the last line says.", "kind": "ask", "topic": "last-line", "keywords": ["last line", "balance", "balances", "does it balance", "unbalanced", "the audit", "your finding"] }
+      ],
+      "done": ["The last line is written. It is in your Mail.", "Status unchanged: do not close. ...Well done."],
+      "unlock": {
+        "mail": {
+          "title": "Status: do not close",
+          "body": "Second counter,\n\nThe last line, as filed:\n\nSource of the glow: attention. Places that are read, walked and remembered hold their light. The low tide removes light from places that are not. It stops short of the Jinrui building because the archive there is read every week.\n\nConfidence: moderate. Independent records: four. Contradicting records: none. Status: do not close, because an account balanced by people only stays balanced while they keep coming.\n\nThank you for counting with me. You were honest at every step, which is rarer than you think.\n\nSaturnus\n\n(Audit of a story kept in this city. Fiction.)"
+        }
+      }
+    }
+  ],
+  "pings": {
+    "place": { "company-meetingroom": "You are in the meeting room. The note on the wall is mine; the cups are also mine.", "police-office-1": "The ledger is on the left. Count, do not skim." },
+    "shard": { "10": "My audit note. Status still: do not close.", "2": "The first night. The light came before the lamps. Note that." }
+  }
+}

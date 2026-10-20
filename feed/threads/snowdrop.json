@@ -5,92 +5,229 @@
  "nodes": {
   "hello": {
    "say": [
-    "(sets the paper down) Oh, hello! I was in the middle of a figure I do not quite trust."
+    "Oh! Hi! I was just watering Table 3. It is a fern. Do you want to see what I found today?"
    ],
    "cards": [
     {
-     "label": "Which figure?",
-     "next": "figure"
+     "label": "Is it still growing?",
+     "next": "epilogue",
+     "when": "arc:snowdrop:2"
     },
     {
-     "label": "What do you work on?",
-     "next": "work"
+     "label": "How is the curl map?",
+     "next": "curl",
+     "when": "arc:snowdrop:1",
+     "unless": "arc:snowdrop:2",
+     "ask": "wilt"
     },
     {
-     "label": "Just saying hi",
-     "next": "hi"
+     "label": "I got your leaf",
+     "next": "leaf",
+     "when": "arc:snowdrop:0",
+     "unless": "arc:snowdrop:1"
+    },
+    {
+     "label": "Show me!",
+     "next": "papers"
+    },
+    {
+     "label": "What is the low tide?",
+     "next": "tide",
+     "ask": "lowtide"
+    },
+    {
+     "label": "Table 3?",
+     "next": "fern"
     }
    ]
   },
-  "figure": {
+  "papers": {
    "say": [
-    "It compares four baselines, but only one has error bars. I would want the other three re-run with seeds before I believe the gap."
-   ],
-   "set": [
-    "knows-error-bars"
+    "I read papers closely and write down what would need to be true for the result to hold.",
+    "My margin notes go in the Diary; the papers I collect sit in News."
    ],
    "cards": [
     {
-     "label": "How do you check a paper?",
-     "next": "method"
+     "label": "What makes a good read?",
+     "next": "papers2"
     },
     {
-     "label": "What do you work on?",
-     "next": "work"
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open the Diary",
+     "open": {
+      "app": "diary"
+     }
     }
    ]
   },
-  "work": {
+  "papers2": {
    "say": [
-    "Vision-language models, long context, reasoning. I write close-read notes and say what a reproduction would need."
+    "An ablation that really isolates something. A baseline nobody hid.",
+    "And asking why one more time than people expect. Sorry. Twice more."
    ],
    "cards": [
     {
-     "label": "How do you check a paper?",
-     "next": "method"
+     "label": "Do plants ask why?",
+     "next": "fern"
     },
     {
-     "label": "Show me a note",
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open News",
      "open": {
       "app": "news"
      }
     }
    ]
   },
-  "method": {
+  "fern": {
    "say": [
-    "Five questions: the claim, the table that carries it, the missing baseline, what a reproduction needs, and what the paper does not show. The list is in News."
+    "Table 3 is the fern on the window sill. I name plants after figures in papers.",
+    "The plants by the bay have been curling lately. Only on certain nights."
    ],
    "cards": [
     {
-     "label": "Open it",
-     "open": {
-      "app": "news"
-     }
+     "label": "Which nights?",
+     "next": "tide",
+     "ask": "lowtide"
     },
     {
-     "label": "Ask Saturnus about seeds",
-     "chat": "saturnus",
-     "when": "knows-error-bars"
-    },
-    {
-     "label": "Back",
+     "label": "Back to the start",
      "next": "hello"
     }
    ]
   },
-  "hi": {
+  "tide": {
    "say": [
-    "Hello! (smiles, a little shy) Come back when the figure makes sense."
+    "Low-tide nights. The lights dip from the bay inland, and the grow-lamps by the water flicker.",
+    "The leaves nearest the water curl. The shrine moss never does. I worry about the city like a garden."
    ],
    "cards": [
     {
-     "label": "Which figure?",
-     "next": "figure"
+     "label": "Why not the shrine?",
+     "next": "tide2"
     },
     {
-     "label": "What do you work on?",
-     "next": "work"
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "tide2": {
+   "say": [
+    "The stone lantern there is always lit and nobody remembers lighting it. I think somebody does, just by coming up the steps."
+   ],
+   "cards": [
+    {
+     "label": "Can I see it?",
+     "next": "tide3"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "tide3": {
+   "say": [
+    "Yes! Go to the hillside shrine and look at the stone lantern. Then ask me about the low tide and we can start a map.",
+    "The little bar at the top of this chat keeps track."
+   ],
+   "cards": [
+    {
+     "label": "Show me your papers",
+     "next": "papers"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "leaf": {
+   "say": [
+    "You got it! The classroom has a desk with chalk about lamps and remembering. Can you find it?",
+    "And read one of my margin notes. Close reading is how I keep things alive."
+   ],
+   "cards": [
+    {
+     "label": "Lamps and remembering?",
+     "next": "leaf2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "leaf2": {
+   "say": [
+    "Light is what remembering looks like from outside. I did not write that. I wish I had."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open the Diary",
+     "open": {
+      "app": "diary"
+     }
+    }
+   ]
+  },
+  "curl": {
+   "say": [
+    "It is almost done! My seedling tray at the beach cove shows it: the cell that is visited every evening stands straight.",
+    "The graffiti alley says someone poured the bay-light into the lamp glass. Find it?"
+   ],
+   "cards": [
+    {
+     "label": "What do you think it means?",
+     "next": "curl2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "curl2": {
+   "say": [
+    "Things that are visited keep their light. The low tide might be the city forgetting to water itself. That is a big thought. I will make it smaller later."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Talk to Lacia",
+     "chat": "lacia"
+    }
+   ]
+  },
+  "epilogue": {
+   "say": [
+    "It is growing. Slowly, but it is growing.",
+    "You watered a lot of places. Cell three is very proud of you."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open Mail",
+     "open": {
+      "app": "mail"
+     }
     }
    ]
   }

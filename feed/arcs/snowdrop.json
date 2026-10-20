@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "host": "snowdrop",
+  "kind": "fiction",
+  "title": "Where the leaves curl",
+  "premise": "Snowdrop maps the low tide by which grow-lamps flicker and which leaves curl. She worries about the city the way one worries about a garden.",
+  "stages": [
+    {
+      "name": "Grow-lamps",
+      "brief": "You want the visitor at the hillside shrine where you grew up, looking at the stone lantern whose candle nobody lights. If asked about the low tide, tell them what the plants show: on low-tide nights the grow-lamps by the bay flicker and the leaves nearest the water curl, and the shrine moss never does.",
+      "targets": [
+        { "id": "shrine", "label": "Visit the hillside shrine", "hint": "Enter the Hillside shrine from the map.", "kind": "visit", "place": "shrine-1" },
+        { "id": "lantern", "label": "Look at the stone lantern", "hint": "At the shrine, walk up to the mossy stone lantern and press F.", "kind": "found", "place": "shrine-1", "spot": "shrine-lantern" },
+        { "id": "ask-tide", "label": "Ask her about the low tide", "hint": "Ask Snowdrop about the low tide, by text or with a reply card.", "kind": "ask", "topic": "lowtide", "keywords": ["low tide", "lowtide", "the tide", "tide", "lights dip", "the dip", "grow lamps", "grow-lamps", "dimming"] }
+      ],
+      "done": ["You saw the lantern! I put a pressed leaf in your Mail.", "It is a little crooked. So am I."],
+      "unlock": {
+        "mail": {
+          "title": "A pressed leaf, and a question",
+          "body": "Hi!\n\nThere is a leaf in this letter (pretend). It is from the planter by the bay, the morning after a low tide. See how the edge curls toward the water? Like it was listening for something and did not hear it.\n\nThe shrine moss never curls. The lantern there is always lit and nobody remembers lighting it. I think somebody does, every evening, just by coming up the steps.\n\nCould you help me make a curl map? The classroom has a desk with chalk on it about lamps and remembering. I would like to know what you think it means.\n\nSnowdrop\n\n(A story of our city, filed as fiction.)"
+        }
+      }
+    },
+    {
+      "name": "Mapping the wilt",
+      "brief": "You are drawing a curl map with the visitor. You want them in Classroom 2-B, at the chalked desk about lamps as kept moments, and reading one of your margin notes, because a close read is how you keep a thing alive.",
+      "targets": [
+        { "id": "class", "label": "Visit Classroom 2-B", "hint": "Enter Classroom 2-B from the map.", "kind": "visit", "place": "classroom-1" },
+        { "id": "desk", "label": "Find shard 6, the chalked desk", "hint": "A shard glows by a desk in the classroom.", "kind": "shard", "n": 6 },
+        { "id": "margin", "label": "Read one of her notes", "hint": "Open one of Snowdrop's notes: her margin notes in the Diary, News, or a card in her chat.", "kind": "read", "host": "snowdrop" }
+      ],
+      "done": ["The curl map has a page in the Diary now!", "I left a seedling tray at the beach cove too. Go say hello to it?"],
+      "unlock": {
+        "diary": {
+          "title": "Margin: the curl map",
+          "body": "Curl map, page one.\n\nCurled: the bay planters, the alley pots, the cafe window box on nights nobody stayed late.\nNot curled: the shrine moss, the lobby aloe in the Jinrui building, anything somebody talked to that week.\n\nThe desk says a lamp is a kept moment and light is what remembering looks like from outside. I think leaves know that. I think the low tide is the city forgetting to water itself.\n\nWait, wait, that is too big. Smaller: things that are visited keep their light. That one I can check."
+        },
+        "place": {
+          "place": "beach-2",
+          "title": "A seedling tray by the tideline",
+          "speaker": "Snowdrop",
+          "lines": ["A seedling tray wedged in the sand, each cell labelled in tiny letters.", "\"Cell one: not visited. Cell two: visited once. Cell three: visited every evening.\" Only cell three stands straight.", "\"I want to know where the glow goes. The graffiti alley says someone poured it into the lamp glass. Can you find it?\""]
+        }
+      }
+    },
+    {
+      "name": "Rooted",
+      "brief": "You and the visitor finish the curl map. Your thought, offered shyly: the bay-light went into the lamps, the lamps hold what people remember, and the low tide is where nobody has been for a while. You would like the visitor to keep visiting, the way you keep watering.",
+      "targets": [
+        { "id": "tray", "label": "Visit her seedling tray at the cove", "hint": "Enter the Beach cove once the curl map is in the Diary.", "kind": "found", "place": "beach-2", "spot": "arc-snowdrop-s2" },
+        { "id": "glass", "label": "Find shard 3, the bay-light", "hint": "Something is sprayed behind a pallet in the graffiti alley. A shard glows there.", "kind": "shard", "n": 3 },
+        { "id": "ask-curl", "label": "Ask her about the curl map", "hint": "Ask Snowdrop about the curl map or why the leaves wilt.", "kind": "ask", "topic": "wilt", "keywords": ["curl", "curl map", "wilt", "wilting", "leaves", "grow lamp", "seedling", "the map"] }
+      ],
+      "done": ["It is growing! Slowly, but it is growing. Check your Mail.", "Thank you for walking it with me."],
+      "unlock": {
+        "mail": {
+          "title": "Rooted",
+          "body": "Hi again,\n\nThe curl map is done (for now; maps are never done).\n\nThe light came out of the bay. Somebody poured it into the lamp glass, the alley says, and it sleeps through the day and wakes at dusk. The lamps keep what people remember. Where nobody has been for a while, the lamp forgets, and the forgetting rolls in from the water. That is the low tide, I think.\n\nIt stops at the Jinrui building because Lacia reads everything there, every week. It is the best-watered place in Noctiluca.\n\nYou watered a lot of places this week. Cell three is very proud of you.\n\nSnowdrop\n\n(Our city's story. Fiction.)"
+        }
+      }
+    }
+  ],
+  "pings": {
+    "place": { "shrine-1": "You came up the steps! The moss says hello. Mostly it says nothing, but nicely.", "classroom-1": "Table 3 says hi from the window sill." },
+    "shard": { "6": "That desk! Light is what remembering looks like. I think so too.", "3": "Bay-light in the lamp glass. Oh. Oh, that is it, maybe." }
+  }
+}

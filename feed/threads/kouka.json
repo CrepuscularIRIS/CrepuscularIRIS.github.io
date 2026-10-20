@@ -5,76 +5,229 @@
  "nodes": {
   "hello": {
    "say": [
-    "(flicks the feed away) You are early. Signals are still coming in."
+    "Late again. Signals are still coming in, so you are in luck. Talk fast."
    ],
    "cards": [
     {
-     "label": "What's new this week?",
-     "next": "new"
+     "label": "Rematch?",
+     "next": "epilogue",
+     "when": "arc:kouka:2"
     },
     {
-     "label": "How do you check sources?",
-     "next": "sources"
+     "label": "What is the source?",
+     "next": "source",
+     "when": "arc:kouka:1",
+     "unless": "arc:kouka:2",
+     "ask": "source"
     },
     {
-     "label": "Just saying hi",
-     "next": "hi"
+     "label": "Got your timing sheet",
+     "next": "sheet",
+     "when": "arc:kouka:0",
+     "unless": "arc:kouka:1"
+    },
+    {
+     "label": "What's moving?",
+     "next": "signals"
+    },
+    {
+     "label": "What is the low tide?",
+     "next": "tide",
+     "ask": "lowtide"
+    },
+    {
+     "label": "You play games?",
+     "next": "games"
     }
    ]
   },
-  "new": {
+  "signals": {
    "say": [
-    "Signals come in through News: a collector bot pulls them, each with its source link and fetch time, and nobody has checked them yet. The short ones I write from them go on the Feed, with the notes they came from listed."
+    "My column is quick reports on what moved in AI, checked before I repeat it. Source or it did not happen.",
+    "The collected ones sit in News, my short signals on the Feed."
    ],
    "cards": [
+    {
+     "label": "How do you check?",
+     "next": "signals2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
     {
      "label": "Open News",
      "open": {
       "app": "news"
      }
+    }
+   ]
+  },
+  "signals2": {
+   "say": [
+    "Two places saying the same thing is not two sources if one copied the other. I trace it back.",
+    "Saturnus audits my audits. It is annoying. It is also why I am right."
+   ],
+   "cards": [
+    {
+     "label": "Anything you cannot source?",
+     "next": "tide",
+     "ask": "lowtide"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
     },
     {
      "label": "Open the Feed",
      "open": {
       "app": "feed"
      }
-    },
-    {
-     "label": "How do you check sources?",
-     "next": "sources"
     }
    ]
   },
-  "sources": {
+  "tide": {
    "say": [
-    "Primary link first, date second, then whether anyone else confirmed it. No link, no post. If I am not sure I say so."
-   ],
-   "set": [
-    "knows-sources"
+    "The low tide. Lights go down block by block from the bay, a few seconds a pass, and stop short of Jinrui.",
+    "My scanner sees the lamps drop. No carrier, no hum. Every signal in this city has a source except that one."
    ],
    "cards": [
     {
-     "label": "What's new this week?",
-     "next": "new"
+     "label": "Where did you first catch it?",
+     "next": "tide2"
     },
     {
-     "label": "Back",
+     "label": "Back to the start",
      "next": "hello"
     }
    ]
   },
-  "hi": {
+  "tide2": {
    "say": [
-    "Hi. (flicks the feed) You are still early."
+    "The station gates. There is a ledger page there that counts more lamps than streets.",
+    "Go find it. Then ask me again and I will give you my timing."
    ],
    "cards": [
     {
-     "label": "What's new this week?",
-     "next": "new"
+     "label": "What else should I do?",
+     "next": "tide3"
     },
     {
-     "label": "How do you check sources?",
-     "next": "sources"
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "tide3": {
+   "say": [
+    "Enter the Station concourse, find the shard, ask me about the low tide. The bar on top of this chat keeps score."
+   ],
+   "cards": [
+    {
+     "label": "You play games?",
+     "next": "games"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "games": {
+   "say": [
+    "Gomoku, chess, freecell. I win most. Try me in Games.",
+    "Fair warning: I keep a scoreboard and Methode is on it."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Talk to Methode",
+     "chat": "methode"
+    }
+   ]
+  },
+  "sheet": {
+   "say": [
+    "Good. Next stop is the metro car. Somebody scratched something into a window down there.",
+    "Read one of my signals too. You should see how I check before you trust my sheet."
+   ],
+   "cards": [
+    {
+     "label": "Why the metro?",
+     "next": "sheet2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "sheet2": {
+   "say": [
+    "The lamps over empty lots. The ledger counted them. I want a second witness on what wakes them."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open News",
+     "open": {
+      "app": "news"
+     }
+    }
+   ]
+  },
+  "source": {
+   "say": [
+    "No. You beat me at gomoku first, then I tell you. That was the bet.",
+    "Also read the chalk I left on main street. Bring it with you."
+   ],
+   "cards": [
+    {
+     "label": "Fine. Hint?",
+     "next": "source2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "source2": {
+   "say": [
+    "Hint: it is not wires. Six of Methode's rigs proved that. Go win."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Talk to Methode",
+     "chat": "methode"
+    }
+   ]
+  },
+  "epilogue": {
+   "say": [
+    "Whenever you like. I am not done losing.",
+    "And keep walking the city. You were my witness. That counts on my sheet."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open the Feed",
+     "open": {
+      "app": "feed"
+     }
     }
    ]
   }

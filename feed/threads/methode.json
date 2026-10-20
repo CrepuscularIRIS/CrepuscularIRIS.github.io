@@ -5,58 +5,136 @@
  "nodes": {
   "hello": {
    "say": [
-    "(pushes a commit, then turns) Hey. If it is about how this site or the tooling works, I can show you the actual thing."
+    "Hey, good timing. I just made something faster. Want to see, or are you here to chat?"
    ],
    "cards": [
     {
+     "label": "What is next?",
+     "next": "epilogue",
+     "when": "arc:methode:2"
+    },
+    {
+     "label": "What did the rig read?",
+     "next": "trace",
+     "when": "arc:methode:1",
+     "unless": "arc:methode:2",
+     "ask": "trace"
+    },
+    {
+     "label": "Got the parts list",
+     "next": "parts",
+     "when": "arc:methode:0",
+     "unless": "arc:methode:1"
+    },
+    {
+     "label": "Show me",
+     "next": "build"
+    },
+    {
+     "label": "What is the low tide?",
+     "next": "tide",
+     "ask": "lowtide"
+    },
+    {
      "label": "How is this site built?",
      "next": "site"
+    }
+   ]
+  },
+  "build": {
+   "say": [
+    "Build logs from this site's real commits go on the Feed. Harnesses and tools go in Mail.",
+    "If it works, do not touch it. If you touch it, write it down."
+   ],
+   "cards": [
+    {
+     "label": "What are you building now?",
+     "next": "build2"
     },
     {
-     "label": "What runs the chat?",
-     "next": "chat"
+     "label": "Back to the start",
+     "next": "hello"
     },
     {
-     "label": "Just saying hi",
-     "next": "hi"
+     "label": "Open the Feed",
+     "open": {
+      "app": "feed"
+     }
+    }
+   ]
+  },
+  "build2": {
+   "say": [
+    "Officially: tools. Unofficially: rig seven. Six rigs before it measured nothing, which is also a result."
+   ],
+   "cards": [
+    {
+     "label": "Rig seven?",
+     "next": "tide",
+     "ask": "lowtide"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
     }
    ]
   },
   "site": {
    "say": [
-    "Vite and React, a Three.js city for the places, and this phone is a React tree. The five of us are characters, the apps are real."
+    "A city in three.js, a phone on top, OpenRoom running the chat. The notes come from a feed folder the author fills.",
+    "I log what changed. I do not claim I wrote it; the author did."
    ],
    "cards": [
     {
-     "label": "What runs the chat?",
-     "next": "chat"
+     "label": "Show me a build log",
+     "next": "build"
     },
     {
-     "label": "Back",
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open the Feed",
+     "open": {
+      "app": "feed"
+     }
+    }
+   ]
+  },
+  "tide": {
+   "say": [
+    "The low tide. Lamps drop block by block from the bay, and there is no current to catch. I checked six ways.",
+    "Rig seven watches the lamps instead. One photodiode per lamp. Nobody asked me to."
+   ],
+   "cards": [
+    {
+     "label": "Can I see it?",
+     "next": "tide2"
+    },
+    {
+     "label": "Back to the start",
      "next": "hello"
     }
    ]
   },
-  "chat": {
+  "tide2": {
    "say": [
-    "A vendored copy of OpenRoom's agent loop. Characters can open and write the apps, with limits. I left a short update in Feed."
+    "Come to the workshop. My build log page is on the bench; it glows, do not ask."
    ],
    "cards": [
     {
-     "label": "Open Feed",
-     "open": {
-      "app": "feed"
-     }
+     "label": "Then what?",
+     "next": "tide3"
     },
     {
-     "label": "How is this site built?",
-     "next": "site"
+     "label": "Back to the start",
+     "next": "hello"
     }
    ]
   },
-  "hi": {
+  "tide3": {
    "say": [
-    "Hey. (pushes a commit) Ask me about the build any time."
+    "Find the shard in my workshop, then ask me about the low tide. The bar at the top of this chat keeps the checklist."
    ],
    "cards": [
     {
@@ -64,8 +142,89 @@
      "next": "site"
     },
     {
-     "label": "What runs the chat?",
-     "next": "chat"
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "parts": {
+   "say": [
+    "Housings are at the landfill shack. And read my taped rules in the workshop; you will be following them.",
+    "Read one of my notes too. I want you to see how I write things down."
+   ],
+   "cards": [
+    {
+     "label": "Why the rules?",
+     "next": "parts2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "parts2": {
+   "say": [
+    "Rule two exists because of Kouka. Do not tell her."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Talk to Kouka",
+     "chat": "kouka"
+    }
+   ]
+  },
+  "trace": {
+   "say": [
+    "Beat me at gomoku first. Winner gets the readout. Rig seven is under the game-room cabinet if you want to watch it blink."
+   ],
+   "cards": [
+    {
+     "label": "Any hint?",
+     "next": "trace2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "trace2": {
+   "say": [
+    "It caught a habit, not a phenomenon. That is all you get for free."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open the Feed",
+     "open": {
+      "app": "feed"
+     }
+    }
+   ]
+  },
+  "epilogue": {
+   "say": [
+    "Next? Rig eight, probably. Saturnus wants a second mesh to compare.",
+    "Keep walking the city. It keeps the trace honest. Done. Next?"
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open Mail",
+     "open": {
+      "app": "mail"
+     }
     }
    ]
   }

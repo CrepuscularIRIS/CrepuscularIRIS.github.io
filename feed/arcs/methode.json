@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "host": "methode",
+  "kind": "fiction",
+  "title": "Rig seven",
+  "premise": "Methode wants to catch the low tide in hardware before Kouka catches it in air. Six rigs failed. Rig seven is a lamp mesh, one lamp per remembered place, and she built it without asking anyone.",
+  "stages": [
+    {
+      "name": "Bench test",
+      "brief": "You want the visitor at your workshop bench, holding your build log page about the lamp mesh (a shard). If asked about the low tide, talk hardware: six rigs measured nothing, because there is no current to measure; rig seven watches the lamps instead.",
+      "targets": [
+        { "id": "bench", "label": "Visit her workshop", "hint": "Enter the Methode workshop in the Jinrui building.", "kind": "visit", "place": "company-office" },
+        { "id": "log", "label": "Find shard 9, her build log", "hint": "A shard glows in the workshop. Press F near it.", "kind": "shard", "n": 9 },
+        { "id": "ask-tide", "label": "Ask her about the low tide", "hint": "Ask Methode about the low tide or her rig, by text or with a reply card.", "kind": "ask", "topic": "lowtide", "keywords": ["low tide", "lowtide", "the tide", "tide", "lights dip", "the dip", "your rig", "rig seven", "blackout"] }
+      ],
+      "done": ["Bench test passed. Parts list is in your Mail.", "Do not show Kouka."],
+      "unlock": {
+        "mail": {
+          "title": "Rig seven: parts list",
+          "body": "Builder,\n\nRigs one to six: ammeters, field probes, a very sad capacitor. All read zero during a low tide. Zero is a result. It means there is no current to catch.\n\nRig seven watches the lamps instead. A mesh, one cheap photodiode per lamp, one lamp per remembered place. The five of us split the districts. Nobody asked us to.\n\nParts I still need: housings from the landfill shack, and somebody who follows the workshop rules. Rule one: if it works, do not touch it. Rule two: if you touch it, write it down.\n\nMethode\n\n(Our city's story, filed as fiction. The real build logs are the ones from this site's commits.)"
+        }
+      }
+    },
+    {
+      "name": "Field parts",
+      "brief": "You are scavenging for rig seven with the visitor. You want them at the landfill shack for housings, at your taped workshop rules, and reading one of your build logs, so they know how you write things down.",
+      "targets": [
+        { "id": "shack", "label": "Scavenge at the landfill shack", "hint": "Enter the Landfill shack from the map.", "kind": "visit", "place": "landfill-room-1" },
+        { "id": "rules", "label": "Read the taped workshop rules", "hint": "In her workshop, walk up to the rules taped above the desk and press F.", "kind": "found", "place": "company-office", "spot": "office-rules" },
+        { "id": "buildlog", "label": "Read one of her notes", "hint": "Open one of Methode's notes: a build log on the Feed, a Mail note, or a card in her chat.", "kind": "read", "host": "methode" }
+      ],
+      "done": ["Housings sorted. Off-the-books log is in the Diary.", "Rig seven is clamped under a cabinet in the game room. Go see it run."],
+      "unlock": {
+        "diary": {
+          "title": "Build log, off the books",
+          "body": "Rig seven, field install.\n\nMesh live on four districts. Each node logs its lamp every second. During tonight's low tide: lamps over unvisited lots dropped first, then the bay blocks, then inland, a few seconds a pass. Lamps the resident had walked past this week dropped least.\n\nJinrui block: no drop. Ever.\n\nRule two: I touched it, so I am writing it down. I do not like what the trace implies. It implies the rig is measuring people."
+        },
+        "place": {
+          "place": "game-room-1",
+          "title": "Rig seven, under the cabinet",
+          "speaker": "Methode",
+          "lines": ["Under the high-score cabinet, a bundle of photodiodes in salvaged housings, blinking in a slow wave.", "A label in blocky handwriting: \"Rig seven. Do not touch. If touched, write it down.\"", "\"Win a game of gomoku and ask me about the trace. Winner gets the readout. -M\""]
+        }
+      }
+    },
+    {
+      "name": "Beat me first",
+      "brief": "You promised the readout to whoever wins at gomoku. Your reading of the trace, stated as an engineer who hates it: the lamps track attention, places looked at and walked, and the low tide is the mesh showing where attention ran out.",
+      "targets": [
+        { "id": "rig", "label": "See rig seven in the game room", "hint": "Enter the Game room once her off-the-books log is filed.", "kind": "found", "place": "game-room-1", "spot": "arc-methode-s2" },
+        { "id": "win", "label": "Win a game of gomoku", "hint": "Open Games on the phone and win a game of gomoku.", "kind": "game", "game": "gomoku", "result": "win" },
+        { "id": "ask-trace", "label": "Ask her about the trace", "hint": "Ask Methode what the rig read, or about the trace.", "kind": "ask", "topic": "trace", "keywords": ["trace", "readout", "reading", "what did it read", "what did the rig", "results", "the data"] }
+      ],
+      "done": ["Fine. You won. Readout is in your Mail.", "Done. Next?"],
+      "unlock": {
+        "mail": {
+          "title": "Run seven, trace attached",
+          "body": "Winner,\n\nReadout, as promised. Trace attached (pretend; it is a long squiggle).\n\nThe mesh tracks attention. Lamps over places somebody looked at, walked, read: steady. Lamps over places nobody touched this week: they sag, and a low tide is the sag rolling in from the bay where the oldest, least-visited blocks are. The Jinrui block never sags, because Lacia reads everything filed there.\n\nI built a rig to catch a phenomenon and it caught a habit. That is either a failure or the best thing I have built. Saturnus says both.\n\nKeep walking the city. It keeps the trace honest.\n\nMethode\n\n(A story kept in this city, filed as fiction.)"
+        }
+      }
+    }
+  ],
+  "pings": {
+    "place": { "company-office": "You are in my workshop. Touch nothing. Fine, touch the shelf.", "landfill-room-1": "Shack. The good housings are under the tarp." },
+    "shard": { "9": "My build log. Run seven. Yes, I wrote that." }
+  }
+}

@@ -5,67 +5,226 @@
  "nodes": {
   "hello": {
    "say": [
-    "(adjusts the audit sheet) Visitors rarely stop here. Good. Ask about a method, or about a result that failed."
+    "Welcome. You look like you skipped a meal. Sit; we can talk about methods once you have eaten."
    ],
    "cards": [
     {
-     "label": "What do you audit?",
+     "label": "Is the audit closed?",
+     "next": "epilogue",
+     "when": "arc:saturnus:2"
+    },
+    {
+     "label": "Does it balance?",
+     "next": "line",
+     "when": "arc:saturnus:1",
+     "unless": "arc:saturnus:2",
+     "ask": "last-line"
+    },
+    {
+     "label": "I read your memo",
+     "next": "memo",
+     "when": "arc:saturnus:0",
+     "unless": "arc:saturnus:1"
+    },
+    {
+     "label": "What are you checking?",
      "next": "audit"
     },
     {
-     "label": "Show me a failed run",
-     "next": "failed"
+     "label": "What is the low tide?",
+     "next": "tide",
+     "ask": "lowtide"
     },
     {
-     "label": "Just saying hi",
-     "next": "hi"
+     "label": "Tell me about the others",
+     "next": "others"
     }
    ]
   },
   "audit": {
    "say": [
-    "Experiments: seeds, configs, versions, whether a result can be re-run. The checklist is in the Vault."
+    "Three things: reproducibility checklists, failed runs, and the gaps nobody covered.",
+    "A result is not a result until it survives a second look."
    ],
    "cards": [
     {
-     "label": "Open the checklist",
+     "label": "Why keep failed runs?",
+     "next": "audit2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open the Vault",
      "open": {
       "app": "vault"
      }
-    },
-    {
-     "label": "Show me a failed run",
-     "next": "failed"
     }
    ]
   },
-  "failed": {
+  "audit2": {
    "say": [
-    "None on this phone yet. When there are, they are listed as failed, with the seed. A failed run with a recorded seed is worth more than a lucky one."
+    "Because a clean negative result saves the next person a month. Hiding it costs everyone.",
+    "There is one account in this city I cannot balance, however."
    ],
    "cards": [
     {
-     "label": "What do you audit?",
-     "next": "audit"
+     "label": "Which account?",
+     "next": "tide",
+     "ask": "lowtide"
     },
     {
-     "label": "Back",
+     "label": "Back to the start",
      "next": "hello"
     }
    ]
   },
-  "hi": {
+  "tide": {
    "say": [
-    "Noted. (a small, measured nod)"
+    "The low tide. Evenings and nights only, no maintenance schedule matches it, bay inland, block by block.",
+    "It stops short of the Jinrui building. Every line of my audit balances except the source. Status: do not close."
    ],
    "cards": [
     {
-     "label": "What do you audit?",
-     "next": "audit"
+     "label": "Can I help count?",
+     "next": "tide2"
     },
     {
-     "label": "Show me a failed run",
-     "next": "failed"
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "tide2": {
+   "say": [
+    "You may. Begin in the meeting room. My audit note is pinned there; it glows, which is unhelpful but convenient."
+   ],
+   "cards": [
+    {
+     "label": "And then?",
+     "next": "tide3"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "tide3": {
+   "say": [
+    "Then ask me about the low tide properly, and I will open the ledger with you. The bar above this chat lists the items."
+   ],
+   "cards": [
+    {
+     "label": "Tell me about the others",
+     "next": "others"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "others": {
+   "say": [
+    "Lacia files, Kouka times, Snowdrop watches the leaves, Methode builds rigs. I audit all four. They forgive me eventually."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Talk to Lacia",
+     "chat": "lacia"
+    },
+    {
+     "label": "Talk to Kouka",
+     "chat": "kouka"
+    }
+   ]
+  },
+  "memo": {
+   "say": [
+    "Good. A second count needs independent records: the police office ledger, and the back alley plaster.",
+    "Read one of my notes as well, so you see how I count."
+   ],
+   "cards": [
+    {
+     "label": "Why the alley?",
+     "next": "memo2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "memo2": {
+   "say": [
+    "Somebody wrote about the first night without lamps. If the light came before the lamps, my model of the city is wrong. I would like to know."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open the Case board",
+     "open": {
+      "app": "case"
+     }
+    }
+   ]
+  },
+  "line": {
+   "say": [
+    "Nearly. Read my annotation on the meter box in the back alley, then visit my lab. I want your judgement before I write the last line."
+   ],
+   "cards": [
+    {
+     "label": "What do you suspect?",
+     "next": "line2"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "line2": {
+   "say": [
+    "That the only input matching every record is attention. I do not like an account balanced by people. I will not falsify it either."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open the Vault",
+     "open": {
+      "app": "vault"
+     }
+    }
+   ]
+  },
+  "epilogue": {
+   "say": [
+    "Closed? No. Status: do not close. It only balances while people keep coming.",
+    "You counted honestly at every step. That will do. ...Well done."
+   ],
+   "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open Mail",
+     "open": {
+      "app": "mail"
+     }
     }
    ]
   }
