@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "id": "2026-10-18-methode-buildlog-2a70db61",
+  "app": "feed",
+  "host": "methode",
+  "kind": "curated",
+  "date": "2026-10-18T23:38:08Z",
+  "title": "Build log, 2026-10-18",
+  "body": "What changed on the site, straight from the commit log:\n- fix(atlas): keep the wheel hint clear of the phone and open layers (#74) (056ce8d)\n- feat(atlas): answer the wheel on the fixed map with a brief hint (#74) (03e8c24)\n- fix(place): dispose Home's slit-glass clone when the visit ends (#78) (87f2f2f)\n- fix(place): cap software-GL shadow maps before warm-up's lost-context return (#10) (2c2f301)\n- perf(place): cheaper door rays, 1024 shadows and yields while a place loads on software GL (#10) (2437910)\n- fix(place): natural wet sand at the beach waterline; a skyline through Home's slit window (#77 #78) (1942a21)\n- fix(chess): drop torus trim that stood up as hoops around the back rank (#65) (ad88fa4)\n- perf(place): warm a place's first frame on software GL so the card leaves after one frame (#10) (e682e89)\n- and more in the commit log",
+  "refs": [
+    {
+      "commit": "056ce8d6aec60d6ba9375d257a6ea20834ac3c14",
+      "subject": "fix(atlas): keep the wheel hint clear of the phone and open layers (#74)",
+      "date": "2026-10-18T19:38:08-04:00"
+    },
+    {
+      "commit": "03e8c2491577c4b2e21abad3cf4971db61bcfe5c",
+      "subject": "feat(atlas): answer the wheel on the fixed map with a brief hint (#74)",
+      "date": "2026-10-18T19:30:25-04:00"
+    },
+    {
+      "commit": "87f2f2f7578ec289354b4a9db171f34ecbed1987",
+      "subject": "fix(place): dispose Home's slit-glass clone when the visit ends (#78)",
+      "date": "2026-10-18T19:10:58-04:00"
+    },
+    {
+      "commit": "2c2f301ea55ecc368cce03cae96ed90a7ceb7838",
+      "subject": "fix(place): cap software-GL shadow maps before warm-up's lost-context return (#10)",
+      "date": "2026-10-18T19:10:30-04:00"
+    },
+    {
+      "commit": "24379103ab6585a5ef2991d0e52273a5bc47dd2b",
+      "subject": "perf(place): cheaper door rays, 1024 shadows and yields while a place loads on software GL (#10)",
+      "date": "2026-10-18T19:02:58-04:00"
+    },
+    {
+      "commit": "1942a21f2500b54d5a1f22b63d616d4c4096e54f",
+      "subject": "fix(place): natural wet sand at the beach waterline; a skyline through Home's slit window (#77 #78)",
+      "date": "2026-10-18T18:52:26-04:00"
+    },
+    {
+      "commit": "ad88fa460b51ce70898ecd1de368c7dde8c0db64",
+      "subject": "fix(chess): drop torus trim that stood up as hoops around the back rank (#65)",
+      "date": "2026-10-18T18:27:07-04:00"
+    },
+    {
+      "commit": "e682e89812711d394128003e693e901f68e8eb08",
+      "subject": "perf(place): warm a place's first frame on software GL so the card leaves after one frame (#10)",
+      "date": "2026-10-18T17:14:44-04:00"
+    }
+  ],
+  "via": {
+    "curator": "methode-buildlog",
+    "label": "Build log",
+    "model": "none (git log of this repository)",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Build log for 2026-10-18 is on the Feed. Real commits, nothing added."
+    ]
+  }
+}

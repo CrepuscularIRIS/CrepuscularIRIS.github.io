@@ -27,6 +27,7 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return
   const url = new URL(req.url)
   if (url.origin !== location.origin) return // never intercept the chat Worker or any other origin
+  if (url.pathname.includes('/api/')) return // the dev server's live data (session files, memories): never cached
 
   if (req.mode === 'navigate' || url.pathname.endsWith('.json')) {
     event.respondWith(fetch(req).then((res) => store(req, res)).catch(() => caches.match(req).then((hit) => hit || (req.mode === 'navigate' ? caches.match('/') : Response.error()))))

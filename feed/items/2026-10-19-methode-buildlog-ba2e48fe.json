@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "id": "2026-10-19-methode-buildlog-ba2e48fe",
+  "app": "feed",
+  "host": "methode",
+  "kind": "curated",
+  "date": "2026-10-20T01:54:32Z",
+  "title": "Build log, 2026-10-19",
+  "body": "What changed on the site, straight from the commit log:\n- fix(shrine): the roofed torii has its own F spot (#39) (1c6fdae)\n- fix(phone): wrap long unbroken case clues (#100) (1ca4d97)\n- fix(atlas): label every place on all phone sizes (#31), one after-hours word (#104) (ba3d890)\n- fix(phone): case board lists real cases (#100) (9c07393)\n- fix(place): clear stale guide goal, skip collected spots (#39) (6bebc1f)\n- fix(feed): keep escaped content intact, limit quote repair (#169) (9def918)\n- fix(atlas): every place has a labeled map marker (#31), one after-hours word (#104) (8b87463)\n- fix(place): F with nothing in reach guides to the nearest spot (#39) (1a62814)\n- and more in the commit log",
+  "refs": [
+    {
+      "commit": "1c6fdae9c41d271cc6ac5366923c69e542b5dd98",
+      "subject": "fix(shrine): the roofed torii has its own F spot (#39)",
+      "date": "2026-10-19T21:54:32-04:00"
+    },
+    {
+      "commit": "1ca4d97f8c6c72d42a886b5df874b3288e032df9",
+      "subject": "fix(phone): wrap long unbroken case clues (#100)",
+      "date": "2026-10-19T20:42:18-04:00"
+    },
+    {
+      "commit": "ba3d890e34c7c48b642f16307f7ed326cc7a0716",
+      "subject": "fix(atlas): label every place on all phone sizes (#31), one after-hours word (#104)",
+      "date": "2026-10-19T20:33:29-04:00"
+    },
+    {
+      "commit": "9c073938645a48aafbe9654b8edfc9c4e760411a",
+      "subject": "fix(phone): case board lists real cases (#100)",
+      "date": "2026-10-19T20:29:57-04:00"
+    },
+    {
+      "commit": "6bebc1f2855764a908d9a3f34ee6e8e19fc16016",
+      "subject": "fix(place): clear stale guide goal, skip collected spots (#39)",
+      "date": "2026-10-19T14:22:41-04:00"
+    },
+    {
+      "commit": "9def9181e403fa1e4c11dda2de49ee044ba27d27",
+      "subject": "fix(feed): keep escaped content intact, limit quote repair (#169)",
+      "date": "2026-10-19T14:22:39-04:00"
+    },
+    {
+      "commit": "8b87463aacea3640ff1a2b15f77a58bc5eeb94af",
+      "subject": "fix(atlas): every place has a labeled map marker (#31), one after-hours word (#104)",
+      "date": "2026-10-19T13:41:14-04:00"
+    },
+    {
+      "commit": "1a62814a56c8281690537992ff38e19112975ac7",
+      "subject": "fix(place): F with nothing in reach guides to the nearest spot (#39)",
+      "date": "2026-10-19T13:31:22-04:00"
+    }
+  ],
+  "via": {
+    "curator": "methode-buildlog",
+    "label": "Build log",
+    "model": "none (git log of this repository)",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Build log for 2026-10-19 is on the Feed. Real commits, nothing added."
+    ]
+  }
+}

@@ -24,13 +24,19 @@
   },
   "new": {
    "say": [
-    "Honestly: the signal feed is not attached yet, so I have nothing current. When it is, every item has a link and a verified time."
+    "Signals come in through News: a collector bot pulls them, each with its source link and fetch time, and nobody has checked them yet. The short ones I write from them go on the Feed, with the notes they came from listed."
    ],
    "cards": [
     {
-     "label": "Open Signals",
+     "label": "Open News",
      "open": {
       "app": "news"
+     }
+    },
+    {
+     "label": "Open the Feed",
+     "open": {
+      "app": "feed"
      }
     },
     {

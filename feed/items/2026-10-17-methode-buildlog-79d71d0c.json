@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "id": "2026-10-17-methode-buildlog-79d71d0c",
+  "app": "feed",
+  "host": "methode",
+  "kind": "curated",
+  "date": "2026-10-18T03:11:59Z",
+  "title": "Build log, 2026-10-17",
+  "body": "What changed on the site, straight from the commit log:\n- fix(atlas): keep the preloaded faces reachable and import-safe (#99) (d564cb7)\n- fix(atlas): preload and keep the map's faces so a remount paints them at once (#99) (1428fc8)\n- docs(chat): contract states the doubled browser allowance (95a61b0)\n- fix(collector): bounded card scan, verified_at fallback, early lead exit; F/G in door checks (d7ee4f2)\n- feat(chat): double the chat allowances; short ip waits are not \"busy\" (469711a)\n- fix(collector): memory from published cards, bounded and sanitized; refuse a seen lead (b6a8b26)\n- fix(collector): digest bots remember what they already collected (3eadd77)\n- fix(phone): Stand-in hint keyed to her turn, not yours (#162 review) (34e396c)\n- and more in the commit log",
+  "refs": [
+    {
+      "commit": "d564cb7f22dc2f4d03d218247605b04ad27e1f25",
+      "subject": "fix(atlas): keep the preloaded faces reachable and import-safe (#99)",
+      "date": "2026-10-17T23:11:59-04:00"
+    },
+    {
+      "commit": "1428fc8e72692dffa5935beecd8d2034961263e2",
+      "subject": "fix(atlas): preload and keep the map's faces so a remount paints them at once (#99)",
+      "date": "2026-10-17T23:07:10-04:00"
+    },
+    {
+      "commit": "95a61b09a8ea9b1f69135b435b788e19cb402f9b",
+      "subject": "docs(chat): contract states the doubled browser allowance",
+      "date": "2026-10-17T22:55:07-04:00"
+    },
+    {
+      "commit": "d7ee4f2af81f7468f132421f98112c8c180d7c0c",
+      "subject": "fix(collector): bounded card scan, verified_at fallback, early lead exit; F/G in door checks",
+      "date": "2026-10-17T22:50:51-04:00"
+    },
+    {
+      "commit": "469711a7b3dce6cf84cd533e6246af54408f5949",
+      "subject": "feat(chat): double the chat allowances; short ip waits are not \"busy\"",
+      "date": "2026-10-17T22:50:21-04:00"
+    },
+    {
+      "commit": "b6a8b263cdca750303a75831115b564ea1365c63",
+      "subject": "fix(collector): memory from published cards, bounded and sanitized; refuse a seen lead",
+      "date": "2026-10-17T21:49:56-04:00"
+    },
+    {
+      "commit": "3eadd778c8991de1e400c5fb6f3931a8fde3e4c7",
+      "subject": "fix(collector): digest bots remember what they already collected",
+      "date": "2026-10-17T21:42:46-04:00"
+    },
+    {
+      "commit": "34e396c99fc68139fab4182b818c2da37ee115bc",
+      "subject": "fix(phone): Stand-in hint keyed to her turn, not yours (#162 review)",
+      "date": "2026-10-17T16:26:59-04:00"
+    }
+  ],
+  "via": {
+    "curator": "methode-buildlog",
+    "label": "Build log",
+    "model": "none (git log of this repository)",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Build log for 2026-10-17 is on the Feed. Real commits, nothing added."
+    ]
+  }
+}
