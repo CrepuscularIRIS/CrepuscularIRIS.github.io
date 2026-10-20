@@ -1,0 +1,650 @@
+{
+ "place": "car-1",
+ "bakedAt": "2026-10-20T16:15:00.048Z",
+ "source": {
+  "family": "built at runtime by ../background-html/src/scenes (see src/game/places.js)",
+  "exportBytes": 3723688,
+  "triangles": 100172,
+  "drawCalls": 578,
+  "textures": 43,
+  "textureMB": 47.5
+ },
+ "exported": {
+  "triangles": 46944,
+  "drawCalls": 196,
+  "textures": 7,
+  "textureMB": 7.1
+ },
+ "lods": {
+  "lod0": {
+   "file": "car-1.glb",
+   "triangles": 46944,
+   "primitives": 98,
+   "textures": 6,
+   "textureKB": 33,
+   "bytes": 411324
+  },
+  "lod1": {
+   "file": "car-1.lod1.glb",
+   "ratio": 0.5,
+   "triangles": 27222,
+   "primitives": 98,
+   "textures": 6,
+   "textureKB": 33,
+   "bytes": 412008
+  },
+  "lod2": {
+   "file": "car-1.lod2.glb",
+   "ratio": 0.15,
+   "triangles": 9407,
+   "primitives": 98,
+   "textures": 6,
+   "textureKB": 33,
+   "bytes": 271152
+  }
+ },
+ "parts": {
+  "file": "car-1.parts.glb",
+  "names": [
+   "glass-right",
+   "glass-left",
+   "doorhandle",
+   "doorswitch",
+   "doorhandle",
+   "doorswitch",
+   "sunroof",
+   "wheel",
+   "mirror",
+   "leadcar"
+  ],
+  "triangles": 9588,
+  "primitives": 42,
+  "textures": 1,
+  "textureKB": 1,
+  "bytes": 111952
+ },
+ "cards": [
+  {
+   "matrix": [
+    1.1,
+    0,
+    0,
+    0,
+    0,
+    0.29904051189078584,
+    -0.023974408190751802,
+    0,
+    0,
+    0.07991469396917268,
+    0.9968017063026194,
+    0,
+    -0.2,
+    0.985,
+    -0.93,
+    1
+   ],
+   "geo": {
+    "kind": "plane",
+    "w": 1,
+    "h": 1
+   },
+   "color": 3832575,
+   "opacity": 0.2,
+   "additive": true,
+   "side": 2,
+   "depthWrite": false,
+   "alphaMap": {
+    "id": "caa2ee06-4ce2-4b60-9ba7-7eaeeee84567",
+    "repeat": [
+     1,
+     1
+    ],
+    "offset": [
+     0,
+     0
+    ]
+   },
+   "map": null,
+   "renderOrder": 0,
+   "noOutline": true
+  },
+  {
+   "matrix": [
+    3.2,
+    0,
+    0,
+    0,
+    0,
+    0.01,
+    0,
+    0,
+    0,
+    0,
+    2.4,
+    0,
+    0,
+    0.02,
+    3.0999999999999996,
+    1
+   ],
+   "geo": {
+    "kind": "box",
+    "w": 1,
+    "h": 1,
+    "d": 1
+   },
+   "color": 16724032,
+   "opacity": 0.35,
+   "additive": true,
+   "side": 2,
+   "depthWrite": false,
+   "alphaMap": {
+    "id": "caa2ee06-4ce2-4b60-9ba7-7eaeeee84567",
+    "repeat": [
+     1,
+     1
+    ],
+    "offset": [
+     0,
+     0
+    ]
+   },
+   "map": null,
+   "renderOrder": 0,
+   "noOutline": true,
+   "part": "leadcar"
+  },
+  {
+   "matrix": [
+    2.1,
+    0,
+    0,
+    0,
+    0,
+    0.01,
+    0,
+    0,
+    0,
+    0,
+    4.4,
+    0,
+    0,
+    0.02,
+    0,
+    1
+   ],
+   "geo": {
+    "kind": "box",
+    "w": 1,
+    "h": 1,
+    "d": 1
+   },
+   "color": 262922,
+   "opacity": 0.7,
+   "additive": true,
+   "side": 2,
+   "depthWrite": false,
+   "alphaMap": {
+    "id": "caa2ee06-4ce2-4b60-9ba7-7eaeeee84567",
+    "repeat": [
+     1,
+     1
+    ],
+    "offset": [
+     0,
+     0
+    ]
+   },
+   "map": null,
+   "renderOrder": 0,
+   "noOutline": true,
+   "part": "leadcar"
+  }
+ ],
+ "cardImages": {
+  "caa2ee06-4ce2-4b60-9ba7-7eaeeee84567": "data:image/png;base64,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"
+ },
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    1.2,
+    0
+   ],
+   "target": [
+    0,
+    0.97,
+    -1
+   ],
+   "fov": 52
+  },
+  "views": [
+   {
+    "name": "driver",
+    "label": "Driver seat",
+    "position": [
+     -0.38,
+     1.22,
+     0.12
+    ],
+    "target": [
+     -0.3,
+     1.05,
+     -2
+    ],
+    "fov": 60
+   },
+   {
+    "name": "dash",
+    "label": "Displays",
+    "position": [
+     -0.05,
+     1.12,
+     -0.35
+    ],
+    "target": [
+     -0.2,
+     0.96,
+     -0.95
+    ],
+    "fov": 50
+   },
+   {
+    "name": "passenger",
+    "label": "Passenger dash",
+    "position": [
+     -0.25,
+     1.12,
+     0.1
+    ],
+    "target": [
+     0.5,
+     0.86,
+     -0.95
+    ],
+    "fov": 58
+   },
+   {
+    "name": "doorcard",
+    "label": "Door card",
+    "position": [
+     -0.3,
+     1.1,
+     0.35
+    ],
+    "target": [
+     0.76,
+     0.8,
+     -0.1
+    ],
+    "fov": 62
+   },
+   {
+    "name": "wheel",
+    "label": "Steering wheel",
+    "position": [
+     -0.3,
+     1.1,
+     0.12
+    ],
+    "target": [
+     -0.376,
+     0.94,
+     -0.7
+    ],
+    "fov": 48
+   },
+   {
+    "name": "console",
+    "label": "Centre stack",
+    "position": [
+     0.22,
+     1.02,
+     -0.42
+    ],
+    "target": [
+     0,
+     0.86,
+     -0.85
+    ],
+    "fov": 50
+   },
+   {
+    "name": "rear",
+    "label": "Rear seat",
+    "position": [
+     0.35,
+     1.18,
+     1.45
+    ],
+    "target": [
+     -0.1,
+     1,
+     -1.5
+    ],
+    "fov": 62
+   },
+   {
+    "name": "sky",
+    "label": "Sky + skyline",
+    "position": [
+     0.4,
+     2.6,
+     7.5
+    ],
+    "target": [
+     -0.5,
+     16,
+     -60
+    ],
+    "fov": 62
+   },
+   {
+    "name": "outside",
+    "label": "Outside",
+    "position": [
+     5.5,
+     3.2,
+     6.5
+    ],
+    "target": [
+     0,
+     0.8,
+     -1
+    ],
+    "fov": 55
+   },
+   {
+    "name": "lead",
+    "label": "Car ahead",
+    "position": [
+     0.3,
+     1.3,
+     -9.5
+    ],
+    "target": [
+     1.18,
+     0.95,
+     -16.5
+    ],
+    "fov": 30
+   },
+   {
+    "name": "road",
+    "label": "Road ahead",
+    "position": [
+     4,
+     5.5,
+     -4
+    ],
+    "target": [
+     0.5,
+     0.5,
+     -30
+    ],
+    "fov": 55
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -12,
+   0.2,
+   -80
+  ],
+  "max": [
+   12,
+   20,
+   20
+  ]
+ },
+ "env": {
+  "background": 395278,
+  "ibl": {
+   "top": 2762824,
+   "wall": 2764880,
+   "floor": 1182744,
+   "intensity": 0.5,
+   "lights": [
+    {
+     "pos": [
+      0,
+      1.3,
+      -14
+     ],
+     "size": [
+      10,
+      1.6
+     ],
+     "color": 13148415,
+     "power": 3,
+     "lookAt": [
+      0,
+      1.3,
+      2
+     ]
+    },
+    {
+     "pos": [
+      -6,
+      3,
+      -6
+     ],
+     "size": [
+      3,
+      2
+     ],
+     "color": 16747208,
+     "power": 4,
+     "lookAt": [
+      0,
+      1,
+      0
+     ]
+    }
+   ]
+  },
+  "fog": {
+   "color": 1709104,
+   "density": 0.0028
+  },
+  "post": {
+   "outline": {
+    "color": 329226,
+    "opacity": 0.6,
+    "depthTh": 0.01,
+    "normalTh": 0.25
+   },
+   "ao": {
+    "strength": 0.4,
+    "radius": 0.25
+   },
+   "bloom": {
+    "threshold": 0.62,
+    "strength": 0.8,
+    "weights": [
+     0.45,
+     0.35,
+     0.3,
+     0.25,
+     0.2
+    ]
+   },
+   "grade": {
+    "exposure": 1,
+    "saturation": 1,
+    "lift": [
+     0.006,
+     0.006,
+     0
+    ],
+    "gain": [
+     1,
+     1,
+     1
+    ],
+    "vignette": 0.3
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 12,
+    "range": 20,
+    "near": 0.35,
+    "far": 0,
+    "maxRadius": 5
+   }
+  }
+ },
+ "walk": null,
+ "interactables": [
+  {
+   "id": "door-street",
+   "kind": "link",
+   "label": "Get out at the kerb",
+   "object": "doorhandle",
+   "anchor": [
+    0.668,
+    0.88,
+    0.09999999999999999
+   ],
+   "reach": 2.5,
+   "alt": "Ride again"
+  },
+  {
+   "id": "car-wheel",
+   "kind": "use",
+   "label": "Steering wheel",
+   "object": "wheel",
+   "anchor": [
+    -0.37582339489599453,
+    0.9335788326430097,
+    -0.7735486238046383
+   ],
+   "reach": 3.2,
+   "alt": "Hold the wheel"
+  },
+  {
+   "id": "car-sunroof",
+   "kind": "use",
+   "label": "Sunroof",
+   "object": "ride-sunroof",
+   "anchor": [
+    -0.4,
+    1.4,
+    0.9
+   ],
+   "reach": 2.5,
+   "alt": null
+  },
+  {
+   "id": "car-signals",
+   "kind": "use",
+   "label": "Route screen",
+   "object": "ride-cluster",
+   "anchor": [
+    -0.39,
+    0.985,
+    -0.913
+   ],
+   "reach": 2.5,
+   "alt": null
+  },
+  {
+   "id": "car-leadcar",
+   "kind": "inspect",
+   "label": "Paper moon charm",
+   "object": "ride-charm",
+   "anchor": null,
+   "reach": 2.5,
+   "alt": "Flick it"
+  },
+  {
+   "id": "car-radio",
+   "kind": "use",
+   "label": "Radio",
+   "object": "ride-screen",
+   "anchor": null,
+   "reach": 2.5,
+   "alt": "Turn off"
+  },
+  {
+   "id": "car-wipers",
+   "kind": "use",
+   "label": "Wiper stalk",
+   "object": null,
+   "anchor": [
+    -0.2,
+    0.9,
+    -0.66
+   ],
+   "reach": 2.5,
+   "alt": null
+  },
+  {
+   "id": "car-lights",
+   "kind": "use",
+   "label": "Headlamp switch",
+   "object": null,
+   "anchor": [
+    -0.62,
+    0.86,
+    -0.86
+   ],
+   "reach": 2.5,
+   "alt": null
+  },
+  {
+   "id": "car-window",
+   "kind": "use",
+   "label": "Window switch",
+   "object": "doorswitch",
+   "anchor": [
+    0.671499999832362,
+    0.8365000001117586,
+    -0.5
+   ],
+   "reach": 2.5,
+   "alt": null
+  }
+ ],
+ "runtimeShaders": [
+  {
+   "mesh": "groundMist",
+   "uniforms": [
+    "uTime",
+    "uColor",
+    "uOpacity",
+    "uScale",
+    "uSpeed",
+    "uOff"
+   ]
+  },
+  {
+   "mesh": "groundMist",
+   "uniforms": [
+    "uTime",
+    "uColor",
+    "uOpacity",
+    "uScale",
+    "uSpeed",
+    "uOff"
+   ]
+  },
+  {
+   "mesh": "groundMist",
+   "uniforms": [
+    "uTime",
+    "uColor",
+    "uOpacity",
+    "uScale",
+    "uSpeed",
+    "uOff"
+   ]
+  }
+ ],
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder); ?bake=0 builds the lab scene instead.",
+  "Shader materials are not baked: runtimeShaders lists what the runtime rebuilds (for the Night ride: src/world/ride/)."
+ ],
+ "three": "170"
+}
