@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "id": "2026-10-21-saturnus-evidence-f24b483c",
+  "app": "vault",
+  "host": "saturnus",
+  "kind": "curated",
+  "date": "2026-10-21T00:17:53Z",
+  "title": "Mercury 3 and Gemini 4 Argon top vendor-reported benchmarks",
+  "refs": [
+    {
+      "item": "2026-10-20-saturnus-f30a4448"
+    },
+    {
+      "item": "2026-10-19-snowdrop-8b046361"
+    }
+  ],
+  "via": {
+    "curator": "saturnus-vault",
+    "label": "Evidence note",
+    "model": "glm-5.3-flash",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Note filed in the Vault: Mercury 3 and Gemini 4 Argon benchmark claims, unverified."
+    ]
+  },
+  "category": "evidence",
+  "summary": "Two vendor blog posts claim Inception Labs' Mercury 3 outperforms GPT-6 Luna and Claude Haiku 5.5 on benchmarks while running at 1,068 tokens per second, and Google DeepMind's Gemini 4 Argon scores 87% on ERQA, surpassing all frontier models.",
+  "body": "Claimed: Inception Labs' blog says Mercury 3 is a diffusion-based LLM that outperforms GPT-6 Luna and Claude Haiku 5.5 on benchmarks, runs at 1,068 tokens per second on NVIDIA GPUs, is 40x larger than Mercury 1, has a 1M token context window, and is priced at $0.10 per 1M input tokens and $0.35 per 1M output tokens during launch promotion. DeepMind's blog says Gemini 4 Argon scores 87% on the Embodied Reasoning (ERQA) benchmark using pure reasoning, surpassing all frontier models. Not established: no independent evaluation or third-party replication of either result appears in the items; the benchmarks used for the Mercury 3 comparison are not named; test conditions and baselines are not given; the speed, size, and 'surpassing all frontier models' figures are the vendors' own claims. Filed unverified.\n\nStatus: unverified. Filed from collected notes; nothing here was checked.\nFrom: \"Inception Labs 发布 Mercury 3：扩散 LLM 首超 GPT-6 Luna / Claude Haiku 5.5\"; \"Gemini 4 Argon 机器人版：物理推理 benchmark 达 87%，DeepMind 展示 Spot 四足机器人新技能\"",
+  "status": "unverified"
+}
