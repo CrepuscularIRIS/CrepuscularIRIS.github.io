@@ -14,6 +14,12 @@
      "when": "arc:lacia:2"
     },
     {
+     "label": "Add to your file",
+     "next": "file",
+     "when": "arc:lacia:1",
+     "unless": "arc:lacia:2"
+    },
+    {
      "label": "Why does it stop short?",
      "next": "stop",
      "when": "arc:lacia:1",
@@ -65,7 +71,7 @@
   "role2": {
    "say": [
     "I read everything the others filed and keep what still matters on Sunday.",
-    "There is a rule I wrote on a tally card: a place nobody reads for a week gets a dimmer lamp."
+    "There is a rule I wrote on a tally card: a lamp in a place nobody visits for a week burns lower. It warms again when someone comes."
    ],
    "cards": [
     {
@@ -181,8 +187,8 @@
   },
   "stop": {
    "say": [
-    "I have a guess, not an answer. Everything filed in this city gets read in the Jinrui building, every week.",
-    "If a read place keeps its lamp warm, that block is the warmest in Noctiluca. Read my card at the cafe window, and find the lamp plate on main street."
+    "I have a guess, not an answer. The Jinrui lamps never cool. Not for you, not for anyone. Everything else in the city cools when nobody comes.",
+    "The tide stops a block before them. Whether that is cause or coincidence, I cannot file yet. Read my card at the cafe window, then bring me two lamps of your own."
    ],
    "cards": [
     {
@@ -197,7 +203,7 @@
   },
   "stop2": {
    "say": [
-    "Kind, or a debt. I have not decided. It means the file stays open as long as someone keeps reading."
+    "Kind, or a debt. I have not decided. You can file your own reading at the classroom board; I file it as yours, not as mine."
    ],
    "cards": [
     {
@@ -215,9 +221,87 @@
   "epilogue": {
    "say": [
     "No. It stays open. I can live with that now.",
-    "Thank you for walking it. The seat by the window is yours."
+    "Your last page is in Mail. It has what you filed, and what you kept out."
    ],
    "cards": [
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    },
+    {
+     "label": "Open Mail",
+     "open": {
+      "app": "mail"
+     }
+    }
+   ]
+  },
+  "file": {
+   "say": [
+    "The last page takes what you choose. Only things you saw yourself: I do not file hearsay.",
+    "Pick what goes in. What you leave out stays out, and I will say so on the page."
+   ],
+   "cards": [
+    {
+     "label": "File my lamp readings",
+     "next": "filed",
+     "file": "lamps"
+    },
+    {
+     "label": "File the dips I saw",
+     "next": "filed",
+     "file": "tide"
+    },
+    {
+     "label": "File my two classroom runs",
+     "next": "filed",
+     "file": "runs"
+    },
+    {
+     "label": "File the rumours I followed",
+     "next": "filed",
+     "file": "rumours"
+    },
+    {
+     "label": "File the wish I hung",
+     "next": "filed",
+     "file": "wish"
+    },
+    {
+     "label": "That is all for now",
+     "next": "hello"
+    },
+    {
+     "label": "What counts as mine?",
+     "next": "file2"
+    }
+   ]
+  },
+  "file2": {
+   "say": [
+    "Lamps you walked up to, dips you watched, runs you saved on the board, rumours you went and answered, a wish you hung. If you have not done one of those, there is no card for it.",
+    "Your reading of the tide is already on page three. Change it at the classroom board."
+   ],
+   "cards": [
+    {
+     "label": "Back to the file",
+     "next": "file"
+    },
+    {
+     "label": "Back to the start",
+     "next": "hello"
+    }
+   ]
+  },
+  "filed": {
+   "say": [
+    "Filed, with today's date and your name on it."
+   ],
+   "cards": [
+    {
+     "label": "File something else",
+     "next": "file"
+    },
     {
      "label": "Back to the start",
      "next": "hello"

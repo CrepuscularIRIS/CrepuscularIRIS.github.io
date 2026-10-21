@@ -9,43 +9,11 @@
       "name": "Clock it",
       "brief": "You want a fresh pair of hands at the station, where your scanner first caught the dip, and you want them to see the station ledger page that counts more lamps than streets. If asked about the low tide, give your timing: a few seconds a pass, always inland, always evenings or nights.",
       "targets": [
-        {
-          "id": "gates",
-          "label": "Meet her line: the station concourse",
-          "hint": "Enter the Station concourse from the map.",
-          "kind": "visit",
-          "place": "platform-1"
-        },
-        {
-          "id": "ledger",
-          "label": "Find shard 7, the station ledger",
-          "hint": "A shard glows somewhere on the concourse. Press F near it.",
-          "kind": "shard",
-          "n": 7
-        },
-        {
-          "id": "ask-tide",
-          "label": "Ask her about the low tide",
-          "hint": "Ask Kouka about the low tide, by text or with a reply card.",
-          "kind": "ask",
-          "topic": "lowtide",
-          "keywords": [
-            "low tide",
-            "lowtide",
-            "the tide",
-            "tide",
-            "lights dip",
-            "the dip",
-            "blackout",
-            "dimming",
-            "timing"
-          ]
-        }
+        { "id": "gates", "label": "Meet her line: the station concourse", "hint": "Enter the Station concourse from the map.", "kind": "visit", "place": "platform-1" },
+        { "id": "ledger", "label": "Find shard 7, the station ledger", "hint": "A shard glows somewhere on the concourse. Press F near it.", "kind": "shard", "n": 7 },
+        { "id": "ask-tide", "label": "Ask her about the low tide", "hint": "Ask Kouka about the low tide, by text or with a reply card.", "kind": "ask", "topic": "lowtide", "keywords": ["low tide", "lowtide", "the tide", "tide", "lights dip", "the dip", "blackout", "dimming", "timing"] }
       ],
-      "done": [
-        "Ok. You keep up. Timing sheet is in your Mail.",
-        "Do not lose it, I only wrote it once."
-      ],
+      "done": ["Ok. You keep up. Timing sheet is in your Mail.", "Do not lose it, I only wrote it once."],
       "unlock": {
         "mail": {
           "title": "Timing sheet, night one",
@@ -55,96 +23,42 @@
     },
     {
       "name": "Down the line",
-      "brief": "You are chasing the dip down the metro line. You want the visitor in the metro car, finding the window scratch that timed the dip end to end inside the car, and reading one of your signals so they see how you check a thing before you repeat it.",
+      "brief": "You are chasing the dip down the metro line, and you want a second stopwatch. You want the visitor in the metro car, at the window scratch that timed the dip end to end inside the car, and then at the beach, timing the picnic lantern for your sheet: one clean press. A timing they took themselves is worth more to you than any of your notes.",
       "targets": [
-        {
-          "id": "metro",
-          "label": "Ride the metro car",
-          "hint": "Enter the Metro car from the map.",
-          "kind": "visit",
-          "place": "metro-1"
-        },
-        {
-          "id": "window",
-          "label": "Find shard 8, the window scratch",
-          "hint": "A shard glows by a metro window.",
-          "kind": "shard",
-          "n": 8
-        },
-        {
-          "id": "signal",
-          "label": "Read one of her signals",
-          "hint": "Open one of Kouka's notes: a card in her chat, News or the Events list.",
-          "kind": "read",
-          "host": "kouka"
-        }
+        { "id": "metro", "label": "Ride the metro car", "hint": "Enter the Metro car from the map.", "kind": "visit", "place": "metro-1" },
+        { "id": "window", "label": "Find shard 8, the window scratch", "hint": "A shard glows by a metro window.", "kind": "shard", "n": 8 },
+        { "id": "timing", "label": "Time the beach lantern for her sheet", "hint": "At the Beach, walk up to the picnic lantern, press F and stop the watch inside the mark.", "kind": "finale", "entries": ["lantern-timing"] }
       ],
-      "done": [
-        "Second witness confirmed. I scrawled it in the Diary.",
-        "And I chalked the kerb on main street. Go look."
-      ],
+      "done": ["Second stopwatch confirmed. Your timing is on my sheet, and the gap is in the Diary.", "I chalked the kerb on main street. Go look."],
       "unlock": {
         "diary": {
           "title": "Kouka's scrawl: the gap",
-          "body": "Metro window: bay end of the car dark first, this end last, two seconds apart. And in pen: never at Jinrui.\n\nSo the dip is not a power drop. Power drops have a source. This is a lamp forgetting, block by block, from the bay up.\n\nIt never gets to Jinrui. Lacia files there. Everyone reads there.\n\nI hate this theory. It has no frequency. Write it down anyway, Kouka, that is the rule."
+          "body": "Metro window: bay end of the car dark first, this end last, two seconds apart. And in pen: never at Jinrui.\n\nBeach lantern: one press from the resident, clean. First timing on this sheet I did not take myself.\n\nSo the dip is not a power drop. Power drops have a source. This is lamps going down block by block from the bay up, and the warm ones going down less.\n\nIt never gets to Jinrui. Everyone says that is because everything gets read there. Everyone saying it is one source, not five.\n\nI hate this theory. It has no frequency. Write it down anyway, Kouka, that is the rule."
         },
         "place": {
           "place": "street-1",
           "title": "Chalk on the kerb",
           "speaker": "Kouka",
-          "lines": [
-            "Arrows in red chalk along the kerb, one per block, each with a time in seconds.",
-            "The last arrow stops a block short of the Jinrui building. Next to it: \"why\" circled three times.",
-            "\"Beat me at gomoku and I will tell you what I think the source is. -K\""
-          ]
+          "lines": ["Arrows in red chalk along the kerb, one per block, each with a time in seconds.", "The last arrow stops a block short of the Jinrui building. Next to it: \"why\" circled three times.", "\"Log three lamps of your own, then ask me what the source is. I will tell you what I think, and you can tell me I am wrong. -K\""]
         }
       }
     },
     {
-      "name": "Rematch",
-      "brief": "You owe the visitor a theory, but only after they beat you at gomoku; you set that bet yourself. Your theory, offered as a hunch with no source: the light comes from people reading the city, and the low tide is the city noticing who stopped.",
+      "name": "Second witness",
+      "brief": "You owe the visitor your theory, and you owe it with your doubts attached. Your hunch, offered with no source: the light comes from people. You also know five hIE saying one thing is one source if they copied each other, and you say so. If the visitor filed a reading of why the tide stops at Jinrui, dispute it on its evidence, not on who said it.",
       "after": "2026-W45",
       "weeks": 1,
       "targets": [
-        {
-          "id": "kerb",
-          "label": "Read her chalk on main street",
-          "hint": "Enter Main street once her diary page is filed.",
-          "kind": "found",
-          "place": "street-1",
-          "spot": "arc-kouka-s2"
-        },
-        {
-          "id": "win",
-          "label": "Beat someone at gomoku",
-          "hint": "Open Games on the phone and win a game of gomoku.",
-          "kind": "game",
-          "game": "gomoku",
-          "result": "win"
-        },
-        {
-          "id": "ask-source",
-          "label": "Ask her what the source is",
-          "hint": "Ask Kouka where the low tide comes from.",
-          "kind": "ask",
-          "topic": "source",
-          "keywords": [
-            "source",
-            "where does it come from",
-            "what causes",
-            "the cause",
-            "origin"
-          ]
-        }
+        { "id": "kerb", "label": "Read her chalk on main street", "hint": "Enter Main street once her diary page is filed.", "kind": "found", "place": "street-1", "spot": "arc-kouka-s2" },
+        { "id": "lamps", "label": "Log three keeper lamps on her sheet", "hint": "Walk into three places: each keeper lamp's level on arrival goes on the ledger.", "kind": "ledger", "n": 3 },
+        { "id": "ask-source", "label": "Ask her what the source is", "hint": "Ask Kouka where the low tide comes from.", "kind": "ask", "topic": "source", "keywords": ["source", "where does it come from", "what causes", "the cause", "origin"] }
       ],
-      "done": [
-        "Fine. You won. Read your Mail.",
-        "Rematch whenever. I am not done losing."
-      ],
+      "done": ["Sheet's closed for the month. Read your Mail.", "Dispute it if you like. That is what it is for."],
       "unlock": {
         "mail": {
           "title": "No source, one witness",
-          "body": "Winner,\n\nYou beat me, so here it is, no source attached, which you know I hate.\n\nI think the light is people. Not wires, not the bay by itself. Somebody reads a place, walks it, remembers it, and the lamp there holds. The low tide is the city checking which lamps nobody is holding.\n\nIt stops at Jinrui because that is where everything gets read every week. Lacia would say it more carefully. Saturnus would ask for a second count.\n\nYou were my witness. That counts for something on my sheet.\n\nKouka\n\n(A story of this city, filed as fiction.)"
+          "finale": true,
+          "body": "Witness,\n\nNo source yet. Your timing is on my sheet. The sheet stays open.\n\nKouka\n\n(A story of this city, filed as fiction.)"
         }
       }
     }
@@ -161,5 +75,28 @@
     "event": {
       "ride:mid": "Radio on? That is my frequency. Mid-ride is where the dip crossed the expressway last time."
     }
+  },
+  "finale": {
+    "open": "Witness,",
+    "stance": {
+      "keeper": "You filed \"{stance}\". Everybody files that. Lacia, Snowdrop, Methode, my own chalk. Five people saying one thing is one source if they all copied the first. I am disputing it on my sheet. Not because it is wrong. Because nobody checked it against anything that could have said no.",
+      "sink": "You filed \"{stance}\". Finally somebody said the boring thing. Water stops. Dips stop. It fits my timing sheet better than my own theory did, and I hate that.",
+      "unsure": "You filed \"{stance}\". Fine. Unsourced is my favourite word and you used it before I could.",
+      "none": "No reading filed. You timed things and kept your mouth shut. Respect."
+    },
+    "parts": [
+      { "when": "own:lantern-timing", "text": "Your stopwatch on the beach lantern: on my sheet, clean press. One timing against a hundred of mine. Yours is the one I did not take, so it counts for more." },
+      { "when": "tide", "text": "Dips you caught on your own clock: {tide}. Independent source. Good.", "else": "You have not caught a dip yourself yet. Tide nights are three in seven, evenings only. Bring a watch." },
+      { "when": "lamps", "text": "Lamp numbers you logged on arrival: {lamps}. They follow who walked in, nothing else. I checked." },
+      { "when": "jinrui", "text": "Jinrui read 100. Of course it did. It always does, and nobody can tell me why. A number that never moves is not a signal." },
+      { "when": "rumours", "text": "Rumours you ran down: {rumours}. Most rumours are noise. You checked anyway." }
+    ],
+    "close": {
+      "keeper": "Theory on my sheet: unsourced. Your reading next to it: disputed. Both stay. That is what a sheet is for.",
+      "sink": "Theory on my sheet: struck through, still legible. Your reading next to it. Next tide night you time the bay end and I time the last block before Jinrui.",
+      "unsure": "Theory on my sheet: unsourced, same as yours. Next tide night we time both ends at once.",
+      "none": "Sheet stays open. Next tide night, bring a watch."
+    },
+    "sign": "Kouka"
   }
 }

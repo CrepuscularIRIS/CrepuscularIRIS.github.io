@@ -39,13 +39,13 @@
           "place": "alley-2",
           "title": "The meter box, annotated",
           "speaker": "Saturnus",
-          "lines": ["Under the old card on the meter box, a second card in gold ink.", "\"Audited. This box feeds nothing measurable. It has never been switched off, and the block around it has never dimmed.\"", "\"Someone reads this card every week. Hypothesis: that is the supply. Bring me the last line.\""]
+          "lines": ["Under the old card on the meter box, a second card in gold ink.", "\"Audited. This box feeds nothing measurable. It has never been switched off, and the block around it has never dimmed.\"", "\"Correlation noted. Supply not established. Bring me the last line.\""]
         }
       }
     },
     {
       "name": "Do not close",
-      "brief": "You are ready to write the last line and you want the visitor's judgement before you do. Your finding, stated with care: the only input that matches every record is attention, places read and remembered. You do not like an account balanced by people, but you will not falsify it.",
+      "brief": "You are ready to write the last line and you want the visitor's judgement before you do. You will not write a source you cannot account for. The records you trust: the visitor's own lamp readings (lamps follow visits), dips they saw themselves, and the two classroom runs as a shape, not a mechanism. If the visitor filed a reading, it goes on the line as theirs; if it contradicts the line four of you wrote, the contradiction stays open.",
       "after": "2026-W45",
       "weeks": 1,
       "targets": [
@@ -53,22 +53,54 @@
         { "id": "lab", "label": "Visit her hospital lab", "hint": "Enter the Hospital lab from the map.", "kind": "visit", "place": "hospital-1" },
         { "id": "ask-line", "label": "Ask her about the last line", "hint": "Ask Saturnus whether the audit balances, or what the last line says.", "kind": "ask", "topic": "last-line", "keywords": ["last line", "balance", "balances", "does it balance", "unbalanced", "the audit", "your finding"] }
       ],
-      "done": ["The last line is written. It is in your Mail.", "Status unchanged: do not close. ...Well done."],
+      "done": ["The last line is written. It is in your Mail.", "Status unchanged: do not close."],
       "unlock": {
         "mail": {
           "title": "Status: do not close",
-          "body": "Second counter,\n\nThe last line, as filed:\n\nSource of the glow: attention. Places that are read, walked and remembered hold their light. The low tide removes light from places that are not. It stops short of the Jinrui building because the archive there is read every week.\n\nConfidence: moderate. Independent records: four. Contradicting records: none. Status: do not close, because an account balanced by people only stays balanced while they keep coming.\n\nThank you for counting with me. You were honest at every step, which is rarer than you think.\n\nSaturnus\n\n(Audit of a story kept in this city. Fiction.)"
+          "finale": true,
+          "body": "Second counter,\n\nThe last line, as filed: source of the glow, unaccounted for. Status: do not close.\n\nSaturnus\n\n(Audit of a story kept in this city. Fiction.)"
         }
       }
     }
   ],
   "pings": {
-    "place": { "company-meetingroom": "You are in the meeting room. The note on the wall is mine; the cups are also mine.", "police-office-1": "The ledger is on the left. Count, do not skim." },
-    "shard": { "10": "My audit note. Status still: do not close.", "2": "The first night. The light came before the lamps. Note that." },
+    "place": {
+      "company-meetingroom": "You are in the meeting room. The note on the wall is mine; the cups are also mine.",
+      "police-office-1": "The ledger is on the left. Count, do not skim."
+    },
+    "shard": {
+      "10": "My audit note. Status still: do not close.",
+      "2": "The first night. The light came before the lamps. Note that."
+    },
     "event": {
       "stance:lowtide:keeper": "Filed: Jinrui keeps its light. Two toy runs do not carry that far. It is in the ledger as your reading, not as a finding.",
       "stance:lowtide:sink": "Filed: the tide just stops there. The dull reading. Dull readings are usually where I start. Ledger line added.",
       "stance:lowtide:unsure": "Filed: not enough evidence. Good. That line stays open in the ledger until someone masks the image."
     }
+  },
+  "finale": {
+    "open": "Second counter,\n\nThe last line, as filed.",
+    "stance": {
+      "keeper": "Source of the glow: unaccounted for. Reading on file: \"{stance}\", yours. It agrees with the line four of us wrote before you came, which is the reason I check it hardest. Nothing on file contradicts it yet. Nothing on file could have.",
+      "sink": "Source of the glow: unaccounted for. Reading on file: \"{stance}\", yours. It contradicts the line four of us wrote. I am striking neither. The counter-reading stays open on the page: attention may pool where the water merely stops.",
+      "unsure": "Source of the glow: unaccounted for. Reading on file: \"{stance}\", yours. Agreed. The keeper reading and the sink reading both stay open until a record separates them.",
+      "none": "Source of the glow: unaccounted for. Reading on file: none. You did not file one, and I will not write one under your name."
+    },
+    "parts": [
+      { "when": "changed", "text": "Note: you changed your reading, from \"{first}\" to \"{stance}\". Both entries are dated. A changed reading is a record too." },
+      { "when": "runs", "text": "Item: two Attention Fade runs, {runs}. A toy with made-up constants. It shows a shape. It is not a mechanism.", "else": "Item: no complete pair of classroom runs on file. Nothing was compared, so nothing is claimed." },
+      { "when": "lamps", "text": "Item: your lamp readings, {lampCount} in all, newest per place: {lamps}. They follow your visits. That is how the lamps work, and it is the only part of this account I can check line by line." },
+      { "when": "jinrui", "text": "Item: Jinrui read 100 on every visit. A pinned lamp cannot dip, so it cannot testify." },
+      { "when": "tide", "text": "Item: dips you saw yourself, at {tide}. Independent of every record the five of us keep.", "else": "Item: you have not seen a dip yourself. Everything here about the dip is somebody else's record." },
+      { "when": "rumours", "text": "Item: open questions you answered by going to look: {rumours}." }
+    ],
+    "close": {
+      "keeper": "Confidence in the keeper reading: low, and it rises only with a record that could have come out the other way. Status: do not close.",
+      "sink": "Confidence: not assigned. Two readings, one set of records. Status: do not close.",
+      "unsure": "Confidence: not assigned, deliberately. Status: do not close.",
+      "none": "Status: do not close."
+    },
+    "sign": "Saturnus",
+    "tag": "(Audit of a story kept in this city. Fiction.)"
   }
 }

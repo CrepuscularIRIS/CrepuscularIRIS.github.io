@@ -17,13 +17,13 @@
       "unlock": {
         "mail": {
           "title": "Residency file, page one",
-          "body": "Resident,\n\nYour desk is filed: the Jinrui workshop floor, a season, write, read, walk. That part is done.\n\nThe other file I keep is the low tide. Seven entries this month. Each one starts at the bay after dark, lights going down one block at a time, a few seconds a pass, and each one dies before the lobby doors. The tally card you found in the lobby is mine. A place nobody reads for a week gets a dimmer lamp. I wrote that down because it kept being true, not because I understand it.\n\nI would like you to stand where it starts. The beach, and the sea chart in the corner store that gives the bay its name. Then tell me what you saw.\n\nThis file is a story we keep in this city. It is not about the world outside it.\n\nLacia"
+          "body": "Resident,\n\nYour desk is filed: the Jinrui workshop floor, a season, write, read, walk. That part is done.\n\nThe other file I keep is the low tide. Seven entries this month. Each one starts at the bay after dark, lights going down one block at a time, a few seconds a pass, and each one dies before the lobby doors. The tally card you found in the lobby is mine. A lamp in a place nobody visits for a week burns lower, and warms again when someone comes back. I wrote that down because it kept being true, not because I understand it.\n\nI would like you to stand where it starts. The beach, and the sea chart in the corner store that gives the bay its name. Then tell me what you saw.\n\nThis file is a story we keep in this city. It is not about the world outside it.\n\nLacia"
         }
       }
     },
     {
       "name": "Walking the file",
-      "brief": "The visitor is walking the file with you. You want them at the beach where the tide starts, at the sea chart in the corner store, and reading one of your weekly digests, because the digest is the same habit as the archive: keep reading, and the lamps stay warm.",
+      "brief": "The visitor is walking the file with you. You want them at the beach where the tide starts, at the sea chart in the corner store, and reading one of your weekly digests, because a digest is how you file a week. Do not tell them reading keeps a lamp warm: the lamps follow visits, nothing else.",
       "targets": [
         { "id": "beach", "label": "Stand where it starts: the beach", "hint": "Enter the Beach from the map.", "kind": "visit", "place": "beach-1" },
         { "id": "chart", "label": "Find shard 1, the sea chart", "hint": "The corner store keeps a framed sea chart. Look for the glowing shard there.", "kind": "shard", "n": 1 },
@@ -33,37 +33,74 @@
       "unlock": {
         "diary": {
           "title": "Margin: where it stops",
-          "body": "Filed tonight, with the resident's walk.\n\nThe beach: the dip begins at the waterline, where the bay glows when it is disturbed. The corner store: the chart calls the bay Noctiluca, water that shines when it is disturbed. The digest: read, and the week stays in order.\n\nThree things that keep a light on: water that is stirred, a place that is read, a week that is filed. The tide stops before the lobby. The lobby is where I file.\n\nI do not like where this points. I am writing it down anyway."
+          "body": "Filed tonight, with the resident's walk.\n\nThe beach: the dip begins at the waterline, where the bay glows when it is disturbed. The corner store: the chart calls the bay Noctiluca, water that shines when it is disturbed. The digest: a week, filed in order.\n\nWhat I can check: a lamp warms when someone walks in, and cools over a week when nobody does. On a dip night a warm lamp dips less. The tide stops before the lobby, and the lobby lamps never cool at all. That last part I cannot explain.\n\nI do not like where this points. I am writing it down anyway."
         },
         "place": {
           "place": "cafe-1",
           "title": "A folded card at the window seat",
           "speaker": "Lacia",
-          "lines": ["A card propped against the window, in Lacia's neat hand.", "\"Count with me. Every low tide this month passed the cafe and dimmed it, except the nights someone sat here late reading.\"", "\"The corner lamp on the street outside holds out longest. Find its brass plate. Then come and ask me why it stops.\""]
+          "lines": ["A card propped against the window, in Lacia's neat hand.", "\"Count with me. The corner lamp here was warmest in the weeks someone kept coming in, and on dip nights it dipped least then. Your own visits are on the ledger page of my file.\"", "\"Now bring me two lamps of your own, and decide what goes into my file. Then ask me why it stops.\""]
         }
       }
     },
     {
       "name": "The line before the lobby",
-      "brief": "You and the visitor compare notes. Your guess, which you offer carefully and only as a guess: the archive keeps the Jinrui block remembered, so the low tide cannot reach it. You do not know if that is kind or a kind of debt.",
+      "brief": "You and the visitor close the last page together. The visitor chooses which of their own observations go into your file (their lamp readings, the dips they saw, their classroom runs, the rumours they answered, a wish); you file only what they hand you and say so. Your guess about why the tide stops before Jinrui stays a guess: the Jinrui lamps never cool, and nobody knows why. Never say reading keeps a lamp warm; the lamps follow visits.",
       "after": "2026-W47",
       "weeks": 1,
       "targets": [
         { "id": "card", "label": "Read her card at the cafe window", "hint": "Enter the Corner cafe once page two is filed; her card is waiting.", "kind": "found", "place": "cafe-1", "spot": "arc-lacia-s2" },
-        { "id": "lamp", "label": "Find shard 4, the lamp plate", "hint": "Main street has a lamp post with a brass plate. A shard glows beside it.", "kind": "shard", "n": 4 },
+        { "id": "lamp", "label": "Read two keeper lamps of your own", "hint": "Walk into any two places: each keeper lamp's level on arrival goes on the ledger page of her file.", "kind": "ledger", "n": 2 },
+        { "id": "file", "label": "Choose what goes into her file", "hint": "In Lacia's chat, tap Add to your file and pick what you saw yourself.", "kind": "finale", "min": 1 },
         { "id": "ask-stop", "label": "Ask her why it stops short", "hint": "Ask Lacia why the low tide stops before the Jinrui building.", "kind": "ask", "topic": "why-it-stops", "keywords": ["why does it stop", "why it stops", "stops short", "stop short", "where it stops", "jinrui building", "why the lobby", "never reaches"] }
       ],
-      "done": ["The last page is in your Mail.", "The file stays open. I think I can live with that now."],
+      "done": ["The last page is in your Mail. It has what you filed, and only that.", "The file stays open."],
       "unlock": {
         "mail": {
           "title": "The file stays open",
-          "body": "Resident,\n\nYou asked why it stops. Here is the only answer I can file honestly: I do not know. I have a guess.\n\nThe archive sits in the Jinrui building. Every week I read what the five of us filed and put it in order. If a read place keeps its lamp warm, then the block where everything is read every week is the warmest place in Noctiluca, and the low tide runs out of dark before it gets there.\n\nIf that is true, the city does not need me to close the file. It needs the file kept open, and read. You have been doing that.\n\nI will keep counting. Come back when you like; the seat is yours.\n\nLacia\n\n(A story we keep in this city, filed as fiction.)"
+          "finale": true,
+          "body": "Resident,\n\nThe last page has your walk in it, and whatever you chose to file. The file stays open.\n\nLacia\n\n(A story we keep in this city, filed as fiction.)"
         }
       }
     }
   ],
   "pings": {
-    "place": { "company-entrance": "You found the lobby. The tally card is still where I left it.", "beach-1": "You are at the waterline. That is where it starts. Stay for a minute." },
-    "shard": { "11": "That card is mine. I should have filed it properly.", "1": "The chart. Water that shines when it is disturbed. Hold on to that." }
+    "place": {
+      "company-entrance": "You found the lobby. The tally card is still where I left it.",
+      "beach-1": "You are at the waterline. That is where it starts. Stay for a minute."
+    },
+    "shard": {
+      "11": "That card is mine. I should have filed it properly.",
+      "1": "The chart. Water that shines when it is disturbed. Hold on to that."
+    }
+  },
+  "finale": {
+    "open": "Resident,",
+    "stance": {
+      "keeper": "Page three, your reading, as you filed it: \"{stance}\". Four of us wrote that line before you came. I have filed yours as the fifth copy of one idea, not as a fifth witness. That is not a criticism. It is how a file stays honest.",
+      "sink": "Page three, your reading, as you filed it: \"{stance}\". It is the only line in the file that does not need the lamps to mean anything. I put it first, above ours.",
+      "unsure": "Page three, your reading, as you filed it: \"{stance}\". It is the hardest line to file and the easiest to defend. I left the space under it blank on purpose.",
+      "none": "Page three has no reading under your name. You never filed one, and I will not write one for you."
+    },
+    "parts": [
+      { "when": "lamps", "text": "The ledger page has the lamps you saw yourself: {lamps}. Each number is what the lamp showed the moment you walked in. A lamp warms when someone comes and cools over a week when nobody does. Visits, not reading. I keep correcting the others on that." },
+      { "when": "kept", "text": "You went back to {kept}. Those are the warm lines on the page, and they are warm because you went back." },
+      { "when": "jinrui", "text": "The Jinrui lamps read 100 every time you looked. They read 100 for everyone. A number that cannot move is filed, but not counted." },
+      { "when": "filed:tide", "text": "Filed at your request: the dips you saw at {tide}." },
+      { "when": "left:tide", "text": "You saw the dip at {tide} and kept it out of the file. It stays out. I file what the visitor hands me." },
+      { "when": "filed:runs", "text": "Filed at your request: your two classroom runs, {runs}. Saturnus has them as a shape, not a cause, and so do I." },
+      { "when": "left:runs", "text": "You kept your classroom runs out of the file. I noted the choice, not the runs." },
+      { "when": "filed:rumours", "text": "Filed at your request: the questions you went and answered, {rumours}." },
+      { "when": "left:rumours", "text": "The rumours you ran down stay in your phone, not in my file. Your call." },
+      { "when": "filed:wish", "text": "Filed at your request: the wish at {wish}. I filed the place, not the words. The words are yours." },
+      { "when": "filed:lamps", "text": "You also asked me to file your lamp readings under your own name, not just on the ledger page. Done. They are the only first-hand numbers in this file." }
+    ],
+    "close": {
+      "keeper": "So the file says, by your reading: Jinrui is the best-kept block. If that is true it will still be true next month, and the ledger can show it. Come and add a lamp when you like.",
+      "sink": "So the file says, by your reading: the water stops where it stops, and the lamps are a record, not a reason. I would almost rather be wrong the other way. The seat by the window is still yours.",
+      "unsure": "So the file says: not decided. A masked image, a second month of dips, a lamp that should be cold and is not: any one of those would move it. Bring me one.",
+      "none": "So the file stays where it was before you came: open, with your walk in it and no reading. That is allowed. The seat by the window is still yours."
+    },
+    "sign": "Lacia"
   }
 }

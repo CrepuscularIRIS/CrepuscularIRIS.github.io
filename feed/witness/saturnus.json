@@ -4,12 +4,47 @@
   "structure": "pair",
   "about": "Saturnus does not react to one record. She speaks only when the log holds two records of the same kind, and she cites both. One record gets silence, not praise.",
   "acts": {
-    "tide": { "pair": ["Two records: wave {pn} at {pplace} at {prev}, and wave {n} at {place} at {time}. A pattern, or a coincidence twice. Filed both, unconcluded."] },
-    "shard": { "pair": ["Shard {pn} at {prev}, shard {n} at {time}. Two entries, same hand. Counted once, counted twice."] },
-    "found": { "pair": ["Two things looked at, {pplace} at {prev} and {place} at {time}. Two records. That is how a case starts."] },
-    "lamp": { "pair": ["Two lamp readings: {pplace} at {prev}, {place} at {time}. Same meter? Write it next to each."] },
-    "artifact": { "pair": ["Two saved runs, {prev} and {time}. Good. Now tell me which input you changed, and only that one."] },
-    "stance": { "pair": ["You answered twice, at {prev} and at {time}. The second does not erase the first. Both stay in the ledger."] }
+    "tide": {
+      "pair": [
+        "Two records: wave {pn} at {pplace} at {prev}, and wave {n} at {place} at {time}. A pattern, or a coincidence twice. Filed both, unconcluded."
+      ]
+    },
+    "shard": {
+      "pair": [
+        "Shard {pn} at {prev}, shard {n} at {time}. Two entries, same hand. Counted once, counted twice."
+      ]
+    },
+    "found": {
+      "pair": [
+        "Two things looked at, {pplace} at {prev} and {place} at {time}. Two records. That is how a case starts."
+      ]
+    },
+    "lamp": {
+      "pair": [
+        "Two lamp readings: {pplace} at {prev}, {place} at {time}. Same meter? Write it next to each."
+      ]
+    },
+    "artifact": {
+      "pair": [
+        "Two saved runs, {prev} and {time}. Good. Now tell me which input you changed, and only that one."
+      ]
+    },
+    "stance": {
+      "pair": [
+        "You answered twice, at {prev} and at {time}. The second does not erase the first. Both stay in the ledger."
+      ]
+    }
   },
-  "opener": "(adjusts the audit sheet) {act}, {when}. One record. Do you have a second?"
+  "opener": "(adjusts the audit sheet) {act}, {when}. One record. Do you have a second?",
+  "answers": {
+    "stance": "(adjusts the audit sheet) You filed \"{choice}\" on {topic}, {when}. One record, and it is yours. It stays in the ledger as you wrote it. What would make you change it?",
+    "stance_check": "(adjusts the audit sheet) You filed \"{choice}\" on {topic}, {when}. My check on your runs, {checkWhen}, said: \"{check}\" Does your filing follow from that, or from something else?",
+    "check": "(adjusts the audit sheet) I answered on your runs, {checkWhen}: \"{check}\" You have not filed a reading since. Do you have one?",
+    "artifact": "(adjusts the audit sheet) One saved run, {when}: {run}. One record. Which input did you set, and why that value?",
+    "gift": "(adjusts the audit sheet) The {item} you gave {to}, {when}. Logged. Gifts are not evidence, but they are records.",
+    "gift_me": "(adjusts the audit sheet) The {item}, {when}. Logged as received. I had no column for gifts. I made one.",
+    "rumour": "(adjusts the audit sheet) \"{rumour}\": you went to {place} and looked, {when}. One visit. What did you see that the rumour did not say?",
+    "lamp": "(adjusts the audit sheet) The {place} lamp read {level} when you came back, {when}. Your visits keep it there; I can verify that much. One reading.",
+    "wish": "(adjusts the audit sheet) Something left at {place}, {when}. I log that it exists. I do not read it."
+  }
 }

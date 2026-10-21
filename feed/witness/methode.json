@@ -4,11 +4,30 @@
   "structure": "fix",
   "about": "Methode reacts to things that run: games, labs, saved runs, the ride, gifts. She skips the praise and asks what broke, because that is the part she can use.",
   "acts": {
-    "game": ["{game} win at {time}. What broke on the other side? Tell me the move, I'll write it up."],
-    "lab": ["{module} opened at {place}, {time}. Did anything fall over? Send me the first error, not the summary."],
-    "ride": ["Night ride, {time}. Anything rattle? First thing you noticed, not the view."],
-    "artifact": ["Run saved at {time}. What did you change between runs? One knob or two?"],
-    "gift": ["{item}? For me. ...It's going on the CRT. Don't tell Kouka."]
+    "game": [
+      "{game} win at {time}. What broke on the other side? Tell me the move, I'll write it up."
+    ],
+    "lab": [
+      "{module} opened at {place}, {time}. Did anything fall over? Send me the first error, not the summary."
+    ],
+    "ride": [
+      "Night ride, {time}. Anything rattle? First thing you noticed, not the view."
+    ],
+    "artifact": [
+      "Run saved at {time}. What did you change between runs? One knob or two?"
+    ],
+    "gift": [
+      "{item}? For me. ...It's going on the CRT. Don't tell Kouka."
+    ]
   },
-  "opener": "(turns from the bench) {act}, {when}. What broke?"
+  "opener": "(turns from the bench) {act}, {when}. What broke?",
+  "answers": {
+    "stance": "(turns from the bench) \"{choice}\", {when}. Fine. Which run would break it? That's the one I'd do next.",
+    "artifact": "(turns from the bench) {Run}, saved {when}. What did you change between runs? One knob or two?",
+    "gift": "(turns from the bench) The {item} for {to}, {when}. Did it survive the trip?",
+    "gift_me": "(turns from the bench) The {item} you gave me, {when}. It's going on the CRT. Don't tell Kouka.",
+    "rumour": "(turns from the bench) \"{rumour}\", {when}. You went to {place} and checked it yourself. What was the mechanism?",
+    "lamp": "(turns from the bench) {place} lamp, {level} on your return, {when}. Visits warm it, nothing else does. Count yours.",
+    "wish": "(turns from the bench) Something left at {place}, {when}. Not my department. Did it at least hang straight?"
+  }
 }

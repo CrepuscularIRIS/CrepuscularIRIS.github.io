@@ -2,7 +2,7 @@
   "schema": 1,
   "hie": "kouka",
   "label": "scripted",
-  "watch": { "2": "the fare board at the station on a tide night, and a game of gomoku for practice" },
+  "watch": { "2": "the fare board at the station on a tide night, and the beach lantern with a stopwatch" },
   "beats": [
     { "id": "kouka-wait-1", "stage": 2, "afterDays": 1, "needs": "place:metro-1", "lines": ["metro log, {date}: you rode it, my scanner stayed quiet. coincidence. probably."] },
     {
@@ -10,6 +10,6 @@
       "lines": ["the station clock was 40 seconds fast when you were there ({date}). fixed it. nobody noticed. you can notice now."],
       "spot": { "place": "platform-1", "spot": "plat-fares", "line": "A strip of tape on the board's frame, in marker: \"clock corrected +40 s. K.\"" }
     },
-    { "id": "kouka-wait-3", "stage": 2, "afterDays": 9, "lines": ["rematch soon. practise. i won't."] }
+    { "id": "kouka-wait-3", "stage": 2, "afterDays": 9, "lines": ["three lamps on your own sheet, then ask me about the source. bring numbers, not vibes."] }
   ]
 }

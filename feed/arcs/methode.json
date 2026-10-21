@@ -23,13 +23,13 @@
     },
     {
       "name": "Field parts",
-      "brief": "You are scavenging for rig seven with the visitor. You want them at the landfill shack for housings, at your taped workshop rules, and reading one of your build logs, so they know how you write things down.",
+      "brief": "You are scavenging for rig seven with the visitor. You want them at the landfill shack for housings, at your taped workshop rules, and walking into a couple of places so the mesh has their lamp readings: rig seven reads lamps, and a lamp reads visits.",
       "targets": [
         { "id": "shack", "label": "Scavenge at the landfill shack", "hint": "Enter the Landfill shack from the map.", "kind": "visit", "place": "landfill-room-1" },
         { "id": "rules", "label": "Read the taped workshop rules", "hint": "In her workshop, walk up to the rules taped above the desk and press F.", "kind": "found", "place": "company-office", "spot": "office-rules" },
-        { "id": "buildlog", "label": "Read one of her notes", "hint": "Open one of Methode's notes: a build log on the Feed, a Mail note, or a card in her chat.", "kind": "read", "host": "methode" }
+        { "id": "readings", "label": "Feed the mesh two lamp readings", "hint": "Walk into any two places: each keeper lamp's level on arrival is a reading for rig seven.", "kind": "ledger", "n": 2 }
       ],
-      "done": ["Housings sorted. Off-the-books log is in the Diary.", "Rig seven is clamped under a cabinet in the game room. Go see it run."],
+      "done": ["Housings sorted, readings in. Off-the-books log is in the Diary.", "Rig seven is clamped under a cabinet in the game room. Go see it run."],
       "unlock": {
         "diary": {
           "title": "Build log, off the books",
@@ -39,31 +39,61 @@
           "place": "game-room-1",
           "title": "Rig seven, under the cabinet",
           "speaker": "Methode",
-          "lines": ["Under the high-score cabinet, a bundle of photodiodes in salvaged housings, blinking in a slow wave.", "A label in blocky handwriting: \"Rig seven. Do not touch. If touched, write it down.\"", "\"Win a game of gomoku and ask me about the trace. Winner gets the readout. -M\""]
+          "lines": ["Under the yellow cabinet at the end of the row, a bundle of photodiodes in salvaged housings, blinking in a slow wave.", "A label in blocky handwriting: \"Rig seven. Do not touch. If touched, write it down.\"", "\"The dial drifts. Zero it for me: press when the needle crosses the mark. Then ask me about the trace. -M\""]
         }
       }
     },
     {
-      "name": "Beat me first",
-      "brief": "You promised the readout to whoever wins at gomoku. Your reading of the trace, stated as an engineer who hates it: the lamps track attention, places looked at and walked, and the low tide is the mesh showing where attention ran out.",
+      "name": "Zero the dial",
+      "brief": "The visitor is calibrating rig seven with you. You promised them the trace once the dial is zeroed. Your take on the trace, as an engineer who distrusts it: lamps in places the visitor walked into show warm, the dip is shallower on warm lamps, the Jinrui node never moves and you cannot find out why. A rig built to find a pattern finds it; say that. If the visitor filed a reading of why the tide stops at Jinrui, say what rig would test it.",
       "after": "2026-W46",
       "weeks": 1,
       "targets": [
         { "id": "rig", "label": "See rig seven in the game room", "hint": "Enter the Game room once her off-the-books log is filed.", "kind": "found", "place": "game-room-1", "spot": "arc-methode-s2" },
-        { "id": "win", "label": "Win a game of gomoku", "hint": "Open Games on the phone and win a game of gomoku.", "kind": "game", "game": "gomoku", "result": "win" },
+        { "id": "dial", "label": "Zero the dial on rig seven", "hint": "In the Game room, find the rig under the yellow cabinet at the end of the row, press F and stop the needle on the mark.", "kind": "finale", "entries": ["rig-dial"] },
         { "id": "ask-trace", "label": "Ask her about the trace", "hint": "Ask Methode what the rig read, or about the trace.", "kind": "ask", "topic": "trace", "keywords": ["trace", "readout", "reading", "what did it read", "what did the rig", "results", "the data"] }
       ],
-      "done": ["Fine. You won. Readout is in your Mail.", "Done. Next?"],
+      "done": ["Dial zeroed, trace written. It is in your Mail.", "Rule two: you touched it, so it is written down."],
       "unlock": {
         "mail": {
           "title": "Run seven, trace attached",
-          "body": "Winner,\n\nReadout, as promised. Trace attached (pretend; it is a long squiggle).\n\nThe mesh tracks attention. Lamps over places somebody looked at, walked, read: steady. Lamps over places nobody touched this week: they sag, and a low tide is the sag rolling in from the bay where the oldest, least-visited blocks are. The Jinrui block never sags, because Lacia reads everything filed there.\n\nI built a rig to catch a phenomenon and it caught a habit. That is either a failure or the best thing I have built. Saturnus says both.\n\nKeep walking the city. It keeps the trace honest.\n\nMethode\n\n(A story kept in this city, filed as fiction.)"
+          "finale": true,
+          "body": "Builder,\n\nTrace attached. The dial is zeroed. Rig eight is next.\n\nMethode\n\n(A story kept in this city, filed as fiction.)"
         }
       }
     }
   ],
   "pings": {
-    "place": { "company-office": "You are in my workshop. Touch nothing. Fine, touch the shelf.", "landfill-room-1": "Shack. The good housings are under the tarp." },
-    "shard": { "9": "My build log. Run seven. Yes, I wrote that." }
+    "place": {
+      "company-office": "You are in my workshop. Touch nothing. Fine, touch the shelf.",
+      "landfill-room-1": "Shack. The good housings are under the tarp."
+    },
+    "shard": {
+      "9": "My build log. Run seven. Yes, I wrote that."
+    }
+  },
+  "finale": {
+    "open": "Builder,",
+    "stance": {
+      "keeper": "You filed \"{stance}\". The rig agrees with you, which is the problem. A rig built to look for a pattern finds it. Rule two: I wrote that down.",
+      "sink": "You filed \"{stance}\". The rig cannot tell your reading from Lacia's: same trace either way, the dip stops a block short. So the rig is the wrong instrument for that question. That is a real result.",
+      "unsure": "You filed \"{stance}\". Correct answer for the data. Rig seven measures lamps, not reasons.",
+      "none": "No reading filed. Good. The rig does not file readings either."
+    },
+    "parts": [
+      { "when": "own:rig-dial", "text": "You zeroed the dial. The log has your press, against my rules: touched, written down. The trace below is calibrated. It was not before you." },
+      { "when": "lamps", "text": "Trace, from your readings on arrival: {lamps}. That is the whole dataset: lamps you walked up to." },
+      { "when": "kept", "text": "Nodes you went back to ({kept}) read warm. The lamps warm on a visit and cool over a week. That is the rule they run. Nothing about reading in it." },
+      { "when": "tide", "text": "Dips in your own log: {tide}. On a warm lamp the dip is shallower. That part I have measured every time." },
+      { "when": "jinrui", "text": "Jinrui node: 100, flat line. Pinned. I did not pin it, and I cannot find who did." },
+      { "when": "gift", "text": "Also: the {gift}. It is on the CRT. It is not a sensor. It stays." }
+    ],
+    "close": {
+      "keeper": "Next: rig eight, a control mesh over lots nobody visits, so the keeper reading can fail if it is wrong.",
+      "sink": "Next: rig eight, a depth gauge at the bay end, so the sink reading can fail if it is wrong.",
+      "unsure": "Next: rig eight, both gauges. Whichever reading survives, I build the next rig for it.",
+      "none": "Next: rig eight. Rule one still holds for rig seven: it works, so nobody touch it."
+    },
+    "sign": "Methode"
   }
 }

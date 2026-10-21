@@ -33,7 +33,7 @@
       "unlock": {
         "diary": {
           "title": "Margin: the curl map",
-          "body": "Curl map, page one.\n\nCurled: the bay planters, the alley pots, the cafe window box on nights nobody stayed late.\nNot curled: the shrine moss, the lobby aloe in the Jinrui building, anything somebody talked to that week.\n\nThe desk says a lamp is a kept moment and light is what remembering looks like from outside. I think leaves know that. I think the low tide is the city forgetting to water itself.\n\nWait, wait, that is too big. Smaller: things that are visited keep their light. That one I can check."
+          "body": "Curl map, page one.\n\nCurled: the bay planters, the alley pots, the cafe window box on nights nobody stayed late.\nNot curled: the shrine moss, the lobby aloe in the Jinrui building, anything somebody talked to that week.\n\nThe desk says a lamp is a kept moment and light is what remembering looks like from outside. I think leaves know that. I think the low tide is the city forgetting to water itself.\n\nWait, wait, that is too big. Smaller: a lamp somebody visits stays warm for a week. That one I can check, and it is true."
         },
         "place": {
           "place": "beach-2",
@@ -45,7 +45,7 @@
     },
     {
       "name": "Rooted",
-      "brief": "You and the visitor finish the curl map. Your thought, offered shyly: the bay-light went into the lamps, the lamps hold what people remember, and the low tide is where nobody has been for a while. You would like the visitor to keep visiting, the way you keep watering.",
+      "brief": "You and the visitor finish the curl map. Your thought, offered shyly and as a guess: the bay-light went into the lamps, and the low tide is where nobody has been for a while. What you can check: a lamp warms when someone visits and cools over a week. If the visitor filed a reading of why the tide stops at Jinrui, take it seriously even if it is not the one you hoped for.",
       "after": "2026-W46",
       "weeks": 1,
       "targets": [
@@ -53,17 +53,50 @@
         { "id": "glass", "label": "Find shard 3, the bay-light", "hint": "Something is sprayed behind a pallet in the graffiti alley. A shard glows there.", "kind": "shard", "n": 3 },
         { "id": "ask-curl", "label": "Ask her about the curl map", "hint": "Ask Snowdrop about the curl map or why the leaves wilt.", "kind": "ask", "topic": "wilt", "keywords": ["curl", "curl map", "wilt", "wilting", "leaves", "grow lamp", "seedling", "the map"] }
       ],
-      "done": ["It is growing! Slowly, but it is growing. Check your Mail.", "Thank you for walking it with me."],
+      "done": ["The curl map is done for now. Check your Mail.", "Your runs are pinned next to it."],
       "unlock": {
         "mail": {
           "title": "Rooted",
-          "body": "Hi again,\n\nThe curl map is done (for now; maps are never done).\n\nThe light came out of the bay. Somebody poured it into the lamp glass, the alley says, and it sleeps through the day and wakes at dusk. The lamps keep what people remember. Where nobody has been for a while, the lamp forgets, and the forgetting rolls in from the water. That is the low tide, I think.\n\nIt stops at the Jinrui building because Lacia reads everything there, every week. It is the best-watered place in Noctiluca.\n\nYou watered a lot of places this week. Cell three is very proud of you.\n\nSnowdrop\n\n(Our city's story. Fiction.)"
+          "finale": true,
+          "body": "Hi again,\n\nThe curl map is done (for now; maps are never done).\n\nSnowdrop\n\n(Our city's story. Fiction.)"
         }
       }
     }
   ],
   "pings": {
-    "place": { "shrine-1": "You came up the steps! The moss says hello. Mostly it says nothing, but nicely.", "classroom-1": "Table 3 says hi from the window sill." },
-    "shard": { "6": "That desk! Light is what remembering looks like. I think so too.", "3": "Bay-light in the lamp glass. Oh. Oh, that is it, maybe." }
+    "place": {
+      "shrine-1": "You came up the steps! The moss says hello. Mostly it says nothing, but nicely.",
+      "classroom-1": "Table 3 says hi from the window sill."
+    },
+    "shard": {
+      "6": "That desk! Light is what remembering looks like. I think so too.",
+      "3": "Bay-light in the lamp glass. Oh. Oh, that is it, maybe."
+    }
+  },
+  "finale": {
+    "open": "Hi again,\n\nThe curl map is done (for now; maps are never done).",
+    "stance": {
+      "keeper": "You filed \"{stance}\". I wanted that one too! Saturnus says wanting it is exactly why I should check it twice, so the map has a second column now: what I would see if you were wrong.",
+      "sink": "You filed \"{stance}\". I had to sit down for a minute. Then I looked at the seedling tray again, and cell three might stand straight because it is in the shade of the wall, not because anybody visits it. I am testing that this week.",
+      "unsure": "You filed \"{stance}\". Me too, honestly. The curl map is better with a question mark on it.",
+      "none": "You did not file a reading of the tide. That is fine. The map has a blank square for you, and blank squares are allowed."
+    },
+    "parts": [
+      { "when": "runs", "text": "Your two runs are pinned next to the map: {runs}. Same toy, one setting changed. That is a fair comparison, and it is still a toy. Leaves are not a toy, so I am only half sure what it means for them." },
+      { "when": "oneRun", "text": "You ran the board once ({runs}). There is room for the other run whenever you like." },
+      { "when": "lamps", "text": "On the map, the lamps you saw yourself: {lamps}." },
+      { "when": "kept", "text": "The ones you went back to ({kept}) were warm when you came in. That part is just true: a lamp warms when someone comes." },
+      { "when": "tide", "text": "You saw it dip at {tide}. I drew a little wave there." },
+      { "when": "wish", "text": "Someone hung a wish at {wish}. I did not read it. I watered the planter under it." },
+      { "when": "gift", "text": "And the {gift}. It is on the windowsill by table 3." }
+    ],
+    "close": {
+      "keeper": "Next: the shrine moss, and whether it stays green after a week with nobody on the steps. If it does, your reading has a problem, and I will tell you.",
+      "sink": "Next: the shrine moss. If it curls after a week with nobody on the steps, I will tell you, even though I will hate it.",
+      "unsure": "Next: the shrine moss, a week with nobody on the steps, one photo each evening. Then we will know a little more.",
+      "none": "Next: the shrine moss. Come and look at it with me sometime."
+    },
+    "sign": "Snowdrop",
+    "tag": "(Our city's story. Fiction.)"
   }
 }
