@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "id": "attention-sinks",
+  "status": "draft",
+  "topic": "Attention share is not evidence",
+  "questions": [
+    {
+      "id": "q-attention-share-evidence",
+      "hie": "snowdrop",
+      "text": "A curve of how much attention lands on the image: what can it support, and what can it not?"
+    }
+  ],
+  "relations": [
+    {
+      "id": "attention-sinks/read-at-gate",
+      "contentId": "2026-06-22-reading-attention-sinks",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "haunted-mansion-door",
+      "spot": "letter",
+      "question": "q-attention-share-evidence",
+      "hie": "snowdrop",
+      "purpose": "Read why a high attention weight can mean only \"the surplus has to land somewhere\". The letter under the doors is the reading copy; reading needs no experiment.",
+      "reason": "The draft already names this gate (DarwinLibrary anchor) as its place; it stays the reading place. The library gate is where Snowdrop leaves things to read, not to run."
+    },
+    {
+      "id": "attention-sinks/fade-on-the-board",
+      "contentId": "2026-06-22-reading-attention-sinks",
+      "contentRev": 0,
+      "kind": "experiment",
+      "place": "classroom-1",
+      "spot": "class-board",
+      "module": "attention",
+      "label": "simulated",
+      "question": "q-attention-share-evidence",
+      "hie": "snowdrop",
+      "purpose": "Run the Attention Fade toy model on the blackboard twice, re-looking at the image never (interval 0) and every 512 tokens, and note what the curve shows and what it leaves open.",
+      "limits": "Attention Fade is an illustrative toy model, not fitted to any model or paper. A run here does not reproduce StreamingLLM, measures no real VLM, and cannot verify the paper or the reading.",
+      "reason": "The classroom blackboard already opens Attention Fade (G). It is the place to try the question, separate from where the reading is kept."
+    }
+  ]
+}

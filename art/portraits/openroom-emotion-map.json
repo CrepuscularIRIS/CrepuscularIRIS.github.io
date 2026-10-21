@@ -8,7 +8,8 @@
       "shy": "./art/portraits/lacia-shy.webp",
       "depressing": "./art/portraits/lacia-depressing.webp",
       "surprised": "./art/portraits/lacia-surprised.webp",
-      "thinking": "./art/portraits/lacia-serious.webp",
+      "thinking": "./art/portraits/lacia-thoughtful.webp",
+      "thoughtful": "./art/portraits/lacia-thoughtful.webp",
       "default": "./art/portraits/lacia-neutral.webp"
     },
     "kouka": {
@@ -18,7 +19,8 @@
       "shy": "./art/portraits/kouka-shy.webp",
       "depressing": "./art/portraits/kouka-depressing.webp",
       "surprised": "./art/portraits/kouka-surprised.webp",
-      "thinking": "./art/portraits/kouka-spark.webp",
+      "thinking": "./art/portraits/kouka-skeptical.webp",
+      "skeptical": "./art/portraits/kouka-skeptical.webp",
       "default": "./art/portraits/kouka-neutral.webp"
     },
     "saturnus": {
@@ -28,7 +30,8 @@
       "shy": "./art/portraits/saturnus-shy.webp",
       "depressing": "./art/portraits/saturnus-depressing.webp",
       "surprised": "./art/portraits/saturnus-blink.webp",
-      "thinking": "./art/portraits/saturnus-neutral.webp",
+      "thinking": "./art/portraits/saturnus-questioning.webp",
+      "questioning": "./art/portraits/saturnus-questioning.webp",
       "default": "./art/portraits/saturnus-neutral.webp"
     },
     "methode": {
@@ -37,8 +40,9 @@
       "angry": "./art/portraits/methode-annoyed.webp",
       "shy": "./art/portraits/methode-shy.webp",
       "depressing": "./art/portraits/methode-depressing.webp",
-      "surprised": "./art/portraits/methode-smirk.webp",
+      "surprised": "./art/portraits/methode-eureka.webp",
       "thinking": "./art/portraits/methode-focus.webp",
+      "eureka": "./art/portraits/methode-eureka.webp",
       "default": "./art/portraits/methode-neutral.webp"
     },
     "snowdrop": {
@@ -48,11 +52,12 @@
       "shy": "./art/portraits/snowdrop-shy.webp",
       "depressing": "./art/portraits/snowdrop-distant.webp",
       "surprised": "./art/portraits/snowdrop-curious.webp",
-      "thinking": "./art/portraits/snowdrop-neutral.webp",
+      "thinking": "./art/portraits/snowdrop-concerned.webp",
+      "concerned": "./art/portraits/snowdrop-concerned.webp",
       "default": "./art/portraits/snowdrop-neutral.webp"
     }
   },
   "unknown_emotion_fallback": "default",
   "runtime_wired": true,
-  "note": "OpenRoom five plus surprised and thinking (W2), each mapped to an existing portrait; no new art. W4: no two emotions of one character share an image (Methode surprised -> smirk, Snowdrop peaceful -> smile, thinking -> neutral)."
+  "note": "OpenRoom five plus surprised and thinking (W2), each mapped to an existing portrait; no new art. W4: no two emotions of one character share an image (Methode surprised -> smirk, Snowdrop peaceful -> smile, thinking -> neutral). 2026-10-21 (P09): the five approved story poses replace the stand-ins that repeated another emotion's image (Lacia thinking was angry's serious, Snowdrop and Saturnus thinking were their default, Methode surprised was a smirk) or fit less (Kouka thinking -> skeptical); each is also listed under its own pose name (thoughtful, concerned, skeptical, questioning, eureka) for scripted beats (src/ui/stage/beats.js). The model still emits only the seven tags."
 }
