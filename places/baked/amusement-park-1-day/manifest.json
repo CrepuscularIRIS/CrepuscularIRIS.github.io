@@ -1,0 +1,823 @@
+{
+ "version": 2,
+ "place": "amusement-park-1",
+ "family": "AmusementPark",
+ "variant": "D",
+ "tod": "day",
+ "cost": {
+  "triangles": 278065,
+  "drawCalls": 379,
+  "textures": 53,
+  "textureMB": 98.8
+ },
+ "exported": {
+  "triangles": 295275,
+  "drawCalls": 371,
+  "textures": 52,
+  "textureMB": 97.3
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 13553144,
+   "intensity": 0.675,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 13804236
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16773858,
+   "intensity": 4.369999999999999,
+   "position": [
+    -70,
+    40,
+    -45
+   ],
+   "visible": true,
+   "target": [
+    -10,
+    0,
+    -55
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0006,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 5,
+     "far": 320,
+     "left": -60,
+     "right": 60,
+     "top": 55,
+     "bottom": -45
+    }
+   }
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 14203104,
+   "intensity": 0.675,
+   "position": [
+    -40,
+    30,
+    60
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [],
+ "motions": [],
+ "uniformArrays": {},
+ "reflectors": [],
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    1.1,
+    0
+   ],
+   "target": [
+    0,
+    1.1,
+    -30
+   ],
+   "fov": 34,
+   "shift": [
+    0,
+    0.286
+   ]
+  },
+  "views": [
+   {
+    "name": "wheel-base",
+    "label": "Wheel base",
+    "position": [
+     -8,
+     1.7,
+     -63
+    ],
+    "target": [
+     -14,
+     12,
+     -80
+    ],
+    "fov": 55
+   },
+   {
+    "name": "gondola",
+    "label": "Gondolas",
+    "position": [
+     -21.5,
+     1.9,
+     -64.5
+    ],
+    "target": [
+     -16.5,
+     15,
+     -83
+    ],
+    "fov": 55
+   },
+   {
+    "name": "pavilion",
+    "label": "Pavilion",
+    "position": [
+     -4.5,
+     1.6,
+     -59
+    ],
+    "target": [
+     2,
+     4.2,
+     -70
+    ],
+    "fov": 50
+   },
+   {
+    "name": "promenade",
+    "label": "Promenade",
+    "position": [
+     9.5,
+     1.6,
+     -46
+    ],
+    "target": [
+     -14,
+     12,
+     -81
+    ],
+    "fov": 55
+   },
+   {
+    "name": "plaza-wide",
+    "label": "Plaza wide",
+    "position": [
+     10,
+     7.5,
+     -88
+    ],
+    "target": [
+     -4,
+     2,
+     -20
+    ],
+    "fov": 60
+   },
+   {
+    "name": "shopfront",
+    "label": "Shop front",
+    "position": [
+     3.2,
+     1.5,
+     -21
+    ],
+    "target": [
+     10.5,
+     3.2,
+     -26
+    ],
+    "fov": 50
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -26,
+   0.4,
+   -118
+  ],
+  "max": [
+   27,
+   30,
+   9
+  ]
+ },
+ "env": {
+  "background": 15323892,
+  "ibl": {
+   "top": 13157307,
+   "wall": 12958897,
+   "floor": 8413272,
+   "intensity": 0.6,
+   "lights": []
+  },
+  "fog": {
+   "color": 15518962,
+   "near": 30,
+   "far": 250
+  },
+  "post": {
+   "outline": {
+    "color": 4864606,
+    "opacity": 0.4,
+    "depthTh": 0.02,
+    "normalTh": 0.32
+   },
+   "ao": {
+    "strength": 0.35,
+    "radius": 0.5
+   },
+   "bloom": {
+    "threshold": 0.86,
+    "strength": 0.35
+   },
+   "grade": {
+    "exposure": 0.88,
+    "saturation": 0.9,
+    "lift": [
+     0.02,
+     0.02,
+     0.02
+    ],
+    "gain": [
+     1,
+     1,
+     1
+    ],
+    "vignette": 0.1
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 75,
+    "range": 55,
+    "near": 1.4,
+    "far": 0.4,
+    "maxRadius": 5,
+    "tilt": {
+     "center": [
+      0.47,
+      0.3
+     ],
+     "radius": [
+      0.34,
+      0.22
+     ],
+     "soft": 0.4,
+     "strength": 4.5
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -22.8,
+   -86,
+   12,
+   5.5
+  ],
+  "eye": 1.6,
+  "start": {
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "target": [
+    -8,
+    8,
+    -60
+   ]
+  },
+  "colliders": [
+   [
+    -30,
+    -96,
+    -6,
+    -70
+   ],
+   [
+    -8.2,
+    -41.5,
+    -3.6,
+    -37.8
+   ],
+   [
+    -14.3,
+    -51.4,
+    -11.7,
+    -48.6
+   ],
+   [
+    -1.8,
+    -80.5,
+    8.2,
+    -69.5
+   ],
+   [
+    -7.4,
+    -10.6,
+    -3.4,
+    -6.6
+   ],
+   [
+    -11.4,
+    -7.4,
+    -7.6,
+    -3.6
+   ],
+   [
+    -24.5,
+    -70,
+    -13.2,
+    -47
+   ],
+   [
+    -9,
+    -20.5,
+    -8,
+    -19.5
+   ],
+   [
+    -4,
+    -42.5,
+    -3,
+    -41.5
+   ],
+   [
+    5.7,
+    -46.5,
+    6.7,
+    -45.5
+   ],
+   [
+    -14.5,
+    -58.5,
+    -13.5,
+    -57.5
+   ],
+   [
+    -10.3,
+    -26.6,
+    -8.7,
+    -25.4
+   ],
+   [
+    -2.8,
+    -52.6,
+    -1.2,
+    -51.4
+   ],
+   [
+    -7.7,
+    -19.9,
+    -6.7,
+    -18.9
+   ],
+   [
+    4.9,
+    -45.7,
+    5.9,
+    -44.7
+   ],
+   [
+    8.1,
+    -62.5,
+    9.1,
+    -61.5
+   ],
+   [
+    11.3,
+    -80.5,
+    12.3,
+    -79.5
+   ],
+   [
+    13,
+    -116,
+    18,
+    -108
+   ],
+   [
+    -6.157526323926563,
+    -14.770564102787063,
+    -5.084187662395548,
+    -12.602923371916566
+   ],
+   [
+    -11.28082241808429,
+    -13.383467942847455,
+    -9.702134876456823,
+    -11.60155396435126
+   ],
+   [
+    -13.029752969763358,
+    -17.860201889820626,
+    -12.102727643714012,
+    -16.11736302062489
+   ],
+   [
+    -10.409128476380763,
+    -31.667580818364797,
+    -8.568734262292564,
+    -30.32744537682632
+   ],
+   [
+    -4.853673636795193,
+    -24.08888339780629,
+    -4.357180907852415,
+    -22.923937998251173
+   ],
+   [
+    -4.853673636795193,
+    -29.58888339780629,
+    -4.357180907852415,
+    -28.423937998251173
+   ],
+   [
+    0.706767196266971,
+    -19.99996602325699,
+    1.0932327590295454,
+    -19.193244720881832
+   ],
+   [
+    0.706767196266971,
+    -31.99996602325699,
+    1.0932327590295454,
+    -31.193244720881832
+   ],
+   [
+    -2.6071419276067265,
+    -11.455896361358892,
+    -2.1934596590602626,
+    -10.54328344671692
+   ],
+   [
+    -2.6071419276067265,
+    -26.75589636135889,
+    -2.1934596590602626,
+    -25.84328344671692
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "door-shrine",
+   "kind": "link",
+   "label": "Out the arch, up the hill",
+   "object": "spot:door-shrine",
+   "typed": true,
+   "anchor": [
+    0,
+    1.5,
+    10
+   ],
+   "built": [
+    0,
+    1.5,
+    10
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "park-board",
+   "kind": "note",
+   "label": "Arch sign",
+   "object": "anchor:arch-sign",
+   "typed": false,
+   "anchor": [
+    0,
+    1.9,
+    4.9
+   ],
+   "built": [
+    0,
+    1.9,
+    4.9
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "park-shelter",
+   "kind": "inspect",
+   "label": "Shelter bench",
+   "object": "anchor:shelter-bench",
+   "typed": false,
+   "anchor": [
+    -5.400000000000001,
+    0.8,
+    -8.6
+   ],
+   "built": [
+    -5.400000000000001,
+    0.8,
+    -8.6
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "park-pavilion",
+   "kind": "inspect",
+   "label": "Pavilion",
+   "object": "anchor:pavilion",
+   "typed": false,
+   "anchor": [
+    -5.9,
+    1.3,
+    -38.1
+   ],
+   "built": [
+    -5.9,
+    1.3,
+    -38.1
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "park-bell",
+   "kind": "use",
+   "label": "Brass bell",
+   "object": "anchor:brass-bell",
+   "typed": false,
+   "anchor": [
+    -8.5,
+    1.3,
+    -20
+   ],
+   "built": [
+    -8.5,
+    1.3,
+    -20
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "frag-12",
+   "kind": "fragment",
+   "label": "Glowing shard",
+   "object": "spot:frag-12",
+   "typed": true,
+   "anchor": [
+    -2,
+    1,
+    -52
+   ],
+   "built": [
+    -2,
+    1,
+    -52
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "park-windmill",
+   "kind": "use",
+   "label": "Windmill hole",
+   "object": "golf-windmill",
+   "typed": false,
+   "anchor": [
+    -20.6,
+    1.2470944499157715,
+    -5.400000001405752
+   ],
+   "built": [
+    -20.6,
+    1.2470944499157715,
+    -5.400000001405752
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "park-candy",
+   "kind": "use",
+   "label": "Candy floss stall",
+   "object": "candy-stall",
+   "typed": false,
+   "anchor": [
+    -19.870000064373016,
+    2.0852933764457706,
+    -15.995809960365296
+   ],
+   "built": [
+    -19.870000064373016,
+    2.0852933764457706,
+    -15.995809960365296
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "park-map",
+   "kind": "note",
+   "label": "Park map",
+   "object": "park-map",
+   "typed": false,
+   "anchor": [
+    -6.6,
+    1.5499999999999998,
+    3.0589999993294477
+   ],
+   "built": [
+    -6.6,
+    1.5499999999999998,
+    3.0589999993294477
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "park-fountain",
+   "kind": "inspect",
+   "label": "Plaza fountain",
+   "object": "plaza-fountain",
+   "typed": false,
+   "anchor": [
+    -11,
+    0.768000030517578,
+    -22
+   ],
+   "built": [
+    -11,
+    0.768000030517578,
+    -22
+   ],
+   "reach": 4.5
+  }
+ ],
+ "bind": {
+  "door-shrine": {
+   "object": "spot:door-shrine",
+   "how": "node",
+   "on": null,
+   "at": [
+    0,
+    1.5,
+    10
+   ]
+  },
+  "frag-12": {
+   "object": "spot:frag-12",
+   "how": "node",
+   "on": null,
+   "at": [
+    -2,
+    1,
+    -52
+   ]
+  }
+ },
+ "premerge": {
+  "spot:door-shrine": [
+   0,
+   1.5,
+   10
+  ],
+  "spot:frag-12": [
+   -2,
+   1,
+   -52
+  ],
+  "anchor:arch-sign": [
+   0,
+   1.9,
+   4.9
+  ],
+  "anchor:shelter-bench": [
+   -5.400000000000001,
+   0.8,
+   -8.6
+  ],
+  "anchor:pavilion": [
+   -5.9,
+   1.3,
+   -38.1
+  ],
+  "anchor:brass-bell": [
+   -8.5,
+   1.3,
+   -20
+  ],
+  "golf-windmill": [
+   -20.6,
+   1.2470944499157715,
+   -5.400000001405752
+  ],
+  "candy-stall": [
+   -19.870000064373016,
+   2.0852933764457706,
+   -15.995809960365296
+  ],
+  "park-map": [
+   -6.6,
+   1.5499999999999998,
+   3.0589999993294477
+  ],
+  "plaza-fountain": [
+   -11,
+   0.768000030517578,
+   -22
+  ]
+ },
+ "anchorsBefore": {
+  "named": 8,
+  "typed": 2
+ },
+ "models": {
+  "baked": [
+   "coffeecart_01@-5.6,0,-14",
+   "outdoor_table_chair_set_01@-10.5,0,-12.5",
+   "outdoor_table_chair_set_01@-12.5,0,-17",
+   "outdoor_table_chair_set_01@-9.5,0,-31",
+   "painted_wooden_bench@-4.6,0,-23.5",
+   "painted_wooden_bench@-4.6,0,-29",
+   "street_lamp_02@0.9,0,-20",
+   "street_lamp_02@0.9,0,-32",
+   "planter_box_01@-2.4,0,-11",
+   "planter_box_01@-2.4,0,-26.3"
+  ],
+  "standIns": []
+ },
+ "dressStats": {
+  "props": 79,
+  "instanced": 17,
+  "signs": 5,
+  "lights": 0,
+  "retextured": 0,
+  "triangles": 19312,
+  "failed": 0
+ },
+ "detailStats": {
+  "meshes": 15,
+  "triangles": 27806
+ },
+ "manifestColliders": 0,
+ "manifest": true,
+ "three": "170",
+ "key": "amusement-park-1-day",
+ "hour": 13,
+ "bakedAt": "2026-10-21T07:20:00.309Z",
+ "source": {
+  "family": "AmusementPark (D) built at runtime by lab/src/scenes",
+  "exportBytes": 34938292,
+  "triangles": 278065,
+  "drawCalls": 379,
+  "textures": 53,
+  "textureMB": 98.8
+ },
+ "lods": {
+  "lod0": {
+   "file": "amusement-park-1-day.glb",
+   "triangles": 265356,
+   "primitives": 171,
+   "materials": 153,
+   "textures": 49,
+   "textureKB": 1582,
+   "bytes": 4698372
+  },
+  "lod1": {
+   "file": "amusement-park-1-day.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 139927,
+   "primitives": 171,
+   "materials": 153,
+   "textures": 49,
+   "textureKB": 660,
+   "bytes": 2882408
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "anchor:shelter-bench",
+   "anchor:arch-sign",
+   "anchor:pavilion",
+   "anchor:brass-bell",
+   "golf-windmill",
+   "candy-stall",
+   "plaza-fountain",
+   "park-map",
+   "spot:door-shrine",
+   "spot:frag-12"
+  ],
+  "exportBytes": 190536
+ },
+ "live": {
+  "file": "amusement-park-1-day.live.json",
+  "bytes": 401662,
+  "objects": [
+   "Mesh"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs amusement-park-1 --variant day (dev server running, BASE=...)"
+ ]
+}

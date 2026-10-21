@@ -1,0 +1,1210 @@
+{
+ "version": 2,
+ "place": "restaurant-1",
+ "family": "Restaurant",
+ "variant": "D",
+ "tod": "day",
+ "cost": {
+  "triangles": 144419,
+  "drawCalls": 124,
+  "textures": 40,
+  "textureMB": 43.1
+ },
+ "exported": {
+  "triangles": 133219,
+  "drawCalls": 92,
+  "textures": 28,
+  "textureMB": 37.9
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 16770256,
+   "intensity": 0.36,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 13148296
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16767200,
+   "intensity": 0.7,
+   "position": [
+    7,
+    2.6,
+    -14
+   ],
+   "visible": true,
+   "target": [
+    5,
+    0,
+    3
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0005,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 1,
+     "far": 30,
+     "left": -12,
+     "right": 12,
+     "top": 8,
+     "bottom": -8
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763040,
+   "intensity": 0.9,
+   "position": [
+    -1.2000000000000002,
+    2.3,
+    0.4
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763040,
+   "intensity": 0.9,
+   "position": [
+    1.6799999999999997,
+    2.3,
+    0.4
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763040,
+   "intensity": 0.9,
+   "position": [
+    4.56,
+    2.3,
+    0.4
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763040,
+   "intensity": 0.9,
+   "position": [
+    7.4399999999999995,
+    2.3,
+    0.4
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763040,
+   "intensity": 0.9,
+   "position": [
+    10.32,
+    2.3,
+    0.4
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763040,
+   "intensity": 0.9,
+   "position": [
+    13.2,
+    2.3,
+    0.4
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763040,
+   "intensity": 0.9,
+   "position": [
+    16.08,
+    2.3,
+    0.4
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16765112,
+   "intensity": 0.25,
+   "position": [
+    -3,
+    4,
+    12
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16767144,
+   "intensity": 2.2,
+   "position": [
+    1.6,
+    2.7,
+    4.3
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16767144,
+   "intensity": 2.2,
+   "position": [
+    7.3,
+    2.7,
+    4.3
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16767144,
+   "intensity": 2.2,
+   "position": [
+    13,
+    2.7,
+    4.3
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "dress:light",
+   "color": 16763024,
+   "intensity": 2.6,
+   "position": [
+    9.3,
+    2.2,
+    7.9
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 1.6,
+   "dress": true
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "49d3202a-cd01-4fb3-b579-596c5f937cd7",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "49d3202a-cd01-4fb3-b579-596c5f937cd7",
+   "uniform": "uWT",
+   "a": 0.2,
+   "b": -1.776357e-15
+  },
+  {
+   "material": "c70295c2-e6b1-4c93-b6c1-a63461f80695",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "5e48502e-2d33-4488-b1d1-d14aec162ba9",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "d25b4436-af91-4324-8cd4-1cd4718cd087",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "8b55884d-2d2c-4db6-922c-0b2f87d9adcf",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "63478510-7e4e-4b76-b279-20b4c7fe68f6",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "343a798f-85e3-4d79-ad17-9fe01968dda3",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "2ffe95ab-6fe1-437b-8319-c4b79c308cf4",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "80e11de7-01aa-4307-9b3e-6261788f1a5b",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "ebddd76c-1a75-4f6d-9d83-ecd623f2e6fd",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {
+  "49d3202a-cd01-4fb3-b579-596c5f937cd7": {
+   "uL": "v4",
+   "uLC": "c"
+  }
+ },
+ "reflectors": [
+  {
+   "w": 18.8,
+   "d": 8.6,
+   "x": 5.199999999999999,
+   "y": 0,
+   "z": 4.3,
+   "strength": 0.2,
+   "blur": 2,
+   "f0": 0.06,
+   "tint": 16769224,
+   "fade": 40,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 768,
+   "mask": null
+  }
+ ],
+ "camera": {
+  "ref": {
+   "position": [
+    -0.346,
+    1.096,
+    4.6
+   ],
+   "target": [
+    2.037,
+    1.096,
+    1.387
+   ],
+   "fov": 36.81,
+   "shift": [
+    0,
+    0
+   ]
+  },
+  "views": [
+   {
+    "name": "wide",
+    "label": "Wide",
+    "position": [
+     -3.4,
+     2.2,
+     7.8
+    ],
+    "target": [
+     6,
+     0.9,
+     1
+    ],
+    "fov": 62
+   },
+   {
+    "name": "window",
+    "label": "Window bay",
+    "position": [
+     3.3,
+     1.5,
+     2.7
+    ],
+    "target": [
+     3.6,
+     1.8,
+     -3
+    ],
+    "fov": 55
+   },
+   {
+    "name": "table",
+    "label": "Table setting",
+    "position": [
+     0.1,
+     1.35,
+     2
+    ],
+    "target": [
+     0.9,
+     0.8,
+     0.9
+    ],
+    "fov": 45
+   },
+   {
+    "name": "chair",
+    "label": "Chair",
+    "position": [
+     2.6,
+     0.95,
+     3
+    ],
+    "target": [
+     1.42,
+     0.7,
+     1.72
+    ],
+    "fov": 45
+   },
+   {
+    "name": "sky",
+    "label": "Sunset sky",
+    "position": [
+     6.3,
+     1.2,
+     1.6
+    ],
+    "target": [
+     6.4,
+     3,
+     -10
+    ],
+    "fov": 66
+   },
+   {
+    "name": "lake",
+    "label": "Lake",
+    "position": [
+     6.3,
+     1.35,
+     2.8
+    ],
+    "target": [
+     6.4,
+     0.7,
+     -20
+    ],
+    "fov": 56
+   },
+   {
+    "name": "reverse",
+    "label": "Toward the sideboard",
+    "position": [
+     5.5,
+     1.6,
+     0.8
+    ],
+    "target": [
+     2,
+     1,
+     8.4
+    ],
+    "fov": 60
+   },
+   {
+    "name": "down-room",
+    "label": "Down the room",
+    "position": [
+     13.6,
+     1.7,
+     3.2
+    ],
+    "target": [
+     0,
+     1.2,
+     3
+    ],
+    "fov": 58
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -4.05,
+   0.2,
+   0.15
+  ],
+  "max": [
+   14.45,
+   3.5,
+   8.45
+  ]
+ },
+ "env": {
+  "background": 15780032,
+  "ibl": {
+   "top": 15253680,
+   "wall": 14198936,
+   "floor": 9071194,
+   "intensity": 0.3,
+   "lights": [
+    {
+     "pos": [
+      5,
+      1.9,
+      -3
+     ],
+     "size": [
+      24,
+      2.4
+     ],
+     "color": 16763112,
+     "power": 2.5,
+     "lookAt": [
+      5,
+      1.9,
+      6
+     ]
+    },
+    {
+     "pos": [
+      5,
+      3.4,
+      4.2
+     ],
+     "size": [
+      14,
+      3
+     ],
+     "color": 16767160,
+     "power": 1.5,
+     "lookAt": [
+      5,
+      0,
+      4.2
+     ]
+    }
+   ]
+  },
+  "fog": {
+   "color": 15253680,
+   "near": 26,
+   "far": 90
+  },
+  "post": {
+   "outline": {
+    "color": 4858904,
+    "opacity": 0.45,
+    "depthTh": 0.014,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.4,
+    "radius": 0.3
+   },
+   "bloom": {
+    "threshold": 0.7,
+    "strength": 0.5,
+    "weights": [
+     0.45,
+     0.4,
+     0.35,
+     0.3,
+     0.25
+    ]
+   },
+   "grade": {
+    "exposure": 0.96,
+    "saturation": 1.04,
+    "lift": [
+     0.008,
+     0.004,
+     0.006
+    ],
+    "gain": [
+     1.03,
+     0.97,
+     0.95
+    ],
+    "vignette": 0.26,
+    "contrast": 1.06
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 5,
+    "range": 3,
+    "near": 0.9,
+    "far": 0.6,
+    "maxRadius": 3,
+    "tilt": {
+     "center": [
+      0.62,
+      0.55
+     ],
+     "radius": [
+      0.3,
+      0.32
+     ],
+     "soft": 0.35,
+     "strength": 5
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -3.95,
+   0.25,
+   14.35,
+   8.35
+  ],
+  "eye": 1.6,
+  "start": {
+   "position": [
+    -0.35,
+    0,
+    4.6
+   ],
+   "target": [
+    2,
+    1.2,
+    1.4
+   ]
+  },
+  "colliders": [
+   [
+    0.28,
+    0.33000000000000007,
+    1.72,
+    1.77
+   ],
+   [
+    2.9299999999999997,
+    0.5800000000000001,
+    4.37,
+    2.02
+   ],
+   [
+    6.180000000000001,
+    0.53,
+    7.62,
+    1.97
+   ],
+   [
+    9.08,
+    0.48,
+    10.520000000000001,
+    1.92
+   ],
+   [
+    11.879999999999999,
+    0.48,
+    13.32,
+    1.92
+   ],
+   [
+    -2.62,
+    0.48,
+    -1.18,
+    1.92
+   ],
+   [
+    1.4800000000000002,
+    3.88,
+    2.92,
+    5.319999999999999
+   ],
+   [
+    4.680000000000001,
+    4.08,
+    6.12,
+    5.52
+   ],
+   [
+    7.88,
+    4.08,
+    9.32,
+    5.52
+   ],
+   [
+    11.08,
+    3.88,
+    12.520000000000001,
+    5.319999999999999
+   ],
+   [
+    -2.8200000000000003,
+    4.48,
+    -1.3800000000000001,
+    5.92
+   ],
+   [
+    1.16,
+    1.46,
+    1.68,
+    1.98
+   ],
+   [
+    3.42,
+    0.08000000000000002,
+    3.9400000000000004,
+    0.6000000000000001
+   ],
+   [
+    0.72,
+    -0.04000000000000001,
+    1.24,
+    0.48
+   ],
+   [
+    3.6900000000000004,
+    1.9400000000000002,
+    4.21,
+    2.46
+   ],
+   [
+    6.46,
+    0.03999999999999998,
+    6.9799999999999995,
+    0.56
+   ],
+   [
+    6.84,
+    1.84,
+    7.359999999999999,
+    2.3600000000000003
+   ],
+   [
+    9.540000000000001,
+    0.08999999999999997,
+    10.06,
+    0.61
+   ],
+   [
+    9.64,
+    1.7899999999999998,
+    10.16,
+    2.3099999999999996
+   ],
+   [
+    12.34,
+    1.74,
+    12.86,
+    2.26
+   ],
+   [
+    -2.16,
+    1.7899999999999998,
+    -1.64,
+    2.3099999999999996
+   ],
+   [
+    1.9400000000000002,
+    3.49,
+    2.46,
+    4.01
+   ],
+   [
+    2.04,
+    5.19,
+    2.5599999999999996,
+    5.71
+   ],
+   [
+    5.140000000000001,
+    3.6900000000000004,
+    5.66,
+    4.21
+   ],
+   [
+    5.24,
+    5.390000000000001,
+    5.76,
+    5.91
+   ],
+   [
+    8.34,
+    3.6900000000000004,
+    8.86,
+    4.21
+   ],
+   [
+    11.540000000000001,
+    5.19,
+    12.06,
+    5.71
+   ],
+   [
+    -2.3600000000000003,
+    5.79,
+    -1.84,
+    6.31
+   ],
+   [
+    2.4,
+    8,
+    4.8,
+    8.6
+   ],
+   [
+    -3.6500000000000004,
+    2.35,
+    -2.95,
+    2.85
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "host-stand",
+   "kind": "terminal",
+   "label": "Host stand",
+   "object": "spot:host-stand",
+   "typed": true,
+   "anchor": [
+    -3.3,
+    1.1,
+    2.6
+   ],
+   "built": [
+    -3.3,
+    1.1,
+    2.6
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "sideboard",
+   "kind": "terminal",
+   "label": "Sideboard",
+   "object": "spot:sideboard",
+   "typed": true,
+   "anchor": [
+    3.6,
+    1,
+    8.3
+   ],
+   "built": [
+    3.6,
+    1,
+    8.3
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-street-1",
+   "kind": "link",
+   "label": "Main street",
+   "object": null,
+   "typed": false,
+   "anchor": [
+    6.526241177468488,
+    1.1537500132620335,
+    8.48835620570928
+   ],
+   "built": [
+    6.526241177468488,
+    1.1537500132620335,
+    8.48835620570928
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "rest-candles",
+   "kind": "inspect",
+   "label": "Candelabra",
+   "object": "spot:rest-candles",
+   "typed": true,
+   "anchor": [
+    0.9,
+    1.2,
+    0.9
+   ],
+   "built": [
+    0.9,
+    1.2,
+    0.9
+   ],
+   "reach": 5
+  },
+  {
+   "id": "rest-napkin",
+   "kind": "inspect",
+   "label": "Folded napkin",
+   "object": "spot:rest-napkin",
+   "typed": true,
+   "anchor": [
+    0.62,
+    0.86,
+    0.8
+   ],
+   "built": [
+    0.62,
+    0.86,
+    0.8
+   ],
+   "reach": 5
+  },
+  {
+   "id": "rest-window",
+   "kind": "inspect",
+   "label": "Evening window",
+   "object": "spot:rest-window",
+   "typed": true,
+   "anchor": [
+    3.6,
+    1.8,
+    0
+   ],
+   "built": [
+    3.6,
+    1.8,
+    0
+   ],
+   "reach": 5
+  },
+  {
+   "id": "rest-panel",
+   "kind": "inspect",
+   "label": "Marble panel",
+   "object": "spot:rest-panel",
+   "typed": true,
+   "anchor": [
+    2.3,
+    2.1,
+    0.05
+   ],
+   "built": [
+    2.3,
+    2.1,
+    0.05
+   ],
+   "reach": 5
+  },
+  {
+   "id": "rest-kitchen",
+   "kind": "inspect",
+   "label": "Kitchen doors",
+   "object": "spot:rest-kitchen",
+   "typed": true,
+   "anchor": [
+    8.4,
+    1.3,
+    8.5
+   ],
+   "built": [
+    8.4,
+    1.3,
+    8.5
+   ],
+   "reach": 5
+  },
+  {
+   "id": "rest-menu",
+   "kind": "note",
+   "label": "Menu easel",
+   "object": "menu-easel",
+   "typed": false,
+   "anchor": [
+    -3.2953499992210626,
+    0.7545160494412215,
+    3.5872243149955856
+   ],
+   "built": [
+    -3.2953499992210626,
+    0.7545160494412215,
+    3.5872243149955856
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "rest-painting",
+   "kind": "inspect",
+   "label": "Lake at dusk",
+   "object": "lake-painting",
+   "typed": false,
+   "anchor": [
+    11.85,
+    1.85,
+    8.584000000186265
+   ],
+   "built": [
+    11.85,
+    1.85,
+    8.584000000186265
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "rest-wine",
+   "kind": "inspect",
+   "label": "Wine on the console",
+   "object": "wine-bottles",
+   "typed": false,
+   "anchor": [
+    9.897873545590485,
+    1.115683597093448,
+    8.299727541580797
+   ],
+   "built": [
+    9.897873545590485,
+    1.115683597093448,
+    8.299727541580797
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "host-stand": {
+   "object": "spot:host-stand",
+   "how": "carved",
+   "on": "hostStand < furniture",
+   "at": [
+    -3.3,
+    1.1,
+    2.6
+   ],
+   "triangles": 132
+  },
+  "sideboard": {
+   "object": "spot:sideboard",
+   "how": "carved",
+   "on": "sideboard < furniture",
+   "at": [
+    3.6,
+    1,
+    8.3
+   ],
+   "triangles": 1084
+  },
+  "rest-candles": {
+   "object": "spot:rest-candles",
+   "how": "carved",
+   "on": "furniture",
+   "at": [
+    0.9,
+    1.2,
+    0.9
+   ],
+   "triangles": 928
+  },
+  "rest-napkin": {
+   "object": "spot:rest-napkin",
+   "how": "carved",
+   "on": "furniture",
+   "at": [
+    0.62,
+    0.86,
+    0.8
+   ],
+   "triangles": 48
+  },
+  "rest-window": {
+   "object": "spot:rest-window",
+   "how": "carved",
+   "on": "room",
+   "at": [
+    3.6,
+    1.8,
+    0
+   ],
+   "triangles": 12
+  },
+  "rest-panel": {
+   "object": "spot:rest-panel",
+   "how": "carved",
+   "on": "room",
+   "at": [
+    2.3,
+    2.1,
+    0.05
+   ],
+   "triangles": 2
+  },
+  "rest-kitchen": {
+   "object": "spot:rest-kitchen",
+   "how": "carved",
+   "on": "room",
+   "at": [
+    8.4,
+    1.3,
+    8.5
+   ],
+   "triangles": 610
+  }
+ },
+ "premerge": {
+  "menu-easel": [
+   -3.2953499992210626,
+   0.7545160494412215,
+   3.5872243149955856
+  ],
+  "lake-painting": [
+   11.85,
+   1.85,
+   8.584000000186265
+  ],
+  "wine-bottles": [
+   9.897873545590485,
+   1.115683597093448,
+   8.299727541580797
+  ]
+ },
+ "doorProps": {
+  "door-street-1": {
+   "p": [
+    6.5262,
+    0,
+    8.54
+   ],
+   "q": [
+    0,
+    1,
+    0,
+    0
+   ],
+   "gate": false,
+   "tint": 0
+  }
+ },
+ "anchorsBefore": {
+  "named": 3,
+  "typed": 7
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": {
+  "props": 113,
+  "instanced": 9,
+  "signs": 5,
+  "lights": 1,
+  "retextured": 0,
+  "triangles": 55123,
+  "failed": 0
+ },
+ "detailStats": {
+  "meshes": 0,
+  "triangles": 0
+ },
+ "manifestColliders": 0,
+ "manifest": true,
+ "three": "170",
+ "key": "restaurant-1",
+ "hour": 13,
+ "bakedAt": "2026-10-21T07:32:51.556Z",
+ "source": {
+  "family": "Restaurant (D) built at runtime by lab/src/scenes",
+  "exportBytes": 14208136,
+  "triangles": 144419,
+  "drawCalls": 124,
+  "textures": 40,
+  "textureMB": 43.1
+ },
+ "lods": {
+  "lod0": {
+   "file": "restaurant-1.glb",
+   "triangles": 114325,
+   "primitives": 106,
+   "materials": 82,
+   "textures": 39,
+   "textureKB": 1042,
+   "bytes": 2222780
+  },
+  "lod1": {
+   "file": "restaurant-1.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 67995,
+   "primitives": 106,
+   "materials": 82,
+   "textures": 39,
+   "textureKB": 392,
+   "bytes": 1242224
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "wine-bottles",
+   "menu-easel",
+   "lake-painting",
+   "spot:host-stand",
+   "spot:sideboard",
+   "spot:rest-candles",
+   "spot:rest-napkin",
+   "spot:rest-window",
+   "spot:rest-panel",
+   "spot:rest-kitchen"
+  ],
+  "exportBytes": 1085608
+ },
+ "live": {
+  "file": "restaurant-1.live.json",
+  "bytes": 57152,
+  "objects": [
+   "skyDome",
+   "water",
+   "smokePlume",
+   "smokePlume",
+   "groundMist",
+   "smokePlume",
+   "smokePlume",
+   "smokePlume",
+   "smokePlume"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs restaurant-1 (dev server running, BASE=...)"
+ ]
+}

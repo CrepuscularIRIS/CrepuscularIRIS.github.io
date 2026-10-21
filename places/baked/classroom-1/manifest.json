@@ -1,0 +1,824 @@
+{
+ "version": 2,
+ "place": "classroom-1",
+ "family": "Classroom",
+ "variant": "D",
+ "tod": "day",
+ "cost": {
+  "triangles": 54982,
+  "drawCalls": 124,
+  "textures": 26,
+  "textureMB": 66.9
+ },
+ "exported": {
+  "triangles": 50864,
+  "drawCalls": 109,
+  "textures": 19,
+  "textureMB": 57.6
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 16763048,
+   "intensity": 0.34,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 9062970
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16754792,
+   "intensity": 9,
+   "position": [
+    -4.9,
+    3.3,
+    3.6
+   ],
+   "visible": true,
+   "target": [
+    3.6,
+    0,
+    4.5
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0004,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 1,
+     "far": 22,
+     "left": -8,
+     "right": 8,
+     "top": 8,
+     "bottom": -8
+    }
+   }
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16752736,
+   "intensity": 3.4,
+   "position": [
+    -4.9,
+    2.7,
+    2.3
+   ],
+   "visible": true,
+   "target": [
+    3.6,
+    0,
+    4.5
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0004,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 1,
+     "far": 22,
+     "left": -8,
+     "right": 8,
+     "top": 8,
+     "bottom": -8
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16751216,
+   "intensity": 0,
+   "position": [
+    3,
+    2.3,
+    5
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.6
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 15247544,
+   "intensity": 0.35,
+   "position": [
+    8,
+    3,
+    12
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "e4ab2f4e-b185-4923-81ea-36c3054197b8",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "12051022-fd95-44de-927b-3945d3039c67",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {},
+ "reflectors": [],
+ "camera": {
+  "ref": {
+   "position": [
+    6.249,
+    1.2,
+    8.228
+   ],
+   "target": [
+    2.9818969800494726,
+    1.2,
+    4.443024721741217
+   ],
+   "fov": 41.2,
+   "shift": [
+    0,
+    -0.161
+   ]
+  },
+  "views": [
+   {
+    "name": "wide",
+    "label": "Wide",
+    "position": [
+     6.8,
+     2.2,
+     8.6
+    ],
+    "target": [
+     2,
+     0.6,
+     2
+    ],
+    "fov": 62
+   },
+   {
+    "name": "board",
+    "label": "Blackboard",
+    "position": [
+     3.4,
+     1.4,
+     4
+    ],
+    "target": [
+     3.6,
+     1.7,
+     0
+    ],
+    "fov": 55
+   },
+   {
+    "name": "windows",
+    "label": "Windows",
+    "position": [
+     3.2,
+     1.3,
+     5
+    ],
+    "target": [
+     0,
+     1.5,
+     3.2
+    ],
+    "fov": 58
+   },
+   {
+    "name": "sky",
+    "label": "Evening sky",
+    "position": [
+     3.8,
+     1.25,
+     4.6
+    ],
+    "target": [
+     -4,
+     2.4,
+     3
+    ],
+    "fov": 66
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     1.2,
+     1.6,
+     1.4
+    ],
+    "target": [
+     5.5,
+     0.9,
+     8.5
+    ],
+    "fov": 62
+   },
+   {
+    "name": "desk",
+    "label": "Desk",
+    "position": [
+     5.2,
+     1.15,
+     6.9
+    ],
+    "target": [
+     6.3,
+     0.6,
+     5.9
+    ],
+    "fov": 45
+   },
+   {
+    "name": "chairs",
+    "label": "Chairs",
+    "position": [
+     1.9,
+     0.75,
+     6.9
+    ],
+    "target": [
+     3,
+     0.4,
+     4.5
+    ],
+    "fov": 50
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   0.15,
+   0.2,
+   0.15
+  ],
+  "max": [
+   7.05,
+   2.65,
+   8.85
+  ]
+ },
+ "env": {
+  "background": 2757648,
+  "ibl": {
+   "top": 6963248,
+   "wall": 10117192,
+   "floor": 3807248,
+   "intensity": 0.26,
+   "lights": [
+    {
+     "pos": [
+      -0.5,
+      1.7,
+      3.2
+     ],
+     "size": [
+      5.5,
+      1.8
+     ],
+     "color": 16765088,
+     "power": 7,
+     "lookAt": [
+      4,
+      1,
+      3.2
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 2756106,
+    "opacity": 0.5,
+    "depthTh": 0.012,
+    "normalTh": 0.28
+   },
+   "ao": {
+    "strength": 0.55,
+    "radius": 0.3
+   },
+   "bloom": {
+    "threshold": 0.78,
+    "strength": 0.5,
+    "weights": [
+     0.5,
+     0.4,
+     0.3,
+     0.25,
+     0.2
+    ]
+   },
+   "fog": {
+    "enabled": false,
+    "color": 13142634,
+    "density": 0.012,
+    "falloff": 0.3,
+    "base": 0,
+    "near": 2,
+    "maxOpacity": 0.14
+   },
+   "grade": {
+    "exposure": 1.05,
+    "saturation": 1,
+    "lift": [
+     0.03,
+     0.01,
+     0.01
+    ],
+    "gain": [
+     1,
+     0.96,
+     1.06
+    ],
+    "vignette": 0.32
+   },
+   "dof": {
+    "enabled": false
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   0,
+   0,
+   7.2,
+   9
+  ],
+  "eye": 1.5,
+  "start": {
+   "position": [
+    6.6,
+    0,
+    8.6
+   ],
+   "target": [
+    3,
+    1.2,
+    3
+   ]
+  },
+  "colliders": [
+   [
+    0.6698819798231126,
+    1.4437314391881226,
+    1.6298819798231126,
+    2.2237314391881227
+   ],
+   [
+    0.9653700050920557,
+    2.0516252466965357,
+    1.4053700050920557,
+    2.491625246696536
+   ],
+   [
+    2.149652202278376,
+    1.4130305269360541,
+    3.109652202278376,
+    2.193030526936054
+   ],
+   [
+    2.4832644104999666,
+    1.9791919059726018,
+    2.923264410499967,
+    2.419191905972602
+   ],
+   [
+    3.5976550966873764,
+    1.355405998378992,
+    4.557655096687376,
+    2.135405998378992
+   ],
+   [
+    3.9205016858297506,
+    2.2256721051150405,
+    4.3605016858297505,
+    2.665672105115041
+   ],
+   [
+    5.102354489266872,
+    1.4350435040146112,
+    6.0623544892668715,
+    2.2150435040146115
+   ],
+   [
+    5.41334605532288,
+    2.0589400158405877,
+    5.85334605532288,
+    2.498940015840588
+   ],
+   [
+    0.6165425692498685,
+    2.8438033943250773,
+    1.5765425692498685,
+    3.6238033943250776
+   ],
+   [
+    0.9254603216888568,
+    3.6809644245519624,
+    1.3654603216888568,
+    4.120964424551962
+   ],
+   [
+    2.110670519992709,
+    2.978283513411879,
+    3.070670519992709,
+    3.7582835134118793
+   ],
+   [
+    2.4187233650868283,
+    3.7090821003960848,
+    2.8587233650868287,
+    4.149082100396085
+   ],
+   [
+    3.54068810340017,
+    2.923294623158872,
+    4.50068810340017,
+    3.703294623158872
+   ],
+   [
+    3.968509613011492,
+    3.7614496320436506,
+    4.408509613011492,
+    4.2014496320436505
+   ],
+   [
+    5.135154086574913,
+    2.875391196906566,
+    6.095154086574912,
+    3.6553911969065664
+   ],
+   [
+    5.555601918827805,
+    3.6521168139485045,
+    5.995601918827805,
+    4.092116813948505
+   ],
+   [
+    0.5420556687936189,
+    4.386002137027681,
+    1.5020556687936188,
+    5.1660021370276805
+   ],
+   [
+    0.8370435719239966,
+    5.248497819466394,
+    1.2770435719239965,
+    5.688497819466393
+   ],
+   [
+    2.1233424308896067,
+    4.390049737766385,
+    3.0833424308896067,
+    5.1700497377663845
+   ],
+   [
+    2.4567745248069737,
+    5.083312855551823,
+    2.896774524806974,
+    5.523312855551823
+   ],
+   [
+    3.553715916983783,
+    4.433728023581207,
+    4.513715916983783,
+    5.213728023581206
+   ],
+   [
+    3.9281720291874893,
+    5.3190866296647075,
+    4.368172029187489,
+    5.759086629664707
+   ],
+   [
+    5.108502199687064,
+    4.3820815731212495,
+    6.068502199687063,
+    5.162081573121249
+   ],
+   [
+    5.405747346032972,
+    5.10727104762904,
+    5.845747346032971,
+    5.54727104762904
+   ],
+   [
+    0.5844274365901949,
+    5.8904682531580335,
+    1.5444274365901949,
+    6.670468253158033
+   ],
+   [
+    0.9542567444800276,
+    6.6388235782229215,
+    1.3942567444800276,
+    7.078823578222921
+   ],
+   [
+    2.1283960816636682,
+    5.898804541379214,
+    3.088396081663668,
+    6.678804541379213
+   ],
+   [
+    2.4486347576438554,
+    6.471629659567294,
+    2.888634757643856,
+    6.911629659567294
+   ],
+   [
+    3.570166232362389,
+    5.903739026971161,
+    4.530166232362388,
+    6.6837390269711605
+   ],
+   [
+    3.92062227568011,
+    6.715631289748914,
+    4.36062227568011,
+    7.155631289748913
+   ],
+   [
+    5.120929858721793,
+    5.638878990933299,
+    6.080929858721792,
+    6.418878990933298
+   ],
+   [
+    5.631087275308882,
+    6.354394629692968,
+    6.071087275308882,
+    6.794394629692968
+   ],
+   [
+    0.55,
+    0.15000000000000002,
+    1.95,
+    0.9500000000000001
+   ],
+   [
+    0,
+    8.55,
+    6.1,
+    9
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "door-street",
+   "kind": "link",
+   "label": "Main street via the corridor",
+   "object": "spot:door-street",
+   "typed": true,
+   "anchor": [
+    4.6,
+    1.2,
+    8.6
+   ],
+   "built": [
+    4.6,
+    1.2,
+    8.6
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "class-board",
+   "kind": "note",
+   "label": "Blackboard",
+   "object": "spot:class-board",
+   "typed": true,
+   "anchor": [
+    2.5,
+    1.5,
+    0.3
+   ],
+   "built": [
+    2.5,
+    1.5,
+    0.3
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "class-lockers",
+   "kind": "inspect",
+   "label": "Lockers",
+   "object": "lockerDetail",
+   "typed": false,
+   "anchor": [
+    3.3000000417232513,
+    0.592500027269125,
+    8.570000171661377
+   ],
+   "built": [
+    3.3000000417232513,
+    0.592500027269125,
+    8.570000171661377
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "class-window",
+   "kind": "inspect",
+   "label": "Window wall",
+   "object": "spot:class-window",
+   "typed": true,
+   "anchor": [
+    0.1,
+    1.5,
+    4.5
+   ],
+   "built": [
+    0.1,
+    1.5,
+    4.5
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "frag-6",
+   "kind": "fragment",
+   "label": "Glowing shard",
+   "object": "spot:frag-6",
+   "typed": true,
+   "anchor": [
+    5.2,
+    0.8,
+    5
+   ],
+   "built": [
+    5.2,
+    0.8,
+    5
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "door-street": {
+   "object": "spot:door-street",
+   "how": "node",
+   "on": null,
+   "at": [
+    4.6,
+    1.2,
+    8.6
+   ]
+  },
+  "class-board": {
+   "object": "spot:class-board",
+   "how": "mesh",
+   "on": "delivery-details",
+   "at": [
+    2.5,
+    1.5,
+    0.3
+   ]
+  },
+  "class-window": {
+   "object": "spot:class-window",
+   "how": "mesh",
+   "on": "room < Classroom",
+   "at": [
+    0.1,
+    1.5,
+    4.5
+   ]
+  },
+  "frag-6": {
+   "object": "spot:frag-6",
+   "how": "node",
+   "on": null,
+   "at": [
+    5.2,
+    0.8,
+    5
+   ]
+  }
+ },
+ "premerge": {
+  "spot:door-street": [
+   4.6,
+   1.2,
+   8.6
+  ],
+  "spot:frag-6": [
+   5.2,
+   0.8,
+   5
+  ],
+  "lockerDetail": [
+   3.3000000417232513,
+   0.592500027269125,
+   8.570000171661377
+  ]
+ },
+ "anchorsBefore": {
+  "named": 1,
+  "typed": 4
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 12,
+  "triangles": 2062
+ },
+ "manifestColliders": 0,
+ "manifest": true,
+ "three": "170",
+ "key": "classroom-1",
+ "hour": 13,
+ "bakedAt": "2026-10-21T07:22:06.179Z",
+ "source": {
+  "family": "Classroom (D) built at runtime by lab/src/scenes",
+  "exportBytes": 14177680,
+  "triangles": 54982,
+  "drawCalls": 124,
+  "textures": 26,
+  "textureMB": 66.9
+ },
+ "lods": {
+  "lod0": {
+   "file": "classroom-1.glb",
+   "triangles": 15126,
+   "primitives": 82,
+   "materials": 76,
+   "textures": 16,
+   "textureKB": 795,
+   "bytes": 1047472
+  },
+  "lod1": {
+   "file": "classroom-1.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 9488,
+   "primitives": 82,
+   "materials": 76,
+   "textures": 16,
+   "textureKB": 193,
+   "bytes": 410576
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "spot:class-window",
+   "lockerDetail",
+   "spot:class-board",
+   "spot:door-street",
+   "spot:frag-6"
+  ],
+  "exportBytes": 196080
+ },
+ "live": {
+  "file": "classroom-1.live.json",
+  "bytes": 897925,
+  "objects": [
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "eveningView",
+   "motes"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs classroom-1 (dev server running, BASE=...)"
+ ]
+}

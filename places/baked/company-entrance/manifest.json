@@ -6,15 +6,15 @@
  "tod": "day",
  "cost": {
   "triangles": 42930,
-  "drawCalls": 334,
+  "drawCalls": 201,
   "textures": 45,
   "textureMB": 114.6
  },
  "exported": {
-  "triangles": 20320,
-  "drawCalls": 208,
-  "textures": 34,
-  "textureMB": 101.2
+  "triangles": 20464,
+  "drawCalls": 96,
+  "textures": 37,
+  "textureMB": 113.2
  },
  "lights": [
   {
@@ -142,13 +142,13 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "a6dc8872-f474-474d-b5b8-4529f6e96352",
+   "material": "44277fbc-30d7-4bab-9f59-4c4d8299384a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "173180ed-ed88-41a8-b045-8e5f5c7dee41",
+   "material": "e3662865-13c3-4617-bf92-e1433c6f6af3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -566,7 +566,16 @@
    "label": "Lacia",
    "object": "counter",
    "typed": false,
-   "anchor": null,
+   "anchor": [
+    -1.4729795338358822,
+    1.114170171375855,
+    -0.0009186243342402811
+   ],
+   "built": [
+    -1.4729795338358822,
+    1.114170171375855,
+    -0.0009186243342402811
+   ],
    "reach": 3.2
   },
   {
@@ -576,6 +585,11 @@
    "object": "spot:door-street",
    "typed": true,
    "anchor": [
+    0,
+    1.2,
+    13
+   ],
+   "built": [
     0,
     1.2,
     13
@@ -593,6 +607,11 @@
     1.1537500132620335,
     -4.440892098500626e-15
    ],
+   "built": [
+    9.418356510885062,
+    1.1537500132620335,
+    -4.440892098500626e-15
+   ],
    "reach": 3.2
   },
   {
@@ -602,6 +621,11 @@
    "object": "kiosk",
    "typed": false,
    "anchor": [
+    -3.05,
+    1.024999976158142,
+    1.7599999999999998
+   ],
+   "built": [
     -3.05,
     1.024999976158142,
     1.7599999999999998
@@ -619,6 +643,11 @@
     1,
     7.4
    ],
+   "built": [
+    3,
+    1,
+    7.4
+   ],
    "reach": 3.2
   },
   {
@@ -628,6 +657,11 @@
    "object": "planter",
    "typed": false,
    "anchor": [
+    -6.4495712863231045,
+    0.9771338172159759,
+    9.354766768035327
+   ],
+   "built": [
     -6.4495712863231045,
     0.9771338172159759,
     9.354766768035327
@@ -645,6 +679,11 @@
     0.4403021641705922,
     5.6
    ],
+   "built": [
+    -4.611999999303371,
+    0.4403021641705922,
+    5.6
+   ],
    "reach": 3.2
   },
   {
@@ -654,6 +693,11 @@
    "object": "spot:frag-11",
    "typed": true,
    "anchor": [
+    -4,
+    1,
+    12.4
+   ],
+   "built": [
     -4,
     1,
     12.4
@@ -693,6 +737,11 @@
    -4,
    1,
    12.4
+  ],
+  "counter": [
+   -1.4729795338358822,
+   1.114170171375855,
+   -0.0009186243342402811
   ],
   "esc": [
    9.418356510885062,
@@ -738,35 +787,35 @@
  "three": "170",
  "key": "company-entrance",
  "hour": 13,
- "bakedAt": "2026-10-21T04:51:50.979Z",
+ "bakedAt": "2026-10-21T07:12:54.335Z",
  "source": {
   "family": "CompanyEntrance (D) built at runtime by lab/src/scenes",
-  "exportBytes": 23481796,
+  "exportBytes": 24184016,
   "triangles": 42930,
-  "drawCalls": 334,
+  "drawCalls": 201,
   "textures": 45,
   "textureMB": 114.6
  },
  "lods": {
   "lod0": {
    "file": "company-entrance.glb",
-   "triangles": 28435,
-   "primitives": 135,
+   "triangles": 19279,
+   "primitives": 134,
    "materials": 133,
    "textures": 27,
    "textureKB": 1406,
-   "bytes": 1795420
+   "bytes": 1727252
   },
   "lod1": {
    "file": "company-entrance.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 19617,
-   "primitives": 135,
+   "triangles": 14511,
+   "primitives": 134,
    "materials": 133,
    "textures": 27,
    "textureKB": 376,
-   "bytes": 695708
+   "bytes": 669248
   }
  },
  "parts": {
@@ -784,10 +833,13 @@
    "planter",
    "sofa",
    "totem",
+   "counter",
+   "sofa",
+   "sofa",
    "spot:door-street",
    "spot:frag-11"
   ],
-  "exportBytes": 5414748
+  "exportBytes": 691040
  },
  "live": {
   "file": "company-entrance.live.json",

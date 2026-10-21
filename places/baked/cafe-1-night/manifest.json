@@ -619,25 +619,25 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "8bd65a2e-500b-4d72-8aee-4d0e5b891e14",
+   "material": "11046830-939b-40c9-b631-9dfe5c79d06f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "c992293b-8ec7-49f2-82b8-852e37c32194",
+   "material": "bd6916db-74dc-4503-b9bd-ba464fb44879",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "559ab691-7848-44da-b36d-30dd97e8fcc3",
+   "material": "78de8022-2877-439f-b51f-98391cf25e76",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "681937c3-8a94-4769-a027-ae491a165916",
+   "material": "c76dd2ba-709a-44a9-a7d7-ea8131a33f10",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -1127,6 +1127,11 @@
     1.1,
     2.6
    ],
+   "built": [
+    -5.4,
+    1.1,
+    2.6
+   ],
    "reach": 3.2
   },
   {
@@ -1135,7 +1140,16 @@
    "label": "Lacia",
    "object": "spot:lacia-meet",
    "typed": true,
-   "anchor": null,
+   "anchor": [
+    0.3,
+    0.9,
+    4.2
+   ],
+   "built": [
+    0.3,
+    0.9,
+    4.2
+   ],
    "reach": 3.2
   },
   {
@@ -1144,7 +1158,16 @@
    "label": "Snowdrop",
    "object": "spot:snowdrop",
    "typed": true,
-   "anchor": null,
+   "anchor": [
+    1.6,
+    1,
+    3.2
+   ],
+   "built": [
+    1.6,
+    1,
+    3.2
+   ],
    "reach": 3.2
   },
   {
@@ -1154,6 +1177,11 @@
    "object": "spot:door-street",
    "typed": true,
    "anchor": [
+    -2.5,
+    1,
+    0.15
+   ],
+   "built": [
     -2.5,
     1,
     0.15
@@ -1171,6 +1199,11 @@
     1.1850000001117587,
     2.5308258563280104
    ],
+   "built": [
+    -5.1979999962076535,
+    1.1850000001117587,
+    2.5308258563280104
+   ],
    "reach": 3.2
   },
   {
@@ -1180,6 +1213,11 @@
    "object": "clock",
    "typed": false,
    "anchor": [
+    -0.8999999999999999,
+    2,
+    9.561999999776482
+   ],
+   "built": [
     -0.8999999999999999,
     2,
     9.561999999776482
@@ -1197,6 +1235,11 @@
     1.3,
     0.4
    ],
+   "built": [
+    1,
+    1.3,
+    0.4
+   ],
    "reach": 3.2
   },
   {
@@ -1210,6 +1253,11 @@
     0.9,
     6
    ],
+   "built": [
+    3.4,
+    0.9,
+    6
+   ],
    "reach": 3.2
   },
   {
@@ -1219,6 +1267,11 @@
    "object": "spot:cafe-backdoor",
    "typed": true,
    "anchor": [
+    -2.6,
+    1.1,
+    1.3
+   ],
+   "built": [
     -2.6,
     1.1,
     1.3
@@ -1361,10 +1414,10 @@
  "three": "170",
  "key": "cafe-1-night",
  "hour": 22,
- "bakedAt": "2026-10-21T05:56:40.463Z",
+ "bakedAt": "2026-10-21T07:19:07.200Z",
  "source": {
   "family": "CafeNight (N) built at runtime by lab/src/scenes",
-  "exportBytes": 36278384,
+  "exportBytes": 21024480,
   "triangles": 112692,
   "drawCalls": 284,
   "textures": 58,
@@ -1378,7 +1431,7 @@
    "materials": 261,
    "textures": 52,
    "textureKB": 1113,
-   "bytes": 16129512
+   "bytes": 2203060
   },
   "lod1": {
    "file": "cafe-1-night.lod1.glb",
@@ -1389,7 +1442,7 @@
    "materials": 261,
    "textures": 52,
    "textureKB": 388,
-   "bytes": 15189828
+   "bytes": 1263372
   }
  },
  "parts": {
@@ -1405,11 +1458,11 @@
    "spot:frag-5",
    "spot:cafe-backdoor"
   ],
-  "exportBytes": 6934068
+  "exportBytes": 1444400
  },
  "live": {
   "file": "cafe-1-night.live.json",
-  "bytes": 77238,
+  "bytes": 77182,
   "objects": [
    "Sprite",
    "Sprite",

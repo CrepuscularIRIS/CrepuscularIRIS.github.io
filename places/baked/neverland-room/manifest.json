@@ -1,0 +1,771 @@
+{
+ "version": 2,
+ "place": "neverland-room",
+ "family": "NeverlandRoom",
+ "variant": "0",
+ "tod": "day",
+ "cost": {
+  "triangles": 259627,
+  "drawCalls": 241,
+  "textures": 37,
+  "textureMB": 105.7
+ },
+ "exported": {
+  "triangles": 19846,
+  "drawCalls": 141,
+  "textures": 18,
+  "textureMB": 62.7
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 15657727,
+   "intensity": 0.4,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 8025224
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16052479,
+   "intensity": 0.8,
+   "position": [
+    0.5,
+    10,
+    8
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    5
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0008,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 1,
+     "far": 20,
+     "left": -6,
+     "right": 6,
+     "top": 9,
+     "bottom": -9
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 15657215,
+   "intensity": 4.800000000000001,
+   "position": [
+    -2,
+    3.38,
+    4
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 15657215,
+   "intensity": 4.800000000000001,
+   "position": [
+    2,
+    3.38,
+    4
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 15657215,
+   "intensity": 4.800000000000001,
+   "position": [
+    -2,
+    3.38,
+    9
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 15657215,
+   "intensity": 4.800000000000001,
+   "position": [
+    2,
+    3.38,
+    9
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.6
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "f9933452-37ef-49c8-889b-e3676d585533",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "16519fb8-34f0-4624-9f6b-a3f7f740bea7",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "d1ca2005-93c9-4ff8-8921-fe69ae7daa63",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "5be859c3-7628-4fa6-9521-b8b03f8720ce",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {},
+ "reflectors": [],
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    1.02,
+    12.57
+   ],
+   "target": [
+    0,
+    1.02,
+    0
+   ],
+   "fov": 33.4,
+   "shift": [
+    0.021,
+    0.08
+   ]
+  },
+  "views": [
+   {
+    "name": "wide",
+    "label": "From the door",
+    "position": [
+     -3.6,
+     1.6,
+     4.9
+    ],
+    "target": [
+     2.5,
+     1,
+     7.5
+    ],
+    "fov": 60
+   },
+   {
+    "name": "tvs",
+    "label": "CRT stack",
+    "position": [
+     -0.5,
+     1.3,
+     8.6
+    ],
+    "target": [
+     -1.35,
+     1,
+     6.8
+    ],
+    "fov": 50
+   },
+   {
+    "name": "computer",
+    "label": "Retro computer",
+    "position": [
+     0.8,
+     1.55,
+     9
+    ],
+    "target": [
+     1.25,
+     1.2,
+     7.7
+    ],
+    "fov": 45
+   },
+   {
+    "name": "statue",
+    "label": "Statue",
+    "position": [
+     1.6,
+     1.4,
+     5.7
+    ],
+    "target": [
+     3,
+     1.3,
+     4.3
+    ],
+    "fov": 50
+   },
+   {
+    "name": "mound",
+    "label": "Rock mound",
+    "position": [
+     1.4,
+     1.5,
+     4.4
+    ],
+    "target": [
+     0.2,
+     0.6,
+     1.8
+    ],
+    "fov": 55
+   },
+   {
+    "name": "statue-side",
+    "label": "Statue, side",
+    "position": [
+     0.7,
+     1.2,
+     4.6
+    ],
+    "target": [
+     3,
+     1,
+     4.3
+    ],
+    "fov": 60
+   },
+   {
+    "name": "statue-back",
+    "label": "Statue, reverse",
+    "position": [
+     3.5,
+     1.3,
+     2.4
+    ],
+    "target": [
+     3,
+     1,
+     4.3
+    ],
+    "fov": 60
+   },
+   {
+    "name": "statue-close",
+    "label": "Statue, close-up",
+    "position": [
+     2.3,
+     1.62,
+     5.3
+    ],
+    "target": [
+     3,
+     1.5,
+     4.3
+    ],
+    "fov": 24
+   },
+   {
+    "name": "statue-head",
+    "label": "Statue, head",
+    "position": [
+     2.45,
+     1.92,
+     5
+    ],
+    "target": [
+     3,
+     1.84,
+     4.3
+    ],
+    "fov": 16
+   },
+   {
+    "name": "mound-side",
+    "label": "Mound, side",
+    "position": [
+     -2.3,
+     1,
+     2.6
+    ],
+    "target": [
+     0.25,
+     0.5,
+     1.77
+    ],
+    "fov": 45
+   },
+   {
+    "name": "mound-back",
+    "label": "Mound, reverse",
+    "position": [
+     0.4,
+     1.4,
+     0.4
+    ],
+    "target": [
+     0.25,
+     0.5,
+     1.77
+    ],
+    "fov": 50
+   },
+   {
+    "name": "mound-close",
+    "label": "Mound, close-up",
+    "position": [
+     0.9,
+     0.8,
+     3.7
+    ],
+    "target": [
+     0.1,
+     0.5,
+     1.77
+    ],
+    "fov": 35
+   },
+   {
+    "name": "sky-up",
+    "label": "Through the skylight",
+    "position": [
+     0.2,
+     1.5,
+     9.8
+    ],
+    "target": [
+     -0.3,
+     3.9,
+     3.2
+    ],
+    "fov": 62
+   },
+   {
+    "name": "moon",
+    "label": "The moon",
+    "position": [
+     0.3,
+     1.2,
+     12.2
+    ],
+    "target": [
+     -0.66,
+     6.5,
+     6.3
+    ],
+    "fov": 45
+   },
+   {
+    "name": "mist-low",
+    "label": "Floor mist",
+    "position": [
+     -3.4,
+     0.62,
+     10.5
+    ],
+    "target": [
+     1.2,
+     0.5,
+     3
+    ],
+    "fov": 52
+   },
+   {
+    "name": "reverse",
+    "label": "Back toward the camera",
+    "position": [
+     -2.9,
+     1.7,
+     0.7
+    ],
+    "target": [
+     0.5,
+     1.1,
+     12
+    ],
+    "fov": 60
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -4.05,
+   0.2,
+   0.3
+  ],
+  "max": [
+   3.8199999999999994,
+   3.6799999999999997,
+   15.100000000000001
+  ]
+ },
+ "env": {
+  "background": 10130606,
+  "ibl": {
+   "top": 13617896,
+   "wall": 11051720,
+   "floor": 6972536,
+   "intensity": 0.55,
+   "lights": [
+    {
+     "pos": [
+      -1.5,
+      3.8,
+      5
+     ],
+     "size": [
+      3,
+      8
+     ],
+     "color": 16052991,
+     "power": 4,
+     "lookAt": [
+      -1.5,
+      0,
+      5
+     ]
+    },
+    {
+     "pos": [
+      1.7,
+      3.8,
+      5
+     ],
+     "size": [
+      3,
+      8
+     ],
+     "color": 16052991,
+     "power": 4,
+     "lookAt": [
+      1.7,
+      0,
+      5
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 3814480,
+    "opacity": 0.4,
+    "depthTh": 0.012,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.4,
+    "radius": 0.35
+   },
+   "bloom": {
+    "threshold": 0.85,
+    "strength": 0.45
+   },
+   "grade": {
+    "exposure": 1.12,
+    "saturation": 1,
+    "vignette": 0.15
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -3.95,
+   0.4,
+   3.7199999999999998,
+   15
+  ],
+  "eye": 1.55,
+  "start": {
+   "position": [
+    0,
+    0,
+    11.5
+   ],
+   "target": [
+    0,
+    1.2,
+    2
+   ]
+  },
+  "colliders": [
+   [
+    -1.8,
+    6.5,
+    -0.9,
+    7.2
+   ],
+   [
+    0.75,
+    7.2,
+    1.85,
+    8.25
+   ],
+   [
+    2.6,
+    3.95,
+    3.35,
+    4.65
+   ],
+   [
+    -1.2,
+    1.1,
+    2.1,
+    2.45
+   ],
+   [
+    -2.95,
+    5,
+    -2.37,
+    5.52
+   ],
+   [
+    -1.7,
+    0.1,
+    -1.1,
+    0.7
+   ],
+   [
+    1.45,
+    0.1,
+    2.05,
+    0.7
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "old-computer",
+   "kind": "terminal",
+   "label": "Old computer",
+   "object": "computer",
+   "typed": false,
+   "anchor": [
+    1.2306539597845925,
+    1.2552000042915346,
+    7.72636308788982
+   ],
+   "built": [
+    1.2306539597845925,
+    1.2552000042915346,
+    7.72636308788982
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "tv-stack",
+   "kind": "inspect",
+   "label": "Stacked TVs",
+   "object": "tvstack",
+   "typed": false,
+   "anchor": [
+    -1.3657468122978935,
+    0.8816000006914138,
+    6.741031783721566
+   ],
+   "built": [
+    -1.3657468122978935,
+    0.8816000006914138,
+    6.741031783721566
+   ],
+   "reach": 5
+  },
+  {
+   "id": "statue",
+   "kind": "inspect",
+   "label": "Marble statue",
+   "object": "statue",
+   "typed": false,
+   "anchor": [
+    2.974790890111155,
+    1.0164356520865112,
+    4.343225118129568
+   ],
+   "built": [
+    2.974790890111155,
+    1.0164356520865112,
+    4.343225118129568
+   ],
+   "reach": 5
+  },
+  {
+   "id": "mound-bare",
+   "kind": "inspect",
+   "label": "The mound",
+   "object": "mound",
+   "typed": false,
+   "anchor": [
+    0.3500000000000001,
+    0.3921845496016053,
+    1.8648066745768999
+   ],
+   "built": [
+    0.3500000000000001,
+    0.3921845496016053,
+    1.8648066745768999
+   ],
+   "reach": 5
+  },
+  {
+   "id": "room-door",
+   "kind": "link",
+   "label": "Door to the hall",
+   "object": "spot:room-door",
+   "typed": true,
+   "anchor": [
+    -4.2,
+    1,
+    4.24
+   ],
+   "built": [
+    -4.2,
+    1,
+    4.24
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "room-door": {
+   "object": "spot:room-door",
+   "how": "node",
+   "on": null,
+   "at": [
+    -4.2,
+    1,
+    4.24
+   ]
+  }
+ },
+ "premerge": {
+  "spot:room-door": [
+   -4.2,
+   1,
+   4.24
+  ],
+  "computer": [
+   1.2306539597845925,
+   1.2552000042915346,
+   7.72636308788982
+  ],
+  "tvstack": [
+   -1.3657468122978935,
+   0.8816000006914138,
+   6.741031783721566
+  ],
+  "statue": [
+   2.974790890111155,
+   1.0164356520865112,
+   4.343225118129568
+  ],
+  "mound": [
+   0.3500000000000001,
+   0.3921845496016053,
+   1.8648066745768999
+  ]
+ },
+ "doorProps": {},
+ "anchorsBefore": {
+  "named": 4,
+  "typed": 1
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 0,
+  "triangles": 0
+ },
+ "manifestColliders": 0,
+ "manifest": false,
+ "three": "170",
+ "key": "neverland-room",
+ "hour": 13,
+ "bakedAt": "2026-10-21T07:32:42.804Z",
+ "source": {
+  "family": "NeverlandRoom (0) built at runtime by lab/src/scenes",
+  "exportBytes": 54474888,
+  "triangles": 259627,
+  "drawCalls": 241,
+  "textures": 37,
+  "textureMB": 105.7
+ },
+ "lods": {
+  "lod0": {
+   "file": "neverland-room.glb",
+   "triangles": 248367,
+   "primitives": 152,
+   "materials": 152,
+   "textures": 24,
+   "textureKB": 2188,
+   "bytes": 4423984
+  },
+  "lod1": {
+   "file": "neverland-room.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 241117,
+   "primitives": 152,
+   "materials": 152,
+   "textures": 24,
+   "textureKB": 567,
+   "bytes": 2740660
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "tvstack",
+   "mound",
+   "computer",
+   "statue",
+   "tvstack",
+   "mound",
+   "computer",
+   "statue",
+   "monitor",
+   "monitor",
+   "spot:room-door"
+  ],
+  "exportBytes": 31586352
+ },
+ "live": {
+  "file": "neverland-room.live.json",
+  "bytes": 26544,
+  "objects": [
+   "dreamSky"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs neverland-room (dev server running, BASE=...)"
+ ]
+}
