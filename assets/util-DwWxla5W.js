@@ -1,1 +1,0 @@
-import{t as e}from"./texlocal-cj23s42F.js";import"./index-hhzr35YQ.js";import"./react-three-fiber.esm-C3_rDNCf.js";import"./GLTFLoader-DAZ92c1A.js";function b(r,t,o,i,m,n,p,u=1){return e(t-r,i-o,n-m,p,(r+t)/2,(o+i)/2,(m+n)/2,u)}function s(r){let t=r>>>0||1;return()=>(t=Math.imul(t,1664525)+1013904223>>>0)/4294967296}export{s as lcg,b as tb};
