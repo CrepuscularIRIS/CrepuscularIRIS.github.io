@@ -1,0 +1,162 @@
+{
+  "schema": 1,
+  "id": "case-desks",
+  "status": "draft",
+  "topic": "Saturnus's desks: the police office, the lab, the meeting room, the izakaya, the bar and the back alleys",
+  "questions": [
+    {
+      "id": "q-look-again",
+      "hie": "snowdrop",
+      "text": "When a model says it looked again at part of the image, what in its output would show that the second look changed the answer?"
+    },
+    {
+      "id": "q-quote-or-claim",
+      "hie": "saturnus",
+      "text": "A cited sentence appears word for word in its source. What can the claim built on it still get wrong?"
+    },
+    {
+      "id": "q-untested",
+      "hie": "saturnus",
+      "text": "For a result you trust, what is one condition nobody ran, and where is that written down?"
+    }
+  ],
+  "relations": [
+    {
+      "id": "case-desks/records-shelf",
+      "contentId": "2026-07-03-negative-results",
+      "contentRev": 0,
+      "kind": "check",
+      "place": "police-office-1",
+      "spot": "records-shelf",
+      "hie": "saturnus",
+      "purpose": "At the records shelf, go through the nine failed experiments one at a time and note which path each finding closes, so the next person does not walk it again.",
+      "reason": "The item names police-office-1. Saturnus files failures the way the office files cases: closed, kept and findable. The beach holds the reading of the same archive."
+    },
+    {
+      "id": "case-desks/evidence-board",
+      "contentId": "2026-10-04-snowdrop-open-threads",
+      "contentRev": 0,
+      "kind": "question",
+      "place": "police-office-1",
+      "spot": "evidence-board",
+      "hie": "snowdrop",
+      "purpose": "Open Snowdrop's open-threads case (OT-001) on the evidence board: three questions with no answer yet, from missing error bars to fading visual evidence. Pick the one you could bring a source to.",
+      "reason": "Open threads is a case file with clues, and the evidence board is where open cases hang. It is the one Snowdrop item that is a board of questions rather than a reading."
+    },
+    {
+      "id": "case-desks/audit-console",
+      "contentId": "2026-08-10-saturnus-audit-checklist",
+      "contentRev": 0,
+      "kind": "check",
+      "place": "hospital-1",
+      "spot": "audit-console",
+      "hie": "saturnus",
+      "purpose": "At the audit console, run Saturnus's eight checks (seeds, config hash, data hash, leakage, baseline parity, negative controls, seed variance, what was not tested) against one result you already believe.",
+      "reason": "The hospital lab is Saturnus's audit room and the audit console is its terminal. The checklist is meant to be used, not read, so here it is a check. Door 305 keeps the reading."
+    },
+    {
+      "id": "case-desks/method-cart",
+      "contentId": "2026-07-28-reading-visual-cot",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "hospital-1",
+      "spot": "cart-display",
+      "question": "q-look-again",
+      "hie": "snowdrop",
+      "purpose": "On the method cart, read Snowdrop's deep read of V*: a model first judges whether the target is clearly visible, and if not, searches the high-resolution image before it answers.",
+      "reason": "The item names hospital-1. The method cart is the lab's terminal for methods, and V* is a method paper: a search step designed into the model."
+    },
+    {
+      "id": "case-desks/meeting-board",
+      "contentId": "2026-06-28-evidence-over-eloquence",
+      "contentRev": 0,
+      "kind": "check",
+      "place": "company-meetingroom",
+      "spot": "board",
+      "question": "q-quote-or-claim",
+      "hie": "saturnus",
+      "purpose": "At the project board under the audit card, take one claim and ask MingJing's question of it: does the quoted evidence appear word for word in the source it cites?",
+      "reason": "The audit card says a result needs a second look. The meeting room is where a claim is checked; the izakaya is where the MingJing note is read."
+    },
+    {
+      "id": "case-desks/menu-boards",
+      "contentId": "2026-06-28-evidence-over-eloquence",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "izakaya-1",
+      "spot": "menu-boards",
+      "question": "q-quote-or-claim",
+      "hie": "saturnus",
+      "purpose": "Read Saturnus's note on MingJing at the menu boards: the model proposes, code decides, a claim gets in only if its quote appears in the source, and the checker sees the evidence, never the argument.",
+      "reason": "The item names izakaya-1 (Nonbee). The menu boards are the izakaya's terminal; this is the reading place, the meeting room is the checking place."
+    },
+    {
+      "id": "case-desks/last-call",
+      "contentId": "2026-10-04-saturnus-repro-checklist",
+      "contentRev": 0,
+      "kind": "check",
+      "place": "bar-1",
+      "spot": "last-call-board",
+      "hie": "saturnus",
+      "purpose": "At last call, before a result is written up, tick Saturnus's six boxes against it: seed, config, library versions, data hash, best and last run, failed runs listed.",
+      "limits": "The checklist is a draft template; the bar holds no experiment to check it against.",
+      "reason": "The item names bar-1 (BarCosmos). Last call is the moment before closing; the checklist is the moment before writing up."
+    },
+    {
+      "id": "case-desks/alley-junk",
+      "contentId": "2026-07-04-saturnus-failed-runs",
+      "contentRev": 0,
+      "kind": "follow",
+      "place": "alley-1",
+      "spot": "alley-junk",
+      "hie": "saturnus",
+      "purpose": "Look over the junk stack behind the shut bar, sorted by someone who plans to come back, and follow Saturnus's short note to the Vault: failed runs are archived, not deleted.",
+      "reason": "The alley has no terminal. The junk stack is kept and sorted, not thrown away, which is what the note says of failed runs."
+    },
+    {
+      "id": "case-desks/alley-toolbox",
+      "contentId": "2026-08-12-saturnus-check-eight",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "alley-2",
+      "spot": "alley2-toolbox",
+      "question": "q-untested",
+      "hie": "saturnus",
+      "purpose": "Find the one empty outline in the open toolbox, then read Saturnus's check eight: write down what you did not test, and copy it into the limitations as it is.",
+      "reason": "The toolbox shows what is missing because its outline is drawn. Check eight asks for the same outline around what was not run."
+    },
+    {
+      "id": "case-desks/resident-notice",
+      "contentId": "2026-08-10-saturnus-audit-checklist",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "door-305",
+      "spot": "notice",
+      "hie": "saturnus",
+      "purpose": "Read the full eight-item checklist on the resident notice. Its point is that a list does not get tired and does not skip an item because the result looks good.",
+      "reason": "Door 305 is Saturnus's checklist column and the resident notice is its terminal. This is where the checklist is read; the hospital console is where it is used."
+    },
+    {
+      "id": "case-desks/truck-console",
+      "contentId": "2026-07-24-engineering-science",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "landfill-1",
+      "spot": "truck-console",
+      "hie": "saturnus",
+      "purpose": "At the truck console, read the engineering-science manifesto: research kept as a trail of files, seeds and code that can be lit up again, and a field that was not measured written as null, never as zero.",
+      "reason": "The item names landfill-1. The landfill sorts what is kept from what is thrown out (the lidded bin is for keeping), the same line the manifesto draws for run records."
+    },
+    {
+      "id": "case-desks/guest-book",
+      "contentId": "2026-07-19-cot-distillation-audit",
+      "contentRev": 0,
+      "kind": "check",
+      "place": "haunted-mansion-corridor-1",
+      "spot": "guest-book",
+      "hie": "saturnus",
+      "purpose": "At the guest book, use the distillation audit as a check on any reasoning trace: count real revisions, not words like wait or actually, and note where the two counts part.",
+      "reason": "This corridor is Saturnus's gaps column. The audit's finding is a gap between words and acts; the park holds the reading, this is the check."
+    }
+  ]
+}

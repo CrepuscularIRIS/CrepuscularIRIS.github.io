@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "host": "snowdrop",
+  "structure": "ask",
+  "about": "Snowdrop only notices what happens in her places (the classroom, the shrine, the cafe, the beach, the workshop floor). She asks how it felt; she never tells the visitor what it meant.",
+  "territory": ["classroom-1", "shrine-1", "cafe-1", "beach-1", "beach-2", "company-office"],
+  "acts": {
+    "found": ["You were at {place} at {time}, looking at the {spot}. Did it look like it does in my notes, or different?"],
+    "tide": ["{place} dimmed while you were there, {time}. Were you scared? I'd have held on to something."],
+    "shard": ["Shard {n}, from {place}! Was it warm when you picked it up? Mine never are."],
+    "lab": ["You opened the {module} at {place}. Which number surprised you? Just the one."],
+    "wish": ["You left something at {place} at {time}. I won't ask what. Did it feel heavy or light?"],
+    "artifact": ["You saved a run at {time}. Did it come out the way you guessed, before you pressed it?"]
+  },
+  "opener": "(sets the paper down) {act}, {when}! I keep wondering how that felt."
+}

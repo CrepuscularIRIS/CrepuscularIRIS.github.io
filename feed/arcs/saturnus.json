@@ -23,11 +23,11 @@
     },
     {
       "name": "Count it twice",
-      "brief": "You are recounting from independent records. You want the visitor at the police office, at the back alley's plaster note about the first night, and reading one of your notes so they see how you count.",
+      "brief": "You are recounting from independent records. You want the visitor at the police office and at the back alley's plaster note about the first night. If the visitor's two classroom runs reach you (Snowdrop's question about attention share), check their scope first: two runs of a toy with made-up constants show a shape, not a mechanism, and attention can pool where the water merely stops. Then the visitor files where they stand on why the low tide stops at Jinrui; you never choose for them.",
       "targets": [
         { "id": "office", "label": "Visit the police office", "hint": "Enter the Police office from the map.", "kind": "visit", "place": "police-office-1" },
         { "id": "first-night", "label": "Find shard 2, the first night", "hint": "The back alley has words scratched into the plaster. A shard glows there.", "kind": "shard", "n": 2 },
-        { "id": "record", "label": "Read one of her notes", "hint": "Open one of Saturnus's notes: the Vault, the Case board or a card in her chat.", "kind": "read", "host": "saturnus" }
+        { "id": "stance", "label": "File where you stand on the low tide", "hint": "After the two classroom runs, choose a reading of why the low tide stops at Jinrui: at the blackboard or in the lab.", "kind": "stance", "topic": "lowtide" }
       ],
       "done": ["The second count is in the Diary.", "I also annotated the meter box in the back alley. Do read the annotation."],
       "unlock": {
@@ -64,6 +64,11 @@
   ],
   "pings": {
     "place": { "company-meetingroom": "You are in the meeting room. The note on the wall is mine; the cups are also mine.", "police-office-1": "The ledger is on the left. Count, do not skim." },
-    "shard": { "10": "My audit note. Status still: do not close.", "2": "The first night. The light came before the lamps. Note that." }
+    "shard": { "10": "My audit note. Status still: do not close.", "2": "The first night. The light came before the lamps. Note that." },
+    "event": {
+      "stance:lowtide:keeper": "Filed: Jinrui keeps its light. Two toy runs do not carry that far. It is in the ledger as your reading, not as a finding.",
+      "stance:lowtide:sink": "Filed: the tide just stops there. The dull reading. Dull readings are usually where I start. Ledger line added.",
+      "stance:lowtide:unsure": "Filed: not enough evidence. Good. That line stays open in the ledger until someone masks the image."
+    }
   }
 }

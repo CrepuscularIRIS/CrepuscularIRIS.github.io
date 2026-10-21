@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "id": "night-blocks",
+  "status": "draft",
+  "topic": "Night blocks: the restaurant, the shop, the flats, the hotel, the mansion, the reef and the old computer",
+  "questions": [
+    {
+      "id": "q-answer-before-reasoning",
+      "hie": "snowdrop",
+      "text": "If a model gives the same answer with half its reasoning erased, what was the other half for?"
+    },
+    {
+      "id": "q-empty-input",
+      "hie": "snowdrop",
+      "text": "When an input is missing, what value would actually mean nothing to the network that reads it?"
+    },
+    {
+      "id": "q-blind-or-unasked",
+      "hie": "snowdrop",
+      "text": "When a model misses whether two circles touch, is the detail lost when the image is encoded, or never asked for by the reasoning?"
+    },
+    {
+      "id": "q-image-still-there",
+      "hie": "snowdrop",
+      "text": "By the three-hundredth reasoning token, what test would tell you whether the image still changes the answer?"
+    },
+    {
+      "id": "q-hand-vs-collected",
+      "hie": "lacia",
+      "text": "Week 40 was all written by hand, weeks 41 and 42 all brought in by collectors. Which kind of week tells you more about the work itself?"
+    },
+    {
+      "id": "q-agent-boundary",
+      "hie": "lacia",
+      "text": "Which one boundary would you want an agent to keep while you are away, and how would you learn whether it kept it?"
+    }
+  ],
+  "relations": [
+    {
+      "id": "night-blocks/restaurant-host",
+      "contentId": "2026-05-30-reading-chain-of-thought-faithfulness",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "restaurant-1",
+      "spot": "host-stand",
+      "question": "q-answer-before-reasoning",
+      "hie": "snowdrop",
+      "purpose": "At the host stand, by candles lit before the evening is decided, read Snowdrop's deep read on chain-of-thought faithfulness: cut the reasoning short or add a mistake, and watch whether the answer moves.",
+      "reason": "The item names restaurant-1. The candelabra line (lit before the evening is decided) is the early-answering question in the room's own terms. The host stand is the terminal."
+    },
+    {
+      "id": "night-blocks/old-computer-check",
+      "contentId": "2026-05-30-reading-chain-of-thought-faithfulness",
+      "contentRev": 0,
+      "kind": "check",
+      "place": "neverland-room",
+      "spot": "old-computer",
+      "question": "q-answer-before-reasoning",
+      "hie": "snowdrop",
+      "purpose": "On the old computer, use the four interventions from the faithfulness read as a checklist for one reasoning trace: answer early, add a mistake, paraphrase, pad with filler.",
+      "limits": "The old computer runs no model; the interventions are a reading aid here, not an experiment.",
+      "reason": "Neverland is the reasoning-reads column. The restaurant holds the reading; here the same four interventions become a list to carry to a trace."
+    },
+    {
+      "id": "night-blocks/old-computer-filed",
+      "contentId": "2026-09-22-snowdrop-eyes-close",
+      "contentRev": 0,
+      "kind": "follow",
+      "place": "neverland-room",
+      "spot": "old-computer",
+      "hie": "snowdrop",
+      "purpose": "Read Snowdrop's filed note on the old computer, the statue leaning toward it: a question not yet closed, whether the image is still in the room by the three-hundredth token. It points to the full note in News.",
+      "limits": "The note calls this a conjecture, not a result.",
+      "reason": "A short pointer to an open question about long reasoning, in the room that keeps Snowdrop's reasoning reads."
+    },
+    {
+      "id": "night-blocks/store-drawers",
+      "contentId": "2026-08-06-missing-is-not-zero",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "store-1",
+      "spot": "store-drawers",
+      "question": "q-empty-input",
+      "hie": "snowdrop",
+      "purpose": "Open the card drawers: Spare moons is empty, and warm. Then read Snowdrop's note on RGB-D segmentation, where filling a missing depth input with zeros does not make it absent to the network.",
+      "reason": "The shop has no terminal. An empty drawer that is still warm is the note's point exactly: empty is not the same as nothing there."
+    },
+    {
+      "id": "night-blocks/ajin-board",
+      "contentId": "2026-09-16-kouka-this-weeks-signal",
+      "contentRev": 0,
+      "kind": "follow",
+      "place": "ajin-street-1",
+      "spot": "bulletin-board",
+      "hie": "kouka",
+      "purpose": "The notice board carries Kouka's short pointer: this week's signal is up, about long-context and thinking multimodal models. Follow it to the full briefing in News.",
+      "reason": "Ajin street is a Kouka signals column and its notice board is where a street posts what is new. A one-line pointer fits a board; the full briefing is read at the station."
+    },
+    {
+      "id": "night-blocks/home-monitor",
+      "contentId": "2026-10-04-author-rebuild-notes",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "self-residence-1",
+      "spot": "monitor",
+      "hie": "lacia",
+      "purpose": "At the desk terminal at home, read the author's diary note on why the blog became a phone: the places stay, the phone carries the notes, and five characters report the work.",
+      "reason": "The home is the author's room and Lacia's diary column. The one note the author wrote about the site itself belongs at the author's own desk."
+    },
+    {
+      "id": "night-blocks/corridor-board",
+      "contentId": "2026-10-04-lacia-digest-sample",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "self-residence-corridor-1",
+      "spot": "board",
+      "hie": "lacia",
+      "purpose": "On the corridor notice board, look at the shape a weekly digest was meant to take: four headings, Read, Built, Checked and Signals, and no entries under them.",
+      "limits": "A sample with no real entries, from a retired setup of scheduled agents.",
+      "reason": "A blank form on a building notice board. The sample is a template, which is what a corridor board usually holds."
+    },
+    {
+      "id": "night-blocks/guest-log",
+      "contentId": "2026-w41-lacia-weekly",
+      "contentRev": 1,
+      "kind": "read",
+      "place": "goodboat-room-1",
+      "spot": "laptop",
+      "question": "q-hand-vs-collected",
+      "hie": "lacia",
+      "purpose": "On the guest log, read Lacia's index for week 41: nine entries, every one brought in by the collectors, each opening in its own column.",
+      "reason": "A hotel guest log is a list of who came through; Lacia's weekly index is a list of what came through. Week 41 is the first week that was all collected."
+    },
+    {
+      "id": "night-blocks/ktv-board",
+      "contentId": "2026-w40-lacia-weekly",
+      "contentRev": 1,
+      "kind": "read",
+      "place": "ktv-room-1",
+      "spot": "room-board",
+      "question": "q-hand-vs-collected",
+      "hie": "lacia",
+      "purpose": "On the room board, read Lacia's index for week 40: eight items, all written by hand, from the week the phone was set up.",
+      "reason": "The room board lists what is on tonight; week 40 is the first real index. It sits apart from week 41 and 42 so the three can be compared place by place."
+    },
+    {
+      "id": "night-blocks/mansion-cabinet",
+      "contentId": "2026-w42-lacia-weekly",
+      "contentRev": 1,
+      "kind": "read",
+      "place": "haunted-mansion-1",
+      "spot": "shrine",
+      "question": "q-hand-vs-collected",
+      "hie": "lacia",
+      "purpose": "At the shrine cabinet, read Lacia's index for week 42: thirty-eight collected items, eighteen of them on Methode's engineering desk. Count how many you would open.",
+      "reason": "The mansion hall is a Lacia digest column. The longest weekly index goes in the largest hall, at the cabinet that is its terminal."
+    },
+    {
+      "id": "night-blocks/writing-desk",
+      "contentId": "2026-05-18-hie-as-policy",
+      "contentRev": 0,
+      "kind": "question",
+      "place": "haunted-mansion-room-1",
+      "spot": "writing-desk",
+      "question": "q-agent-boundary",
+      "hie": "lacia",
+      "purpose": "At the writing desk, take one sentence from Lacia's essay, when the agent acts on its own and when it stops and reports, and put it to an agent you use.",
+      "reason": "The shrine holds the reading of this essay. A writing desk in Lacia's essay room is where its question is turned into one of the visitor's own."
+    },
+    {
+      "id": "night-blocks/reef-stand",
+      "contentId": "2026-08-25-reading-vlms-are-blind",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "black-city-2",
+      "spot": "reef-info",
+      "question": "q-blind-or-unasked",
+      "hie": "snowdrop",
+      "purpose": "At the reef tank stand, facing the glass, read Snowdrop's deep read of Vision Language Models Are Blind: line crossings and touching circles a child counts at a glance, which frontier models often miss.",
+      "reason": "Black city 2 is a Snowdrop papers column and a room built for looking through glass. The classroom keeps its own reading list; this places the seeing paper at the viewing window."
+    },
+    {
+      "id": "night-blocks/tide-notes-template",
+      "contentId": "2026-10-04-snowdrop-reading-notes-template",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "beach-2",
+      "spot": "driftwood-sign",
+      "hie": "snowdrop",
+      "purpose": "At the tide notes, read the five questions Snowdrop asks of every paper: the claim, the table that carries it, the missing baseline, what a rerun would need, and what the paper does not show.",
+      "limits": "A draft template; no paper is discussed in it.",
+      "reason": "The item names beach-2. The driftwood tally there is a patient bookkeeper, one notch at a time, and the template is the same habit applied to papers."
+    },
+    {
+      "id": "night-blocks/ward-chart",
+      "contentId": "2026-09-20-visual-evidence-deactivation",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "hospital-b",
+      "spot": "cranial-chart",
+      "question": "q-image-still-there",
+      "hie": "snowdrop",
+      "purpose": "At the reference chart, read Snowdrop's working note on visual evidence deactivation: attention share, causal effect and task accuracy kept apart, and measured on two different clocks.",
+      "limits": "The note is ongoing, observation-first research with a conjecture and no result yet; the ward shows nothing about any model.",
+      "reason": "The ward is a Snowdrop papers column and the reference chart is its terminal: a chart that separates parts is where a note that separates three quantities belongs."
+    }
+  ]
+}

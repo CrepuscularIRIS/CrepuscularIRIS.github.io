@@ -1,0 +1,204 @@
+{
+  "schema": 1,
+  "id": "first-walk",
+  "status": "draft",
+  "topic": "The first walk: lobby, main street, cafe, station, metro, shrine, beach, arcade, park and the drive",
+  "questions": [
+    {
+      "id": "q-small-detail",
+      "hie": "kouka",
+      "text": "When a model answers about a small detail in a large picture, how would you tell whether it looked at the detail or guessed from the rest?"
+    },
+    {
+      "id": "q-trend-or-event",
+      "hie": "kouka",
+      "text": "Kouka calls this a trend, not an event. What would you have to watch, and for how long, to tell the two apart?"
+    },
+    {
+      "id": "q-middle-baseline",
+      "hie": "snowdrop",
+      "text": "If a model seems to stop using the image late in a long answer, how much of that is the plain middle-of-context weakness, with no image involved at all?"
+    },
+    {
+      "id": "q-trust-policy",
+      "hie": "lacia",
+      "text": "What record of an agent's past choices would you want to see before trusting it to act while you are away?"
+    },
+    {
+      "id": "q-zero-signal",
+      "hie": "kouka",
+      "text": "On a day when nothing passes the threshold, how would you tell a quiet day from a broken filter?"
+    },
+    {
+      "id": "q-sound-vs-act",
+      "hie": "snowdrop",
+      "text": "Reading one reasoning trace, what would you count as an actual self-correction rather than only the words of one?"
+    },
+    {
+      "id": "q-rules-in-code",
+      "hie": "methode",
+      "text": "Which rule of a long-running agent would you put in code rather than in its prompt, and why that one first?"
+    }
+  ],
+  "relations": [
+    {
+      "id": "first-walk/lobby-directory",
+      "contentId": "2026-10-04-lacia-how-it-works",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "company-entrance",
+      "spot": "lobby-directory",
+      "hie": "lacia",
+      "purpose": "Stand at the directory board and read Lacia's note on how the phone works: which of the five keeps which kind of note, and which app opens it. The board lists floors; the note lists desks.",
+      "limits": "The directory board is set dressing; its floors do not map to the phone's apps.",
+      "reason": "Jinrui's lobby is Lacia's front desk and the first stop for a stranger. The directory board is the one object here that already says who is where, so the note that says who keeps what belongs on it."
+    },
+    {
+      "id": "first-walk/office-rules",
+      "contentId": "2026-08-28-methode-agent-harness",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "company-office",
+      "spot": "crt",
+      "question": "q-rules-in-code",
+      "hie": "methode",
+      "purpose": "At the workshop terminal under the taped rules (write it down, leave one lamp on), read Methode's harness notes: gates the model cannot talk past, an append-only ledger, and a heartbeat that notices silence.",
+      "reason": "The item names company-office as its place. The taped rules above the desk are the human version of the harness: write it down, never touch without logging. The CRT is the place's terminal, so the reason sits there."
+    },
+    {
+      "id": "first-walk/street-board",
+      "contentId": "2026-09-05-kouka-signal-reasoning-vlms",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "street-1",
+      "spot": "street-board",
+      "question": "q-small-detail",
+      "hie": "kouka",
+      "purpose": "Find the one circled line among the notices pinned over one another, then read Kouka's briefing on reasoning models and the benchmarks that ask whether they find small targets in large images.",
+      "limits": "The notice board is set dressing; no model is tested on this street.",
+      "reason": "The item's own place is street-1. Picking one circled line out of a crowded board is the small-target search the briefing is about, done by the visitor with their own eyes."
+    },
+    {
+      "id": "first-walk/cafe-shelf",
+      "contentId": "2026-09-21-lacia-weekly-38",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "cafe-1",
+      "spot": "shelf",
+      "hie": "lacia",
+      "purpose": "Take Week 38 from the reading shelf: Lacia's digest of one week across the five desks, built around one thread, build less that is new and check what already exists.",
+      "limits": "Week 38 is an illustrative draft from a retired setup of scheduled agents; the repositories' commit history is the record, not this digest.",
+      "reason": "The item names cafe-1. The reading shelf is the cafe's terminal and Lacia's digest is the cafe's column; this pins the one digest that has a thread worth reading over a coffee."
+    },
+    {
+      "id": "first-walk/cafe-window",
+      "contentId": "2026-10-20-album-ch1-dim-from-window",
+      "contentRev": 0,
+      "kind": "follow",
+      "place": "cafe-1",
+      "hie": "snowdrop",
+      "purpose": "Look out of the cafe window at the main street in the rain, then open the album picture of the same view from the reading shelf and note what the glass shows that the picture left out.",
+      "limits": "The album picture is image-tool art made for this site, not a photograph of this window.",
+      "reason": "The album item is titled The street from a cafe window. The cafe window is the only object in the city that matches it one to one."
+    },
+    {
+      "id": "first-walk/platform-sign",
+      "contentId": "2026-09-15-kouka-signal-long-context-vlm",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "platform-1",
+      "spot": "plat-sign",
+      "question": "q-trend-or-event",
+      "hie": "kouka",
+      "purpose": "Read Kouka's trend briefing beside the platform sign, whose arrow points at track the trains have not reached: longer contexts, longer thinking, and whether the image is still looked at late in a long answer.",
+      "limits": "The sign and the track are scenery; the briefing quotes no specs or scores and nothing is timed here.",
+      "reason": "The item names platform-1. Kouka calls it a trend, not an event; an arrow pointing at track not yet laid is the station's own picture of a trend."
+    },
+    {
+      "id": "first-walk/platform-fares",
+      "contentId": "2026-10-20-album-ch1-fareboard-photo",
+      "contentRev": 0,
+      "kind": "follow",
+      "place": "platform-1",
+      "spot": "plat-fares",
+      "hie": "kouka",
+      "purpose": "Read the fare board here, then open the album picture of a departures board drawn for this site and compare the two boards line by line.",
+      "limits": "The album picture is image-tool art, not a photograph of this station.",
+      "reason": "A board in the album and a board on the platform: the visitor can hold the drawn one against the one they are standing at."
+    },
+    {
+      "id": "first-walk/metro-window",
+      "contentId": "2026-06-10-reading-lost-in-the-middle",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "metro-1",
+      "spot": "metro-window",
+      "question": "q-middle-baseline",
+      "hie": "snowdrop",
+      "purpose": "Watch the tunnel lights slide past the dark window, then read Snowdrop's deep read of Lost in the Middle: models use the start and the end of a long input best and the middle worst.",
+      "limits": "The carriage is only a picture of a long context; nothing is measured on this ride.",
+      "reason": "The read opens with a corridor lit at both ends and dark in the middle. A tunnel ride is that corridor in motion. The read calls itself a baseline to rule out first, hence the question."
+    },
+    {
+      "id": "first-walk/shrine-bell",
+      "contentId": "2026-05-18-hie-as-policy",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "shrine-1",
+      "spot": "shrine-bell",
+      "question": "q-trust-policy",
+      "hie": "lacia",
+      "purpose": "Ring the bell, then read Lacia's essay: an hIE is trusted for a way of acting kept over time, not for one answer. One ring asks once; the essay asks what earns trust over many times.",
+      "reason": "The item names shrine-1. A bell rung for someone else to hear is a small request handed over, which is the handing-over of judgment the essay is about. The wish tablets stay with the traveller's rumour (S5 feeling route, no research content)."
+    },
+    {
+      "id": "first-walk/beach-driftwood",
+      "contentId": "2026-07-03-negative-results",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "beach-1",
+      "spot": "driftwood-sign",
+      "hie": "saturnus",
+      "purpose": "At the tide notes, count the tally carved into the driftwood nearby, then read the opening of Saturnus's archive of nine failed experiments: what a receded campaign leaves on the shore records where it went.",
+      "reason": "The archive opens with the night tide leaving glowing Noctiluca on the shore as a record of where it has been. The driftwood tally is the beach's own record of tides. The audit itself is checked at the police office. Bound to the tide notes, the beach's terminal."
+    },
+    {
+      "id": "first-walk/arcade-scores",
+      "contentId": "2026-08-20-personal-signal-os",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "game-room-1",
+      "spot": "arcade-scores",
+      "question": "q-zero-signal",
+      "hie": "kouka",
+      "purpose": "At the high score board, read Kouka's signal OS note: the internet passes through AI first, her rules decide, and at most eight items a day reach her. Zero is a legal day.",
+      "limits": "The score board is part of the arcade; it shows no signal counts.",
+      "reason": "The item names game-room-1, Kouka's room. The game room has no terminal, so the reason goes on the score board: a short ranked list that only a few lines reach, like her daily threshold."
+    },
+    {
+      "id": "first-walk/park-pavilion",
+      "contentId": "2026-07-19-cot-distillation-audit",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "amusement-park-1",
+      "spot": "park-pavilion",
+      "question": "q-sound-vs-act",
+      "hie": "snowdrop",
+      "purpose": "At the shuttered pavilion, stage lights on and no show, read Snowdrop's audit of 440 distilled reasoning traces: some datasets carry the words of self-correction more than the act of revising.",
+      "limits": "The scores in the audit come from an LLM judge on public datasets; nothing is scored in the park.",
+      "reason": "The item names amusement-park-1. A lit stage with no performance is the audit's finding in one picture: the look of a show without the act."
+    },
+    {
+      "id": "first-walk/car-signals",
+      "contentId": "2026-10-04-kouka-signals-offline",
+      "contentRev": 1,
+      "kind": "read",
+      "place": "car-1",
+      "spot": "car-signals",
+      "hie": "kouka",
+      "purpose": "Watch the signals ahead turn green in order, then read Kouka's history note on the day her signal slot stayed empty on purpose, because the desk had not launched and she would not guess.",
+      "limits": "The signals ahead are scenery; they carry no data. The note is a history record, not a current signal.",
+      "reason": "Kouka's column in the car. The row of signals is the one object here about signals arriving in order; the note is about the slot before any arrived."
+    }
+  ]
+}

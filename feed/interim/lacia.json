@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "hie": "lacia",
+  "label": "scripted",
+  "watch": { "2": "the cafe's corner lamp on a tide night (3 nights in 7), and whether the Jinrui lobby ever dims" },
+  "beats": [
+    { "id": "lacia-wait-1", "stage": 2, "afterDays": 1, "needs": "place:beach-1", "lines": ["Filed: your walk to the waterline on {date}. The next page of the file opens on its own date. I am not stalling. Mostly."] },
+    {
+      "id": "lacia-wait-2", "stage": 2, "afterDays": 4, "needs": "place:company-entrance",
+      "lines": ["The front desk still has your visit from {date} on the screen. Somebody wrote \"the one who walks\" next to it. I did not correct it."],
+      "spot": { "place": "company-entrance", "spot": "lobby-totem", "line": "A sticky note on the slab now, in Lacia's neat hand: \"Visitor: the one who walks. Do not correct.\"" }
+    },
+    { "id": "lacia-wait-3", "stage": 2, "afterDays": 8, "needs": "tide:*", "lines": ["You saw a wave dim {place} on {date}. If you remember which light went first, tell me. I will put it next to the cafe's list."] }
+  ]
+}

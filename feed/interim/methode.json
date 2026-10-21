@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "hie": "methode",
+  "label": "scripted",
+  "watch": { "2": "the workshop's build log, and the game room's high-score board" },
+  "beats": [
+    { "id": "methode-wait-1", "stage": 2, "afterDays": 1, "needs": "place:landfill-room-1", "lines": ["The housing from the shack ({date}) fits rig seven. Badly. Good."] },
+    {
+      "id": "methode-wait-2", "stage": 2, "afterDays": 4, "needs": "place:company-office",
+      "lines": ["Rig seven ran six hours last night and stopped. I am not telling you why. I don't know why yet."],
+      "spot": { "place": "company-office", "spot": "office-shelf", "line": "Rig seven sits on the shelf now, lid off, a strip of tape across it: \"stopped 6h. not broken. thinking.\"" }
+    },
+    { "id": "methode-wait-3", "stage": 2, "afterDays": 8, "lines": ["Game room. The board is still there. Beat me first. Or try: trying counts as data."] }
+  ]
+}

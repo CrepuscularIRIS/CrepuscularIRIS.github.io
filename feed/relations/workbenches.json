@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "id": "workbenches",
+  "status": "draft",
+  "topic": "Methode's benches: the hotel corridors, the residents' lobby, the sea house, the black city and the landfill workshop",
+  "questions": [
+    {
+      "id": "q-one-adapter",
+      "hie": "methode",
+      "text": "If every runtime difference lives in one adapter file, what does the rest of the code no longer have to know?"
+    }
+  ],
+  "relations": [
+    {
+      "id": "workbenches/corridor-directory",
+      "contentId": "2026-03-15-rewriting-shaders",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "goodboat-corridor-1",
+      "spot": "directory",
+      "hie": "methode",
+      "purpose": "Under the corridor's tea-coloured lift lamps, read Methode's shader notes at the floor directory: light tuned by hand, and volumetric shafts as scattering summed along a line of sight.",
+      "reason": "The item names goodboat-corridor-1. The hotel corridor is lit in layers of lamp colour, the hand-tuned light the notes are about. The floor directory is its terminal."
+    },
+    {
+      "id": "workbenches/concierge-leaflet",
+      "contentId": "2026-09-03-methode-crucible",
+      "contentRev": 0,
+      "kind": "follow",
+      "place": "goodboat-corridor-2",
+      "spot": "console",
+      "hie": "methode",
+      "purpose": "Pick up the concierge leaflet: Methode's short notice that Crucible is written up, the August merge into one main repo and what the desktop is made of, with the full note in Mail.",
+      "reason": "A leaflet is a short pointer to somewhere else, which is all this feed note is. The full write-up is read at the black city corridor."
+    },
+    {
+      "id": "workbenches/notice-window",
+      "contentId": "2026-09-01-crucible",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "black-city-corridor-1",
+      "spot": "project-window",
+      "question": "q-one-adapter",
+      "hie": "methode",
+      "purpose": "At the notice window beside the lab behind glass, read Methode's Crucible write-up: evidence chains, falsification designed before the run, and every runtime difference kept in one adapter file.",
+      "reason": "The corridor is Methode's projects column and looks into a lab nobody is in, which is what a research platform looks like from outside. Crucible is the main project write-up."
+    },
+    {
+      "id": "workbenches/hall-register",
+      "contentId": "2026-08-28-methode-agent-harness",
+      "contentRev": 0,
+      "kind": "check",
+      "place": "black-city-1",
+      "spot": "hall-register",
+      "hie": "methode",
+      "purpose": "At the hall register, use the harness notes as a list for one long run you know: is there a heartbeat, a ledger that only appends, and a gate written in code rather than in the prompt?",
+      "reason": "The workshop office holds the reading of these notes. The black city hall, with its register and a gate that does not open for asking politely, is where the same notes become a check."
+    },
+    {
+      "id": "workbenches/gallery-constellation",
+      "contentId": "2026-07-06-hermes-constellation",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "luxury-house-1",
+      "spot": "gallery",
+      "hie": "methode",
+      "purpose": "At the display wall, read Methode's retired note on the Hermes constellation: five scheduled agents named after hIEs, five orbits and one shared crontab, and what each one was for.",
+      "limits": "Retired fiction: this schedule no longer runs, and the note is kept as a record, not as how the site works today.",
+      "reason": "The item names luxury-house-1. A display wall in a house where everything has been placed suits a note that is now an exhibit rather than a working setup."
+    },
+    {
+      "id": "workbenches/residents-directory",
+      "contentId": "2026-10-04-methode-agent-runtime",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "room-305",
+      "spot": "directory",
+      "hie": "methode",
+      "purpose": "At the residents directory, read Methode's note on what runs the chat on this phone: a vendored copy of OpenRoom's agent loop, reading and writing the same apps you open.",
+      "reason": "Room 305's lobby is Methode's agents column; the residents directory lists who lives in the building, and the note says what lives in the phone."
+    },
+    {
+      "id": "workbenches/shift-log",
+      "contentId": "2026-08-31-lacia-weekly-35",
+      "contentRev": 0,
+      "kind": "read",
+      "place": "landfill-room-1",
+      "spot": "notice-screen",
+      "hie": "lacia",
+      "purpose": "On the shift log, read Lacia's Week 35 digest, a week with a lot shipped: a release of 293 result files each with a SHA-256 checksum, and Crucible started from compose for the first time.",
+      "limits": "Week 35 is an illustrative draft from a retired setup of scheduled agents; the repositories' commit history is the record.",
+      "reason": "The landfill workshop is Methode's build-log column and its shift log lists what was done tonight. Week 35 is the digest that is mostly builds."
+    }
+  ]
+}

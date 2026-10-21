@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "hie": "snowdrop",
+  "label": "scripted",
+  "watch": { "2": "the shrine's mossy stone, and the cove at dusk" },
+  "beats": [
+    {
+      "id": "snowdrop-wait-1", "stage": 2, "afterDays": 1, "needs": "place:shrine-1",
+      "lines": ["The moss by the stone you walked past on {date} has a new shoot. Two millimetres. I am trying not to make it mean anything."],
+      "spot": { "place": "shrine-1", "spot": "shrine-stone", "line": "A strip of masking tape on the stone, in small round letters: \"new shoot, 2 mm, please don't step. S.\"" }
+    },
+    { "id": "snowdrop-wait-2", "stage": 2, "afterDays": 5, "needs": "place:classroom-1", "lines": ["Table 3's cutting rooted. You were in that classroom on {date}, and now there is one root. Just one. I counted twice."] },
+    { "id": "snowdrop-wait-3", "stage": 2, "afterDays": 9, "lines": ["A question for you, no hurry: does the cove look different at dusk than at noon? I keep a note either way."] }
+  ]
+}

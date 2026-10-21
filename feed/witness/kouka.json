@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "host": "kouka",
+  "structure": "dispute",
+  "about": "Kouka times things and doubts a single sighting. The first act of a kind gets a doubt; the second, with both times, gets a grudging concession. She reacts to acts anywhere: her scanner is citywide.",
+  "acts": {
+    "tide": {
+      "doubt": ["you were at {place} at {time} when wave {n} dipped? one sighting. coincidence. probably.", "{place}, wave {n}, {time}. you were standing in it. still one data point."],
+      "concede": ["second dip on your watch: {prev}, then {time} at {place}. fine. that's not nothing."]
+    },
+    "ride": {
+      "doubt": ["night ride, {time}. halfway and back. next time clock it, i want the minutes."],
+      "concede": ["night ride again, {prev} and {time}. you like that bridge more than you say."]
+    },
+    "game": {
+      "doubt": ["a {game} win at {time}. on the easy board? do it twice and i'll count it."],
+      "concede": ["second {game} win, {prev} and {time}. ok. you're on my list."]
+    },
+    "shard": {
+      "doubt": ["shard {n}, {time}, at {place}. glowing glass. i'll believe it hums when i hear it."],
+      "concede": ["shard {n} too. two on your watch, {prev} and {time}. stop making me check."]
+    },
+    "lamp": {
+      "doubt": ["the {place} lamp at {level}, {time}? who held the meter, you?"],
+      "concede": ["two lamp readings now, {prev} and {time}. annoying. they line up."]
+    },
+    "stance": {
+      "doubt": ["you filed \"{choice}\" on {topic}, {time}. bold. i say you're wrong. prove me wrong."]
+    }
+  },
+  "opener": "(flicks the feed away) {act}, {when}. I still say coincidence. Convince me."
+}

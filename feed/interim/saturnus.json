@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "hie": "saturnus",
+  "label": "scripted",
+  "watch": { "2": "the case log at the police office, and the back alley's meter box after dark" },
+  "beats": [
+    { "id": "saturnus-wait-1", "stage": 2, "afterDays": 1, "needs": "place:police-office-1", "lines": ["Your visit to the police office on {date} is in my ledger. Entry only. No conclusion attached."] },
+    { "id": "saturnus-wait-2", "stage": 2, "afterDays": 5, "needs": "tide:*", "lines": ["You logged a wave at {place} on {date}. One sighting is an anecdote. Bring me a second night."] },
+    {
+      "id": "saturnus-wait-3", "stage": 2, "afterDays": 10,
+      "lines": ["The audit stays open. That is not a delay. That is the method."],
+      "spot": { "place": "police-office-1", "spot": "records-shelf", "line": "A new tab on the records shelf, in square capitals: \"OPEN. Do not close. S.\"" }
+    }
+  ]
+}

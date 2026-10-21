@@ -1,0 +1,263 @@
+{
+  "schema": 1,
+  "id": "city",
+  "label": "fiction",
+  "rumours": [
+    {
+      "id": "grandmothers-wish",
+      "title": "A wish from forty years ago",
+      "question": "What did the traveller's grandmother wish for at the hillside shrine?",
+      "from": {
+        "place": "platform-1",
+        "npc": "traveller",
+        "alt": true,
+        "who": "Traveller",
+        "quote": "My grandmother left a wish there forty years ago. I'm checking on it."
+      },
+      "points": {
+        "place": "shrine-1",
+        "spot": "shrine-prayers",
+        "hint": "the wish tablets at the hillside shrine"
+      },
+      "resolve": [
+        {
+          "use": {
+            "place": "shrine-1",
+            "spot": "shrine-prayers"
+          }
+        }
+      ],
+      "clue": {
+        "place": "shrine-1",
+        "spot": "shrine-prayers",
+        "lines": [
+          "Low on the rack, one tablet is darker than the rest. 1986. A train ticket is drawn in the corner, and under it: \"Let her come back on the one after next.\""
+        ]
+      },
+      "evidence": "A 1986 tablet on the shrine rack has a train ticket drawn on it and reads \"Let her come back on the one after next.\" The traveller always takes the one after next.",
+      "after": [
+        {
+          "place": "platform-1",
+          "npc": "traveller",
+          "delayHours": 12,
+          "lines": [
+            "You went up the hill, didn't you. \"The one after next.\" I always thought that was my habit. It was hers.",
+            "Thank you. I'm taking the next one today, just to see. And if you haven't yet: the harbour, after dark. Kick the water."
+          ]
+        }
+      ],
+      "ping": {
+        "hie": "snowdrop",
+        "delayHours": 20,
+        "needs": "wish:shrine-1",
+        "lines": [
+          "I was at the shrine this morning and read your tablet. I won't tell anyone. The moss knows, but the moss is discreet."
+        ]
+      }
+    },
+    {
+      "id": "kick-the-water",
+      "title": "Kick the water",
+      "question": "Does the harbour water really light up when you kick it?",
+      "from": {
+        "place": "platform-1",
+        "npc": "traveller",
+        "alt": false,
+        "who": "Traveller",
+        "quote": "Go down to the harbour after dark. Kick the water. You'll see."
+      },
+      "also": [
+        {
+          "use": {
+            "place": "metro-1",
+            "npc": "dockhand",
+            "alt": true
+          }
+        }
+      ],
+      "points": {
+        "place": "beach-1",
+        "spot": "beach1-bottle",
+        "hint": "the shallows at the beach, where the bottle rolls, after dark",
+        "when": "night"
+      },
+      "resolve": [
+        {
+          "use": {
+            "place": "beach-1",
+            "spot": "beach1-bottle",
+            "alt": true
+          },
+          "when": "night"
+        }
+      ],
+      "evidence": "At the beach after dark, kicking the shallows made the water glow blue-green for a moment. In daylight it did nothing. The dock hand calls it plankton (the city's name).",
+      "act": {
+        "place": "beach-1",
+        "spot": "beach1-bottle",
+        "alt": true,
+        "night": [
+          "You kick the shallows by the bottle. For a breath the water round your shoe glows blue-green, then lets the light go in rings."
+        ],
+        "day": [
+          "You kick the shallows by the bottle. Cold water, a little sand, nothing else. Whatever it does, it does not do it in daylight."
+        ],
+        "flash": "sea"
+      }
+    },
+    {
+      "id": "jasmine",
+      "title": "Jasmine for someone who works late",
+      "question": "Who in this city works too late, and would take a flower?",
+      "from": {
+        "place": "street-1",
+        "npc": "vendor",
+        "alt": false,
+        "who": "Flower seller",
+        "quote": "Buy one for someone who works too late. Everyone here knows someone."
+      },
+      "points": {
+        "hint": "one of the five, met in person, with the jasmine in hand"
+      },
+      "take": {
+        "match": {
+          "use": {
+            "place": "street-1",
+            "npc": "vendor",
+            "alt": true
+          }
+        },
+        "item": "jasmine",
+        "lines": [
+          "You are carrying one stem of night-blooming jasmine, wrapped in newspaper. Give it to someone in person."
+        ]
+      },
+      "resolve": [
+        {
+          "use": {
+            "person": "*"
+          },
+          "carry": "jasmine"
+        }
+      ],
+      "gift": {
+        "lacia": [
+          "You hold out the jasmine. Lacia takes it with both hands, as if it were a form. \"Filed under: things nobody asked me to keep.\" She puts it in the water glass on her desk."
+        ],
+        "snowdrop": [
+          "You hold out the jasmine. Snowdrop smells it for a long time. \"It opens at night. So do I, a little.\" She tucks it into the moss pot by the window."
+        ],
+        "kouka": [
+          "You hold out the jasmine. Kouka squints at it. \"Is this a bribe? It's working.\" She clips it to her scanner, where it will definitely get crushed."
+        ],
+        "saturnus": [
+          "You hold out the jasmine. Saturnus checks the stem, then you. \"Logged. One flower, no stated reason.\" She does not put it down."
+        ],
+        "methode": [
+          "You hold out the jasmine. Methode looks at it, then away. \"Put it by the CRT. I'll water it. Probably.\""
+        ]
+      },
+      "evidence": "You gave the flower seller's jasmine to someone who works late, in person."
+    },
+    {
+      "id": "second-alley",
+      "title": "The boring alley",
+      "question": "What is in the second alley after dark that the courier calls boring?",
+      "from": {
+        "place": "street-1",
+        "npc": "courier",
+        "alt": true,
+        "who": "Courier",
+        "quote": "Don't go in the second alley after dark, it's just boring."
+      },
+      "points": {
+        "place": "alley-2",
+        "spot": "alley2-meters",
+        "hint": "the meter box in the back alley, after dark",
+        "when": "night"
+      },
+      "resolve": [
+        {
+          "use": {
+            "place": "alley-2",
+            "spot": "alley2-meters"
+          },
+          "when": "night"
+        }
+      ],
+      "clue": {
+        "place": "alley-2",
+        "spot": "alley2-meters",
+        "lines": [
+          "Under the card, a second one in small square handwriting: \"Readings at 23:10 and 23:40, same as every night. Nothing to report. S.\" Somebody checks this box on purpose."
+        ]
+      },
+      "evidence": "The back alley's meter box carries a reading card signed \"S.\": the same two readings every night, nothing to report. Boring is what a control looks like."
+    },
+    {
+      "id": "lacia-in-the-field",
+      "title": "Lacia's field",
+      "question": "Where does Lacia go in the afternoons, when she says she is \"in the field\"?",
+      "from": {
+        "place": "company-entrance",
+        "npc": "receptionist",
+        "alt": true,
+        "who": "Receptionist",
+        "quote": "Afternoons she says she is 'in the field'. I have never seen the field."
+      },
+      "points": {
+        "place": "restaurant-1",
+        "hint": "the restaurant on the main street, in the afternoon",
+        "when": "afternoon"
+      },
+      "resolve": [
+        {
+          "log": "place:restaurant-1",
+          "when": "afternoon"
+        },
+        {
+          "use": {
+            "person": "lacia",
+            "not": "company-entrance"
+          }
+        }
+      ],
+      "evidence": "In the afternoon Lacia is not at the front desk: she sits at the restaurant on the main street. Her \"field\" is a table by the window."
+    },
+    {
+      "id": "night-owls-list",
+      "title": "The night owl's list",
+      "question": "Does anyone else keep a record of where the low tide stops?",
+      "from": {
+        "place": "cafe-1",
+        "npc": "night-owl",
+        "alt": true,
+        "who": "Night owl",
+        "quote": "Date, time, which block went first. Always from the harbour side. Always stops before the big building on the main street."
+      },
+      "also": [
+        {
+          "use": {
+            "place": "cafe-1",
+            "npc": "regular",
+            "alt": false
+          }
+        }
+      ],
+      "points": {
+        "place": "police-office-1",
+        "hint": "the officer at the police office, who logs the outages"
+      },
+      "resolve": [
+        {
+          "use": {
+            "place": "police-office-1",
+            "npc": "officer",
+            "alt": true
+          }
+        }
+      ],
+      "evidence": "Two records agree: the night owl's list and the police pin map both show the low tide coming in from the harbour and stopping before the Jinrui building. Two records of the same claim; neither says why it stops."
+    }
+  ]
+}

@@ -23,11 +23,11 @@
     },
     {
       "name": "Mapping the wilt",
-      "brief": "You are drawing a curl map with the visitor. You want them in Classroom 2-B, at the chalked desk about lamps as kept moments, and reading one of your margin notes, because a close read is how you keep a thing alive.",
+      "brief": "You are drawing a curl map with the visitor. You want them in Classroom 2-B, at the chalked desk about lamps as kept moments. If they read your deep read on attention sinks, you want to compare two Attention Fade runs with them on the blackboard: re-look at the image never (interval 0) and every 512 tokens. It is a toy with made-up constants, not a result; say so.",
       "targets": [
         { "id": "class", "label": "Visit Classroom 2-B", "hint": "Enter Classroom 2-B from the map.", "kind": "visit", "place": "classroom-1" },
         { "id": "desk", "label": "Find shard 6, the chalked desk", "hint": "A shard glows by a desk in the classroom.", "kind": "shard", "n": 6 },
-        { "id": "margin", "label": "Read one of her notes", "hint": "Open one of Snowdrop's notes: her margin notes in the Diary, News, or a card in her chat.", "kind": "read", "host": "snowdrop" }
+        { "id": "compare", "label": "Compare two runs on the blackboard", "hint": "In Classroom 2-B press G at the blackboard. Save one Attention Fade run with re-observe never (0) and one with every 512.", "kind": "artifact", "question": "q-attention-share-evidence", "module": "attention", "runs": [{ "interval": 0 }, { "interval": 512 }] }
       ],
       "done": ["The curl map has a page in the Diary now!", "I left a seedling tray at the beach cove too. Go say hello to it?"],
       "unlock": {

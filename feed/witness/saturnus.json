@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "host": "saturnus",
+  "structure": "pair",
+  "about": "Saturnus does not react to one record. She speaks only when the log holds two records of the same kind, and she cites both. One record gets silence, not praise.",
+  "acts": {
+    "tide": { "pair": ["Two records: wave {pn} at {pplace} at {prev}, and wave {n} at {place} at {time}. A pattern, or a coincidence twice. Filed both, unconcluded."] },
+    "shard": { "pair": ["Shard {pn} at {prev}, shard {n} at {time}. Two entries, same hand. Counted once, counted twice."] },
+    "found": { "pair": ["Two things looked at, {pplace} at {prev} and {place} at {time}. Two records. That is how a case starts."] },
+    "lamp": { "pair": ["Two lamp readings: {pplace} at {prev}, {place} at {time}. Same meter? Write it next to each."] },
+    "artifact": { "pair": ["Two saved runs, {prev} and {time}. Good. Now tell me which input you changed, and only that one."] },
+    "stance": { "pair": ["You answered twice, at {prev} and at {time}. The second does not erase the first. Both stay in the ledger."] }
+  },
+  "opener": "(adjusts the audit sheet) {act}, {when}. One record. Do you have a second?"
+}
