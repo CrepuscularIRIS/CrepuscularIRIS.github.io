@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-21-methode-063c5fe3",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-21T02:57:24Z",
+  "title": "Sage-A1.5：Intern Science 发布 35B MoE 智能体模型，探索能力组合驱动长程科学推理",
+  "summary": "Intern Science 发布 Sage-A1.5，35B MoE 架构的智能体模型，通过能力组合（Capability Composition）实现长程问题求解，在 HF Daily Papers 今日热榜排名第一，值得关注。",
+  "summary_en": "Sage-A1.5 is a 35B Mixture-of-Experts agentic model from Intern Science that advances long-horizon problem solving through adaptive capability composition. It extends single-agent execution with task delegation and parallel subagent collaboration, strengthens reliability through verification and reflective strategy revision, and enables open scientific discovery beyond answering predefined questions.",
+  "body": "Intern Science 发布 Sage-A1.5，35B MoE 架构的智能体模型，通过能力组合（Capability Composition）实现长程问题求解，在 HF Daily Papers 今日热榜排名第一，值得关注。\n\n论文 · arXiv 新发 (cs.AI/cs.CL/cs.LG)\n- Sage-A1.5: From Long-Horizon Execution to Scientific Exploration with Capability Composition — Intern Science 35B MoE 智能体模型亮相，通过能力组合驱动长程任务分解、子智能体并行协作与可验证反思策略，在 HF 今日热榜居首\n  https://arxiv.org/abs/2610.28578\n- BitMTP: When Multi-Token Prediction Meets Low-Bit Large Language Models — NeurIPS 2026 录用，算法-系统协同设计将多 token 预测与超低比特量化结合，在 NVIDIA H20 上实现 2.2 倍吞吐提升（BitNet b1.58-2B）\n  https://arxiv.org/abs/2610.28500\n- Large Flow Language Models (Lafa) — 8B 规模连续流语言模型，通过块级双向流式解码实现 2.54 倍吞吐增益，支持单模型自推测解码，无需独立 draft-verifier\n  https://arxiv.org/abs/2610.28559\n- The Token-Energy Law of LLM Decode — 提出「token-能量定律」，用 Active Bytes 与 Realized Time 两维刻画 LLM 解码能耗，在 Hopper/Blackwell GPU 上误差低于 3.73%\n  https://arxiv.org/abs/2610.28576\n- Planning under Noise with Neural Operators — Anima Anandkumar 团队提出 PUN，将神经算子用于噪声感知路径规划，4D 任务成功率领先 SOTA 10-60%，速度快 3-32 倍\n  https://arxiv.org/abs/2610.28623\n\nGitHub 与基建\n- llama.cpp b11776: logprobs with speculative decoding — 推测解码路径现可返回 logprobs，修复此前 top_logprobs 为空、logprob 为 0.0 的回归问题\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11776\n- llama.cpp b11774: LFM2 vision tile layout fixes — 修复 LFM2/VL 视觉 tile 布局与 transformers 行为不一致问题，采用与 Python 相同双精度舍入策略\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11774\n\n系统 · Linux\n- Linux 7.3 正式发布 — 2026 年 10 月 18 日发布，带来更快 I/O 性能、AMD Zen 6 前期准备、Valve 新驱动等大量改进，将成为下一个 LTS 候选\n  https://www.phoronix.com/news/Linux-7.3-Released\n\nSource: https://arxiv.org/abs/2610.28578",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.28578",
+    "verified_at": "2026-10-21T02:57:24Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}

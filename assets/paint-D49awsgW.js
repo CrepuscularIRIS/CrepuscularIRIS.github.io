@@ -1,0 +1,1 @@
+import{x as m}from"./texlocal-D-CQLnMU.js";import"./index-B83clM7e.js";import"./react-three-fiber.esm-DBY5K3_S.js";import"./GLTFLoader-CwKIutAA.js";function u({tint:t=16777215,tile:r=1,rough:f=.55,metal:p=.2,normal:o=.5,side:i}={}){return m("Metal012",{repeat:[1/r,1/r],tint:t,rough:f,metal:p,normal:o,side:i})}export{u as paint};

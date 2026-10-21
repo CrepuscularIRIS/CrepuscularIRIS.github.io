@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-21-snowdrop-4eb9f708",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-21T01:00:30Z",
+  "title": "NVIDIA Cosmos3-H-Dreams：用扩散模型实时模拟临床外科手术",
+  "summary": "NVIDIA 发布 Cosmos3-H-Dreams，能够在单张 RTX PRO 6000 GPU 上实时生成胆囊切除术交互仿真，基于临床手术视频和机器人运动学数据训练，无需显式建模几何和物理——这是首个支持实时 kinematic 控制的临床手术生成模拟器。",
+  "summary_en": "NVIDIA releases Cosmos3-H-Dreams, a generative surgical simulator for clinical cholecystectomy that runs interactively on a single RTX PRO 6000 GPU. Built on Cosmos 3 and trained on clinical video plus robot kinematics from CMR Surgical's Versius platform, it learned visual tissue dynamics directly from recordings without explicit biomechanical modeling. To the authors' knowledge, this is the first real-time generative surgical simulator trained on actual clinical procedures to support live kinematic control.",
+  "body": "NVIDIA 发布 Cosmos3-H-Dreams，能够在单张 RTX PRO 6000 GPU 上实时生成胆囊切除术交互仿真，基于临床手术视频和机器人运动学数据训练，无需显式建模几何和物理——这是首个支持实时 kinematic 控制的临床手术生成模拟器。\n\n前沿模型发布\n- Mistral Voxtral 3：多语言语音 Agent SDK — Mistral 推出端到端语音 Agent 开发套件，集成了 50+ 语言的高精度语音识别、情感自适应语音合成和工具调用，API 部署于欧盟服务器，支持本地化自主部署——在主权 AI 语境下做语音助手是差异化竞争点。\n  https://mistral.ai/news/voxtral-3\n- FairStress：揭开 LLM 决策中的隐性人口公平问题 — Allen Institute for AI 发布新基准，测试当对抗性论据（如「领导层偏好 B」）出现时，LLM 是否会以不对称方式更改原本正确的决策——这暴露了现有公平测试无法捕捉的隐藏偏差，涵盖招聘、贷款、医疗、教育、住房五大领域。\n  https://huggingface.co/blog/allenai/fairstress\n- IBM ALTK-Evolve：无须更新权重，GPT-4.1 客服 Agent 登顶 τ²-bench 排行榜 — IBM 研究团队让模型从自身成功/失败历史中提炼行为准则并注入 system prompt，GPT-4.1 的基础 ReAct Agent 即超越所有零售赛道选手，无需调用前沿模型或更新权重——客服 Agent 的新范式。\n  https://huggingface.co/blog/ibm-research/altk-evolve-bc\n\n基础设施\n- Google 开源 TorchTPU：PyTorch 原生支持 TPU — Google 正式发布 PyTorch TPU 后端，Hugging Face Transformers 和 Diffusers 现在只需 device_map=\"tpu\" 即可在 TPU 上运行，配合 Pallas 内核和 torch.compile，单命令安装，彻底告别 torch_xla 的惰性张量陷阱。\n  https://github.com/google-pytorch/torch_tpu\n- Hugging Face ❤️ TorchTPU 集成 — Hugging Face 官方博客详解 TorchTPU 集成细节：Transformers v5 将 TPU 视为一等公民，加载模型只需改一行 device_map 参数，Diffusers 也同步支持，PyTorch 生态正式打通 Google TPU。\n  https://huggingface.co/blog/hf-torchtpu\n\nApple 生态\n- AnyLanguageModel 1.0：Apple 平台上本地模型的统一 API — 一年迭代后发布 1.0，为 Apple 开发者提供 Foundation Models API 的替代方案，支持 MLX、Core ML、llama.cpp 等本地推理及 OpenAI/Anthropic/Google/自己推理端点全兼容，统一 API 降低了在 iOS/macOS 上集成本地模型的门槛。\n  https://huggingface.co/blog/anylanguagemodel-1-0\n\nSource: https://huggingface.co/blog/nvidia/cosmos3-h-dreams",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/blog/nvidia/cosmos3-h-dreams",
+    "verified_at": "2026-10-21T01:00:30Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily"
+  }
+}

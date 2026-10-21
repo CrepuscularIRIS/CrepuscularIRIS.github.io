@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-21-methode-efe9cfbc",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-21T01:05:05Z",
+  "title": "llama.cpp 紧急修复：Responses API SSE 事件 output_index 缺失，影响 Anthropic 兼容客户端",
+  "summary": "llama.cpp 于今晨连续发布 b11767/b11768 两个 commit，涵盖对 Liquid AI LFM2 多图处理和 Responses API SSE 兼容性的修复；Hugging Face 同日发表 IBM 基于\"行为准则学习\"让普通 Agent 登顶客服基准、及 NVIDIA 首个临床手术实时生成仿真模型。",
+  "summary_en": "llama.cpp released two consecutive commits overnight: b11767 adds support for reading LFM2 tiling parameters (min_tiles, max_tiles, tile_size, max_pixels_tolerance) from GGUF metadata, enabling Liquid AI's multi-image LFM2-VL vision encoder to handle tiling correctly; b11768 fixes a missing output_index field in Responses API SSE events for better Anthropic streaming compatibility. Meanwhile, IBM Research published ALTK-Evolve on HuggingFace, showing that learned behavioral guidelines allow a basic GPT-4.1 ReAct agent to top the τ²-bench customer service leaderboard without weight updates; NVIDIA released Cosmos3-H-Dreams, a real-time generative surgical simulator trained on clinical cholecystectomy recordings from the CMR Versius robot, running interactively on a single RTX PRO 6000 GPU. The Linux Foundation published research estimating ~25% of new OSS pull requests are low-quality AI-generated code, while Intel and AMD announced a joint collaboration to merge AMD ZenDNN optimizations into the upstream oneDNN library for PyTorch on x86. Ollama v0.40.7-rc1 deduplicates CUDA runtime payloads shared between GGML and MLX backends.",
+  "body": "llama.cpp 于今晨连续发布 b11767/b11768 两个 commit，涵盖对 Liquid AI LFM2 多图处理和 Responses API SSE 兼容性的修复；Hugging Face 同日发表 IBM 基于\"行为准则学习\"让普通 Agent 登顶客服基准、及 NVIDIA 首个临床手术实时生成仿真模型。\n\n论文 / 研究博客\n- ALTK-Evolve：行为准则学习让普通 Agent 登顶 τ²-bench 客服基准 — IBM Research 提出用 GPT-4.1 自动从训练对话中提炼行为准则（playbook），不更新权重即可让基础 ReAct Agent 在 τ²-bench（零售+航空客服）上超过所有竞品登顶；仅靠将短规则追加到系统提示词，成本与延迟均无明显增加，方法可迁移至其他 Agent 场景。\n  https://huggingface.co/blog/ibm-research/altk-evolve-bc\n- NVIDIA Cosmos3-H-Dreams：首个临床手术实时生成仿真 — 基于 Cosmos3 构建、蒸馏后可在单块 RTX PRO 6000 上交互运行；从 CMR Surgical Versius 真实腹腔镜胆囊切除术录像中学习，首次支持动作控制的体内实时仿真，含遮挡、牵拉变形等复杂组织动态；有望替代传统数值仿真用于外科机器人训练。\n  https://huggingface.co/blog/nvidia/cosmos3-h-dreams\n- FairStress：超越最终答案的 LLM 决策公平性基准 — AI2 提出对称公平性基准，测量当可信论据（adversarial prefix）介入时，模型对不同受保护群体的决策抵抗能力是否存在不对称性，覆盖招聘、贷款、医疗、教育、住房五大领域，包含 Llama/Qwen/Gemma/Claude/GPT 系列。\n  https://huggingface.co/blog/allenai/fairstress\n\nGitHub 与基建\n- llama.cpp b11768：修复 Responses API SSE output_index 缺失 — 修复 server 层 Responses API SSE 事件中缺少 output_index 字段的问题，提升与 Anthropic 流式协议兼容的客户端（如 Claude 代码工具）的正常运行。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11768\n- llama.cpp b11767：支持 LFM2 图像平铺参数从 GGUF 元数据读取 — 新增从 GGUF 元数据读取 Liquid AI LFM2-VL 多图编码器的 tile_size、min/max_tiles 等参数，使 do_image_splitting=false 时自动映射为无平铺模式；合并了原始实现者 Michael DM 的 PR#25524。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11767\n- Ollama v0.40.7-rc1：MLX/CUDA 运行时载荷去重 — 将 GGML 与 MLX 后端共享的 CUDA 库合并至同级 CUDA 载荷目录，消除重复打包，in-process 和 subprocess MLX 加载均解析同一依赖路径，减小分发体积。\n  https://github.com/ollama/ollama/releases/tag/v0.40.7-rc1\n\n系统\n- Linux 基金会：25% 新 PR 为低质量 AI 代码 — Linux 基金会研究显示 GenAI 可将开源编码时间减半，但项目维护者估算 25% 新 PR 实质为 AI 生成低质代码，且 71% 认为 GenAI 降低了贡献门槛；AI 代码质量治理正成为开源社区的严峻挑战。\n  https://www.phoronix.com/news/Linux-Foundation-25p-AI-Slop\n- Intel & AMD 合作推进 oneDNN PyTorch x86 优化 — AMD 宣布将 ZenDNN（此前为独立下游分支）优化合并入上游 oneDNN，并与 Intel 共同以 oneDNN 为 PyTorch x86 加速的默认开源库，同时 AMD 加入 UXL Foundation 指导委员会；标志着 x86 生态在 AI 库层面的罕见深度协作。\n  https://www.phoronix.com/news/Intel-AMD-oneDNN-Optimize\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11768",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11768",
+    "verified_at": "2026-10-21T01:05:05Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}
