@@ -5,14 +5,14 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 596432,
-  "drawCalls": 152,
+  "triangles": 595038,
+  "drawCalls": 592,
   "textures": 100,
   "textureMB": 121.5
  },
  "exported": {
-  "triangles": 591026,
-  "drawCalls": 146,
+  "triangles": 594214,
+  "drawCalls": 586,
   "textures": 100,
   "textureMB": 121.5
  },
@@ -84,49 +84,55 @@
   }
  ],
  "lowDrop": [
-  "groundMist"
+  "Mesh",
+  "Mesh",
+  "Mesh"
  ],
  "clocks": [
   {
-   "material": "5f8c3b2b-ba6c-4bc7-9c75-3b0ed4f933ed",
+   "material": "50855d47-3e6a-41a8-be16-35384050ecaf",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "81a39ccc-7d48-49d7-a392-c1d96ebd7843",
+   "material": "2223cc9f-19fc-4dfe-8f10-e8d08f5dffa5",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "81a39ccc-7d48-49d7-a392-c1d96ebd7843",
+   "material": "2223cc9f-19fc-4dfe-8f10-e8d08f5dffa5",
    "uniform": "uWT",
    "a": 0.3,
    "b": 0
   },
   {
-   "material": "f5e7987e-55e5-4ad9-8e3e-ee66e927a450",
+   "material": "35cd182b-49c2-4dc8-8aaa-be33ade89580",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "6bb4271e-f369-4841-8513-7b6deff90a32",
+   "material": "fbb2b08c-dd46-4e1f-8463-09159d8ae263",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "82fbfdb3-a4da-4748-ae95-bbc152738b23",
+   "material": "67547b8f-4338-48df-89aa-5f5ccd7eb899",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {
-  "81a39ccc-7d48-49d7-a392-c1d96ebd7843": {
+  "2223cc9f-19fc-4dfe-8f10-e8d08f5dffa5": {
    "uL": "v4",
    "uLC": "c"
   }
@@ -507,9 +513,14 @@
    "object": "spot:door-park",
    "typed": true,
    "anchor": [
-    7.571849706495488,
-    1.3350000120699403,
-    -2.7896288392351765
+    7.6,
+    1.6,
+    -5.9
+   ],
+   "built": [
+    7.6,
+    1.6,
+    -5.9
    ],
    "reach": 3.2
   },
@@ -517,9 +528,14 @@
    "id": "shrine-torii",
    "kind": "inspect",
    "label": "Roofed torii",
-   "object": "spot:shrine-torii",
-   "typed": true,
+   "object": "anchor:torii-beams",
+   "typed": false,
    "anchor": [
+    2.6,
+    3,
+    -9
+   ],
+   "built": [
     2.6,
     3,
     -9
@@ -537,15 +553,25 @@
     0.975,
     -5.4
    ],
+   "built": [
+    -4.5,
+    0.975,
+    -5.4
+   ],
    "reach": 3.2
   },
   {
    "id": "shrine-lantern",
    "kind": "inspect",
    "label": "Stone lantern",
-   "object": "spot:shrine-lantern",
-   "typed": true,
+   "object": "anchor:stand-lantern",
+   "typed": false,
    "anchor": [
+    2.35,
+    1.1,
+    -10.65
+   ],
+   "built": [
     2.35,
     1.1,
     -10.65
@@ -556,9 +582,14 @@
    "id": "shrine-prayers",
    "kind": "note",
    "label": "Wish tablets",
-   "object": "spot:shrine-prayers",
-   "typed": true,
+   "object": "anchor:wish-tablets",
+   "typed": false,
    "anchor": [
+    -4.4,
+    1.3,
+    -10.1
+   ],
+   "built": [
     -4.4,
     1.3,
     -10.1
@@ -569,9 +600,14 @@
    "id": "shrine-bell",
    "kind": "use",
    "label": "Shrine bell",
-   "object": "spot:shrine-bell",
-   "typed": true,
+   "object": "anchor:torii-rope",
+   "typed": false,
    "anchor": [
+    2.6,
+    2,
+    -9
+   ],
+   "built": [
     2.6,
     2,
     -9
@@ -582,9 +618,14 @@
    "id": "shrine-stone",
    "kind": "inspect",
    "label": "Mossy stone",
-   "object": "spot:shrine-stone",
-   "typed": true,
+   "object": "anchor:mossy-stone",
+   "typed": false,
    "anchor": [
+    4.4,
+    0.8,
+    -5.6
+   ],
+   "built": [
     4.4,
     0.8,
     -5.6
@@ -602,61 +643,6 @@
     1.6,
     -5.9
    ]
-  },
-  "shrine-torii": {
-   "object": "spot:shrine-torii",
-   "how": "carved",
-   "on": "torii",
-   "at": [
-    2.6,
-    3,
-    -9
-   ],
-   "triangles": 300
-  },
-  "shrine-lantern": {
-   "object": "spot:shrine-lantern",
-   "how": "carved",
-   "on": "stand-lantern < Shrine",
-   "at": [
-    2.35,
-    1.1,
-    -10.65
-   ],
-   "triangles": 2772
-  },
-  "shrine-prayers": {
-   "object": "spot:shrine-prayers",
-   "how": "carved",
-   "on": "hall",
-   "at": [
-    -4.4,
-    1.3,
-    -10.1
-   ],
-   "triangles": 12
-  },
-  "shrine-bell": {
-   "object": "spot:shrine-bell",
-   "how": "carved",
-   "on": "torii",
-   "at": [
-    2.6,
-    2,
-    -9
-   ],
-   "triangles": 24
-  },
-  "shrine-stone": {
-   "object": "spot:shrine-stone",
-   "how": "carved",
-   "on": "grounds",
-   "at": [
-    4.4,
-    0.8,
-    -5.6
-   ],
-   "triangles": 80
   }
  },
  "premerge": {
@@ -665,15 +651,57 @@
    1.6,
    -5.9
   ],
+  "anchor:torii-beams": [
+   2.6,
+   3,
+   -9
+  ],
   "basin-water": [
    -4.5,
    0.975,
    -5.4
+  ],
+  "anchor:stand-lantern": [
+   2.35,
+   1.1,
+   -10.65
+  ],
+  "anchor:wish-tablets": [
+   -4.4,
+   1.3,
+   -10.1
+  ],
+  "anchor:torii-rope": [
+   2.6,
+   2,
+   -9
+  ],
+  "anchor:mossy-stone": [
+   4.4,
+   0.8,
+   -5.6
   ]
  },
+ "doorProps": {
+  "door-park": {
+   "p": [
+    7.5718,
+    0,
+    -2.7896
+   ],
+   "q": [
+    0,
+    -0.571968,
+    0,
+    0.820276
+   ],
+   "gate": true,
+   "tint": 0
+  }
+ },
  "anchorsBefore": {
-  "named": 1,
-  "typed": 6
+  "named": 6,
+  "typed": 1
  },
  "models": {
   "baked": [],
@@ -689,12 +717,13 @@
  "three": "170",
  "key": "shrine-1",
  "hour": 13,
- "bakedAt": "2026-10-21T00:09:19.102Z",
+ "bakedAt": "2026-10-21T15:55:39.585Z",
+ "quantizePosition": 14,
  "source": {
   "family": "Shrine (D) built at runtime by lab/src/scenes",
-  "exportBytes": 79356656,
-  "triangles": 596432,
-  "drawCalls": 152,
+  "exportBytes": 58765304,
+  "triangles": 595038,
+  "drawCalls": 592,
   "textures": 100,
   "textureMB": 121.5
  },
@@ -702,43 +731,45 @@
   "lod0": {
    "file": "shrine-1.glb",
    "triangles": 482832,
-   "primitives": 146,
+   "primitives": 142,
    "materials": 142,
    "textures": 70,
    "textureKB": 3001,
-   "bytes": 10983716
+   "bytes": 11131540
   },
   "lod1": {
    "file": "shrine-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 245403,
-   "primitives": 146,
+   "triangles": 243844,
+   "primitives": 142,
    "materials": 142,
    "textures": 70,
    "textureKB": 1256,
-   "bytes": 7276088
+   "bytes": 6917780
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
-   "spot:shrine-torii",
-   "spot:shrine-lantern",
-   "spot:shrine-prayers",
-   "spot:shrine-bell",
-   "spot:shrine-stone",
+   "anchor:mossy-stone",
+   "anchor:torii-beams",
+   "anchor:torii-rope",
+   "anchor:wish-tablets",
+   "anchor:stand-lantern",
    "spot:door-park"
   ],
-  "exportBytes": 9234752
+  "exportBytes": 932
  },
  "live": {
   "file": "shrine-1.live.json",
-  "bytes": 425990,
+  "bytes": 425828,
   "objects": [
    "smokePlume",
    "basin-water",
-   "groundMist",
+   "Mesh",
+   "Mesh",
+   "Mesh",
    "Mesh"
   ]
  },

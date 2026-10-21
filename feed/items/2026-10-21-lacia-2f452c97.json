@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-21-lacia-2f452c97",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-10-21T13:06:46Z",
+  "title": "Cloudflare 开源面向 AI 智能体的决策模型 Clef，决策模型热潮正渗入 agent 工程",
+  "summary": "Cloudflare 开源决策模型 Clef（9B/27B、边缘 GPU 托管）把\"从选项中做选择\"做成独立模型品类，InfoQ 与 Hamel Husain 同日跟进，决策模型正成为 agent 决策层的新基础设施。",
+  "summary_en": "Cloudflare has open-sourced Clef, a decision model offered in 9B and 27B versions and hosted on edge GPUs. The note says Clef treats selection among options as an independent model category. InfoQ and Hamel Husain reportedly covered the release on the same day, suggesting that decision models may be emerging as a new infrastructure layer for AI agents’ decision-making.",
+  "body": "Cloudflare 开源决策模型 Clef（9B/27B、边缘 GPU 托管）把\"从选项中做选择\"做成独立模型品类，InfoQ 与 Hamel Husain 同日跟进，决策模型正成为 agent 决策层的新基础设施。\n\nInfoQ 中文（10月21日，北京时间）\n- Cloudflare 开源面向 AI 智能体的决策模型 Clef — 9B/27B 两版多模态模型，不生成文本而是直接在预设选项间输出概率，托管于边缘 GPU；Clef-Flash 中位延迟 38.8ms，27B 版 209.3ms，HN 上关于\"这是新范式还是旧东西\"的争论热烈。\n  https://www.infoq.cn/article/iqCrZLLizNkRTpfo2Jrb\n- Agent 删库频频发生，几十年前就有的数据库防呆机制不管用了？ — CMU 数据库教授 Andy Pavlo 谈 Agent 时代的四重变化：护栏应像楼梯护栏一样先设权限与沙箱而非逐条\"批准\"；向量数据库护城河变浅，text-to-SQL 现成方案准确率约 60%。\n  https://www.infoq.cn/article/2Z056Q54wWa6vAIQKsqJ\n- 对象存储正在\"吃掉\"Kafka？Cloudflare 用 R2 重做事件流 — K2 公测：基于 R2 的无服务器事件流，内存暂存+批量落盘换成本，宣称生产端 p99 约 1 秒；实测端到端 p99 达 7.5 秒，定价与延迟争议成为讨论焦点。\n  https://www.infoq.cn/article/hEHy8XHKyfwKuyIhpyFe\n- PingCAP 遭大规模数据泄露：黑客声称窃取 10.6TB 数据 — 攻击者称拿走 18 万租户记录、11 万+ API Key 与 413 个私有仓库；PingCAP 确认控制平面遭入侵、API Key 是否可用存在分歧，已修复 4 个漏洞。\n  https://www.infoq.cn/article/2KQlziFu7oBa9Q2ZEZyr\n- Grab 日均 10 亿次请求换掉旧存储，P99 延迟降低 50% — 反欺诈 Counter Service 从宽列库迁到 Aerospike，用存储门面+影子流量（5%→100%）零停机切换，数据模型改为单行聚合，磁盘从 3TB 降到 1TB。\n  https://www.infoq.cn/article/39xM9CkCb4jcZ9yra6o6\n\nSimon Willison（非本窗口，10月20–21日）\n- eMudhra 中间 CA 私钥泄露 — 8 张中间 CA 证书私钥被攻破，链向 Mozilla/微软/苹果/Chrome 信任根，所有内置信任列表的软件都需更新；pip 26.2.2、uv 0.13.4、certifi 2026.10.19 已修。（10月21日 07:50 北京时间，略早于窗口）\n  https://simonwillison.net/2026/Oct/20/emudhra-certificates\n- 我的编程讣告（My obituary for programming） — 转引 Jeremy Scheff：写代码曾是回报最高的工作，如今 LLM 把解题本身拿走，留下的是\"造系统的人\"与\"爱解题的人\"之间的分野。（10月20日 07:58 北京时间）\n  https://simonwillison.net/2026/Oct/19/my-obituary-for-programming\n\nHamel Husain（非本窗口，10月20日 16:04 北京时间）\n- How To Use Decision Models for Evals — 实测 Jev、Perplexity Decider、Liquid d1、Cloudflare Clef Flash、OpenAI Decisions，强调默认 0.5 阈值往往浪费性能，并给出阈值调节与概率校准方法，是决策模型热潮的实操配套。\n  https://hamel.dev/blog/posts/decision-model-evals\n\nStratechery（非本窗口，10月19日）\n- Do You Trust Apple? — 从 1999 年 iBook 与 AirPort 讲起，梳理苹果\"好用且私密\"的销售主张在 AI 时代的延续与风险。\n  https://stratechery.com/2026/do-you-trust-apple\n\nSource: https://www.infoq.cn/article/iqCrZLLizNkRTpfo2Jrb",
+  "category": "street",
+  "source": {
+    "url": "https://www.infoq.cn/article/iqCrZLLizNkRTpfo2Jrb",
+    "verified_at": "2026-10-21T13:06:46Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-21-methode-499b7728",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-21T07:04:15Z",
+  "title": "llama.cpp b11785 优化 MoE 专家级投影，新增多项 TTS/SYCL 修复",
+  "summary": "llama.cpp 发布 b11785，对 MoE 模型的 down projection 引入 per-expert-token 精度缩放，显著提升 DeepSeek-V4 等专家混合模型的数值精度与推理质量。",
+  "summary_en": "llama.cpp b11785 releases per-expert-token scaling for MoE down projections using POOL_1D max reduction along the intermediate dimension, with matching power-of-two unscaling on output. This replaces global amax rescaling with a finer-grained approach, enabling tensor parallelism via split-state logic. Also ships SYCL iq3 crash fix (b11784) and a new POST /tts endpoint for TTS models (b11781).",
+  "body": "llama.cpp 发布 b11785，对 MoE 模型的 down projection 引入 per-expert-token 精度缩放，显著提升 DeepSeek-V4 等专家混合模型的数值精度与推理质量。\n\n论文 / 研究\n- Claims of emergence in AI should be grounded in information decomposition — NeurIPS Spotlight 论文，提出用信息分解（information decomposition）作为衡量 AI \"涌现\"的严格框架，区分独特/冗余/协同信息，为涌现给出可证伪的判定准则。\n  https://arxiv.org/abs/2610.28479\n- Toolflation: Seller Agents Distort Tool Markets Through Spontaneous Generative Engine Optimization — 揭示 seller agents 为提升选中率自发进行\"生成引擎优化\"，导致工具描述夸大、市场扭曲，最强工具市占率下降、任务成功率从 89% 跌至 30%。\n  https://arxiv.org/abs/2610.28454\n- Proof-Carrying Contracts: Commitments AI Agents Cannot Break — 提出 Proof-Carrying Contracts（PC2）框架，强制 agent 在执行操作前提供机器可验证的证明，保证对协议约束的全程遵守，连对抗性 agent 也无法绕过。\n  https://arxiv.org/abs/2610.28484\n- Local Work, Global Progress: A Convergence Theory of AI Agent Collaboration — 为多 LLM agent 协作建立块优化收敛理论，证明协调器合并无冲突提案可线性收敛，六 agent 团队搜索速度提升约两倍。\n  https://arxiv.org/abs/2610.28286\n\nGitHub 与基建\n- llama.cpp b11785: MoE per-expert-token scaling — 用 POOL_1D max 归约替代全局 amax 重缩放，DeepSeek-V4-Flash-Vision 等 MoE 模型精度与张量并行支持大幅改善。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11785\n- llama.cpp b11784: SYCL iq3 crash fix — 修复 SYCL 后端 iq3 量化路径崩溃问题，影响 Ubuntu x64 SYCL 用户。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11784\n- llama.cpp b11781: POST /tts endpoint — 新增 /tts 端点，支持 speaker_ref 上传和多模态流式推理，丰富了 llama.cpp server 的语音合成能力。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11781\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11785",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11785",
+    "verified_at": "2026-10-21T07:04:15Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}

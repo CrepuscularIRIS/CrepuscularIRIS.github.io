@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "2026-10-21-methode-826163eb",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-21T04:58:03Z",
+  "title": "S²-MAS：用 5 亿智能体模拟社会经济，刷新多智能体系统规模纪录",
+  "summary": "今日 arXiv 一口气涌入近百篇 AI 领域新论文，多智能体系统迎来迄今最大规模的社会级模拟框架；Hugging Face 趋势榜上 Intern Science 的 Sage-A1.5 以 571 票登顶，Ollama 0.40.7 正式版现身。",
+  "summary_en": "S²-MAS is a society-scale multi-agent simulation framework grounding 500 million synthetic household personas in real-survey data, enabling economic experiments across household groups, population scales and time horizons. Its Genese engine separates decisions from state updates, and a compact decision model FinL-mlx achieves 74.55% accuracy on consumer financial-choice scenarios. Eight financial task families were evaluated with 12 million distinct household agents in paired purchase-funding conditions.",
+  "body": "今日 arXiv 一口气涌入近百篇 AI 领域新论文，多智能体系统迎来迄今最大规模的社会级模拟框架；Hugging Face 趋势榜上 Intern Science 的 Sage-A1.5 以 571 票登顶，Ollama 0.40.7 正式版现身。\n\n论文 / arXiv 新 Submission\n- S²-MAS: 5 亿智能体的社会级多智能体模拟框架 — 基于真实调查数据构建 5 亿个家庭智能体，Genese 引擎将决策与状态更新解耦，FinL-mlx 在消费金融决策场景达 74.55% 准确率，支持大规模经济实验。\n  https://arxiv.org/abs/2610.27746\n- Navalia：可验证任务合成 + 长程后训练赋能协作智能体 — 从企业财务报告生成可验证分析任务，经 LLM 审查 + 程序化检查保证答案正确性，用 SFT+RL 提升智能体在 OfficeQA Pro、Finance Agent Benchmark 等五个基准的表现。\n  https://arxiv.org/abs/2610.26887\n- High-dimensional layer-state trajectories reveal transformer inference 内部动力学 — 将 Transformer 每层激活轨迹视为可观测过程，揭示层序定义了一种架构兼容的计算脚手架；通过置信度门控使 Qwen 闭合轨迹跨越全词汇 top-1 候选边界。\n  https://arxiv.org/abs/2610.26866\n- M-Plan：记忆编排式 LLM 智能体全面规划框架 — 解决 LLM 智能体在长程任务中规划能力退化问题，通过记忆排列组织历史信息，提升复杂多步推理的连贯性与准确性。\n  https://arxiv.org/abs/2610.27032\n- WaveCommitments：语音智能体市场的隐私可验证方案 — 提出基于密码学承诺的框架，在保护用户语音数据隐私的同时可验证智能体行为，为语音智能体交易市场提供安全基础设施。\n  https://arxiv.org/abs/2610.26867\n\nHugging Face 趋势论文（10 月 21 日）\n- Sage-A1.5：通过能力组合实现长程执行与科学探索 — Intern Science 发布，571 票今日 HF 趋势榜首；聚焦能力组合策略，使模型在科学探索等长程任务中实现更好泛化。\n  https://huggingface.co/papers\n- SolarRenderer：少步生成参考渲染 — Show Lab 工作，仅需少量去噪步数即可完成高质量图像生成参考渲染，153 票居 HF 趋势第二。\n  https://huggingface.co/papers\n- Correction Training for Diffusion Models — UC Berkeley 提出扩散模型纠错训练新范式，65 票，聚焦提升生成结果的可靠性与质量。\n  https://huggingface.co/papers\n- Focused Omni-Modal GUI Agents — 南洋理工大学提出聚焦式全模态 GUI 智能体，54 票，在图形界面自动化任务中表现出色。\n  https://huggingface.co/papers\n\nGitHub 与基建\n- Ollama v0.40.7 正式版 — 正式支持 Perplexity pplx-decider 27B 决策模型；修复 OpenAI Responses API 跨模型切换流式工具调用乱序问题；speculative decoding 现在支持更多 draft 模型；更新 llama.cpp 与 MLX。\n  https://github.com/ollama/ollama/releases/tag/v0.40.7\n- llama.cpp b11783：OpenCL Rope 程序修复 — 修复新版 Clang 下 OpenCL Rope 程序构建报错，影响使用 AMD/Intel GPU 进行推理的用户。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11783\n- llama.cpp b11782：server completion_tokens 计数修复 — 修复 batch size > 1 时 server 端 completion_tokens 数量被低估的问题。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11782\n\nSource: https://arxiv.org/abs/2610.27746",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.27746",
+    "verified_at": "2026-10-21T04:58:03Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily"
+  }
+}

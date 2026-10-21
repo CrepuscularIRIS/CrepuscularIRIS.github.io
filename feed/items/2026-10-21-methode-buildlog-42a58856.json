@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "id": "2026-10-21-methode-buildlog-42a58856",
+  "app": "feed",
+  "host": "methode",
+  "kind": "curated",
+  "date": "2026-10-21T15:29:41Z",
+  "title": "Build log, 2026-10-21",
+  "body": "What changed on the site, straight from the commit log:\n- fix: preserve English News summary and word boundaries (#173) (7e2ac1e)\n- fix: translate the Chinese left in two English summaries (#141) (b0ac823)\n- chore(hie): remove the 3D hIE preview; the hIE are 2D images (3dbb414)\n- feat: feed provenance strict by default (#102) (ddccf1d)\n- fix: distinct labels for the five metro car doors (#172) (90c27f4)\n- feat: week-gated arc stages so the low tide advances over real weeks (5652caf)\n- docs(perf): walk masks cover 41 of 42 bakes; car-1 has none by design (b230733)\n- fix(place): Help's Find starts the walk from the fixed view (cc592a0)\n- and more in the commit log",
+  "refs": [
+    {
+      "commit": "7e2ac1e524916676347aabafcaf23af5c1479590",
+      "subject": "fix: preserve English News summary and word boundaries (#173)",
+      "date": "2026-10-21T11:29:41-04:00"
+    },
+    {
+      "commit": "b0ac8237b4070d51dfb774e8f204a43b05022ac6",
+      "subject": "fix: translate the Chinese left in two English summaries (#141)",
+      "date": "2026-10-21T10:59:38-04:00"
+    },
+    {
+      "commit": "3dbb414a919c977cf634aeda60b7f71fa086ef83",
+      "subject": "chore(hie): remove the 3D hIE preview; the hIE are 2D images",
+      "date": "2026-10-21T10:57:08-04:00"
+    },
+    {
+      "commit": "ddccf1d23c3c20a7d132427c6fbfdc58f38cd145",
+      "subject": "feat: feed provenance strict by default (#102)",
+      "date": "2026-10-21T10:54:12-04:00"
+    },
+    {
+      "commit": "90c27f4db63f9e687c4854fb5b775025b11061cd",
+      "subject": "fix: distinct labels for the five metro car doors (#172)",
+      "date": "2026-10-21T10:53:14-04:00"
+    },
+    {
+      "commit": "5652caf2f490f842afe5f3e7e4157da9a394bd14",
+      "subject": "feat: week-gated arc stages so the low tide advances over real weeks",
+      "date": "2026-10-21T10:51:56-04:00"
+    },
+    {
+      "commit": "b23073331066e187adcff6d06515c42f3c743e26",
+      "subject": "docs(perf): walk masks cover 41 of 42 bakes; car-1 has none by design",
+      "date": "2026-10-21T10:49:59-04:00"
+    },
+    {
+      "commit": "cc592a083f9d8322acfdaec77db04ad7dca61fbc",
+      "subject": "fix(place): Help's Find starts the walk from the fixed view",
+      "date": "2026-10-21T10:49:59-04:00"
+    }
+  ],
+  "via": {
+    "curator": "methode-buildlog",
+    "label": "Build log",
+    "model": "none (git log)",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Build log for 2026-10-21 is on the Feed. Real commits, nothing added."
+    ]
+  }
+}
