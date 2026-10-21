@@ -1,0 +1,944 @@
+{
+ "version": 2,
+ "place": "luxury-house-1",
+ "family": "LuxuryHouseNight",
+ "variant": "N",
+ "tod": "night",
+ "cost": {
+  "triangles": 221818,
+  "drawCalls": 299,
+  "textures": 22,
+  "textureMB": 61.3
+ },
+ "exported": {
+  "triangles": 219202,
+  "drawCalls": 290,
+  "textures": 21,
+  "textureMB": 61.3
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 5929136,
+   "intensity": 0.34,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 2761760
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 10007807,
+   "intensity": 1.15,
+   "position": [
+    -9,
+    6,
+    -10
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0005,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 1,
+     "far": 40,
+     "left": -14,
+     "right": 14,
+     "top": 14,
+     "bottom": -14
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16769200,
+   "intensity": 5.4,
+   "position": [
+    1.2,
+    4.699999999999999,
+    -4
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16769200,
+   "intensity": 5.4,
+   "position": [
+    2.6399999999999997,
+    4.699999999999999,
+    -2.88
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16769200,
+   "intensity": 5.4,
+   "position": [
+    4.08,
+    4.699999999999999,
+    -1.7600000000000002
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16769208,
+   "intensity": 3.5999999999999996,
+   "position": [
+    3.6,
+    1.2,
+    2.3
+   ],
+   "visible": true,
+   "distance": 3.4,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 14477560,
+   "intensity": 5.4,
+   "position": [
+    -5.5,
+    2.2,
+    -3
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.4
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 14477560,
+   "intensity": 5.4,
+   "position": [
+    0,
+    2.2,
+    -10.5
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.4
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 14477560,
+   "intensity": 5.4,
+   "position": [
+    4.5,
+    2.2,
+    -9
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.4
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16767136,
+   "intensity": 4.800000000000001,
+   "position": [
+    -4,
+    5,
+    -2
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16767136,
+   "intensity": 4.800000000000001,
+   "position": [
+    -1,
+    5,
+    -6
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16767136,
+   "intensity": 4.800000000000001,
+   "position": [
+    4,
+    5,
+    -4
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16767136,
+   "intensity": 4.800000000000001,
+   "position": [
+    4,
+    5,
+    3
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16767136,
+   "intensity": 4.800000000000001,
+   "position": [
+    -1.5,
+    5,
+    3
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "703095d0-6958-43cd-92df-6c3349fe4d59",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "703095d0-6958-43cd-92df-6c3349fe4d59",
+   "uniform": "uWT",
+   "a": 0.35,
+   "b": 3.552714e-15
+  },
+  {
+   "material": "305a1fd6-407a-4b64-ab12-2465d2c41fe2",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "305a1fd6-407a-4b64-ab12-2465d2c41fe2",
+   "uniform": "uWT",
+   "a": 0.2,
+   "b": -1.776357e-15
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {
+  "703095d0-6958-43cd-92df-6c3349fe4d59": {
+   "uL": "v4",
+   "uLC": "c"
+  },
+  "305a1fd6-407a-4b64-ab12-2465d2c41fe2": {
+   "uL": "v4",
+   "uLC": "c"
+  }
+ },
+ "reflectors": [
+  {
+   "w": 12.2,
+   "d": 21,
+   "x": -0.5,
+   "y": 0,
+   "z": -1.5,
+   "strength": 0.15,
+   "blur": 2.4,
+   "f0": 0.05,
+   "tint": 15791359,
+   "fade": 40,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 1024,
+   "mask": null
+  }
+ ],
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    0.9,
+    6
+   ],
+   "target": [
+    0,
+    0.9,
+    1
+   ],
+   "fov": 75.3,
+   "shift": [
+    0,
+    0.148
+   ]
+  },
+  "views": [
+   {
+    "name": "wide",
+    "label": "Wide",
+    "position": [
+     4.8,
+     3.2,
+     8.2
+    ],
+    "target": [
+     -2,
+     0.6,
+     -6
+    ],
+    "fov": 70
+   },
+   {
+    "name": "column",
+    "label": "Mosaic column",
+    "position": [
+     -0.3,
+     1.5,
+     6.6
+    ],
+    "target": [
+     1.8,
+     1.8,
+     3.6
+    ],
+    "fov": 60
+   },
+   {
+    "name": "sofas",
+    "label": "Sofas",
+    "position": [
+     -1.5,
+     1.4,
+     3.8
+    ],
+    "target": [
+     -4.2,
+     0.5,
+     0.8
+    ],
+    "fov": 55
+   },
+   {
+    "name": "foliage",
+    "label": "Foliage column",
+    "position": [
+     0.5,
+     1.6,
+     1.5
+    ],
+    "target": [
+     -3.3,
+     2.4,
+     -2.8
+    ],
+    "fov": 60
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     1.5,
+     1.7,
+     -9
+    ],
+    "target": [
+     0,
+     1.2,
+     8
+    ],
+    "fov": 70
+   },
+   {
+    "name": "moon",
+    "label": "Moon + aurora",
+    "position": [
+     -2.5,
+     1.6,
+     -13.5
+    ],
+    "target": [
+     -14,
+     7,
+     -35
+    ],
+    "fov": 64
+   },
+   {
+    "name": "pool",
+    "label": "Terrace pool",
+    "position": [
+     1.5,
+     1.7,
+     -12.8
+    ],
+    "target": [
+     1.5,
+     0.3,
+     -24
+    ],
+    "fov": 58
+   },
+   {
+    "name": "garden",
+    "label": "Garden",
+    "position": [
+     -5.6,
+     1.6,
+     -1
+    ],
+    "target": [
+     -12,
+     2,
+     -3
+    ],
+    "fov": 60
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -6.3,
+   0.3,
+   -11.7
+  ],
+  "max": [
+   5.3,
+   5.9,
+   8.7
+  ]
+ },
+ "env": {
+  "background": 661040,
+  "ibl": {
+   "top": 3823240,
+   "wall": 6978200,
+   "floor": 4868690,
+   "intensity": 0.5,
+   "lights": [
+    {
+     "pos": [
+      0,
+      2.2,
+      -11.5
+     ],
+     "size": [
+      12,
+      3.2
+     ],
+     "color": 8035024,
+     "power": 2,
+     "lookAt": [
+      0,
+      1.5,
+      6
+     ]
+    },
+    {
+     "pos": [
+      -6.4,
+      2.2,
+      -2
+     ],
+     "size": [
+      14,
+      3
+     ],
+     "color": 8035024,
+     "power": 1.6,
+     "lookAt": [
+      4,
+      1.5,
+      -2
+     ]
+    },
+    {
+     "pos": [
+      2.8,
+      5.5,
+      -2.6
+     ],
+     "size": [
+      4,
+      0.5
+     ],
+     "color": 16769200,
+     "power": 6,
+     "lookAt": [
+      2.8,
+      0,
+      -2.6
+     ]
+    }
+   ]
+  },
+  "fog": {
+   "color": 1321034,
+   "near": 8,
+   "far": 46
+  },
+  "post": {
+   "outline": {
+    "color": 1845816,
+    "opacity": 0.45,
+    "depthTh": 0.012,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.45,
+    "radius": 0.35
+   },
+   "bloom": {
+    "threshold": 0.84,
+    "strength": 0.6,
+    "weights": [
+     0.45,
+     0.35,
+     0.3,
+     0.25,
+     0.2
+    ]
+   },
+   "grade": {
+    "exposure": 0.94,
+    "saturation": 0.9,
+    "lift": [
+     0.02,
+     0.03,
+     0.045
+    ],
+    "gain": [
+     0.96,
+     0.99,
+     1.03
+    ],
+    "vignette": 0.25
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 9,
+    "range": 8,
+    "near": 0.8,
+    "far": 0.25,
+    "maxRadius": 8
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -6.6,
+   -12,
+   5.6,
+   9
+  ],
+  "eye": 1.6,
+  "start": {
+   "position": [
+    0,
+    0,
+    7
+   ],
+   "target": [
+    -1,
+    1.2,
+    -6
+   ]
+  },
+  "colliders": [
+   [
+    -4.5,
+    2.2,
+    -3.1,
+    3.2
+   ],
+   [
+    0.5,
+    -4.9,
+    4.6,
+    -3.5
+   ],
+   [
+    2.6,
+    1.3,
+    4.9,
+    1.8
+   ],
+   [
+    -6.35,
+    -1.25,
+    -5.65,
+    -0.55
+   ],
+   [
+    -6.35,
+    -6.55,
+    -5.65,
+    -5.8500000000000005
+   ],
+   [
+    -6.35,
+    4.8500000000000005,
+    -5.65,
+    5.55
+   ],
+   [
+    4.65,
+    -3.35,
+    5.35,
+    -2.65
+   ],
+   [
+    4.65,
+    -9.95,
+    5.35,
+    -9.25
+   ],
+   [
+    -6.35,
+    -9.95,
+    -5.65,
+    -9.25
+   ],
+   [
+    0.050000000000000044,
+    -11.549999999999999,
+    0.75,
+    -10.85
+   ],
+   [
+    -2.95,
+    -11.549999999999999,
+    -2.25,
+    -10.85
+   ],
+   [
+    2.65,
+    -11.549999999999999,
+    3.35,
+    -10.85
+   ],
+   [
+    4.550000000000001,
+    6.050000000000001,
+    5.25,
+    6.75
+   ],
+   [
+    -1.25,
+    7.950000000000001,
+    -0.55,
+    8.65
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "gallery",
+   "kind": "terminal",
+   "label": "Display wall and reading desk",
+   "object": "spot:gallery",
+   "typed": true,
+   "anchor": [
+    4,
+    1.15,
+    2.3
+   ],
+   "built": [
+    4,
+    1.15,
+    2.3
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door",
+   "kind": "link",
+   "label": "To the street",
+   "object": "spot:door",
+   "typed": true,
+   "anchor": [
+    0,
+    1.3,
+    8.9
+   ],
+   "built": [
+    0,
+    1.3,
+    8.9
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "lux-table",
+   "kind": "inspect",
+   "label": "Coffee table",
+   "object": "spot:lux-table",
+   "typed": true,
+   "anchor": [
+    -1.5,
+    0.35,
+    -1
+   ],
+   "built": [
+    -1.5,
+    0.35,
+    -1
+   ],
+   "reach": 5
+  },
+  {
+   "id": "lux-sea",
+   "kind": "inspect",
+   "label": "The view",
+   "object": "spot:lux-sea",
+   "typed": true,
+   "anchor": [
+    -6,
+    1.4,
+    -2
+   ],
+   "built": [
+    -6,
+    1.4,
+    -2
+   ],
+   "reach": 5
+  },
+  {
+   "id": "lux-palm",
+   "kind": "inspect",
+   "label": "Palm and vase",
+   "object": "spot:lux-palm",
+   "typed": true,
+   "anchor": [
+    1.8,
+    1.8,
+    3.6
+   ],
+   "built": [
+    1.8,
+    1.8,
+    3.6
+   ],
+   "reach": 5
+  },
+  {
+   "id": "lux-light",
+   "kind": "inspect",
+   "label": "The light",
+   "object": "spot:lux-light",
+   "typed": true,
+   "anchor": [
+    3,
+    5.4,
+    -2.6
+   ],
+   "built": [
+    3,
+    5.4,
+    -2.6
+   ],
+   "reach": 5
+  }
+ ],
+ "bind": {
+  "gallery": {
+   "object": "spot:gallery",
+   "how": "mesh",
+   "on": "counter < furniture",
+   "at": [
+    4,
+    1.15,
+    2.3
+   ]
+  },
+  "door": {
+   "object": "spot:door",
+   "how": "node",
+   "on": null,
+   "at": [
+    0,
+    1.3,
+    8.9
+   ]
+  },
+  "lux-table": {
+   "object": "spot:lux-table",
+   "how": "mesh",
+   "on": "dressing < LuxuryHouseNight",
+   "at": [
+    -1.5,
+    0.35,
+    -1
+   ]
+  },
+  "lux-sea": {
+   "object": "spot:lux-sea",
+   "how": "node",
+   "on": null,
+   "at": [
+    -6,
+    1.4,
+    -2
+   ]
+  },
+  "lux-palm": {
+   "object": "spot:lux-palm",
+   "how": "node",
+   "on": null,
+   "at": [
+    1.8,
+    1.8,
+    3.6
+   ]
+  },
+  "lux-light": {
+   "object": "spot:lux-light",
+   "how": "node",
+   "on": null,
+   "at": [
+    3,
+    5.4,
+    -2.6
+   ]
+  }
+ },
+ "premerge": {
+  "spot:door": [
+   0,
+   1.3,
+   8.9
+  ],
+  "spot:lux-sea": [
+   -6,
+   1.4,
+   -2
+  ],
+  "spot:lux-palm": [
+   1.8,
+   1.8,
+   3.6
+  ],
+  "spot:lux-light": [
+   3,
+   5.4,
+   -2.6
+  ]
+ },
+ "doorProps": {},
+ "anchorsBefore": {
+  "named": 0,
+  "typed": 6
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 0,
+  "triangles": 0
+ },
+ "manifestColliders": 0,
+ "manifest": false,
+ "three": "170",
+ "key": "luxury-house-1-night",
+ "hour": 22,
+ "bakedAt": "2026-10-21T12:58:58.909Z",
+ "source": {
+  "family": "LuxuryHouseNight (N) built at runtime by lab/src/scenes",
+  "exportBytes": 15110528,
+  "triangles": 221818,
+  "drawCalls": 299,
+  "textures": 22,
+  "textureMB": 61.3
+ },
+ "lods": {
+  "lod0": {
+   "file": "luxury-house-1-night.glb",
+   "triangles": 26792,
+   "primitives": 168,
+   "materials": 151,
+   "textures": 12,
+   "textureKB": 825,
+   "bytes": 1534964
+  },
+  "lod1": {
+   "file": "luxury-house-1-night.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 18703,
+   "primitives": 168,
+   "materials": 151,
+   "textures": 12,
+   "textureKB": 264,
+   "bytes": 927268
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "spot:gallery",
+   "spot:lux-table",
+   "spot:door",
+   "spot:lux-sea",
+   "spot:lux-palm",
+   "spot:lux-light"
+  ],
+  "exportBytes": 37184
+ },
+ "live": {
+  "file": "luxury-house-1-night.live.json",
+  "bytes": 50436,
+  "objects": [
+   "skyDome",
+   "water",
+   "pool-water",
+   "Mesh",
+   "Mesh",
+   "Mesh"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs luxury-house-1 --variant night (dev server running, BASE=...)"
+ ]
+}

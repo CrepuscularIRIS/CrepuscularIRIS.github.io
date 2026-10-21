@@ -1,0 +1,911 @@
+{
+ "version": 2,
+ "place": "company-meetingroom",
+ "family": "CompanyMeetingroom",
+ "variant": "D",
+ "tod": "day",
+ "cost": {
+  "triangles": 50158,
+  "drawCalls": 194,
+  "textures": 30,
+  "textureMB": 96.9
+ },
+ "exported": {
+  "triangles": 48872,
+  "drawCalls": 145,
+  "textures": 27,
+  "textureMB": 94.7
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 10261656,
+   "intensity": 0.3,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 3880764
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16773348,
+   "intensity": 0.55,
+   "position": [
+    0.6,
+    6.5,
+    4.2
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    3.6
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0004,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 1,
+     "far": 14,
+     "left": -6,
+     "right": 6,
+     "top": 7,
+     "bottom": -7
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16771544,
+   "intensity": 2.9700000000000006,
+   "position": [
+    -1.7,
+    2.54,
+    1.65
+   ],
+   "visible": true,
+   "distance": 5.2,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16771544,
+   "intensity": 2.9700000000000006,
+   "position": [
+    -1.7,
+    2.54,
+    4.05
+   ],
+   "visible": true,
+   "distance": 5.2,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16771544,
+   "intensity": 2.9700000000000006,
+   "position": [
+    -1.7,
+    2.54,
+    6.45
+   ],
+   "visible": true,
+   "distance": 5.2,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16771544,
+   "intensity": 2.9700000000000006,
+   "position": [
+    1.6,
+    2.54,
+    1.65
+   ],
+   "visible": true,
+   "distance": 5.2,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16771544,
+   "intensity": 2.9700000000000006,
+   "position": [
+    1.6,
+    2.54,
+    4.05
+   ],
+   "visible": true,
+   "distance": 5.2,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16771544,
+   "intensity": 2.9700000000000006,
+   "position": [
+    1.6,
+    2.54,
+    6.45
+   ],
+   "visible": true,
+   "distance": 5.2,
+   "decay": 1.8
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 9078432,
+   "intensity": 0.25,
+   "position": [
+    -2,
+    2.5,
+    9
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16769752,
+   "intensity": 4.4,
+   "position": [
+    0.15,
+    1.8,
+    1.5
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16182514,
+   "intensity": 0.66,
+   "position": [
+    -1.9000000000000001,
+    1.8,
+    3.3
+   ],
+   "visible": true,
+   "distance": 4.5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16770264,
+   "intensity": 4.4,
+   "position": [
+    2.2,
+    2.4,
+    2.6
+   ],
+   "visible": true,
+   "distance": 4.5,
+   "decay": 1.8
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "cdb49b11-bf56-4b8d-a6dc-56212bb0acf3",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "a773c307-e3f1-4f44-8e0f-73115fb4edfd",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "38f6af10-c25a-481c-b17b-bcf87d134f79",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {},
+ "reflectors": [
+  {
+   "w": 0.8,
+   "d": 3.4,
+   "x": -0.51,
+   "y": 0.74,
+   "z": 5.9,
+   "strength": 1.1,
+   "blur": 0.8,
+   "f0": 0.2,
+   "tint": 16051448,
+   "fade": 12,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 512,
+   "mask": null
+  },
+  {
+   "w": 5.5,
+   "d": 8.7,
+   "x": 0.1499999999999999,
+   "y": 0,
+   "z": 4.35,
+   "strength": 0.34,
+   "blur": 1.6,
+   "f0": 0.06,
+   "tint": 15788276,
+   "fade": 40,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 768,
+   "mask": null
+  }
+ ],
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    1.15,
+    7.82
+   ],
+   "target": [
+    0,
+    1.15,
+    0
+   ],
+   "fov": 46.7,
+   "shift": [
+    0,
+    0.111
+   ]
+  },
+  "views": [
+   {
+    "name": "wide",
+    "label": "Wide",
+    "position": [
+     2.2,
+     1.9,
+     7.9
+    ],
+    "target": [
+     -1.2,
+     0.9,
+     1.5
+    ],
+    "fov": 60
+   },
+   {
+    "name": "table",
+    "label": "Table",
+    "position": [
+     -1.9,
+     1.35,
+     5.8
+    ],
+    "target": [
+     0.6,
+     0.6,
+     4.3
+    ],
+    "fov": 50
+   },
+   {
+    "name": "credenza",
+    "label": "Credenza",
+    "position": [
+     -0.9,
+     1.25,
+     2
+    ],
+    "target": [
+     0.6,
+     0.8,
+     0.3
+    ],
+    "fov": 50
+   },
+   {
+    "name": "board",
+    "label": "Board",
+    "position": [
+     0.9,
+     1.35,
+     4.6
+    ],
+    "target": [
+     -2.6,
+     1.5,
+     3.1
+    ],
+    "fov": 55
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     -0.4,
+     1.6,
+     1.2
+    ],
+    "target": [
+     0.9,
+     1.2,
+     9.4
+    ],
+    "fov": 60
+   },
+   {
+    "name": "chair",
+    "label": "Chair",
+    "position": [
+     1.15,
+     1,
+     6.1
+    ],
+    "target": [
+     0.35,
+     0.65,
+     5.7
+    ],
+    "fov": 45
+   },
+   {
+    "name": "ceiling",
+    "label": "Ceiling",
+    "position": [
+     0.4,
+     1.3,
+     6.4
+    ],
+    "target": [
+     -0.6,
+     3,
+     2.6
+    ],
+    "fov": 55
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -2.45,
+   0.2,
+   0.15
+  ],
+  "max": [
+   2.75,
+   2.94,
+   8.549999999999999
+  ]
+ },
+ "env": {
+  "background": 1315352,
+  "ibl": {
+   "top": 3814974,
+   "wall": 8024704,
+   "floor": 3814972,
+   "intensity": 0.55,
+   "lights": [
+    {
+     "pos": [
+      -1.7,
+      3,
+      4
+     ],
+     "size": [
+      0.8,
+      4.5
+     ],
+     "color": 16773350,
+     "power": 5,
+     "lookAt": [
+      -1.7,
+      0,
+      4
+     ]
+    },
+    {
+     "pos": [
+      1.7,
+      3,
+      4
+     ],
+     "size": [
+      0.8,
+      4.5
+     ],
+     "color": 16773350,
+     "power": 5,
+     "lookAt": [
+      1.7,
+      0,
+      4
+     ]
+    },
+    {
+     "pos": [
+      -2.5,
+      1.5,
+      3.2
+     ],
+     "size": [
+      2.6,
+      1.4
+     ],
+     "color": 16051446,
+     "power": 1.5,
+     "lookAt": [
+      2,
+      1.2,
+      3.2
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 1446940,
+    "opacity": 0.55,
+    "depthTh": 0.012,
+    "normalTh": 0.28
+   },
+   "ao": {
+    "strength": 0.55,
+    "radius": 0.32
+   },
+   "bloom": {
+    "threshold": 0.78,
+    "strength": 0.55,
+    "weights": [
+     0.45,
+     0.45,
+     0.4,
+     0.35,
+     0.3
+    ]
+   },
+   "fog": {
+    "enabled": true,
+    "color": 5919840,
+    "density": 0.012,
+    "falloff": 0.3,
+    "base": 0,
+    "near": 3,
+    "maxOpacity": 0.25
+   },
+   "grade": {
+    "exposure": 0.92,
+    "saturation": 0.9,
+    "lift": [
+     0.02,
+     0.012,
+     0.02
+    ],
+    "gain": [
+     1.02,
+     0.97,
+     1
+    ],
+    "vignette": 0.34
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 5,
+    "range": 3.5,
+    "near": 1.2,
+    "far": 0.5,
+    "maxRadius": 6
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -2.6,
+   0,
+   2.9,
+   8.7
+  ],
+  "eye": 1.55,
+  "start": {
+   "position": [
+    1.5,
+    0,
+    7.4
+   ],
+   "target": [
+    -0.4,
+    1.1,
+    2
+   ]
+  },
+  "colliders": [
+   [
+    -0.9600000000000001,
+    4.15,
+    -0.06,
+    7.6499999999999995
+   ],
+   [
+    -1.6,
+    4.2,
+    -0.91,
+    7.6
+   ],
+   [
+    -0.11,
+    3.7,
+    0.6,
+    7.6
+   ],
+   [
+    -0.85,
+    3.4,
+    -0.15,
+    4.2
+   ],
+   [
+    -1.3,
+    0,
+    2,
+    0.62
+   ],
+   [
+    2.25,
+    2.15,
+    2.9,
+    4.15
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "board",
+   "kind": "terminal",
+   "label": "Project board",
+   "object": "spot:board",
+   "typed": true,
+   "anchor": [
+    -2.5,
+    1.51,
+    3.3
+   ],
+   "built": [
+    -2.5,
+    1.51,
+    3.3
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "saturnus",
+   "kind": "chat",
+   "label": "Saturnus",
+   "object": "spot:saturnus",
+   "typed": true,
+   "anchor": [
+    -0.7,
+    0.95,
+    5.5
+   ],
+   "built": [
+    -0.7,
+    0.95,
+    5.5
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-office",
+   "kind": "link",
+   "label": "To the workshop",
+   "object": "spot:door-office",
+   "typed": true,
+   "anchor": [
+    1.3,
+    1,
+    8.6
+   ],
+   "built": [
+    1.3,
+    1,
+    8.6
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "meet-credenza",
+   "kind": "inspect",
+   "label": "Credenza",
+   "object": "credenzaProps",
+   "typed": false,
+   "anchor": [
+    0.44000000089406965,
+    0.9899999994784594,
+    0.30500000216066836
+   ],
+   "built": [
+    0.44000000089406965,
+    0.9899999994784594,
+    0.30500000216066836
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "meet-audit-card",
+   "kind": "note",
+   "label": "Audit card",
+   "object": "spot:meet-audit-card",
+   "typed": true,
+   "anchor": [
+    -2.5,
+    1.2,
+    1.2
+   ],
+   "built": [
+    -2.5,
+    1.2,
+    1.2
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "meet-blinds",
+   "kind": "use",
+   "label": "Window blinds",
+   "object": "spot:meet-blinds",
+   "typed": true,
+   "anchor": [
+    2.7,
+    1.2,
+    3
+   ],
+   "built": [
+    2.7,
+    1.2,
+    3
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "frag-10",
+   "kind": "fragment",
+   "label": "Glowing shard",
+   "object": "spot:frag-10",
+   "typed": true,
+   "anchor": [
+    2.6,
+    1,
+    6
+   ],
+   "built": [
+    2.6,
+    1,
+    6
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "board": {
+   "object": "spot:board",
+   "how": "mesh",
+   "on": "delivery-details < CompanyMeetingroom",
+   "at": [
+    -2.5,
+    1.51,
+    3.3
+   ]
+  },
+  "saturnus": {
+   "object": "spot:saturnus",
+   "how": "node",
+   "on": null,
+   "at": [
+    -0.7,
+    0.95,
+    5.5
+   ]
+  },
+  "door-office": {
+   "object": "spot:door-office",
+   "how": "node",
+   "on": null,
+   "at": [
+    1.3,
+    1,
+    8.6
+   ]
+  },
+  "meet-audit-card": {
+   "object": "spot:meet-audit-card",
+   "how": "node",
+   "on": null,
+   "at": [
+    -2.5,
+    1.2,
+    1.2
+   ]
+  },
+  "meet-blinds": {
+   "object": "spot:meet-blinds",
+   "how": "mesh",
+   "on": "furniture",
+   "at": [
+    2.7,
+    1.2,
+    3
+   ]
+  },
+  "frag-10": {
+   "object": "spot:frag-10",
+   "how": "node",
+   "on": null,
+   "at": [
+    2.6,
+    1,
+    6
+   ]
+  }
+ },
+ "premerge": {
+  "spot:saturnus": [
+   -0.7,
+   0.95,
+   5.5
+  ],
+  "spot:door-office": [
+   1.3,
+   1,
+   8.6
+  ],
+  "spot:meet-audit-card": [
+   -2.5,
+   1.2,
+   1.2
+  ],
+  "spot:frag-10": [
+   2.6,
+   1,
+   6
+  ],
+  "credenzaProps": [
+   0.44000000089406965,
+   0.9899999994784594,
+   0.30500000216066836
+  ]
+ },
+ "doorProps": {},
+ "anchorsBefore": {
+  "named": 1,
+  "typed": 6
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 26,
+  "triangles": 9258
+ },
+ "manifestColliders": 0,
+ "manifest": false,
+ "three": "170",
+ "key": "company-meetingroom",
+ "hour": 13,
+ "bakedAt": "2026-10-21T13:01:20.940Z",
+ "source": {
+  "family": "CompanyMeetingroom (D) built at runtime by lab/src/scenes",
+  "exportBytes": 25920356,
+  "triangles": 50158,
+  "drawCalls": 194,
+  "textures": 30,
+  "textureMB": 96.9
+ },
+ "lods": {
+  "lod0": {
+   "file": "company-meetingroom.glb",
+   "triangles": 30274,
+   "primitives": 118,
+   "materials": 117,
+   "textures": 11,
+   "textureKB": 960,
+   "bytes": 1352000
+  },
+  "lod1": {
+   "file": "company-meetingroom.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 16600,
+   "primitives": 118,
+   "materials": 117,
+   "textures": 11,
+   "textureKB": 243,
+   "bytes": 554912
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "credenzaProps",
+   "spot:meet-blinds",
+   "spot:board",
+   "spot:saturnus",
+   "spot:door-office",
+   "spot:meet-audit-card",
+   "spot:frag-10"
+  ],
+  "exportBytes": 130076
+ },
+ "live": {
+  "file": "company-meetingroom.live.json",
+  "bytes": 49022,
+  "objects": [
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "motes",
+   "groundMist",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs company-meetingroom (dev server running, BASE=...)"
+ ]
+}

@@ -1,0 +1,781 @@
+{
+ "version": 2,
+ "place": "hospital-b",
+ "family": "HospitalWard",
+ "variant": "",
+ "tod": "day",
+ "cost": {
+  "triangles": 42732,
+  "drawCalls": 258,
+  "textures": 35,
+  "textureMB": 71.8
+ },
+ "exported": {
+  "triangles": 8952,
+  "drawCalls": 120,
+  "textures": 18,
+  "textureMB": 49.7
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 14206144,
+   "intensity": 0.3,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 3813416
+  },
+  {
+   "type": "SpotLight",
+   "name": "",
+   "color": 16774388,
+   "intensity": 60,
+   "position": [
+    5.175000000000001,
+    2.5500000000000003,
+    0.39999999999999997
+   ],
+   "visible": true,
+   "distance": 10,
+   "decay": 1.6,
+   "angle": 1.25,
+   "penumbra": 0.85,
+   "target": [
+    4.775,
+    0,
+    1.4
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0004,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 0.5,
+     "far": 10,
+     "fov": 143.2394487827058
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16183030,
+   "intensity": 4.800000000000001,
+   "position": [
+    5.175000000000001,
+    2,
+    0.8
+   ],
+   "visible": true,
+   "distance": 6,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 10129663,
+   "intensity": 5.4,
+   "position": [
+    2.1,
+    1.4,
+    0.45
+   ],
+   "visible": true,
+   "distance": 3.8,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 10129663,
+   "intensity": 3.5999999999999996,
+   "position": [
+    1.1,
+    1.6,
+    0.45
+   ],
+   "visible": true,
+   "distance": 3.8,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16767168,
+   "intensity": 6.6000000000000005,
+   "position": [
+    6.28,
+    1.55,
+    0.7
+   ],
+   "visible": true,
+   "distance": 3,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 10522879,
+   "intensity": 5.4,
+   "position": [
+    6.1,
+    1.5,
+    4.9
+   ],
+   "visible": true,
+   "distance": 2.8,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 15261936,
+   "intensity": 4.199999999999999,
+   "position": [
+    1.4,
+    2.1,
+    2.1
+   ],
+   "visible": true,
+   "distance": 3.6,
+   "decay": 1.8
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 14732488,
+   "intensity": 0.15,
+   "position": [
+    8,
+    3,
+    8
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "cc1357bc-f533-4943-a614-ab2060cfd0df",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "4472425a-a3f9-41a8-8b48-2b2cf83ca419",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "2e4857be-fefb-4697-b325-540fdd41c176",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {},
+ "reflectors": [],
+ "camera": {
+  "ref": {
+   "position": [
+    8.534,
+    1.462,
+    6.179
+   ],
+   "target": [
+    4.962,
+    1.462,
+    2.68
+   ],
+   "fov": 30.22,
+   "shift": [
+    0,
+    -0.134
+   ]
+  },
+  "views": [
+   {
+    "name": "wide",
+    "label": "Wide",
+    "position": [
+     8,
+     2.2,
+     7
+    ],
+    "target": [
+     3,
+     0.8,
+     1
+    ],
+    "fov": 64
+   },
+   {
+    "name": "bed",
+    "label": "Bed",
+    "position": [
+     4.6,
+     1.5,
+     5.4
+    ],
+    "target": [
+     6.4,
+     0.7,
+     2.6
+    ],
+    "fov": 55
+   },
+   {
+    "name": "chair",
+    "label": "Recliner",
+    "position": [
+     5.2,
+     1.25,
+     5.2
+    ],
+    "target": [
+     3.8,
+     0.75,
+     3.6
+    ],
+    "fov": 50
+   },
+   {
+    "name": "window",
+    "label": "Windows",
+    "position": [
+     5,
+     1.5,
+     4
+    ],
+    "target": [
+     2.8,
+     1.5,
+     -0.8
+    ],
+    "fov": 60
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     1.8,
+     1.7,
+     1.2
+    ],
+    "target": [
+     7,
+     1.1,
+     6.5
+    ],
+    "fov": 64
+   },
+   {
+    "name": "ensuite",
+    "label": "Ensuite door",
+    "position": [
+     2.3,
+     1.5,
+     2.2
+    ],
+    "target": [
+     0,
+     1.1,
+     0.35
+    ],
+    "fov": 55
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   0.2,
+   0.2,
+   0.35
+  ],
+  "max": [
+   8.200000000000001,
+   2.45,
+   7.2
+  ]
+ },
+ "env": {
+  "background": 3813944,
+  "ibl": {
+   "top": 6971480,
+   "wall": 6972508,
+   "floor": 3155998,
+   "intensity": 0.3,
+   "lights": [
+    {
+     "pos": [
+      5.2,
+      2.55,
+      0.4
+     ],
+     "size": [
+      2.6,
+      1.6
+     ],
+     "color": 16773366,
+     "power": 6,
+     "lookAt": [
+      5.2,
+      0,
+      0.4
+     ]
+    },
+    {
+     "pos": [
+      3.7,
+      1.4,
+      -1.6
+     ],
+     "size": [
+      3,
+      1.6
+     ],
+     "color": 10129663,
+     "power": 2.5,
+     "lookAt": [
+      3.7,
+      1.4,
+      6
+     ]
+    },
+    {
+     "pos": [
+      0.1,
+      1.2,
+      2
+     ],
+     "size": [
+      1.5,
+      1.4
+     ],
+     "color": 13156568,
+     "power": 0.8,
+     "lookAt": [
+      6,
+      1.2,
+      2
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 2760744,
+    "opacity": 0.45,
+    "depthTh": 0.012,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.55,
+    "radius": 0.3
+   },
+   "bloom": {
+    "threshold": 0.8,
+    "strength": 0.5,
+    "weights": [
+     0.45,
+     0.35,
+     0.3,
+     0.25,
+     0.2
+    ]
+   },
+   "grade": {
+    "exposure": 0.82,
+    "saturation": 0.92,
+    "lift": [
+     0.02,
+     0.015,
+     0.01
+    ],
+    "gain": [
+     1.04,
+     0.98,
+     0.94
+    ],
+    "vignette": 0.3
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 5.5,
+    "range": 3,
+    "near": 1.2,
+    "far": 0.4,
+    "maxRadius": 10,
+    "tilt": {
+     "center": [
+      0.55,
+      0.6
+     ],
+     "radius": [
+      0.42,
+      0.42
+     ],
+     "soft": 0.3,
+     "strength": 6
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   0,
+   0.3,
+   8.4,
+   7.4
+  ],
+  "eye": 1.55,
+  "start": {
+   "position": [
+    7.9,
+    0,
+    6.6
+   ],
+   "target": [
+    5.84,
+    1.1,
+    1.95
+   ]
+  },
+  "colliders": [],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "cranial-chart",
+   "kind": "terminal",
+   "label": "Reference chart",
+   "object": "spot:cranial-chart",
+   "typed": true,
+   "anchor": [
+    0.08,
+    1.2,
+    1.97
+   ],
+   "built": [
+    0.08,
+    1.2,
+    1.97
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "ward-tv",
+   "kind": "terminal",
+   "label": "Bedside screen",
+   "object": "tv",
+   "typed": false,
+   "anchor": [
+    5.973910430566554,
+    0.9624999930150807,
+    5.8
+   ],
+   "built": [
+    5.973910430566554,
+    0.9624999930150807,
+    5.8
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "lab-door",
+   "kind": "link",
+   "label": "Back to the lab",
+   "object": "spot:lab-door",
+   "typed": true,
+   "anchor": [
+    6.9,
+    1.1,
+    7.35
+   ],
+   "built": [
+    6.9,
+    1.1,
+    7.35
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "ward-bed",
+   "kind": "inspect",
+   "label": "Hospital bed",
+   "object": "bed",
+   "typed": false,
+   "anchor": [
+    6.758253575861454,
+    0.5339999992400408,
+    3.3630015134811404
+   ],
+   "built": [
+    6.758253575861454,
+    0.5339999992400408,
+    3.3630015134811404
+   ],
+   "reach": 5
+  },
+  {
+   "id": "ward-recliner",
+   "kind": "inspect",
+   "label": "Navy recliner",
+   "object": "recliner",
+   "typed": false,
+   "anchor": [
+    3.530714509198176,
+    0.9344524925777438,
+    3.3958274677150753
+   ],
+   "built": [
+    3.530714509198176,
+    0.9344524925777438,
+    3.3958274677150753
+   ],
+   "reach": 5
+  },
+  {
+   "id": "ward-lamp",
+   "kind": "inspect",
+   "label": "Floor lamp",
+   "object": "lamp",
+   "typed": false,
+   "anchor": [
+    6.28,
+    0.9099999983794986,
+    0.4
+   ],
+   "built": [
+    6.28,
+    0.9099999983794986,
+    0.4
+   ],
+   "reach": 5
+  },
+  {
+   "id": "ward-cart",
+   "kind": "inspect",
+   "label": "Drawer cart",
+   "object": "cart",
+   "typed": false,
+   "anchor": [
+    -0.18250000149011616,
+    0.4606117969751358,
+    0.3
+   ],
+   "built": [
+    -0.18250000149011616,
+    0.4606117969751358,
+    0.3
+   ],
+   "reach": 5
+  },
+  {
+   "id": "ward-curtains",
+   "kind": "inspect",
+   "label": "Drawn drapes",
+   "object": "spot:ward-curtains",
+   "typed": true,
+   "anchor": [
+    4,
+    1.4,
+    -0.9
+   ],
+   "built": [
+    4,
+    1.4,
+    -0.9
+   ],
+   "reach": 5
+  },
+  {
+   "id": "ward-magazine",
+   "kind": "inspect",
+   "label": "Magazine",
+   "object": "spot:ward-magazine",
+   "typed": true,
+   "anchor": [
+    3.9,
+    0.05,
+    4.05
+   ],
+   "built": [
+    3.9,
+    0.05,
+    4.05
+   ],
+   "reach": 5
+  }
+ ],
+ "bind": {
+  "cranial-chart": {
+   "object": "spot:cranial-chart",
+   "how": "mesh",
+   "on": "room < HospitalWard",
+   "at": [
+    0.08,
+    1.2,
+    1.97
+   ]
+  },
+  "lab-door": {
+   "object": "spot:lab-door",
+   "how": "node",
+   "on": null,
+   "at": [
+    6.9,
+    1.1,
+    7.35
+   ]
+  },
+  "ward-curtains": {
+   "object": "spot:ward-curtains",
+   "how": "mesh",
+   "on": "room < HospitalWard",
+   "at": [
+    4,
+    1.4,
+    -0.9
+   ]
+  },
+  "ward-magazine": {
+   "object": "spot:ward-magazine",
+   "how": "mesh",
+   "on": "furniture < HospitalWard",
+   "at": [
+    3.9,
+    0.05,
+    4.05
+   ]
+  }
+ },
+ "premerge": {
+  "spot:lab-door": [
+   6.9,
+   1.1,
+   7.35
+  ],
+  "tv": [
+   5.973910430566554,
+   0.9624999930150807,
+   5.8
+  ],
+  "bed": [
+   6.758253575861454,
+   0.5339999992400408,
+   3.3630015134811404
+  ],
+  "recliner": [
+   3.530714509198176,
+   0.9344524925777438,
+   3.3958274677150753
+  ],
+  "lamp": [
+   6.28,
+   0.9099999983794986,
+   0.4
+  ],
+  "cart": [
+   -0.18250000149011616,
+   0.4606117969751358,
+   0.3
+  ]
+ },
+ "doorProps": {},
+ "anchorsBefore": {
+  "named": 5,
+  "typed": 4
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 0,
+  "triangles": 0
+ },
+ "manifestColliders": 0,
+ "manifest": false,
+ "three": "170",
+ "key": "hospital-b",
+ "hour": 13,
+ "bakedAt": "2026-10-21T12:57:29.427Z",
+ "source": {
+  "family": "HospitalWard () built at runtime by lab/src/scenes",
+  "exportBytes": 16191928,
+  "triangles": 42732,
+  "drawCalls": 258,
+  "textures": 35,
+  "textureMB": 71.8
+ },
+ "lods": {
+  "lod0": {
+   "file": "hospital-b.glb",
+   "triangles": 34604,
+   "primitives": 188,
+   "materials": 171,
+   "textures": 15,
+   "textureKB": 1725,
+   "bytes": 2188048
+  },
+  "lod1": {
+   "file": "hospital-b.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 31805,
+   "primitives": 188,
+   "materials": 171,
+   "textures": 15,
+   "textureKB": 458,
+   "bytes": 889048
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "spot:ward-curtains",
+   "spot:cranial-chart",
+   "bed",
+   "recliner",
+   "cart",
+   "tv",
+   "lamp",
+   "spot:ward-magazine",
+   "spot:lab-door"
+  ],
+  "exportBytes": 6892024
+ },
+ "live": {
+  "file": "hospital-b.live.json",
+  "bytes": 1354669,
+  "objects": [
+   "Mesh",
+   "overcastView",
+   "smokePlume",
+   "motes"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs hospital-b (dev server running, BASE=...)"
+ ]
+}

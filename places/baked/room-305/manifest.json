@@ -1,0 +1,758 @@
+{
+ "version": 2,
+ "place": "room-305",
+ "family": "Building305",
+ "variant": "hall",
+ "tod": "day",
+ "cost": {
+  "triangles": 6998,
+  "drawCalls": 151,
+  "textures": 22,
+  "textureMB": 41.9
+ },
+ "exported": {
+  "triangles": 3358,
+  "drawCalls": 87,
+  "textures": 16,
+  "textureMB": 40.7
+ },
+ "lights": [
+  {
+   "type": "SpotLight",
+   "name": "",
+   "color": 13622512,
+   "intensity": 9,
+   "position": [
+    1.2,
+    1.55,
+    -11.2
+   ],
+   "visible": true,
+   "distance": 16,
+   "decay": 1.3,
+   "angle": 0.2,
+   "penumbra": 0.75,
+   "target": [
+    1,
+    0,
+    -3
+   ]
+  },
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 14474468,
+   "intensity": 0.12,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 8024168
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 15921396,
+   "intensity": 0.35,
+   "position": [
+    6,
+    5,
+    12
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    -1
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16052458,
+   "intensity": 3.3000000000000003,
+   "position": [
+    1.7,
+    2,
+    -8.3
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16052458,
+   "intensity": 3.3000000000000003,
+   "position": [
+    1.7,
+    2,
+    -5.9
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16052458,
+   "intensity": 3.3000000000000003,
+   "position": [
+    1.7,
+    2,
+    -3.5
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16052458,
+   "intensity": 3.3000000000000003,
+   "position": [
+    1.7,
+    2,
+    -1.1
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16052458,
+   "intensity": 3.3000000000000003,
+   "position": [
+    1.7,
+    2,
+    1.3
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16052458,
+   "intensity": 2.7,
+   "position": [
+    0.5,
+    2.2,
+    5.2
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16052458,
+   "intensity": 2.7,
+   "position": [
+    3.5,
+    2.2,
+    5.2
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16052458,
+   "intensity": 2.7,
+   "position": [
+    0.5,
+    2.2,
+    6.6
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16052458,
+   "intensity": 2.7,
+   "position": [
+    3.5,
+    2.2,
+    6.6
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 15789288,
+   "intensity": 0.72,
+   "position": [
+    0.7,
+    1.5,
+    -0.45
+   ],
+   "visible": true,
+   "distance": 2.2,
+   "decay": 2
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "bffc7592-adb7-4e54-bcd0-9622714cdbb5",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {},
+ "reflectors": [
+  {
+   "w": 7,
+   "d": 18,
+   "x": 2.1,
+   "y": 0,
+   "z": -1.65,
+   "strength": 0.2,
+   "blur": 2.4,
+   "f0": 0.05,
+   "tint": 15262944,
+   "fade": 40,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 768,
+   "mask": null
+  }
+ ],
+ "camera": {
+  "ref": {
+   "position": [
+    3.099,
+    0.595,
+    5.357
+   ],
+   "target": [
+    1.693,
+    0.595,
+    1.612
+   ],
+   "fov": 23.1,
+   "shift": [
+    0,
+    0.198
+   ]
+  },
+  "views": [
+   {
+    "name": "door",
+    "label": "Door",
+    "position": [
+     1.4,
+     1.3,
+     -0.62
+    ],
+    "target": [
+     0,
+     1.3,
+     -0.45
+    ],
+    "fov": 45
+   },
+   {
+    "name": "corridor",
+    "label": "Corridor",
+    "position": [
+     1.3,
+     1.55,
+     3
+    ],
+    "target": [
+     1,
+     1.3,
+     -9
+    ],
+    "fov": 55
+   },
+   {
+    "name": "lobby",
+    "label": "Lobby",
+    "position": [
+     0.8,
+     1.6,
+     -2.5
+    ],
+    "target": [
+     2,
+     1.2,
+     6.5
+    ],
+    "fov": 60
+   },
+   {
+    "name": "handle",
+    "label": "Handle",
+    "position": [
+     0.55,
+     1.05,
+     -0.25
+    ],
+    "target": [
+     -0.12,
+     0.95,
+     -0.12
+    ],
+    "fov": 40
+   },
+   {
+    "name": "plate",
+    "label": "Plate",
+    "position": [
+     0.9,
+     1.7,
+     -0.6
+    ],
+    "target": [
+     0,
+     1.7,
+     -1
+    ],
+    "fov": 40
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   0.12,
+   0.12,
+   -10.5
+  ],
+  "max": [
+   5.4,
+   2.62,
+   7.2
+  ]
+ },
+ "env": {
+  "background": 9079440,
+  "ibl": {
+   "top": 13158608,
+   "wall": 10132130,
+   "floor": 8024168,
+   "intensity": 0.32,
+   "lights": [
+    {
+     "pos": [
+      -1.2,
+      1.6,
+      6
+     ],
+     "size": [
+      2.4,
+      2
+     ],
+     "color": 15265012,
+     "power": 2.2,
+     "lookAt": [
+      2,
+      1.2,
+      -1
+     ]
+    },
+    {
+     "pos": [
+      1.5,
+      2.6,
+      -4
+     ],
+     "size": [
+      0.8,
+      12
+     ],
+     "color": 16052974,
+     "power": 3,
+     "lookAt": [
+      1.5,
+      0,
+      -4
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 2763312,
+    "opacity": 0.5,
+    "depthTh": 0.012,
+    "normalTh": 0.25
+   },
+   "ao": {
+    "strength": 0.55,
+    "radius": 0.35
+   },
+   "bloom": {
+    "threshold": 0.92,
+    "strength": 0.3,
+    "weights": [
+     0.4,
+     0.3,
+     0.25,
+     0.2,
+     0.15
+    ]
+   },
+   "grade": {
+    "exposure": 1.06,
+    "saturation": 0.72,
+    "contrast": 1,
+    "lift": [
+     0.012,
+     0.01,
+     0.008
+    ],
+    "gain": [
+     1,
+     0.98,
+     0.96
+    ],
+    "vignette": 0.3
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 5.9,
+    "range": 1.6,
+    "near": 1.3,
+    "far": 0.5,
+    "maxRadius": 12,
+    "tilt": {
+     "center": [
+      0.33,
+      0.5
+     ],
+     "radius": [
+      0.2,
+      0.45
+     ],
+     "soft": 0.25,
+     "strength": 7
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -1.4,
+   -10.7,
+   5.6,
+   7.4
+  ],
+  "eye": 1.6,
+  "start": {
+   "position": [
+    3,
+    0,
+    5.2
+   ],
+   "target": [
+    0.5,
+    1.4,
+    -1
+   ]
+  },
+  "colliders": [
+   [
+    -1.4,
+    -10.7,
+    0,
+    0.6
+   ],
+   [
+    2.55,
+    -10.7,
+    5.6,
+    3.5
+   ],
+   [
+    4.55,
+    3.9,
+    5.25,
+    4.5
+   ],
+   [
+    2.95,
+    6.78,
+    4.25,
+    7.22
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "directory",
+   "kind": "terminal",
+   "label": "Residents directory",
+   "object": "directory",
+   "typed": false,
+   "anchor": [
+    -1.3860000000000001,
+    1.5,
+    4.2
+   ],
+   "built": [
+    -1.3860000000000001,
+    1.5,
+    4.2
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-305",
+   "kind": "link",
+   "label": "Door 305",
+   "object": "door305",
+   "typed": false,
+   "anchor": [
+    -0.079,
+    1.0550000000000002,
+    -4.0225
+   ],
+   "built": [
+    -0.079,
+    1.0550000000000002,
+    -4.0225
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-self-residence-corridor-1",
+   "kind": "link",
+   "label": "Apartment corridor",
+   "object": null,
+   "typed": false,
+   "anchor": [
+    -1.3183565108850597,
+    1.1537500132620335,
+    0.8000000000000003
+   ],
+   "built": [
+    -1.3183565108850597,
+    1.1537500132620335,
+    0.8000000000000003
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "room305-lift",
+   "kind": "inspect",
+   "label": "Lift",
+   "object": "lift",
+   "typed": false,
+   "anchor": [
+    1.75,
+    2.325,
+    7.354000000000001
+   ],
+   "built": [
+    1.75,
+    2.325,
+    7.354000000000001
+   ],
+   "reach": 5
+  },
+  {
+   "id": "room305-call",
+   "kind": "inspect",
+   "label": "Call panel",
+   "object": "liftcall",
+   "typed": false,
+   "anchor": [
+    2.62,
+    1.1,
+    7.3574999999869615
+   ],
+   "built": [
+    2.62,
+    1.1,
+    7.3574999999869615
+   ],
+   "reach": 5
+  },
+  {
+   "id": "room305-planter",
+   "kind": "inspect",
+   "label": "Planter",
+   "object": "planter",
+   "typed": false,
+   "anchor": [
+    4.9311417218505245,
+    0.9465799577857933,
+    4.181903610278308
+   ],
+   "built": [
+    4.9311417218505245,
+    0.9465799577857933,
+    4.181903610278308
+   ],
+   "reach": 5
+  },
+  {
+   "id": "room305-bench",
+   "kind": "inspect",
+   "label": "Bench",
+   "object": "bench",
+   "typed": false,
+   "anchor": [
+    3.5999999999999996,
+    0.23999999806284905,
+    7
+   ],
+   "built": [
+    3.5999999999999996,
+    0.23999999806284905,
+    7
+   ],
+   "reach": 5
+  }
+ ],
+ "bind": {},
+ "premerge": {
+  "directory": [
+   -1.3860000000000001,
+   1.5,
+   4.2
+  ],
+  "door305": [
+   -0.079,
+   1.0550000000000002,
+   -4.0225
+  ],
+  "lift": [
+   1.75,
+   2.325,
+   7.354000000000001
+  ],
+  "liftcall": [
+   2.62,
+   1.1,
+   7.3574999999869615
+  ],
+  "planter": [
+   4.9311417218505245,
+   0.9465799577857933,
+   4.181903610278308
+  ],
+  "bench": [
+   3.5999999999999996,
+   0.23999999806284905,
+   7
+  ]
+ },
+ "doorProps": {
+  "door-self-residence-corridor-1": {
+   "p": [
+    -1.37,
+    0,
+    0.8
+   ],
+   "q": [
+    0,
+    0.707107,
+    0,
+    0.707107
+   ],
+   "gate": false,
+   "tint": 0
+  }
+ },
+ "anchorsBefore": {
+  "named": 6,
+  "typed": 0
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 0,
+  "triangles": 0
+ },
+ "manifestColliders": 0,
+ "manifest": false,
+ "three": "170",
+ "key": "room-305",
+ "hour": 13,
+ "bakedAt": "2026-10-21T12:59:15.464Z",
+ "source": {
+  "family": "Building305 (hall) built at runtime by lab/src/scenes",
+  "exportBytes": 12259204,
+  "triangles": 6998,
+  "drawCalls": 151,
+  "textures": 22,
+  "textureMB": 41.9
+ },
+ "lods": {
+  "lod0": {
+   "file": "room-305.glb",
+   "triangles": 3424,
+   "primitives": 115,
+   "materials": 104,
+   "textures": 19,
+   "textureKB": 834,
+   "bytes": 996132
+  },
+  "lod1": {
+   "file": "room-305.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 2803,
+   "primitives": 115,
+   "materials": 104,
+   "textures": 19,
+   "textureKB": 216,
+   "bytes": 364764
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "door305",
+   "lift",
+   "liftcall",
+   "planter",
+   "bench",
+   "directory"
+  ],
+  "exportBytes": 274156
+ },
+ "live": {
+  "file": "room-305.live.json",
+  "bytes": 23974,
+  "objects": [
+   "skyDome",
+   "Mesh",
+   "Mesh",
+   "motes"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs room-305 (dev server running, BASE=...)"
+ ]
+}

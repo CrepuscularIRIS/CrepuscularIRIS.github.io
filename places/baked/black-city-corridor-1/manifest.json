@@ -1,0 +1,942 @@
+{
+ "version": 2,
+ "place": "black-city-corridor-1",
+ "family": "BlackCityCorridor",
+ "variant": "N",
+ "tod": "day",
+ "cost": {
+  "triangles": 34364,
+  "drawCalls": 323,
+  "textures": 38,
+  "textureMB": 12.7
+ },
+ "exported": {
+  "triangles": 24052,
+  "drawCalls": 203,
+  "textures": 23,
+  "textureMB": 5.5
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 9084096,
+   "intensity": 0.3,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 2764864
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 14674168,
+   "intensity": 3.1499999999999995,
+   "position": [
+    0.44999999999999996,
+    2.1,
+    19.5
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 14674168,
+   "intensity": 3.1499999999999995,
+   "position": [
+    0.44999999999999996,
+    2.1,
+    13.5
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 14674168,
+   "intensity": 3.1499999999999995,
+   "position": [
+    0.44999999999999996,
+    2.1,
+    7.5
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 14674168,
+   "intensity": 3.1499999999999995,
+   "position": [
+    0.44999999999999996,
+    2.1,
+    2.5
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.7
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 14674168,
+   "intensity": 0.4,
+   "position": [
+    -2,
+    6,
+    20
+   ],
+   "visible": true,
+   "target": [
+    1,
+    0,
+    8
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 15002866,
+   "intensity": 9.600000000000001,
+   "position": [
+    0.3,
+    1.6,
+    1.4
+   ],
+   "visible": true,
+   "distance": 11,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 6982332,
+   "intensity": 6.6000000000000005,
+   "position": [
+    -2.6,
+    1.4,
+    9
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.8
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "45792152-4fcc-43f1-9200-253ab183b530",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "e61e67ef-edb8-4fc5-a5b2-694ae936bffb",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "70ac1de0-f204-433d-87f0-07aa7e8d95df",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "fc38687a-f515-44dd-bb92-14e2f52f2a0a",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "156c63c6-5948-4fbb-8826-0fe8bcffa11f",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "e10a92b5-01f6-459e-a14b-557695221764",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {},
+ "reflectors": [],
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    1.15,
+    21.3
+   ],
+   "target": [
+    0,
+    1.15,
+    0
+   ],
+   "fov": 55,
+   "shift": [
+    -0.027,
+    0.037
+   ]
+  },
+  "views": [
+   {
+    "name": "doors",
+    "label": "Door run",
+    "position": [
+     -0.6,
+     1.5,
+     18.5
+    ],
+    "target": [
+     2.2,
+     1.3,
+     13.5
+    ],
+    "fov": 55
+   },
+   {
+    "name": "board",
+    "label": "Display window",
+    "position": [
+     0.2,
+     1.5,
+     19.8
+    ],
+    "target": [
+     1.9,
+     1.4,
+     20.6
+    ],
+    "fov": 55
+   },
+   {
+    "name": "lab",
+    "label": "Into the lab",
+    "position": [
+     -0.5,
+     1.4,
+     16.2
+    ],
+    "target": [
+     -3.4,
+     1.05,
+     11.4
+    ],
+    "fov": 62
+   },
+   {
+    "name": "end-door",
+    "label": "End door",
+    "position": [
+     0.4,
+     1.4,
+     4
+    ],
+    "target": [
+     0.5,
+     1.2,
+     0
+    ],
+    "fov": 55
+   },
+   {
+    "name": "reverse",
+    "label": "Looking back",
+    "position": [
+     0.6,
+     1.5,
+     2.5
+    ],
+    "target": [
+     0,
+     1.3,
+     24
+    ],
+    "fov": 60
+   },
+   {
+    "name": "ceiling",
+    "label": "Service channel",
+    "position": [
+     0.8,
+     1.2,
+     12
+    ],
+    "target": [
+     -0.4,
+     2.8,
+     8
+    ],
+    "fov": 60
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -0.88,
+   0.2,
+   0.25
+  ],
+  "max": [
+   1.9299999999999997,
+   2.4499999999999997,
+   23.7
+  ]
+ },
+ "env": {
+  "background": 1712690,
+  "ibl": {
+   "top": 8030376,
+   "wall": 6715028,
+   "floor": 4871790,
+   "intensity": 0.5,
+   "lights": [
+    {
+     "pos": [
+      0,
+      2.4,
+      0
+     ],
+     "size": [
+      3,
+      3
+     ],
+     "color": 15002872,
+     "power": 4,
+     "lookAt": [
+      0,
+      1.2,
+      12
+     ]
+    },
+    {
+     "pos": [
+      1.3,
+      2.5,
+      8
+     ],
+     "size": [
+      0.3,
+      14
+     ],
+     "color": 14674168,
+     "power": 3,
+     "lookAt": [
+      1.3,
+      0,
+      8
+     ]
+    }
+   ]
+  },
+  "fog": {
+   "color": 10135740,
+   "near": 30,
+   "far": 70
+  },
+  "post": {
+   "outline": {
+    "color": 1844276,
+    "opacity": 0.45,
+    "depthTh": 0.014,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.45,
+    "radius": 0.3
+   },
+   "bloom": {
+    "threshold": 0.72,
+    "strength": 0.5
+   },
+   "grade": {
+    "exposure": 0.88,
+    "saturation": 1.02,
+    "lift": [
+     0.014,
+     0.020999999999999998,
+     0.052000000000000005
+    ],
+    "gain": [
+     0.97,
+     1,
+     1.06
+    ],
+    "vignette": 0.26
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 14,
+    "range": 8,
+    "near": 1.1,
+    "far": 0.5,
+    "maxRadius": 3,
+    "tilt": {
+     "center": [
+      0.49,
+      0.5
+     ],
+     "radius": [
+      0.3,
+      0.42
+     ],
+     "soft": 0.3,
+     "strength": 0.8
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -0.7,
+   0.4,
+   1.7499999999999998,
+   23.5
+  ],
+  "eye": 1.5,
+  "start": {
+   "position": [
+    0.2,
+    0,
+    20.5
+   ],
+   "target": [
+    0.2,
+    1.2,
+    0
+   ]
+  },
+  "colliders": [],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "project-window",
+   "kind": "terminal",
+   "label": "Notice window",
+   "object": "board",
+   "typed": false,
+   "anchor": [
+    1.68,
+    1.3849999999999998,
+    20.75
+   ],
+   "built": [
+    1.68,
+    1.3849999999999998,
+    20.75
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-black-city-1",
+   "kind": "link",
+   "label": "Aquarium entrance hall",
+   "object": null,
+   "typed": false,
+   "anchor": [
+    1.1378221731096545,
+    1.1537500132620335,
+    23.918356509394943
+   ],
+   "built": [
+    1.1378221731096545,
+    1.1537500132620335,
+    23.918356509394943
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "lab-glass",
+   "kind": "inspect",
+   "label": "Lab behind glass",
+   "object": "spot:lab-glass",
+   "typed": true,
+   "anchor": [
+    -1,
+    1.3,
+    10
+   ],
+   "built": [
+    -1,
+    1.3,
+    10
+   ],
+   "reach": 5
+  },
+  {
+   "id": "keypads",
+   "kind": "inspect",
+   "label": "Keypad column",
+   "object": "keypads",
+   "typed": false,
+   "anchor": [
+    2.0159999999999996,
+    1.3,
+    15.265
+   ],
+   "built": [
+    2.0159999999999996,
+    1.3,
+    15.265
+   ],
+   "reach": 5
+  },
+  {
+   "id": "end-door",
+   "kind": "inspect",
+   "label": "Sliding door",
+   "object": "spot:end-door",
+   "typed": true,
+   "anchor": [
+    0.6,
+    1.2,
+    0.3
+   ],
+   "built": [
+    0.6,
+    1.2,
+    0.3
+   ],
+   "reach": 5
+  },
+  {
+   "id": "service-channel",
+   "kind": "inspect",
+   "label": "Service channel",
+   "object": "spot:service-channel",
+   "typed": true,
+   "anchor": [
+    -0.4,
+    2.55,
+    9
+   ],
+   "built": [
+    -0.4,
+    2.55,
+    9
+   ],
+   "reach": 5
+  },
+  {
+   "id": "bcc-door2-2",
+   "kind": "inspect",
+   "label": "Lab door B-1",
+   "object": "door2.2",
+   "typed": false,
+   "anchor": [
+    2.0149999999999997,
+    1.19,
+    2.7950000000745057
+   ],
+   "built": [
+    2.0149999999999997,
+    1.19,
+    2.7950000000745057
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "bcc-door5-2",
+   "kind": "inspect",
+   "label": "Lab door B-2",
+   "object": "door5.2",
+   "typed": false,
+   "anchor": [
+    2.0149999999999997,
+    1.19,
+    6.6
+   ],
+   "built": [
+    2.0149999999999997,
+    1.19,
+    6.6
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "bcc-door9-55",
+   "kind": "inspect",
+   "label": "Lab door B-3",
+   "object": "door9.55",
+   "typed": false,
+   "anchor": [
+    2.0149999999999997,
+    1.19,
+    10.545000000074506
+   ],
+   "built": [
+    2.0149999999999997,
+    1.19,
+    10.545000000074506
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "bcc-door13",
+   "kind": "inspect",
+   "label": "Lab door B-4",
+   "object": "door13",
+   "typed": false,
+   "anchor": [
+    2.0149999999999997,
+    1.2149999999999999,
+    13.83
+   ],
+   "built": [
+    2.0149999999999997,
+    1.2149999999999999,
+    13.83
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "bcc-door15-74",
+   "kind": "inspect",
+   "label": "Lab door B-5",
+   "object": "door15.74",
+   "typed": false,
+   "anchor": [
+    2.0075000008940695,
+    1.2650000067055227,
+    16.200000000074507
+   ],
+   "built": [
+    2.0075000008940695,
+    1.2650000067055227,
+    16.200000000074507
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "bcc-enddoor",
+   "kind": "inspect",
+   "label": "Sliding door",
+   "object": "endDoor",
+   "typed": false,
+   "anchor": [
+    0.22499999999999998,
+    1.2323181760411823,
+    1.3
+   ],
+   "built": [
+    0.22499999999999998,
+    1.2323181760411823,
+    1.3
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "bcc-floormap",
+   "kind": "note",
+   "label": "Floor map",
+   "object": "floor-map",
+   "typed": false,
+   "anchor": [
+    -0.9939999998323619,
+    1.5,
+    22.4
+   ],
+   "built": [
+    -0.9939999998323619,
+    1.5,
+    22.4
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "bcc-wetfloor",
+   "kind": "inspect",
+   "label": "Wet floor sign",
+   "object": "wet-floor-sign",
+   "typed": false,
+   "anchor": [
+    0.7440814547793052,
+    0.31694061344023794,
+    12.387307674074023
+   ],
+   "built": [
+    0.7440814547793052,
+    0.31694061344023794,
+    12.387307674074023
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "bcc-bench",
+   "kind": "use",
+   "label": "Waiting bench",
+   "object": "corridor-bench",
+   "typed": false,
+   "anchor": [
+    1.725427248775959,
+    0.4441462408285588,
+    4.406410717964173
+   ],
+   "built": [
+    1.725427248775959,
+    0.4441462408285588,
+    4.406410717964173
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "bcc-camera",
+   "kind": "inspect",
+   "label": "Ceiling camera",
+   "object": "corridor-camera",
+   "typed": false,
+   "anchor": [
+    1.8311276843713222,
+    2.538192132562399,
+    4.018812424956944
+   ],
+   "built": [
+    1.8311276843713222,
+    2.538192132562399,
+    4.018812424956944
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "lab-glass": {
+   "object": "spot:lab-glass",
+   "how": "mesh",
+   "on": "dress:sign-face < dress:sign < dress",
+   "at": [
+    -1,
+    1.3,
+    10
+   ]
+  },
+  "end-door": {
+   "object": "spot:end-door",
+   "how": "node",
+   "on": null,
+   "at": [
+    0.6,
+    1.2,
+    0.3
+   ]
+  },
+  "service-channel": {
+   "object": "spot:service-channel",
+   "how": "node",
+   "on": null,
+   "at": [
+    -0.4,
+    2.55,
+    9
+   ]
+  }
+ },
+ "premerge": {
+  "spot:end-door": [
+   0.6,
+   1.2,
+   0.3
+  ],
+  "spot:service-channel": [
+   -0.4,
+   2.55,
+   9
+  ],
+  "board": [
+   1.68,
+   1.3849999999999998,
+   20.75
+  ],
+  "keypads": [
+   2.0159999999999996,
+   1.3,
+   15.265
+  ],
+  "door2.2": [
+   2.0149999999999997,
+   1.19,
+   2.7950000000745057
+  ],
+  "door5.2": [
+   2.0149999999999997,
+   1.19,
+   6.6
+  ],
+  "door9.55": [
+   2.0149999999999997,
+   1.19,
+   10.545000000074506
+  ],
+  "door13": [
+   2.0149999999999997,
+   1.2149999999999999,
+   13.83
+  ],
+  "door15.74": [
+   2.0075000008940695,
+   1.2650000067055227,
+   16.200000000074507
+  ],
+  "endDoor": [
+   0.22499999999999998,
+   1.2323181760411823,
+   1.3
+  ],
+  "floor-map": [
+   -0.9939999998323619,
+   1.5,
+   22.4
+  ],
+  "wet-floor-sign": [
+   0.7440814547793052,
+   0.31694061344023794,
+   12.387307674074023
+  ],
+  "corridor-bench": [
+   1.725427248775959,
+   0.4441462408285588,
+   4.406410717964173
+  ],
+  "corridor-camera": [
+   1.8311276843713222,
+   2.538192132562399,
+   4.018812424956944
+  ]
+ },
+ "doorProps": {
+  "door-black-city-1": {
+   "p": [
+    1.1378,
+    0,
+    23.97
+   ],
+   "q": [
+    0,
+    1,
+    0,
+    0
+   ],
+   "gate": false,
+   "tint": 0
+  }
+ },
+ "anchorsBefore": {
+  "named": 12,
+  "typed": 3
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": {
+  "props": 9,
+  "instanced": 5,
+  "signs": 7,
+  "lights": 0,
+  "retextured": 6,
+  "triangles": 14850,
+  "failed": 0
+ },
+ "detailStats": {
+  "meshes": 0,
+  "triangles": 0
+ },
+ "manifestColliders": 0,
+ "manifest": true,
+ "three": "170",
+ "key": "black-city-corridor-1",
+ "hour": 13,
+ "bakedAt": "2026-10-21T13:00:59.071Z",
+ "source": {
+  "family": "BlackCityCorridor (N) built at runtime by lab/src/scenes",
+  "exportBytes": 1195224,
+  "triangles": 34364,
+  "drawCalls": 323,
+  "textures": 38,
+  "textureMB": 12.7
+ },
+ "lods": {
+  "lod0": {
+   "file": "black-city-corridor-1.glb",
+   "triangles": 21536,
+   "primitives": 219,
+   "materials": 199,
+   "textures": 36,
+   "textureKB": 144,
+   "bytes": 594276
+  },
+  "lod1": {
+   "file": "black-city-corridor-1.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 19205,
+   "primitives": 219,
+   "materials": 199,
+   "textures": 36,
+   "textureKB": 131,
+   "bytes": 581140
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "endDoor",
+   "door15.74",
+   "door13",
+   "door9.55",
+   "door5.2",
+   "door2.2",
+   "keypads",
+   "board",
+   "endDoor",
+   "door15.74",
+   "door13",
+   "door9.55",
+   "door5.2",
+   "door2.2",
+   "keypads",
+   "board",
+   "wet-floor-sign",
+   "corridor-bench",
+   "corridor-camera",
+   "spot:lab-glass",
+   "floor-map",
+   "door15.74",
+   "door9.55",
+   "spot:end-door",
+   "spot:service-channel"
+  ],
+  "exportBytes": 1617668
+ },
+ "live": {
+  "file": "black-city-corridor-1.live.json",
+  "bytes": 51483,
+  "objects": [
+   "Mesh",
+   "Mesh",
+   "godRays",
+   "groundMist",
+   "motes",
+   "Mesh",
+   "Mesh"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs black-city-corridor-1 (dev server running, BASE=...)"
+ ]
+}

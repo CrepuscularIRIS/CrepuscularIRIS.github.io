@@ -1,0 +1,721 @@
+{
+ "version": 2,
+ "place": "luxury-house-1",
+ "family": "LuxuryHouseDay",
+ "variant": "D",
+ "tod": "day",
+ "cost": {
+  "triangles": 49307,
+  "drawCalls": 8968,
+  "textures": 27,
+  "textureMB": 68.8
+ },
+ "exported": {
+  "triangles": 46601,
+  "drawCalls": 8956,
+  "textures": 26,
+  "textureMB": 68.8
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 15262975,
+   "intensity": 0.3,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 6969946
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16774392,
+   "intensity": 1.5,
+   "position": [
+    1,
+    9,
+    -9
+   ],
+   "visible": true,
+   "target": [
+    2.5,
+    0,
+    5
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0004,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 1,
+     "far": 30,
+     "left": -9,
+     "right": 9,
+     "top": 9,
+     "bottom": -9
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 15261951,
+   "intensity": 2.7,
+   "position": [
+    0.5,
+    2.4,
+    1.6
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 15261951,
+   "intensity": 2.7,
+   "position": [
+    3.5,
+    2.4,
+    1.6
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 15261951,
+   "intensity": 2.4000000000000004,
+   "position": [
+    5.4,
+    2.4,
+    7.5
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 14673151,
+   "intensity": 5.4,
+   "position": [
+    6.8,
+    1.8,
+    3
+   ],
+   "visible": true,
+   "distance": 3.4,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16770760,
+   "intensity": 4.199999999999999,
+   "position": [
+    0.5,
+    4.6,
+    6.5
+   ],
+   "visible": true,
+   "distance": 6,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16770760,
+   "intensity": 4.199999999999999,
+   "position": [
+    3.9,
+    4.6,
+    6.5
+   ],
+   "visible": true,
+   "distance": 6,
+   "decay": 2
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "541d81f9-7845-4256-bbbf-f9fdf2d927eb",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "541d81f9-7845-4256-bbbf-f9fdf2d927eb",
+   "uniform": "uWT",
+   "a": 0.35,
+   "b": 3.552714e-15
+  },
+  {
+   "material": "156572ab-1baa-4db9-8b5f-297bba3d52ab",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {
+  "541d81f9-7845-4256-bbbf-f9fdf2d927eb": {
+   "uL": "v4",
+   "uLC": "c"
+  }
+ },
+ "reflectors": [
+  {
+   "w": 7.9,
+   "d": 9.5,
+   "x": 2.05,
+   "y": 0,
+   "z": 7.65,
+   "strength": 0.5,
+   "blur": 2,
+   "f0": 0.06,
+   "tint": 15261940,
+   "fade": 40,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 1024,
+   "mask": null
+  }
+ ],
+ "camera": {
+  "ref": {
+   "position": [
+    -0.395,
+    1.3,
+    8.987
+   ],
+   "target": [
+    2.118,
+    1.3,
+    4.664
+   ],
+   "fov": 53.85,
+   "shift": [
+    0,
+    0.051
+   ]
+  },
+  "views": [
+   {
+    "name": "wide",
+    "label": "Wide",
+    "position": [
+     -1.3,
+     2.6,
+     11.8
+    ],
+    "target": [
+     3,
+     1.2,
+     2
+    ],
+    "fov": 66
+   },
+   {
+    "name": "sea",
+    "label": "Sea view",
+    "position": [
+     2.2,
+     1.55,
+     1.5
+    ],
+    "target": [
+     2.5,
+     1.2,
+     -20
+    ],
+    "fov": 60
+   },
+   {
+    "name": "table",
+    "label": "Coffee table",
+    "position": [
+     2,
+     1.4,
+     7.6
+    ],
+    "target": [
+     3.8,
+     0.4,
+     5.2
+    ],
+    "fov": 50
+   },
+   {
+    "name": "alcove",
+    "label": "Alcove",
+    "position": [
+     3.4,
+     1.5,
+     3.6
+    ],
+    "target": [
+     7,
+     1.3,
+     2.8
+    ],
+    "fov": 55
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     3.5,
+     1.8,
+     1.8
+    ],
+    "target": [
+     0.5,
+     1.1,
+     11.5
+    ],
+    "fov": 66
+   },
+   {
+    "name": "terrace",
+    "label": "Terrace",
+    "position": [
+     4.8,
+     1.7,
+     -3.2
+    ],
+    "target": [
+     1.5,
+     1.5,
+     6
+    ],
+    "fov": 62
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -1.7,
+   0.3,
+   -4
+  ],
+  "max": [
+   5.8,
+   5.3,
+   12.200000000000001
+  ]
+ },
+ "env": {
+  "background": 14473460,
+  "ibl": {
+   "top": 13156576,
+   "wall": 9468032,
+   "floor": 12101808,
+   "intensity": 0.45,
+   "lights": [
+    {
+     "pos": [
+      2.5,
+      2.8,
+      -3
+     ],
+     "size": [
+      9,
+      5
+     ],
+     "color": 15001855,
+     "power": 3,
+     "lookAt": [
+      2.5,
+      1.5,
+      6
+     ]
+    },
+    {
+     "pos": [
+      5.8,
+      2.2,
+      7.7
+     ],
+     "size": [
+      5.5,
+      2
+     ],
+     "color": 15002879,
+     "power": 2,
+     "lookAt": [
+      0,
+      1.6,
+      7.7
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 2365988,
+    "opacity": 0.5,
+    "depthTh": 0.012,
+    "normalTh": 0.28
+   },
+   "ao": {
+    "strength": 0.5,
+    "radius": 0.35
+   },
+   "bloom": {
+    "threshold": 0.88,
+    "strength": 0.5,
+    "weights": [
+     0.45,
+     0.35,
+     0.3,
+     0.25,
+     0.2
+    ]
+   },
+   "grade": {
+    "exposure": 0.88,
+    "saturation": 0.98,
+    "lift": [
+     0.01,
+     0.005,
+     0.02
+    ],
+    "gain": [
+     1,
+     0.96,
+     1.02
+    ],
+    "vignette": 0.32
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 8,
+    "range": 6,
+    "near": 1,
+    "far": 0.2,
+    "maxRadius": 10,
+    "tilt": {
+     "center": [
+      0.45,
+      0.55
+     ],
+     "radius": [
+      0.42,
+      0.38
+     ],
+     "soft": 0.3,
+     "strength": 8
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -1.9,
+   2.9,
+   6,
+   12.4
+  ],
+  "eye": 1.6,
+  "start": {
+   "position": [
+    -0.4,
+    0,
+    9.4
+   ],
+   "target": [
+    2.5,
+    1.2,
+    3
+   ]
+  },
+  "colliders": [],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "gallery",
+   "kind": "terminal",
+   "label": "Display wall and reading desk",
+   "object": "spot:gallery",
+   "typed": true,
+   "anchor": [
+    6.9,
+    1.4,
+    3.2
+   ],
+   "built": [
+    6.9,
+    1.4,
+    3.2
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door",
+   "kind": "link",
+   "label": "To the street",
+   "object": "spot:door",
+   "typed": true,
+   "anchor": [
+    2.05,
+    1.3,
+    12.3
+   ],
+   "built": [
+    2.05,
+    1.3,
+    12.3
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "lux-table",
+   "kind": "inspect",
+   "label": "Coffee table",
+   "object": "spot:lux-table",
+   "typed": true,
+   "anchor": [
+    3.8,
+    0.55,
+    5.2
+   ],
+   "built": [
+    3.8,
+    0.55,
+    5.2
+   ],
+   "reach": 5
+  },
+  {
+   "id": "lux-sea",
+   "kind": "inspect",
+   "label": "The view",
+   "object": "spot:lux-sea",
+   "typed": true,
+   "anchor": [
+    2.5,
+    1.3,
+    0.8
+   ],
+   "built": [
+    2.5,
+    1.3,
+    0.8
+   ],
+   "reach": 5
+  },
+  {
+   "id": "lux-palm",
+   "kind": "inspect",
+   "label": "Palm and vase",
+   "object": "spot:lux-palm",
+   "typed": true,
+   "anchor": [
+    5.9,
+    1.2,
+    4
+   ],
+   "built": [
+    5.9,
+    1.2,
+    4
+   ],
+   "reach": 5
+  },
+  {
+   "id": "lux-light",
+   "kind": "inspect",
+   "label": "The light",
+   "object": "spot:lux-light",
+   "typed": true,
+   "anchor": [
+    4.6,
+    3,
+    1
+   ],
+   "built": [
+    4.6,
+    3,
+    1
+   ],
+   "reach": 5
+  }
+ ],
+ "bind": {
+  "gallery": {
+   "object": "spot:gallery",
+   "how": "mesh",
+   "on": "alcove-display < furniture",
+   "at": [
+    6.9,
+    1.4,
+    3.2
+   ]
+  },
+  "door": {
+   "object": "spot:door",
+   "how": "node",
+   "on": null,
+   "at": [
+    2.05,
+    1.3,
+    12.3
+   ]
+  },
+  "lux-table": {
+   "object": "spot:lux-table",
+   "how": "mesh",
+   "on": "coffee-table < furniture",
+   "at": [
+    3.8,
+    0.55,
+    5.2
+   ]
+  },
+  "lux-sea": {
+   "object": "spot:lux-sea",
+   "how": "node",
+   "on": null,
+   "at": [
+    2.5,
+    1.3,
+    0.8
+   ]
+  },
+  "lux-palm": {
+   "object": "spot:lux-palm",
+   "how": "mesh",
+   "on": "alcove-display < furniture",
+   "at": [
+    5.9,
+    1.2,
+    4
+   ]
+  },
+  "lux-light": {
+   "object": "spot:lux-light",
+   "how": "node",
+   "on": null,
+   "at": [
+    4.6,
+    3,
+    1
+   ]
+  }
+ },
+ "premerge": {
+  "spot:door": [
+   2.05,
+   1.3,
+   12.3
+  ],
+  "spot:lux-sea": [
+   2.5,
+   1.3,
+   0.8
+  ],
+  "spot:lux-light": [
+   4.6,
+   3,
+   1
+  ]
+ },
+ "doorProps": {},
+ "anchorsBefore": {
+  "named": 0,
+  "typed": 6
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 0,
+  "triangles": 0
+ },
+ "manifestColliders": 0,
+ "manifest": false,
+ "three": "170",
+ "key": "luxury-house-1-day",
+ "hour": 13,
+ "bakedAt": "2026-10-21T12:58:43.835Z",
+ "source": {
+  "family": "LuxuryHouseDay (D) built at runtime by lab/src/scenes",
+  "exportBytes": 37897316,
+  "triangles": 49307,
+  "drawCalls": 8968,
+  "textures": 27,
+  "textureMB": 68.8
+ },
+ "lods": {
+  "lod0": {
+   "file": "luxury-house-1-day.glb",
+   "triangles": 42007,
+   "primitives": 153,
+   "materials": 152,
+   "textures": 22,
+   "textureKB": 2260,
+   "bytes": 2774528
+  },
+  "lod1": {
+   "file": "luxury-house-1-day.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 26633,
+   "primitives": 153,
+   "materials": 152,
+   "textures": 22,
+   "textureKB": 518,
+   "bytes": 934252
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "spot:lux-table",
+   "spot:gallery",
+   "spot:lux-palm",
+   "spot:door",
+   "spot:lux-sea",
+   "spot:lux-light"
+  ],
+  "exportBytes": 24736
+ },
+ "live": {
+  "file": "luxury-house-1-day.live.json",
+  "bytes": 46375,
+  "objects": [
+   "skyDome",
+   "water",
+   "motes",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs luxury-house-1 --variant day (dev server running, BASE=...)"
+ ]
+}

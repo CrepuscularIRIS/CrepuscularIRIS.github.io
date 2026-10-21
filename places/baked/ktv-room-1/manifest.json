@@ -1,0 +1,1068 @@
+{
+ "version": 2,
+ "place": "ktv-room-1",
+ "family": "KTV",
+ "variant": "",
+ "tod": "day",
+ "cost": {
+  "triangles": 28916,
+  "drawCalls": 125,
+  "textures": 31,
+  "textureMB": 31.1
+ },
+ "exported": {
+  "triangles": 27816,
+  "drawCalls": 103,
+  "textures": 27,
+  "textureMB": 28.6
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 16764848,
+   "intensity": 0.22,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 4857876
+  },
+  {
+   "type": "SpotLight",
+   "name": "",
+   "color": 16754840,
+   "intensity": 13,
+   "position": [
+    0.1,
+    2.95,
+    1.2
+   ],
+   "visible": true,
+   "distance": 6,
+   "decay": 1.6,
+   "angle": 0.6,
+   "penumbra": 0.8,
+   "target": [
+    0,
+    2.1,
+    0
+   ],
+   "shadow": {
+    "mapSize": [
+     1024,
+     1024
+    ],
+    "bias": 0,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 0.5,
+     "far": 6,
+     "fov": 68.75493541569878
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16738896,
+   "intensity": 0.9099999999999999,
+   "position": [
+    0,
+    2.25,
+    0.35
+   ],
+   "visible": true,
+   "distance": 1.6,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16748592,
+   "intensity": 1.8199999999999998,
+   "position": [
+    -1.55,
+    1.45,
+    0.95
+   ],
+   "visible": true,
+   "distance": 2.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16748592,
+   "intensity": 1.8199999999999998,
+   "position": [
+    1.5,
+    1.45,
+    0.95
+   ],
+   "visible": true,
+   "distance": 2.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763040,
+   "intensity": 4.16,
+   "position": [
+    -5,
+    2.7,
+    3.4
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763040,
+   "intensity": 4.16,
+   "position": [
+    -2.5,
+    2.7,
+    3.4
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763040,
+   "intensity": 4.16,
+   "position": [
+    2.5,
+    2.7,
+    3.4
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763040,
+   "intensity": 4.16,
+   "position": [
+    5,
+    2.7,
+    3.4
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 2
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16767168,
+   "intensity": 0.35,
+   "position": [
+    0.5,
+    3,
+    6
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "dress:light",
+   "color": 16763024,
+   "intensity": 2.6,
+   "position": [
+    -7.05,
+    1.75,
+    5.8
+   ],
+   "visible": true,
+   "distance": 3.6,
+   "decay": 1.6,
+   "dress": true
+  },
+  {
+   "type": "PointLight",
+   "name": "dress:light",
+   "color": 8052991,
+   "intensity": 2.4,
+   "position": [
+    6.5,
+    1.2,
+    4.75
+   ],
+   "visible": true,
+   "distance": 3.4,
+   "decay": 1.6,
+   "dress": true
+  },
+  {
+   "type": "PointLight",
+   "name": "dress:light",
+   "color": 9089279,
+   "intensity": 1.6,
+   "position": [
+    -6.6,
+    1.7,
+    4.4
+   ],
+   "visible": true,
+   "distance": 3,
+   "decay": 1.8,
+   "dress": true
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "c04fb4f4-c5c3-40c0-9020-f26aa2d7a909",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "4f9b2b35-86ef-44c7-aa5b-cc5aca1768d9",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "715abce8-b0b3-4a61-aaa1-cf410c5aff88",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "589ceb99-bd76-4830-9d92-3acb4fa415fe",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "b010c538-f6cc-4b20-b820-b94d49f689b6",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "87e3f5b9-be94-461b-bee2-2405aecfc548",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "86d61574-2dd5-4b02-97b6-8952decac0e8",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {},
+ "reflectors": [
+  {
+   "w": 15,
+   "d": 6.2,
+   "x": 0,
+   "y": 0,
+   "z": 3.1,
+   "strength": 0.18,
+   "blur": 2,
+   "f0": 0.05,
+   "tint": 16758936,
+   "fade": 40,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 768,
+   "mask": null
+  }
+ ],
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    1.22,
+    4.25
+   ],
+   "target": [
+    0,
+    1.22,
+    0
+   ],
+   "fov": 43.6,
+   "shift": [
+    0.0026,
+    -0.0296
+   ]
+  },
+  "views": [
+   {
+    "name": "doors",
+    "label": "Doors",
+    "position": [
+     0.35,
+     1.55,
+     1.7
+    ],
+    "target": [
+     0,
+     1.5,
+     0
+    ],
+    "fov": 48
+   },
+   {
+    "name": "porthole",
+    "label": "Porthole",
+    "position": [
+     0.6,
+     1.75,
+     0.75
+    ],
+    "target": [
+     0.4,
+     1.72,
+     0
+    ],
+    "fov": 40
+   },
+   {
+    "name": "art",
+    "label": "Artwork",
+    "position": [
+     -0.6,
+     1.5,
+     2.1
+    ],
+    "target": [
+     -1.55,
+     1.4,
+     0.65
+    ],
+    "fov": 45
+   },
+   {
+    "name": "hall-left",
+    "label": "Hall",
+    "position": [
+     4.8,
+     1.6,
+     4.4
+    ],
+    "target": [
+     -2,
+     1.3,
+     1.2
+    ],
+    "fov": 58
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     0.3,
+     1.6,
+     1.3
+    ],
+    "target": [
+     0,
+     1.1,
+     6.2
+    ],
+    "fov": 60
+   },
+   {
+    "name": "sign",
+    "label": "Sign",
+    "position": [
+     0.2,
+     1.9,
+     2
+    ],
+    "target": [
+     0,
+     2.6,
+     0
+    ],
+    "fov": 45
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -7.35,
+   0.15,
+   0.25
+  ],
+  "max": [
+   7.35,
+   2.9,
+   6.05
+  ]
+ },
+ "env": {
+  "background": 1705990,
+  "ibl": {
+   "top": 5910560,
+   "wall": 6963248,
+   "floor": 2757640,
+   "intensity": 0.45,
+   "lights": [
+    {
+     "pos": [
+      0,
+      2.9,
+      3.4
+     ],
+     "size": [
+      8,
+      1
+     ],
+     "color": 16763040,
+     "power": 3,
+     "lookAt": [
+      0,
+      0,
+      3.4
+     ]
+    },
+    {
+     "pos": [
+      0,
+      2.7,
+      -1
+     ],
+     "size": [
+      2,
+      0.6
+     ],
+     "color": 16743008,
+     "power": 2,
+     "lookAt": [
+      0,
+      0,
+      3
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 2755078,
+    "opacity": 0.5,
+    "depthTh": 0.014,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.5,
+    "radius": 0.3
+   },
+   "bloom": {
+    "threshold": 0.7,
+    "strength": 0.6,
+    "weights": [
+     0.45,
+     0.35,
+     0.3,
+     0.25,
+     0.2
+    ]
+   },
+   "grade": {
+    "exposure": 0.9575999999999999,
+    "saturation": 0.95,
+    "lift": [
+     0.02,
+     0.005,
+     0
+    ],
+    "gain": [
+     1.02,
+     0.9,
+     0.82
+    ],
+    "vignette": 0.36,
+    "gamma": 1.06
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 4.2,
+    "range": 3,
+    "near": 0.6,
+    "far": 0.4,
+    "maxRadius": 2.5,
+    "tilt": {
+     "center": [
+      0.5,
+      0.55
+     ],
+     "radius": [
+      0.32,
+      0.45
+     ],
+     "soft": 0.3,
+     "strength": 7
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -7.45,
+   0.2,
+   7.45,
+   6.15
+  ],
+  "eye": 1.55,
+  "start": {
+   "position": [
+    0,
+    0,
+    4
+   ],
+   "target": [
+    0,
+    1.4,
+    0
+   ]
+  },
+  "colliders": [
+   [
+    -7.6,
+    -0.2,
+    -1.02,
+    0.73
+   ],
+   [
+    1.02,
+    -0.2,
+    7.6,
+    0.73
+   ],
+   [
+    -1.45,
+    5.65,
+    1.45,
+    6.3
+   ],
+   [
+    2.45,
+    1.05,
+    2.85,
+    1.45
+   ],
+   [
+    -3.1,
+    0.8,
+    -2.7,
+    1.2
+   ],
+   [
+    2.7,
+    0.8,
+    3.1,
+    1.2
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "song-book",
+   "kind": "terminal",
+   "label": "Song book",
+   "object": "spot:song-book",
+   "typed": true,
+   "anchor": [
+    2.65,
+    1.1,
+    1.25
+   ],
+   "built": [
+    2.65,
+    1.1,
+    1.25
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "room-board",
+   "kind": "terminal",
+   "label": "Room board",
+   "object": "spot:room-board",
+   "typed": true,
+   "anchor": [
+    0,
+    1.6,
+    6.15
+   ],
+   "built": [
+    0,
+    1.6,
+    6.15
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-street-1",
+   "kind": "link",
+   "label": "Main street",
+   "object": null,
+   "typed": false,
+   "anchor": [
+    -7.418356510885058,
+    1.1537500132620335,
+    1.9903810567665832
+   ],
+   "built": [
+    -7.418356510885058,
+    1.1537500132620335,
+    1.9903810567665832
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-bar-1",
+   "kind": "link",
+   "label": "Bar Cosmos",
+   "object": null,
+   "typed": false,
+   "anchor": [
+    5.663806107713975,
+    1.1537500132620335,
+    0.8116435081884261
+   ],
+   "built": [
+    5.663806107713975,
+    1.1537500132620335,
+    0.8116435081884261
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "ktv-porthole",
+   "kind": "inspect",
+   "label": "Porthole",
+   "object": "spot:ktv-porthole",
+   "typed": true,
+   "anchor": [
+    0.41,
+    1.74,
+    0.02
+   ],
+   "built": [
+    0.41,
+    1.74,
+    0.02
+   ],
+   "reach": 5
+  },
+  {
+   "id": "ktv-sign",
+   "kind": "inspect",
+   "label": "KARAOKE sign",
+   "object": "spot:ktv-sign",
+   "typed": true,
+   "anchor": [
+    0,
+    2.6,
+    0.1
+   ],
+   "built": [
+    0,
+    2.6,
+    0.1
+   ],
+   "reach": 5
+  },
+  {
+   "id": "ktv-art-left",
+   "kind": "inspect",
+   "label": "Left artwork",
+   "object": "spot:ktv-art-left",
+   "typed": true,
+   "anchor": [
+    -1.55,
+    1.45,
+    0.68
+   ],
+   "built": [
+    -1.55,
+    1.45,
+    0.68
+   ],
+   "reach": 5
+  },
+  {
+   "id": "ktv-art-right",
+   "kind": "inspect",
+   "label": "Right artwork",
+   "object": "spot:ktv-art-right",
+   "typed": true,
+   "anchor": [
+    1.5,
+    1.45,
+    0.68
+   ],
+   "built": [
+    1.5,
+    1.45,
+    0.68
+   ],
+   "reach": 5
+  },
+  {
+   "id": "ktv-door-103",
+   "kind": "inspect",
+   "label": "Room 103",
+   "object": "spot:ktv-door-103",
+   "typed": true,
+   "anchor": [
+    -3.35,
+    1.1,
+    0.75
+   ],
+   "built": [
+    -3.35,
+    1.1,
+    0.75
+   ],
+   "reach": 5
+  },
+  {
+   "id": "ktv-screen",
+   "kind": "inspect",
+   "label": "Now singing",
+   "object": "now-singing",
+   "typed": false,
+   "anchor": [
+    -7.211,
+    1.65,
+    4.4
+   ],
+   "built": [
+    -7.211,
+    1.65,
+    4.4
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "ktv-fridge",
+   "kind": "use",
+   "label": "Drinks fridge",
+   "object": "drinks-fridge",
+   "typed": false,
+   "anchor": [
+    7.149981702249095,
+    0.8740000158548354,
+    4.2
+   ],
+   "built": [
+    7.149981702249095,
+    0.8740000158548354,
+    4.2
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "ktv-sofa",
+   "kind": "use",
+   "label": "Waiting sofa",
+   "object": "waiting-sofa",
+   "typed": false,
+   "anchor": [
+    -7.05,
+    0.48300000876188287,
+    4.4
+   ],
+   "built": [
+    -7.05,
+    0.48300000876188287,
+    4.4
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "ktv-rules",
+   "kind": "note",
+   "label": "House rules",
+   "object": "house-rules",
+   "typed": false,
+   "anchor": [
+    7.483999999832362,
+    1.5,
+    2.95
+   ],
+   "built": [
+    7.483999999832362,
+    1.5,
+    2.95
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "ktv-icefridge",
+   "kind": "use",
+   "label": "Ice fridge",
+   "object": "doorRight",
+   "typed": false,
+   "anchor": [
+    6.806162789225579,
+    0.9309810000000001,
+    5.43349802009346
+   ],
+   "built": [
+    6.806162789225579,
+    0.9309810000000001,
+    5.43349802009346
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "song-book": {
+   "object": "spot:song-book",
+   "how": "carved",
+   "on": "songbook < extras",
+   "at": [
+    2.65,
+    1.1,
+    1.25
+   ],
+   "triangles": 230
+  },
+  "room-board": {
+   "object": "spot:room-board",
+   "how": "carved",
+   "on": "posterBoard < extras",
+   "at": [
+    0,
+    1.6,
+    6.15
+   ],
+   "triangles": 14
+  },
+  "ktv-porthole": {
+   "object": "spot:ktv-porthole",
+   "how": "carved",
+   "on": "hall",
+   "at": [
+    0.41,
+    1.74,
+    0.02
+   ],
+   "triangles": 128
+  },
+  "ktv-sign": {
+   "object": "spot:ktv-sign",
+   "how": "carved",
+   "on": "hall",
+   "at": [
+    0,
+    2.6,
+    0.1
+   ],
+   "triangles": 2
+  },
+  "ktv-art-left": {
+   "object": "spot:ktv-art-left",
+   "how": "carved",
+   "on": "hall",
+   "at": [
+    -1.55,
+    1.45,
+    0.68
+   ],
+   "triangles": 2
+  },
+  "ktv-art-right": {
+   "object": "spot:ktv-art-right",
+   "how": "carved",
+   "on": "hall",
+   "at": [
+    1.5,
+    1.45,
+    0.68
+   ],
+   "triangles": 2
+  },
+  "ktv-door-103": {
+   "object": "spot:ktv-door-103",
+   "how": "carved",
+   "on": "extras",
+   "at": [
+    -3.35,
+    1.1,
+    0.75
+   ],
+   "triangles": 12
+  }
+ },
+ "premerge": {
+  "now-singing": [
+   -7.211,
+   1.65,
+   4.4
+  ],
+  "drinks-fridge": [
+   7.149981702249095,
+   0.8740000158548354,
+   4.2
+  ],
+  "waiting-sofa": [
+   -7.05,
+   0.48300000876188287,
+   4.4
+  ],
+  "house-rules": [
+   7.483999999832362,
+   1.5,
+   2.95
+  ],
+  "doorRight@6.81,0.93,5.43": [
+   6.806162789225579,
+   0.9309810000000001,
+   5.43349802009346
+  ]
+ },
+ "doorProps": {
+  "door-street-1": {
+   "p": [
+    -7.47,
+    0,
+    1.9904
+   ],
+   "q": [
+    0,
+    0.707107,
+    0,
+    0.707107
+   ],
+   "gate": false,
+   "tint": 0
+  },
+  "door-bar-1": {
+   "p": [
+    5.6638,
+    0,
+    0.76
+   ],
+   "q": [
+    0,
+    0,
+    0,
+    1
+   ],
+   "gate": false,
+   "tint": 1
+  }
+ },
+ "anchorsBefore": {
+  "named": 5,
+  "typed": 7
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": {
+  "props": 28,
+  "instanced": 10,
+  "signs": 3,
+  "lights": 3,
+  "retextured": 0,
+  "triangles": 11640,
+  "failed": 0
+ },
+ "detailStats": {
+  "meshes": 0,
+  "triangles": 0
+ },
+ "manifestColliders": 0,
+ "manifest": true,
+ "three": "170",
+ "key": "ktv-room-1",
+ "hour": 13,
+ "bakedAt": "2026-10-21T12:57:44.212Z",
+ "source": {
+  "family": "KTV () built at runtime by lab/src/scenes",
+  "exportBytes": 6815668,
+  "triangles": 28916,
+  "drawCalls": 125,
+  "textures": 31,
+  "textureMB": 31.1
+ },
+ "lods": {
+  "lod0": {
+   "file": "ktv-room-1.glb",
+   "triangles": 19838,
+   "primitives": 102,
+   "materials": 90,
+   "textures": 24,
+   "textureKB": 486,
+   "bytes": 802256
+  },
+  "lod1": {
+   "file": "ktv-room-1.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 11800,
+   "primitives": 102,
+   "materials": 90,
+   "textures": 24,
+   "textureKB": 196,
+   "bytes": 453684
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "waiting-sofa",
+   "drinks-fridge",
+   "doorRight",
+   "now-singing",
+   "house-rules",
+   "spot:song-book",
+   "spot:room-board",
+   "spot:ktv-porthole",
+   "spot:ktv-sign",
+   "spot:ktv-art-left",
+   "spot:ktv-art-right",
+   "spot:ktv-door-103"
+  ],
+  "exportBytes": 739828
+ },
+ "live": {
+  "file": "ktv-room-1.live.json",
+  "bytes": 33347,
+  "objects": [
+   "Mesh",
+   "Mesh",
+   "groundMist",
+   "groundMist",
+   "groundMist"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs ktv-room-1 (dev server running, BASE=...)"
+ ]
+}

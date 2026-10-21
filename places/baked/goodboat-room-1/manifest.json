@@ -1,0 +1,907 @@
+{
+ "version": 2,
+ "place": "goodboat-room-1",
+ "family": "GoodboatRoom",
+ "variant": "N",
+ "tod": "day",
+ "cost": {
+  "triangles": 31108,
+  "drawCalls": 115,
+  "textures": 32,
+  "textureMB": 62.1
+ },
+ "exported": {
+  "triangles": 27984,
+  "drawCalls": 98,
+  "textures": 26,
+  "textureMB": 49.6
+ },
+ "lights": [
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16763024,
+   "intensity": 2.2,
+   "position": [
+    2.7,
+    0.98,
+    2.95
+   ],
+   "visible": true,
+   "distance": 3,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16758920,
+   "intensity": 2,
+   "position": [
+    -1.95,
+    0.9,
+    6
+   ],
+   "visible": true,
+   "distance": 3.5,
+   "decay": 2
+  },
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 11561626,
+   "intensity": 0.18,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 3805216
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16758928,
+   "intensity": 0.8999999999999999,
+   "position": [
+    -1,
+    0.62,
+    0.5
+   ],
+   "visible": true,
+   "distance": 2.2,
+   "decay": 2,
+   "shadow": {
+    "mapSize": [
+     1024,
+     1024
+    ],
+    "bias": -0.002,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 0.5,
+     "far": 2.2,
+     "fov": 90
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16758928,
+   "intensity": 0.8999999999999999,
+   "position": [
+    1,
+    0.62,
+    0.5
+   ],
+   "visible": true,
+   "distance": 2.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16754816,
+   "intensity": 1.08,
+   "position": [
+    -1.05,
+    0.9,
+    0.6
+   ],
+   "visible": true,
+   "distance": 2.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16754816,
+   "intensity": 1.08,
+   "position": [
+    1.05,
+    0.9,
+    0.6
+   ],
+   "visible": true,
+   "distance": 2.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16728256,
+   "intensity": 2.7,
+   "position": [
+    -1.7,
+    1,
+    0.95
+   ],
+   "visible": true,
+   "distance": 3.5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 8040703,
+   "intensity": 1.7999999999999998,
+   "position": [
+    0,
+    1.2,
+    0.7
+   ],
+   "visible": true,
+   "distance": 3.5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16748736,
+   "intensity": 3,
+   "position": [
+    2.4,
+    1.7,
+    0.9
+   ],
+   "visible": true,
+   "distance": 3,
+   "decay": 2
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16754872,
+   "intensity": 0.2,
+   "position": [
+    -1,
+    4,
+    8
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16752776,
+   "intensity": 3.3000000000000003,
+   "position": [
+    0,
+    2.15,
+    3.2
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16751264,
+   "intensity": 3.3000000000000003,
+   "position": [
+    0.4,
+    2.15,
+    6
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16747096,
+   "intensity": 3,
+   "position": [
+    0,
+    0.8,
+    3.2
+   ],
+   "visible": true,
+   "distance": 4.5,
+   "decay": 2
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "bb9f0ca8-1691-4fad-980b-c36baa1d0f6a",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "bb9f0ca8-1691-4fad-980b-c36baa1d0f6a",
+   "uniform": "uWT",
+   "a": 0.3,
+   "b": 0
+  },
+  {
+   "material": "785b52d1-931d-47f4-a116-487f0eb248c1",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "194e7c2f-a1f9-433e-9c52-587e6d9fae6a",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "1df9c1c9-1733-4e8c-9623-1f12ec96fcb0",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "23783d46-3111-44e8-8997-8e6f745ee4ce",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {
+  "bb9f0ca8-1691-4fad-980b-c36baa1d0f6a": {
+   "uL": "v4",
+   "uLC": "c"
+  }
+ },
+ "reflectors": [],
+ "camera": {
+  "ref": {
+   "position": [
+    -0.12,
+    1.531,
+    7.036
+   ],
+   "target": [
+    -0.12,
+    1.531,
+    3.036
+   ],
+   "fov": 27.1,
+   "shift": [
+    -0.005,
+    -0.3522
+   ]
+  },
+  "views": [
+   {
+    "name": "bed",
+    "label": "Bed",
+    "position": [
+     1.6,
+     1.4,
+     3.6
+    ],
+    "target": [
+     -0.2,
+     0.4,
+     0.8
+    ],
+    "fov": 50
+   },
+   {
+    "name": "flamingo",
+    "label": "Flamingo",
+    "position": [
+     -0.6,
+     1.2,
+     1.8
+    ],
+    "target": [
+     -1.75,
+     0.9,
+     0.1
+    ],
+    "fov": 48
+   },
+   {
+    "name": "lamp",
+    "label": "Lamp",
+    "position": [
+     0.55,
+     0.75,
+     1
+    ],
+    "target": [
+     1,
+     0.4,
+     0.2
+    ],
+    "fov": 42
+   },
+   {
+    "name": "shower",
+    "label": "Shower",
+    "position": [
+     0.9,
+     1.5,
+     2.6
+    ],
+    "target": [
+     2.6,
+     1.1,
+     0.3
+    ],
+    "fov": 50
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     0.8,
+     1.6,
+     0.9
+    ],
+    "target": [
+     -1.2,
+     0.8,
+     6.5
+    ],
+    "fov": 62
+   },
+   {
+    "name": "desk",
+    "label": "Writing desk",
+    "position": [
+     1.3,
+     1.5,
+     4.9
+    ],
+    "target": [
+     2.8,
+     0.9,
+     3.2
+    ],
+    "fov": 52
+   },
+   {
+    "name": "window",
+    "label": "Harbour through the blind",
+    "position": [
+     0,
+     1.4,
+     5.2
+    ],
+    "target": [
+     0,
+     1.3,
+     -3
+    ],
+    "fov": 30
+   },
+   {
+    "name": "ceiling",
+    "label": "Looking up",
+    "position": [
+     0.2,
+     1,
+     5.8
+    ],
+    "target": [
+     0.2,
+     2.5,
+     2.6
+    ],
+    "fov": 66
+   },
+   {
+    "name": "wardrobe",
+    "label": "Front wall",
+    "position": [
+     0.2,
+     1.5,
+     3.6
+    ],
+    "target": [
+     0.6,
+     1.2,
+     7.7
+    ],
+    "fov": 55
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -2.33,
+   0.15,
+   0.15
+  ],
+  "max": [
+   2.85,
+   2.6,
+   7.55
+  ]
+ },
+ "env": {
+  "background": 1707034,
+  "ibl": {
+   "top": 10111594,
+   "wall": 10506346,
+   "floor": 4854808,
+   "intensity": 0.22,
+   "lights": [
+    {
+     "pos": [
+      -2.4,
+      1.4,
+      1.5
+     ],
+     "size": [
+      0.8,
+      2
+     ],
+     "color": 16728256,
+     "power": 5,
+     "lookAt": [
+      1,
+      1,
+      3
+     ]
+    },
+    {
+     "pos": [
+      0,
+      1.4,
+      -0.2
+     ],
+     "size": [
+      1.8,
+      1.4
+     ],
+     "color": 7391487,
+     "power": 3,
+     "lookAt": [
+      0,
+      1,
+      4
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 2099220,
+    "opacity": 0.55,
+    "depthTh": 0.014,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.5,
+    "radius": 0.3
+   },
+   "bloom": {
+    "threshold": 0.8,
+    "strength": 0.5,
+    "weights": [
+     0.5,
+     0.35,
+     0.3,
+     0.2,
+     0.1
+    ]
+   },
+   "grade": {
+    "exposure": 0.86,
+    "saturation": 1.05,
+    "lift": [
+     0.02,
+     0,
+     0.02
+    ],
+    "gain": [
+     1.04,
+     1.02,
+     0.82
+    ],
+    "vignette": 0.3
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 6.4,
+    "range": 2.2,
+    "near": 0.7,
+    "far": 0.6,
+    "maxRadius": 8,
+    "tilt": {
+     "center": [
+      0.5,
+      0.5
+     ],
+     "radius": [
+      0.3,
+      0.42
+     ],
+     "soft": 0.3,
+     "strength": 8
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -2.48,
+   0,
+   3,
+   7.7
+  ],
+  "eye": 1.55,
+  "start": {
+   "position": [
+    0.2,
+    0,
+    6.2
+   ],
+   "target": [
+    0,
+    1,
+    0
+   ]
+  },
+  "colliders": [],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "laptop",
+   "kind": "terminal",
+   "label": "Guest log",
+   "object": "laptop",
+   "typed": false,
+   "anchor": [
+    2.75,
+    0.8890123815696447,
+    3.3
+   ],
+   "built": [
+    2.75,
+    0.8890123815696447,
+    3.3
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-hall",
+   "kind": "link",
+   "label": "Door to the hall",
+   "object": "spot:door-hall",
+   "typed": true,
+   "anchor": [
+    3,
+    1.2,
+    6.4
+   ],
+   "built": [
+    3,
+    1.2,
+    6.4
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "gb3-flamingo",
+   "kind": "inspect",
+   "label": "Neon flamingo",
+   "object": "spot:gb3-flamingo",
+   "typed": true,
+   "anchor": [
+    -1.75,
+    1.3,
+    0.2
+   ],
+   "built": [
+    -1.75,
+    1.3,
+    0.2
+   ],
+   "reach": 5
+  },
+  {
+   "id": "gb3-blind",
+   "kind": "inspect",
+   "label": "Venetian blind",
+   "object": "spot:gb3-blind",
+   "typed": true,
+   "anchor": [
+    0,
+    1.3,
+    0.06
+   ],
+   "built": [
+    0,
+    1.3,
+    0.06
+   ],
+   "reach": 5
+  },
+  {
+   "id": "gb3-bed",
+   "kind": "inspect",
+   "label": "Platform bed",
+   "object": "spot:gb3-bed",
+   "typed": true,
+   "anchor": [
+    0,
+    0.45,
+    1.3
+   ],
+   "built": [
+    0,
+    0.45,
+    1.3
+   ],
+   "reach": 5
+  },
+  {
+   "id": "gb3-lamp",
+   "kind": "inspect",
+   "label": "Mushroom lamp",
+   "object": "spot:gb3-lamp",
+   "typed": true,
+   "anchor": [
+    1,
+    0.5,
+    0.22
+   ],
+   "built": [
+    1,
+    0.5,
+    0.22
+   ],
+   "reach": 5
+  },
+  {
+   "id": "gb3-shower",
+   "kind": "inspect",
+   "label": "Corner shower",
+   "object": "spot:gb3-shower",
+   "typed": true,
+   "anchor": [
+    2.5,
+    1.2,
+    0.4
+   ],
+   "built": [
+    2.5,
+    1.2,
+    0.4
+   ],
+   "reach": 5
+  },
+  {
+   "id": "gb3-wardrobe",
+   "kind": "inspect",
+   "label": "Wardrobe and mirror",
+   "object": "wardrobe",
+   "typed": false,
+   "anchor": [
+    1.2,
+    1.15,
+    7.407500002980233
+   ],
+   "built": [
+    1.2,
+    1.15,
+    7.407500002980233
+   ],
+   "reach": 5
+  }
+ ],
+ "bind": {
+  "door-hall": {
+   "object": "spot:door-hall",
+   "how": "node",
+   "on": null,
+   "at": [
+    3,
+    1.2,
+    6.4
+   ]
+  },
+  "gb3-flamingo": {
+   "object": "spot:gb3-flamingo",
+   "how": "node",
+   "on": null,
+   "at": [
+    -1.75,
+    1.3,
+    0.2
+   ]
+  },
+  "gb3-blind": {
+   "object": "spot:gb3-blind",
+   "how": "node",
+   "on": null,
+   "at": [
+    0,
+    1.3,
+    0.06
+   ]
+  },
+  "gb3-bed": {
+   "object": "spot:gb3-bed",
+   "how": "node",
+   "on": null,
+   "at": [
+    0,
+    0.45,
+    1.3
+   ]
+  },
+  "gb3-lamp": {
+   "object": "spot:gb3-lamp",
+   "how": "node",
+   "on": null,
+   "at": [
+    1,
+    0.5,
+    0.22
+   ]
+  },
+  "gb3-shower": {
+   "object": "spot:gb3-shower",
+   "how": "node",
+   "on": null,
+   "at": [
+    2.5,
+    1.2,
+    0.4
+   ]
+  }
+ },
+ "premerge": {
+  "spot:door-hall": [
+   3,
+   1.2,
+   6.4
+  ],
+  "spot:gb3-flamingo": [
+   -1.75,
+   1.3,
+   0.2
+  ],
+  "spot:gb3-blind": [
+   0,
+   1.3,
+   0.06
+  ],
+  "spot:gb3-bed": [
+   0,
+   0.45,
+   1.3
+  ],
+  "spot:gb3-lamp": [
+   1,
+   0.5,
+   0.22
+  ],
+  "spot:gb3-shower": [
+   2.5,
+   1.2,
+   0.4
+  ],
+  "laptop": [
+   2.75,
+   0.8890123815696447,
+   3.3
+  ],
+  "wardrobe": [
+   1.2,
+   1.15,
+   7.407500002980233
+  ]
+ },
+ "doorProps": {},
+ "anchorsBefore": {
+  "named": 2,
+  "typed": 6
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 0,
+  "triangles": 0
+ },
+ "manifestColliders": 0,
+ "manifest": false,
+ "three": "170",
+ "key": "goodboat-room-1",
+ "hour": 13,
+ "bakedAt": "2026-10-21T13:03:25.177Z",
+ "source": {
+  "family": "GoodboatRoom (N) built at runtime by lab/src/scenes",
+  "exportBytes": 16294728,
+  "triangles": 31108,
+  "drawCalls": 115,
+  "textures": 32,
+  "textureMB": 62.1
+ },
+ "lods": {
+  "lod0": {
+   "file": "goodboat-room-1.glb",
+   "triangles": 28382,
+   "primitives": 90,
+   "materials": 90,
+   "textures": 21,
+   "textureKB": 909,
+   "bytes": 1260160
+  },
+  "lod1": {
+   "file": "goodboat-room-1.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 16834,
+   "primitives": 90,
+   "materials": 90,
+   "textures": 21,
+   "textureKB": 258,
+   "bytes": 529000
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "laptop",
+   "wardrobe",
+   "spot:door-hall",
+   "spot:gb3-flamingo",
+   "spot:gb3-blind",
+   "spot:gb3-bed",
+   "spot:gb3-lamp",
+   "spot:gb3-shower"
+  ],
+  "exportBytes": 2859824
+ },
+ "live": {
+  "file": "goodboat-room-1.live.json",
+  "bytes": 108404,
+  "objects": [
+   "Mesh",
+   "Mesh",
+   "harborOutside",
+   "smokePlume",
+   "groundMist",
+   "motes"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs goodboat-room-1 (dev server running, BASE=...)"
+ ]
+}
