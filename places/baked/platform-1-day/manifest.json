@@ -1,0 +1,898 @@
+{
+ "version": 2,
+ "place": "platform-1",
+ "family": "Platform",
+ "variant": "D",
+ "tod": "day",
+ "cost": {
+  "triangles": 81184,
+  "drawCalls": 492,
+  "textures": 42,
+  "textureMB": 44
+ },
+ "exported": {
+  "triangles": 61850,
+  "drawCalls": 250,
+  "textures": 32,
+  "textureMB": 40
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 16052479,
+   "intensity": 0.85,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 12101816
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16773344,
+   "intensity": 1.8,
+   "position": [
+    -2,
+    8,
+    6
+   ],
+   "visible": true,
+   "target": [
+    1.5,
+    0,
+    -4
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0004,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 1,
+     "far": 30,
+     "left": -10,
+     "right": 10,
+     "top": 12,
+     "bottom": -12
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16773344,
+   "intensity": 6,
+   "position": [
+    -1.36,
+    3.1,
+    -3.9
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16773344,
+   "intensity": 6,
+   "position": [
+    2.4,
+    3.1,
+    -4.15
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16773344,
+   "intensity": 6,
+   "position": [
+    0.4,
+    3.1,
+    -11
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16773344,
+   "intensity": 6,
+   "position": [
+    0.3,
+    3.1,
+    0.5
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16773344,
+   "intensity": 6,
+   "position": [
+    2,
+    3.1,
+    -8
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16751816,
+   "intensity": 12,
+   "position": [
+    0.4,
+    3.3,
+    -5.7
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.5
+  },
+  {
+   "type": "SpotLight",
+   "name": "",
+   "color": 16773312,
+   "intensity": 12,
+   "position": [
+    3.5,
+    3.2,
+    8.5
+   ],
+   "visible": true,
+   "distance": 14,
+   "decay": 1.2,
+   "angle": 0.5,
+   "penumbra": 0.7,
+   "target": [
+    2.5,
+    0,
+    1.4
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16774378,
+   "intensity": 10,
+   "position": [
+    -3.2,
+    1.6,
+    -11
+   ],
+   "visible": true,
+   "distance": 6,
+   "decay": 1.6
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "696b863f-8ada-49fb-b3ca-9c14e4b6514f",
+   "uniform": "uT",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "1bdc61ec-602b-4cce-b95e-1cd03316fb4f",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "d03d1649-e864-4042-8903-0d921f5cd5ba",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "7882b926-7aa3-4c15-8746-6faa9ed99cd1",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "1fe58f52-671f-4a55-8403-3e73ed777a71",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "62549335-2907-4c7c-96f0-8a164928fcb8",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "cd6c0ad7-df46-4b16-9a3d-7698f42c17d2",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "uniformArrays": {},
+ "reflectors": [
+  {
+   "w": 7.199999999999999,
+   "d": 5.5,
+   "x": 0.9999999999999998,
+   "y": 0,
+   "z": 2.75,
+   "strength": 0.3,
+   "blur": 1.4,
+   "f0": 0.06,
+   "tint": 16773344,
+   "fade": 40,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 768,
+   "mask": null
+  }
+ ],
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    1.26,
+    3.7
+   ],
+   "target": [
+    1.57,
+    1.185,
+    -1.047
+   ],
+   "fov": 44.26
+  },
+  "views": [
+   {
+    "name": "paid-side",
+    "label": "Behind the gates",
+    "position": [
+     0.9,
+     1.6,
+     -7.5
+    ],
+    "target": [
+     2.2,
+     0.9,
+     1.5
+    ],
+    "fov": 62
+   },
+   {
+    "name": "wide",
+    "label": "Concourse",
+    "position": [
+     -2,
+     2.4,
+     4.9
+    ],
+    "target": [
+     2,
+     0.8,
+     -8
+    ],
+    "fov": 62
+   },
+   {
+    "name": "gate",
+    "label": "Gate close-up",
+    "position": [
+     1,
+     1.3,
+     1
+    ],
+    "target": [
+     1.5,
+     0.85,
+     -0.3
+    ],
+    "fov": 45
+   },
+   {
+    "name": "office",
+    "label": "Office glass",
+    "position": [
+     2.2,
+     1.6,
+     1.8
+    ],
+    "target": [
+     5.3,
+     1.6,
+     0.2
+    ],
+    "fov": 55
+   },
+   {
+    "name": "ceiling",
+    "label": "Signs",
+    "position": [
+     0.6,
+     1.6,
+     1.2
+    ],
+    "target": [
+     0.8,
+     3.2,
+     -6
+    ],
+    "fov": 55
+   },
+   {
+    "name": "reverse",
+    "label": "To the stairs",
+    "position": [
+     1.2,
+     1.6,
+     -3.5
+    ],
+    "target": [
+     0.5,
+     1,
+     6
+    ],
+    "fov": 62
+   },
+   {
+    "name": "exit-light",
+    "label": "Exit light",
+    "position": [
+     2.4,
+     1.5,
+     -5.2
+    ],
+    "target": [
+     -2.5,
+     1.1,
+     -11
+    ],
+    "fov": 62
+   },
+   {
+    "name": "left-wall",
+    "label": "Fare machines",
+    "position": [
+     -0.4,
+     1.5,
+     -1.2
+    ],
+    "target": [
+     -2.6,
+     1.2,
+     2.6
+    ],
+    "fov": 60
+   },
+   {
+    "name": "stairs",
+    "label": "Stairwell",
+    "position": [
+     -0.5,
+     1.5,
+     2.8
+    ],
+    "target": [
+     0.6,
+     0.6,
+     7.5
+    ],
+    "fov": 62
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -2.4,
+   0.2,
+   -17.2
+  ],
+  "max": [
+   4.8,
+   3.1,
+   5.3
+  ]
+ },
+ "env": {
+  "background": 2762288,
+  "ibl": {
+   "top": 12101792,
+   "wall": 9996416,
+   "floor": 5787728,
+   "intensity": 0.6,
+   "lights": [
+    {
+     "pos": [
+      0.4,
+      3.2,
+      -5.7
+     ],
+     "size": [
+      2.2,
+      5
+     ],
+     "color": 16754892,
+     "power": 7,
+     "lookAt": [
+      0.4,
+      0,
+      -5.7
+     ]
+    },
+    {
+     "pos": [
+      -2.4,
+      1.6,
+      -11
+     ],
+     "size": [
+      1.5,
+      2.4
+     ],
+     "color": 16774378,
+     "power": 6,
+     "lookAt": [
+      4,
+      1.6,
+      -11
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 2760220,
+    "opacity": 0.55,
+    "depthTh": 0.012,
+    "normalTh": 0.25
+   },
+   "ao": {
+    "strength": 0.45,
+    "radius": 0.35
+   },
+   "bloom": {
+    "threshold": 0.82,
+    "strength": 0.5,
+    "weights": [
+     0.45,
+     0.35,
+     0.3,
+     0.25,
+     0.15
+    ]
+   },
+   "grade": {
+    "exposure": 1.02,
+    "saturation": 1,
+    "lift": [
+     0.015,
+     0.01,
+     0.01
+    ],
+    "gain": [
+     1.03,
+     0.99,
+     0.94
+    ],
+    "vignette": 0.25
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 4,
+    "range": 2.2,
+    "near": 1.2,
+    "far": 0.35,
+    "maxRadius": 9,
+    "tilt": {
+     "center": [
+      0.5,
+      0.55
+     ],
+     "radius": [
+      0.36,
+      0.42
+     ],
+     "soft": 0.25,
+     "strength": 8
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -2.35,
+   -17.2,
+   4.8,
+   5.25
+  ],
+  "eye": 1.55,
+  "start": {
+   "position": [
+    1,
+    0,
+    3.2
+   ],
+   "target": [
+    1.1,
+    1,
+    -4
+   ]
+  },
+  "colliders": [
+   [
+    2.6,
+    -5.449999999999999,
+    3.9,
+    -4.15
+   ],
+   [
+    2.8500000000000005,
+    -10.200000000000001,
+    4.05,
+    -8.999999999999998
+   ],
+   [
+    2.7199999999999998,
+    -14.700000000000001,
+    3.92,
+    -13.499999999999998
+   ],
+   [
+    3.7,
+    -2.4,
+    6,
+    -1.7
+   ],
+   [
+    4.9,
+    -1.7,
+    9,
+    5.5
+   ],
+   [
+    -0.39,
+    -1.78,
+    -0.04999999999999999,
+    0.05
+   ],
+   [
+    0.42999999999999994,
+    -1.78,
+    0.77,
+    0.05
+   ],
+   [
+    1.35,
+    -1.78,
+    1.69,
+    0.05
+   ],
+   [
+    2.45,
+    -1.78,
+    2.79,
+    0.05
+   ],
+   [
+    3.49,
+    -1.78,
+    3.83,
+    0.05
+   ],
+   [
+    4.49,
+    -1.78,
+    4.83,
+    0.05
+   ],
+   [
+    -1.65,
+    0.95,
+    -0.2,
+    1.45
+   ],
+   [
+    -2.6,
+    1,
+    -2.05,
+    3.05
+   ],
+   [
+    -2.6,
+    -9.15,
+    -2.1,
+    -7.25
+   ],
+   [
+    -2.6,
+    -6.8,
+    -2.05,
+    -6
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "kouka-meet",
+   "kind": "chat",
+   "label": "Kouka",
+   "object": "spot:kouka-meet",
+   "typed": true,
+   "anchor": null,
+   "reach": 3.2
+  },
+  {
+   "id": "door-street",
+   "kind": "link",
+   "label": "Stairs to the street",
+   "object": "spot:door-street",
+   "typed": true,
+   "anchor": [
+    0.6,
+    1.3,
+    5.4
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-metro",
+   "kind": "link",
+   "label": "Through the gates to the trains",
+   "object": "gates",
+   "typed": false,
+   "anchor": [
+    1.867619965672493,
+    1.326499999947846,
+    -0.862
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "plat-fares",
+   "kind": "note",
+   "label": "Fare board",
+   "object": "fareboard",
+   "typed": false,
+   "anchor": [
+    -0.9300000000000002,
+    0.919999993108213,
+    1.2
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "plat-sign",
+   "kind": "inspect",
+   "label": "Platform sign",
+   "object": "pf",
+   "typed": false,
+   "anchor": [
+    3.25,
+    1.25,
+    -4.194
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "plat-phone",
+   "kind": "use",
+   "label": "Help phone",
+   "object": "spot:plat-phone",
+   "typed": true,
+   "anchor": [
+    -2.2,
+    1.2,
+    -12.5
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "frag-7",
+   "kind": "fragment",
+   "label": "Glowing shard",
+   "object": "spot:frag-7",
+   "typed": true,
+   "anchor": [
+    -2.2,
+    1.1,
+    -4
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "kouka-meet": {
+   "object": "spot:kouka-meet",
+   "how": "node",
+   "on": null,
+   "at": [
+    0.4,
+    1.3,
+    1.5
+   ]
+  },
+  "door-street": {
+   "object": "spot:door-street",
+   "how": "node",
+   "on": null,
+   "at": [
+    0.6,
+    1.3,
+    5.4
+   ]
+  },
+  "plat-phone": {
+   "object": "spot:plat-phone",
+   "how": "node",
+   "on": null,
+   "at": [
+    -2.2,
+    1.2,
+    -12.5
+   ]
+  },
+  "frag-7": {
+   "object": "spot:frag-7",
+   "how": "node",
+   "on": null,
+   "at": [
+    -2.2,
+    1.1,
+    -4
+   ]
+  }
+ },
+ "premerge": {
+  "spot:kouka-meet": [
+   0.4,
+   1.3,
+   1.5
+  ],
+  "spot:door-street": [
+   0.6,
+   1.3,
+   5.4
+  ],
+  "spot:plat-phone": [
+   -2.2,
+   1.2,
+   -12.5
+  ],
+  "spot:frag-7": [
+   -2.2,
+   1.1,
+   -4
+  ],
+  "gates": [
+   1.867619965672493,
+   1.326499999947846,
+   -0.862
+  ],
+  "fareboard": [
+   -0.9300000000000002,
+   0.919999993108213,
+   1.2
+  ],
+  "pf": [
+   3.25,
+   1.25,
+   -4.194
+  ]
+ },
+ "anchorsBefore": {
+  "named": 3,
+  "typed": 4
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 11,
+  "triangles": 32732
+ },
+ "manifestColliders": 0,
+ "manifest": false,
+ "three": "170",
+ "key": "platform-1-day",
+ "hour": 13,
+ "bakedAt": "2026-10-21T00:08:44.561Z",
+ "source": {
+  "family": "Platform (D) built at runtime by lab/src/scenes",
+  "exportBytes": 11362156,
+  "triangles": 81184,
+  "drawCalls": 492,
+  "textures": 42,
+  "textureMB": 44
+ },
+ "lods": {
+  "lod0": {
+   "file": "platform-1-day.glb",
+   "triangles": 65336,
+   "primitives": 167,
+   "materials": 165,
+   "textures": 38,
+   "textureKB": 647,
+   "bytes": 1331088
+  },
+  "lod1": {
+   "file": "platform-1-day.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 35252,
+   "primitives": 167,
+   "materials": 165,
+   "textures": 38,
+   "textureKB": 296,
+   "bytes": 810232
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "pf",
+   "pf",
+   "pf",
+   "pf",
+   "pf",
+   "pf",
+   "pf",
+   "pf",
+   "pf",
+   "pf",
+   "pf",
+   "pf",
+   "gates",
+   "fareboard",
+   "spot:kouka-meet",
+   "spot:door-street",
+   "spot:plat-phone",
+   "spot:frag-7"
+  ],
+  "exportBytes": 920336
+ },
+ "live": {
+  "file": "platform-1-day.live.json",
+  "bytes": 44218,
+  "objects": [
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "motes",
+   "motes",
+   "smokePlume",
+   "smokePlume",
+   "groundMist"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs platform-1 --variant day (dev server running, BASE=...)"
+ ]
+}

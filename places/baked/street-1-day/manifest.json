@@ -1,0 +1,1493 @@
+{
+ "version": 2,
+ "place": "street-1",
+ "family": "StreetDay",
+ "variant": "D",
+ "tod": "day",
+ "cost": {
+  "triangles": 224834,
+  "drawCalls": 358,
+  "textures": 138,
+  "textureMB": 222.7
+ },
+ "exported": {
+  "triangles": 221738,
+  "drawCalls": 311,
+  "textures": 137,
+  "textureMB": 222.7
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 11845870,
+   "intensity": 0.9,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 8680572
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16773350,
+   "intensity": 3.6,
+   "position": [
+    32,
+    52,
+    58
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    -10
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0004,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 10,
+     "far": 220,
+     "left": -62,
+     "right": 62,
+     "top": 62,
+     "bottom": -62
+    }
+   }
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 10134744,
+   "intensity": 0.35,
+   "position": [
+    20,
+    30,
+    -80
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "54304744-3407-49b6-9c1d-983cb6f093e4",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "f9e033a4-08c0-4f20-85a5-e7097f8712ed",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "a837187d-dc84-476f-a113-0adbdde13efb",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "fcab5185-7739-4ec6-833b-033e72fc0f3b",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "da968206-8d45-41ba-a3ac-4116459b71a1",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "f686c23b-76e0-44b0-a0e1-3df9dedb430c",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "334b1edc-68c6-4a13-b414-19ae679de705",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "29475e1e-c9c3-4121-9911-95a6412f3f52",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "c2e176d7-9be4-4dc7-9cca-91ceae60bd54",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "4c647104-b325-473c-862e-87e2053af787",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "a6e9edb4-48a6-4d15-a783-3eb110ef1138",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "106325da-1437-47aa-8bea-6b59e1fc6eff",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "b6e952cc-0f5e-4bc8-a64e-6c8f382030df",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "b6e952cc-0f5e-4bc8-a64e-6c8f382030df",
+   "uniform": "uWT",
+   "a": 0.2,
+   "b": -1.776357e-15
+  },
+  {
+   "material": "0e4d5702-c02e-4a63-bdc0-9fe778f998e4",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "0e4d5702-c02e-4a63-bdc0-9fe778f998e4",
+   "uniform": "uWT",
+   "a": 0.2,
+   "b": -1.776357e-15
+  },
+  {
+   "material": "98e7fed2-0c1c-46e4-9356-476720f0f488",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "98e7fed2-0c1c-46e4-9356-476720f0f488",
+   "uniform": "uWT",
+   "a": 0.2,
+   "b": -1.776357e-15
+  },
+  {
+   "material": "c14440d5-fea8-4c5d-99a3-f4e78e4ada0a",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "c14440d5-fea8-4c5d-99a3-f4e78e4ada0a",
+   "uniform": "uWT",
+   "a": 0.2,
+   "b": -1.776357e-15
+  },
+  {
+   "material": "ba02f612-369f-4089-a206-334a39caad59",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "ba02f612-369f-4089-a206-334a39caad59",
+   "uniform": "uWT",
+   "a": 0.2,
+   "b": -1.776357e-15
+  },
+  {
+   "material": "fee97ec2-a7a2-4de6-ae58-7123e3bb1cd1",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "fee97ec2-a7a2-4de6-ae58-7123e3bb1cd1",
+   "uniform": "uWT",
+   "a": 0.2,
+   "b": -1.776357e-15
+  }
+ ],
+ "motions": [
+  {
+   "name": "overpassTrain",
+   "axis": "x",
+   "start": 44,
+   "speed": -3.2,
+   "cycle": 70,
+   "visibleUntil": 42.75
+  }
+ ],
+ "uniformArrays": {
+  "b6e952cc-0f5e-4bc8-a64e-6c8f382030df": {
+   "uL": "v4",
+   "uLC": "c"
+  },
+  "0e4d5702-c02e-4a63-bdc0-9fe778f998e4": {
+   "uL": "v4",
+   "uLC": "c"
+  },
+  "98e7fed2-0c1c-46e4-9356-476720f0f488": {
+   "uL": "v4",
+   "uLC": "c"
+  },
+  "c14440d5-fea8-4c5d-99a3-f4e78e4ada0a": {
+   "uL": "v4",
+   "uLC": "c"
+  },
+  "ba02f612-369f-4089-a206-334a39caad59": {
+   "uL": "v4",
+   "uLC": "c"
+  },
+  "fee97ec2-a7a2-4de6-ae58-7123e3bb1cd1": {
+   "uL": "v4",
+   "uLC": "c"
+  }
+ },
+ "reflectors": [],
+ "camera": {
+  "ref": {
+   "position": [
+    -0.926,
+    3.671,
+    1.555
+   ],
+   "target": [
+    1.167,
+    3.671,
+    -1.853
+   ],
+   "fov": 53.9,
+   "shift": [
+    0,
+    0.1692
+   ]
+  },
+  "views": [
+   {
+    "name": "crossing",
+    "label": "Crossing",
+    "position": [
+     1.5,
+     1.65,
+     -3.5
+    ],
+    "target": [
+     -4,
+     4.5,
+     -60
+    ],
+    "fov": 55
+   },
+   {
+    "name": "corner-up",
+    "label": "Corner tower",
+    "position": [
+     10.5,
+     1.7,
+     -13.2
+    ],
+    "target": [
+     16.5,
+     15,
+     -20
+    ],
+    "fov": 56
+   },
+   {
+    "name": "shops",
+    "label": "Stepped shops",
+    "position": [
+     3.5,
+     1.7,
+     -14.5
+    ],
+    "target": [
+     9.5,
+     2.4,
+     -23
+    ],
+    "fov": 55
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     10,
+     1.8,
+     -18.8
+    ],
+    "target": [
+     -2,
+     4,
+     12
+    ],
+    "fov": 60
+   },
+   {
+    "name": "avenue",
+    "label": "Far avenue",
+    "position": [
+     -2.5,
+     1.65,
+     -26
+    ],
+    "target": [
+     -2,
+     3.5,
+     -100
+    ],
+    "fov": 58
+   },
+   {
+    "name": "overpass",
+    "label": "Under the overpass",
+    "position": [
+     -6,
+     1.65,
+     -72
+    ],
+    "target": [
+     -7,
+     5.5,
+     -108
+    ],
+    "fov": 58
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -42,
+   0.4,
+   -100
+  ],
+  "max": [
+   43,
+   30,
+   24
+  ]
+ },
+ "env": {
+  "background": 14672112,
+  "ibl": {
+   "top": 8364256,
+   "wall": 13156568,
+   "floor": 9076360,
+   "intensity": 0.6,
+   "lights": [
+    {
+     "pos": [
+      30,
+      8,
+      6
+     ],
+     "size": [
+      10,
+      6
+     ],
+     "color": 16773344,
+     "power": 1.6,
+     "lookAt": [
+      0,
+      0,
+      -10
+     ]
+    }
+   ]
+  },
+  "fog": {
+   "color": 14474996,
+   "near": 48,
+   "far": 175
+  },
+  "post": {
+   "outline": {
+    "color": 2762038,
+    "opacity": 0.5,
+    "depthTh": 0.02,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.42,
+    "radius": 0.5
+   },
+   "bloom": {
+    "threshold": 0.8,
+    "strength": 0.32,
+    "weights": [
+     0.4,
+     0.35,
+     0.3,
+     0.22,
+     0.15
+    ]
+   },
+   "fog": {
+    "enabled": true,
+    "color": 14211314,
+    "density": 0.0035,
+    "falloff": 0.05,
+    "base": 0,
+    "near": 25,
+    "maxOpacity": 0.4
+   },
+   "paint": {
+    "enabled": true,
+    "strength": 0.35,
+    "radius": 2
+   },
+   "grade": {
+    "exposure": 1,
+    "saturation": 1.12,
+    "lift": [
+     0.008,
+     0.007,
+     0.014
+    ],
+    "gain": [
+     1.03,
+     0.99,
+     1.04
+    ],
+    "vignette": 0.22
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 30,
+    "range": 26,
+    "near": 1.4,
+    "far": 0.5,
+    "maxRadius": 6,
+    "tilt": {
+     "center": [
+      0.55,
+      0.35
+     ],
+     "radius": [
+      0.42,
+      0.5
+     ],
+     "soft": 0.5,
+     "strength": 0.6
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -43,
+   -102,
+   44,
+   24
+  ],
+  "eye": 1.62,
+  "start": {
+   "position": [
+    2,
+    0,
+    2
+   ],
+   "target": [
+    13,
+    3,
+    -19
+   ]
+  },
+  "colliders": [
+   [
+    21.400000000000002,
+    -15.48,
+    26.2,
+    -13.620000000000001
+   ],
+   [
+    29.35,
+    -15.39,
+    33.85,
+    -13.61
+   ],
+   [
+    25.05,
+    -7.750000000000001,
+    28.95,
+    -6.05
+   ],
+   [
+    33.75,
+    -7.790000000000001,
+    38.25,
+    -6.01
+   ],
+   [
+    1.5499999999999998,
+    -59.95,
+    3.25,
+    -56.05
+   ],
+   [
+    -2.89,
+    10.35,
+    -1.1099999999999999,
+    14.85
+   ],
+   [
+    7.35,
+    4.85,
+    9.049999999999999,
+    8.75
+   ],
+   [
+    4.709999999999999,
+    -50.25,
+    6.49,
+    -45.75
+   ],
+   [
+    -9.93,
+    -68.4,
+    -8.07,
+    -63.6
+   ],
+   [
+    -5.7,
+    -3.5,
+    -4.6,
+    -2.4
+   ],
+   [
+    7.68,
+    -21.3,
+    8.9,
+    -19.9
+   ],
+   [
+    9.7,
+    -21,
+    11.1,
+    -19.6
+   ],
+   [
+    5.2,
+    -23.7,
+    6.6,
+    -22.3
+   ],
+   [
+    2.8,
+    -26.3,
+    4.2,
+    -24.9
+   ],
+   [
+    12.9,
+    -19.7,
+    14.3,
+    -18.3
+   ],
+   [
+    16.9,
+    -17.3,
+    18.3,
+    -15.9
+   ],
+   [
+    -4.6,
+    -18.3,
+    -3.2,
+    -16.9
+   ],
+   [
+    11.7,
+    -19.3,
+    13.1,
+    -17.9
+   ],
+   [
+    20,
+    -8.7,
+    21.4,
+    -7.3
+   ],
+   [
+    -4.4,
+    -44.5,
+    -3.4,
+    -43.5
+   ],
+   [
+    -13.7,
+    -78.5,
+    -12.7,
+    -77.5
+   ],
+   [
+    0.9,
+    -62.5,
+    1.9,
+    -61.5
+   ],
+   [
+    -4,
+    23.9,
+    13.5,
+    25.1
+   ],
+   [
+    -14.6,
+    -103.6,
+    2.6,
+    -102.4
+   ],
+   [
+    -44.1,
+    -16,
+    -42.9,
+    -0.4
+   ],
+   [
+    43.9,
+    -16,
+    45.1,
+    -0.4
+   ],
+   [
+    14.2,
+    -31,
+    32.5,
+    -17.200000000000003
+   ],
+   [
+    11.9,
+    -30,
+    14.6,
+    -21.5
+   ],
+   [
+    32.5,
+    -28,
+    46,
+    -17.200000000000003
+   ],
+   [
+    8.4,
+    -25.5,
+    11.8,
+    -20.9
+   ],
+   [
+    6.5,
+    -28,
+    9.5,
+    -23.4
+   ],
+   [
+    10.3,
+    -40,
+    14.6,
+    -31
+   ],
+   [
+    4.8,
+    -33.5,
+    7,
+    -25.9
+   ],
+   [
+    17.2,
+    -46,
+    29.5,
+    -32
+   ],
+   [
+    30,
+    -40,
+    44,
+    -28.5
+   ],
+   [
+    -20,
+    -60,
+    -2.7,
+    -23.6
+   ],
+   [
+    -16.4,
+    -60,
+    -12,
+    -46
+   ],
+   [
+    -30,
+    2,
+    -8,
+    26
+   ],
+   [
+    15.4,
+    -5.5,
+    36,
+    20
+   ],
+   [
+    -45.5,
+    -40,
+    -30,
+    -17.6
+   ],
+   [
+    -45.5,
+    1.2,
+    -31,
+    20
+   ],
+   [
+    -34,
+    -108,
+    -16.5,
+    -50
+   ],
+   [
+    -52,
+    -128,
+    -20,
+    -108
+   ],
+   [
+    -20,
+    -132,
+    -2,
+    -108
+   ],
+   [
+    -2,
+    -126,
+    14,
+    -108
+   ],
+   [
+    14,
+    -130,
+    52,
+    -108
+   ],
+   [
+    -58,
+    -108,
+    -34,
+    -40
+   ],
+   [
+    -34,
+    -50,
+    -20,
+    -40
+   ],
+   [
+    4.5,
+    -72,
+    30,
+    -50
+   ],
+   [
+    4.5,
+    -108,
+    30,
+    -72
+   ],
+   [
+    30,
+    -108,
+    52,
+    -34
+   ],
+   [
+    -58,
+    -40,
+    -45.5,
+    -17.6
+   ],
+   [
+    -58,
+    1.2,
+    -45.5,
+    20
+   ],
+   [
+    -78,
+    -60,
+    -58,
+    -20
+   ],
+   [
+    -78,
+    -20,
+    -58,
+    14
+   ],
+   [
+    -78,
+    14,
+    -58,
+    56
+   ],
+   [
+    46,
+    -34,
+    58,
+    -17.6
+   ],
+   [
+    36,
+    -1,
+    58,
+    20
+   ],
+   [
+    58,
+    -60,
+    78,
+    -20
+   ],
+   [
+    58,
+    -20,
+    78,
+    14
+   ],
+   [
+    58,
+    14,
+    78,
+    56
+   ],
+   [
+    -58,
+    26,
+    -8,
+    46
+   ],
+   [
+    -58,
+    20,
+    -30,
+    26
+   ],
+   [
+    17,
+    20,
+    58,
+    46
+   ],
+   [
+    -78,
+    46,
+    -50,
+    66
+   ],
+   [
+    -50,
+    46,
+    -20,
+    70
+   ],
+   [
+    -20,
+    46,
+    14,
+    64
+   ],
+   [
+    14,
+    46,
+    44,
+    68
+   ],
+   [
+    44,
+    46,
+    78,
+    66
+   ],
+   [
+    -5.7536736367951935,
+    -6.588883397806291,
+    -5.257180907852415,
+    -5.423937998251172
+   ],
+   [
+    -5.665713542085381,
+    -10.364717089087113,
+    -5.3347677272482095,
+    -9.634626757373537
+   ]
+  ],
+  "floor": {
+   "x0": -44,
+   "z0": -103,
+   "cell": 0.2,
+   "nx": 446,
+   "nz": 641,
+   "rle": "AACKAJYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgA0AAAALgGWAA0AAABPAJYANAAAAC4BlgANAAAATwCWADQAAAAuAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAATwCWAEoAAAAYAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAATwCWAEoAAAAYAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAATwCWAEoAAAAYAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAATwCWAEoAAAAYAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAATwCWAEoAAAAYAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAATwCWAEoAAAAYAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAATwCWAEoAAAAYAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAATwCWAEoAAAAYAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAATwCWAEoAAAAYAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAATwCWAEoAAAAYAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAATwCWAEoAAAAYAZYADQAAAE8AlgBKAAAAGAGWAA0AAABPAJYASgAAABgBlgANAAAARQCWAFQAAAAYAZYADQAAAEUAlgBJAAAAIwGWAA0AAABFAJYASQAAACMBlgANAAAARQCWAEkAAAAjAZYADQAAAEUAlgBJAAAAIwGWAA0AAABFAJYASQAAACMBlgANAAAARQCWAEkAAAAjAZYADQAAAEUAlgBJAAAAIwGWAA0AAABFAJYASQAAACMBlgANAAAARQCWAEkAAAAjAZYADQAAAEUAlgBJAAAAIwGWAA0AAABFAJYASQAAACMBlgANAAAARQCWAEkAAAAjAZYADQAAAEUAlgBJAAAAIwGWAA0AAABFAJYASQAAACMBlgANAAAARQCWAEkAAAAjAZYADQAAAEUAlgBJAAAAIwGWAA0AAABFAJYASQAAACMBlgANAAAARQCWAEkAAAAjAZYADQAAAEUAlgBJAAAAIwGWAA0AAABFAJYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAABEBlgAoAAAAPACWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAdQGWAEkAAAB1AZYASQAAAHUBlgBJAAAAmQCWAMoAAABRAJYAbQEAAFEAlgBtAQAAUQCWAG0BAABRAJYAbQEAAFEAlgBtAQAAUQCWAG0BAABRAJYAbQEAAFEAlgBtAQAAUQCWAG0BAABRAJYAbQEAAFEAlgBtAQAAUQCWAKMAAAAbAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAsQGWAA0AAACxAZYADQAAALEBlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAlgCWAMoAAAAwAJYAjgEAADAAlgCOAQAAMACWAI4BAAAwAJYAjgEAADAAlgCOAQAAMACWAI4BAAAwAJYAjgEAADAAlgCOAQAAMACWAI4BAAAwAJYAjgEAADAAlgCOAQAAMACWAI4BAAAwAJYAxAAAAL4AlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAABUAZYADAAAAFEAlgANAAAAVAGWAAwAAABRAJYADQAAAFQBlgAMAAAAUQCWAA0AAACWAA=="
+  }
+ },
+ "interactables": [
+  {
+   "id": "door-game-room-1",
+   "kind": "link",
+   "label": "Game room",
+   "object": "spot:door-game-room-1",
+   "typed": true,
+   "anchor": [
+    20.2,
+    1.2,
+    -17.1
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-store-1",
+   "kind": "link",
+   "label": "Corner store",
+   "object": "spot:door-store-1",
+   "typed": true,
+   "anchor": [
+    10.2,
+    1.2,
+    -20.65
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-alley-1",
+   "kind": "link",
+   "label": "Graffiti alley",
+   "object": "spot:door-alley-1",
+   "typed": true,
+   "anchor": [
+    -1.4,
+    1.2,
+    -27.5
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-alley-2",
+   "kind": "link",
+   "label": "Back alley",
+   "object": "spot:door-alley-2",
+   "typed": true,
+   "anchor": [
+    6,
+    1.2,
+    -25.5
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-car-1",
+   "kind": "link",
+   "label": "Night ride",
+   "object": "spot:door-car-1",
+   "typed": true,
+   "anchor": [
+    23,
+    1,
+    -13.2
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-cafe",
+   "kind": "link",
+   "label": "Corner cafe",
+   "object": "spot:door-cafe",
+   "typed": true,
+   "anchor": [
+    7.3,
+    1.2,
+    -23.2
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-jinrui",
+   "kind": "link",
+   "label": "Jinrui building",
+   "object": "spot:door-jinrui",
+   "typed": true,
+   "anchor": [
+    -6.5,
+    1.4,
+    -23.5
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-station",
+   "kind": "link",
+   "label": "To the station",
+   "object": "spot:door-station",
+   "typed": true,
+   "anchor": [
+    -0.5,
+    1.5,
+    -58
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "street-board",
+   "kind": "note",
+   "label": "Notice board",
+   "object": "spot:street-board",
+   "typed": true,
+   "anchor": [
+    -2.7,
+    1.3,
+    -30
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "street-puddle",
+   "kind": "inspect",
+   "label": "Standing water",
+   "object": "water",
+   "typed": false,
+   "anchor": [
+    3.2,
+    0.024,
+    -6
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "street-bike",
+   "kind": "use",
+   "label": "Bicycle",
+   "object": "spot:street-bike",
+   "typed": true,
+   "anchor": [
+    -2.7,
+    1,
+    -38
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "frag-4",
+   "kind": "fragment",
+   "label": "Glowing shard",
+   "object": "spot:frag-4",
+   "typed": true,
+   "anchor": [
+    -2.7,
+    1.2,
+    -47
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "door-game-room-1": {
+   "object": "spot:door-game-room-1",
+   "how": "node",
+   "on": null,
+   "at": [
+    20.2,
+    1.2,
+    -17.1
+   ]
+  },
+  "door-store-1": {
+   "object": "spot:door-store-1",
+   "how": "node",
+   "on": null,
+   "at": [
+    10.2,
+    1.2,
+    -20.65
+   ]
+  },
+  "door-alley-1": {
+   "object": "spot:door-alley-1",
+   "how": "node",
+   "on": null,
+   "at": [
+    -1.4,
+    1.2,
+    -27.5
+   ]
+  },
+  "door-alley-2": {
+   "object": "spot:door-alley-2",
+   "how": "node",
+   "on": null,
+   "at": [
+    6,
+    1.2,
+    -25.5
+   ]
+  },
+  "door-car-1": {
+   "object": "spot:door-car-1",
+   "how": "node",
+   "on": null,
+   "at": [
+    23,
+    1,
+    -13.2
+   ]
+  },
+  "door-cafe": {
+   "object": "spot:door-cafe",
+   "how": "node",
+   "on": null,
+   "at": [
+    7.3,
+    1.2,
+    -23.2
+   ]
+  },
+  "door-jinrui": {
+   "object": "spot:door-jinrui",
+   "how": "node",
+   "on": null,
+   "at": [
+    -6.5,
+    1.4,
+    -23.5
+   ]
+  },
+  "door-station": {
+   "object": "spot:door-station",
+   "how": "node",
+   "on": null,
+   "at": [
+    -0.5,
+    1.5,
+    -58
+   ]
+  },
+  "street-board": {
+   "object": "spot:street-board",
+   "how": "node",
+   "on": null,
+   "at": [
+    -2.7,
+    1.3,
+    -30
+   ],
+   "near": [
+    "skyDome<skyline<StreetDay d0.00 s1489.6",
+    "whiteTower<flanks d1.05 s7.2",
+    "ground<StreetDay d1.29 s89.4",
+    "ground<StreetDay d1.30 s118.6"
+   ]
+  },
+  "street-bike": {
+   "object": "spot:street-bike",
+   "how": "node",
+   "on": null,
+   "at": [
+    -2.7,
+    1,
+    -38
+   ],
+   "near": [
+    "skyDome<skyline<StreetDay d0.00 s1489.6",
+    "ground<StreetDay d0.99 s89.4",
+    "ground<StreetDay d1.00 s118.6",
+    "rim<StreetDay d1.00 s256.1"
+   ]
+  },
+  "frag-4": {
+   "object": "spot:frag-4",
+   "how": "node",
+   "on": null,
+   "at": [
+    -2.7,
+    1.2,
+    -47
+   ]
+  }
+ },
+ "premerge": {
+  "spot:door-game-room-1": [
+   20.2,
+   1.2,
+   -17.1
+  ],
+  "spot:door-store-1": [
+   10.2,
+   1.2,
+   -20.65
+  ],
+  "spot:door-alley-1": [
+   -1.4,
+   1.2,
+   -27.5
+  ],
+  "spot:door-alley-2": [
+   6,
+   1.2,
+   -25.5
+  ],
+  "spot:door-car-1": [
+   23,
+   1,
+   -13.2
+  ],
+  "spot:door-cafe": [
+   7.3,
+   1.2,
+   -23.2
+  ],
+  "spot:door-jinrui": [
+   -6.5,
+   1.4,
+   -23.5
+  ],
+  "spot:door-station": [
+   -0.5,
+   1.5,
+   -58
+  ],
+  "spot:street-board": [
+   -2.7,
+   1.3,
+   -30
+  ],
+  "spot:street-bike": [
+   -2.7,
+   1,
+   -38
+  ],
+  "spot:frag-4": [
+   -2.7,
+   1.2,
+   -47
+  ],
+  "water": [
+   3.2,
+   0.024,
+   -6
+  ]
+ },
+ "anchorsBefore": {
+  "named": 1,
+  "typed": 11
+ },
+ "models": {
+  "baked": [
+   "painted_wooden_bench@-5.5,0.15,-6",
+   "planter_box_01@-5.5,0.15,-10"
+  ],
+  "standIns": [
+   {
+    "model": "npc_women_casual",
+    "at": [
+     6.345811027288437,
+     0.15,
+     -17.9537983404845
+    ],
+    "rotY": 2.5838660704134537,
+    "animation": "idle",
+    "person": true
+   },
+   {
+    "model": "npc_men_casual_2",
+    "at": [
+     6.55919553115964,
+     0.15,
+     -18.32282139327377
+    ],
+    "rotY": 2.8111506531177595,
+    "animation": "idle",
+    "person": true
+   },
+   {
+    "model": "npc_women_worker",
+    "at": [
+     6.73797252215445,
+     0.15,
+     -17.59893962666392
+    ],
+    "rotY": -2.8898828702453105,
+    "animation": "idle",
+    "person": true
+   },
+   {
+    "model": "npc_men_suit",
+    "at": [
+     -4.570215110480785,
+     0.15,
+     -20.468578782938422
+    ],
+    "rotY": 1.8697327783938988,
+    "animation": "idle",
+    "person": true
+   },
+   {
+    "model": "npc_women_formal",
+    "at": [
+     -4.859182167425751,
+     0.15,
+     -20.37774412561208
+    ],
+    "rotY": 1.057520276927624,
+    "animation": "idle",
+    "person": true
+   },
+   {
+    "model": "npc_men_casual_hoodie",
+    "at": [
+     13.548049812624232,
+     0.15,
+     -11.376325060976669
+    ],
+    "rotY": 2.968999376083263,
+    "animation": "idle",
+    "person": true
+   },
+   {
+    "model": "npc_men_worker",
+    "at": [
+     14.379763083811849,
+     0.15,
+     -11.403394376682117
+    ],
+    "rotY": -2.7991696827397727,
+    "animation": "idle",
+    "person": true
+   },
+   {
+    "model": "npc_women_suit",
+    "at": [
+     16.749756396003065,
+     0.15,
+     -1.7536523962439972
+    ],
+    "rotY": 1.9970116419394062,
+    "animation": "idle",
+    "person": true
+   },
+   {
+    "model": "npc_women_casual",
+    "at": [
+     17.08360647028312,
+     0.15,
+     -2.3569237687159332
+    ],
+    "rotY": 0.9968377270412189,
+    "animation": "idle",
+    "person": true
+   },
+   {
+    "model": "npc_men_casual_2",
+    "at": [
+     15.769994268706068,
+     0.15,
+     -2.0730703117046505
+    ],
+    "rotY": 1.9005798875030615,
+    "animation": "idle",
+    "person": true
+   }
+  ]
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 18,
+  "triangles": 15676
+ },
+ "manifestColliders": 0,
+ "manifest": false,
+ "three": "170",
+ "key": "street-1-day",
+ "hour": 13,
+ "bakedAt": "2026-10-21T00:08:22.847Z",
+ "source": {
+  "family": "StreetDay (D) built at runtime by lab/src/scenes",
+  "exportBytes": 65952944,
+  "triangles": 224834,
+  "drawCalls": 358,
+  "textures": 138,
+  "textureMB": 222.7
+ },
+ "lods": {
+  "lod0": {
+   "file": "street-1-day.glb",
+   "triangles": 221738,
+   "primitives": 311,
+   "materials": 311,
+   "textures": 77,
+   "textureKB": 3441,
+   "bytes": 5729008
+  },
+  "lod1": {
+   "file": "street-1-day.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 122717,
+   "primitives": 311,
+   "materials": 311,
+   "textures": 77,
+   "textureKB": 919,
+   "bytes": 2528072
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "spot:door-game-room-1",
+   "spot:door-store-1",
+   "spot:door-alley-1",
+   "spot:door-alley-2",
+   "spot:door-car-1",
+   "spot:door-cafe",
+   "spot:door-jinrui",
+   "spot:door-station",
+   "spot:street-board",
+   "spot:street-bike",
+   "spot:frag-4"
+  ],
+  "exportBytes": 1528
+ },
+ "live": {
+  "file": "street-1-day.live.json",
+  "bytes": 554627,
+  "objects": [
+   "Mesh",
+   "overpassTrain",
+   "atmos"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs street-1 --variant day (dev server running, BASE=...)"
+ ]
+}
