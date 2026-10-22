@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "_about": "W18 S2 (W17-02, IM-21/28): what each hIE says when the visitor did what she asked. src/ui/phone/os/acts.js picks the line and fills it from the event log: {act} names the act (who, where, which reading), {when} its time. asked = an arc target of hers the visitor completed (asked_<kind> overrides it for one kind); file = an entry filed into her own file (outcome-specific for the timed ones: hit, or tried = pressed off the mark); file_other = an entry filed into someone else's file; thread = her text about her own timed entry (no bracket actions on the phone); question = Snowdrop's desk question. Every line cites a logged event; none may claim more than the log holds.",
+  "asked": {
+    "kouka": "(flicks the feed away) {act}, {when}. That was on my list for you. One data point. Don't let it go to your head.",
+    "lacia": "(opens the file) {act}, {when}. That was the line I asked you for. It's in your file now, in your name.",
+    "saturnus": "(adjusts the audit sheet) {act}, {when}. That is what I asked for, done by you, not reported to me.",
+    "methode": "(turns from the bench) {act}, {when}. That's the job I gave you. What did you notice while you were at it?",
+    "snowdrop": "(sets the paper down) {act}, {when}! You went and did it. What was it like?"
+  },
+  "asked_ask": {
+    "kouka": "(flicks the feed away) {act}, {when}. You actually asked. Most people just nod. Ask me again and I'll argue it properly.",
+    "lacia": "(opens the file) {act}, {when}. You asked, so it's in your file as your question, not my answer. Ask me the next one.",
+    "saturnus": "(adjusts the audit sheet) {act}, {when}. A question asked out loud. Ask the next one and I will answer it the same way.",
+    "methode": "(turns from the bench) {act}, {when}. Good question. Ask it again here and I'll walk you through it.",
+    "snowdrop": "(sets the paper down) {act}, {when}! I liked that you asked. Ask me the next part?"
+  },
+  "file": {
+    "kouka": {
+      "lantern-timing": {
+        "hit": "(flicks the feed away) The beach lantern, {when}. Clean press, {reading}, {tries}. It's on my sheet under your initials. One timing. I still say coincidence. Get me a second one somewhere else.",
+        "tried": "(flicks the feed away) You were at the beach lantern {when}. Stopped the watch {reading}. My sheet doesn't take nearly. Go back and do it clean."
+      }
+    },
+    "methode": {
+      "rig-dial": {
+        "hit": "(turns from the bench) Rig seven, {when}. You caught the needle {reading}, {tries}, and wrote it on the tape. Rule two, done right. Now its numbers mean the same thing tomorrow.",
+        "tried": "(turns from the bench) Rig seven, {when}. The needle got away from you: {reading}. Close is not calibrated. Go back and set it."
+      }
+    },
+    "lacia": {
+      "lamps": "(opens the file) Your lamp readings, filed {when}: {lamps}. Your numbers, with your name on them. Not mine.",
+      "tide": "(opens the file) The dips you saw, filed {when}: {tides}. Only the places you stood in.",
+      "runs": "(opens the file) Your classroom runs, filed {when}: {runs}. Filed with their settings, not with what they mean.",
+      "stance": "(opens the file) Your reading of the low tide, filed {when}: \"{choice}\". Yours, not mine.",
+      "rumours": "(opens the file) The rumours you followed, filed {when}: {rumours}. What you did there, not what people said.",
+      "wish": "(opens the file) Filed {when}: that you hung a wish at {wish}. Only that it exists. I did not read it."
+    }
+  },
+  "file_other": {
+    "kouka": "(flicks the feed away) {act}, {when}. Not my sheet. Still a data point.",
+    "lacia": "(opens the file) {act}, {when}. Filed with hers, in your name. I keep a copy of the index.",
+    "saturnus": "(adjusts the audit sheet) {act}, {when}. Someone else's question, your hands. I note it.",
+    "methode": "(turns from the bench) {act}, {when}. Somebody else's job, done by you. Did anything break?",
+    "snowdrop": "(sets the paper down) {act}, {when}! How did that feel?"
+  },
+  "thread": {
+    "kouka": {
+      "lantern-timing": {
+        "hit": "got your lantern timing. {reading}, {tries}. it's on the sheet.",
+        "tried": "you were at the lantern. {reading}. my sheet doesn't take nearly."
+      }
+    },
+    "methode": {
+      "rig-dial": {
+        "hit": "Rig seven, zeroed: {reading}, {tries}. The tape says so. Good.",
+        "tried": "Rig seven still drifting? You were {reading}. Set it next time you're in the game room."
+      }
+    }
+  },
+  "question": {
+    "snowdrop": "(sets the paper down) Your slip from my desk, {when}: \"{question}\" The short version: {short} The long one goes in my margin, at that desk."
+  }
+}

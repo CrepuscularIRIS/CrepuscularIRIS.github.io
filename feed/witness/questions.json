@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "host": "snowdrop",
+  "_about": "W18 S2 (W17-05): the questions a visitor can leave on Snowdrop's front desk in Classroom 2-B (src/world/places/deskQuestion.js), each tied to what she is reading or what the visitor has read. `about` = event-log ids that make it one of the offered cards (read:<note> = the visitor opened that note; place:<id> = they went there); `reading: true` = her paper on the desk now; `always` = offered to anyone. `short` is her Meet answer; `answer` is what she pencils under the slip when she reads it at the desk. Her own words about real papers: keep them true to the notes they cite.",
+  "questions": [
+    {
+      "id": "is-the-picture-still-there",
+      "text": "Three hundred tokens into an answer, is the picture still in the room?",
+      "about": ["read:2026-09-20-visual-evidence-deactivation", "read:2026-09-22-snowdrop-eyes-close"],
+      "reading": true,
+      "short": "I don't know yet. That is the honest answer, and it is the whole project.",
+      "answer": [
+        "Under your slip, in pencil: \"I don't know yet. The image is read once, at the start; the words keep growing after that. My hunch is that the picture's pull fades as the answer gets long. A hunch is not a measurement.\"",
+        "Smaller, below it: \"So I split it into things I can measure apart: how much attention the image still gets, and what happens to the answer when I take the image away. They may not fade together. Which one would convince you?\""
+      ]
+    },
+    {
+      "id": "is-attention-proof-of-use",
+      "text": "If the model's attention lands on the image, does that prove it used the image?",
+      "about": ["read:2026-06-22-reading-attention-sinks"],
+      "short": "No. Attention pools in some places just because it has to go somewhere.",
+      "answer": [
+        "Under your slip, in pencil: \"No. The first few tokens soak up attention whether they matter or not, like water stopping behind a rock. A big share on the image can be a sink, not a look.\"",
+        "Below it: \"To show it used the picture, change the picture and see if the answer moves. That is why the blackboard runs take the second look away and give it back.\""
+      ]
+    },
+    {
+      "id": "why-is-the-middle-lost",
+      "text": "Why do long-context models miss what sits in the middle?",
+      "about": ["read:2026-06-10-reading-lost-in-the-middle"],
+      "short": "They do best at the two ends of the corridor and worst halfway down. Why is still open.",
+      "answer": [
+        "Under your slip, in pencil: \"Liu and the others moved the one useful passage around a long input. Accuracy was best with it at the start or the end, worst in the middle: a U.\"",
+        "Below it: \"Why, nobody has fully pinned down. For me it is a baseline: before I say the image fades late in an answer, I have to rule out plain position.\""
+      ]
+    },
+    {
+      "id": "can-it-count-two-lines",
+      "text": "Can a model that describes a whole street really fail to count two crossing lines?",
+      "about": ["read:2026-08-25-reading-vlms-are-blind"],
+      "short": "Yes. Describing a scene and seeing exact geometry are different skills.",
+      "answer": [
+        "Under your slip, in pencil: \"BlindTest asks what a child answers at a glance: do two lines cross, do two circles touch. Strong models got many of them wrong, and sounded sure.\"",
+        "Below it: \"My guess is the image is squeezed small before the words ever see it, and fine geometry gets lost there. It is a guess. That's why it's in pencil.\""
+      ]
+    },
+    {
+      "id": "why-not-feed-it-zeros",
+      "text": "If the depth camera is missing, why not just feed the model zeros?",
+      "about": ["read:2026-08-06-missing-is-not-zero"],
+      "short": "Because zero is a value. The network still hears it.",
+      "answer": [
+        "Under your slip, in pencil: \"A layer with a bias turns zero into something that is not zero. A zero-filled depth image is not absence; it is a grey panel the model never trained on.\"",
+        "Below it: \"Measure with that and you mix two costs: losing the depth, and being shown something strange. I wanted a test that only takes the first.\""
+      ]
+    },
+    {
+      "id": "can-it-look-again",
+      "text": "Can a model lean in and look at the picture a second time?",
+      "about": ["read:2026-07-28-reading-visual-cot"],
+      "short": "Most can't: the picture is read once. V* gave a model that move on purpose.",
+      "answer": [
+        "Under your slip, in pencil: \"Usually the image is encoded once, small, and everything after happens in words. Wu and Xie gave the model a search step: decide where to look, then look closer.\"",
+        "Below it: \"That turns 'does it look again' from a metaphor into a switch you can flip. Then you can test it. I like questions that become switches.\""
+      ]
+    },
+    {
+      "id": "is-the-reasoning-real",
+      "text": "When a model writes out its reasoning, is that really how it got the answer?",
+      "about": ["read:2026-05-30-reading-chain-of-thought-faithfulness", "read:2026-07-19-cot-distillation-audit"],
+      "short": "Sometimes. You find out by changing the reasoning and watching the answer.",
+      "answer": [
+        "Under your slip, in pencil: \"Lanham and the others cut the reasoning short, slipped mistakes into it, paraphrased it. When the answer never changes, the reasoning was decoration.\"",
+        "Below it: \"It varied a lot from task to task. Correct and faithful are different things, so I keep them in two columns.\""
+      ]
+    },
+    {
+      "id": "why-do-the-seedlings-curl",
+      "text": "Why do the seedlings curl under the grow-lamps?",
+      "about": ["place:shrine-1", "place:beach-2"],
+      "short": "When the low tide dims the city, the grow-lamps dim with it, and the leaves keep count.",
+      "answer": [
+        "Under your slip, in pencil: \"When the low tide dims the city, the grow-lamps dim too. A seedling doesn't care why. It only gets less light, and curls.\"",
+        "Below it: \"I'm mapping which trays curl most. If the dips were random, the curl would be too. So far it isn't.\""
+      ]
+    },
+    {
+      "id": "why-read-aloud",
+      "text": "Why do you read papers aloud to an empty classroom?",
+      "always": true,
+      "short": "So I can hear where an argument skips a step.",
+      "answer": [
+        "Under your slip, in pencil: \"Reading aloud is slower. When a sentence skips a step, my voice trips on it before my eyes do.\"",
+        "Below it, smaller: \"And the room isn't empty now, is it.\""
+      ]
+    }
+  ]
+}

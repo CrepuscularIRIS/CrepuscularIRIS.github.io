@@ -82,8 +82,9 @@
       "none": "You did not file a reading of the tide. That is fine. The map has a blank square for you, and blank squares are allowed."
     },
     "parts": [
-      { "when": "runs", "text": "Your two runs are pinned next to the map: {runs}. Same toy, one setting changed. That is a fair comparison, and it is still a toy. Leaves are not a toy, so I am only half sure what it means for them." },
+      { "when": "runs", "text": "Your runs are pinned next to the map: {runsSaved}. Same toy, only the look-again setting changed. That is a fair comparison, and it is still a toy. Leaves are not a toy, so I am only half sure what it means for them." },
       { "when": "oneRun", "text": "You ran the board once ({runs}). There is room for the other run whenever you like." },
+      { "when": "sameRuns", "text": "You ran the board {runTimes}, each time at the same setting ({runs}). That is a repeat, not a comparison yet. Change the one setting and it becomes one." },
       { "when": "lamps", "text": "On the map, the lamps you saw yourself: {lamps}." },
       { "when": "kept", "text": "The ones you went back to ({kept}) were warm when you came in. That part is just true: a lamp warms when someone comes." },
       { "when": "tide", "text": "You saw it dip at {tide}. I drew a little wave there." },

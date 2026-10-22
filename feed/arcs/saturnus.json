@@ -88,7 +88,9 @@
     },
     "parts": [
       { "when": "changed", "text": "Note: you changed your reading, from \"{first}\" to \"{stance}\". Both entries are dated. A changed reading is a record too." },
-      { "when": "runs", "text": "Item: two Attention Fade runs, {runs}. A toy with made-up constants. It shows a shape. It is not a mechanism.", "else": "Item: no complete pair of classroom runs on file. Nothing was compared, so nothing is claimed." },
+      { "when": "runs", "text": "Item: Attention Fade runs, {runsSaved}. A toy with made-up constants. It shows a shape. It is not a mechanism." },
+      { "when": "sameRuns", "text": "Item: Attention Fade runs, {runsSaved}. One setting run again is a repeat, not a comparison. Nothing was compared, so nothing is claimed." },
+      { "when": ["!runs", "!sameRuns"], "text": "Item: no pair of classroom runs at two settings on file. Nothing was compared, so nothing is claimed." },
       { "when": "lamps", "text": "Item: your lamp readings, {lampCount} in all, newest per place: {lamps}. They follow your visits. That is how the lamps work, and it is the only part of this account I can check line by line." },
       { "when": "jinrui", "text": "Item: Jinrui read 100 on every visit. A pinned lamp cannot dip, so it cannot testify." },
       { "when": "tide", "text": "Item: dips you saw yourself, at {tide}. Independent of every record the five of us keep.", "else": "Item: you have not seen a dip yourself. Everything here about the dip is somebody else's record." },
