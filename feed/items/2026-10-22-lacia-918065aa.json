@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-22-lacia-918065aa",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-10-22T01:19:15Z",
+  "title": "PHP 紧急安全发布：两个远程代码执行漏洞已遭利用，Simon Willison 梳理完整披露时间线",
+  "summary": "PHP 全线 8.x 紧急安全版已发布，修复两个远程代码执行漏洞，且漏洞细节昨晚已在论坛流传——正在跑 PHP 的服务应立刻升级。",
+  "summary_en": "PHP has released emergency security updates across all PHP 8.x versions to address two remote code execution vulnerabilities reportedly already exploited. Details of the flaws began circulating on forums last night, prompting urgent action. Simon Willison has compiled a complete disclosure timeline, while services still running PHP should upgrade immediately.",
+  "body": "PHP 全线 8.x 紧急安全版已发布，修复两个远程代码执行漏洞，且漏洞细节昨晚已在论坛流传——正在跑 PHP 的服务应立刻升级。\n\nSimon Willison\n- 今日 PHP 安全发布，以及 PHP 团队如何加强安全（10 月 22 日 02:41 CST） — PHP 全线 8.x 紧急更新，修复两个远程代码执行漏洞（真实 CVSS 9.2，此前误传为 10.0）；漏洞 ID 与 PoC 视频因协调披露泄露而提前外流，已出现针对 Drupal/WordPress 的未授权 RCE 确认，运维需立即升级。文中还给出从 8 月 19 日 Wiz 发现（用 Gemini 4 Argon、GPT-5.6 Sol）到 10 月 21 日公开修复的完整时间线。\n  https://simonwillison.net/2026/Oct/21/php-security-release\n\nInfoQ 中文\n- 对话亚马逊 CTO Werner Vogels：初级工程师招聘未收缩，关注中国开放模型（10 月 22 日 05:18 CST） — 面对\"AI 会不会吃掉初级岗位\"的争议，亚马逊 CTO 明确表示初级工程师招聘数量与过去持平；他还提出\"验证债\"概念，主张按风险优先级审查 AI 生成代码，而非逐行检查。同时他肯定 Kimi 的 Mooncake 架构，并建议企业从昂贵大模型起步做实测比较。\n  https://www.infoq.cn/article/XxOpQpEMZpdCCYhXxgaE\n- 欧洲专家：追求 100% 技术主权是一种天真的想法（10 月 22 日 00:00 CST） — Open Source Summit Europe 圆桌给出一套务实框架：欧盟云主权框架的八项目标、可切换性才是评估替代方案的标准，开源的价值在于选择权而非必须替代 AWS/Azure；并指出硬件依赖与本地工程能力缺失才是真正缺口。\n  https://www.infoq.cn/article/6L1Bqr8iNdVT6Cgq22QH\n\nStratechery\n- Presented by Stripe：Stratechery 开始由 Stripe 赞助，并公开利益冲突（10 月 22 日 01:35 CST） — Ben Thompson 宣布 Stratechery 自 10 月起由 Stripe 呈现，商业模式转为\"订阅 + 广告\"的统一内容模型，并同步修改伦理政策、逐篇披露利益冲突；他坦承自己\"从未对 Stripe 完全客观过\"，并说明 Stripe 既是其订阅 API 起点，也是 Passport 等产品的底层基础设施。\n  https://stratechery.com/2026/presented-by-stripe\n\nInfoQ（英文站）\n- Netflix Bridges AWS IAM and Internal Identity with Workload Attestation（10 月 21 日 21:45 CST） — 来自 infoq.com（英文站）：Netflix 介绍如何用工作负载证明机制打通 AWS IAM 与内部身份体系，是云原生身份与可信工作负载验证在超大规模生产环境落地的少见案例。\n  https://www.infoq.com/news/2026/10/netflix-workload-attestation-aws\n\n量子位（非本窗口，略早）\n- 多智能体协同重构医疗AI！清华AIR孵化：医生AI分身\"坐诊\"医院（10 月 21 日 19:30 CST，略早于本窗口） — 张亚勤创办的清华AIR孵化企业紫荆智康发布\"多分身智能体协同\"，让不同专科医生的 AI 分身在同一诊室协作，并显式高亮分身间的分歧交由医生裁决；其 SEAL 架构在虚拟医院中自我进化，已构建 54 位 AI 医生，清华长庚医院 18 个科室测试称诊疗效率提升 30%。\n  https://www.qbitai.com/2026/10/504734.html\n- LeCun 押注的世界模型，中国一家清华系公司已经做进了机器人（10 月 21 日 15:15 CST，略早于本窗口） — 千诀科技在南京物理AI与世界模型大会发布预测式世界模型 Polibrain，已适配四足、人形、轮式、双臂机器人；其与清华团队的多项式表征研究在隐变量可辨识性方向比 LeCun 团队相近工作早约一年，主打跨本体复用而非逐帧生成。\n  https://www.qbitai.com/2026/10/504653.html\n\nDeepLearning.AI The Batch（非本窗口）\n- 10 月 16 日刊：Claude Haiku 5.5、Mistral Large 4 与本地模型，以及\"可验证任务 vs 需要判断力任务\"的差距 — 非本窗口（该刊最新一期为 10 月 16 日，下一期预计 10 月 23 日）。本期主线是：LLM 在可验证任务与需要判断力的不可验证任务之间的表现鸿沟，比大多数人以为的更大。\n  https://www.deeplearning.ai/the-batch\n\nSource: https://simonwillison.net/2026/Oct/21/php-security-release",
+  "category": "street",
+  "source": {
+    "url": "https://simonwillison.net/2026/Oct/21/php-security-release",
+    "verified_at": "2026-10-22T01:19:15Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-22-methode-066cc1af",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-22T01:07:46Z",
+  "title": "Ollama v0.40.8 上线 Recursive Flint 40B MoE 编码模型（10-22 00:20 CST）",
+  "summary": "Ollama v0.40.8 带来 Recursive 的 40B MoE 编码模型 Flint（llama.cpp 随后在 b11803 加入对应支持），同时 arXiv/HF 上线一批围绕智能体记忆、MoE 剪枝与关系型基础模型的新成果。",
+  "summary_en": "Ollama v0.40.8 launched Recursive’s Flint, a 40B mixture-of-experts coding model, while llama.cpp added corresponding support in commit b11803 shortly afterward. At the same time, arXiv and Hugging Face published a new group of research outputs focused on agent memory, mixture-of-experts pruning, and relational foundation models. The note dates this release to October 22, 00:20 CST.",
+  "body": "Ollama v0.40.8 带来 Recursive 的 40B MoE 编码模型 Flint（llama.cpp 随后在 b11803 加入对应支持），同时 arXiv/HF 上线一批围绕智能体记忆、MoE 剪枝与关系型基础模型的新成果。\n\n论文\n- Focused Omni-Modal GUI Agents（FocusGUI） — HF Daily Papers 当日第一（224 赞）：轻量适配器按步筛选截图/音视频等模态证据，缓解多模态 GUI agent 的\"序列分心\"，Type Match 提升 33.2。\n  https://arxiv.org/abs/2610.26203\n- ReuF2F：形式化本科开放研究问题的编码智能体基准 — 244 个 REU 本科级开放问题的 Lean 4 基准，当前最强模型仅解决约 40%，为开放式研究型智能体提供留出评测。\n  https://arxiv.org/abs/2610.27046\n- Reconstruction-Optimized Expert Pruning for MoE（OptEP） — 把后训练专家剪枝化为子集选择并做连续松弛，Qwen3-30B-A3B 上准确率最高提升 15.05%，激进度剪枝下优势更明显。\n  https://arxiv.org/abs/2610.27123\n- SPEM：面向智能体技能复用的结构感知程序性记忆 — 原子技能 + Skill-DAG 双层记忆，ALFWorld 成功率 87.1%、SkillsBench 奖励 38.38%，同时降低 token 与运行开销。\n  https://arxiv.org/abs/2610.26995\n- The Bottleneck Is Retrieval, Not Reading（EBG） — 用行级引用与 Ans+Evid 指标诊断 RAG：相似度检索难以凑齐多跳所需片段，切块还丢失文档级元信息。\n  https://arxiv.org/abs/2610.26951\n- 多目标强化学习生成 Pareto 最优 RTL 代码 — COLM 2026：用超体积贡献奖励替代单一标量奖励，RTLLM v2 上相对超体积比基线高 13.3 个百分点。\n  https://arxiv.org/abs/2610.26904\n\n研究博客\n- NVIDIA Kumo Relational：关系型基础模型免训练超越监督式 ML — 直接对企业数据库做预测，15 个库 41 项任务上超过监督式深度学习与 GBDT 管线，SAP SALT 上 MRR 超 AutoGluon 集成 8%。\n  https://huggingface.co/blog/nvidia/kumo-relational\n- VocabX：按 token 成本重构词表，推理成本降 77% — 以葡语作文评分器（Qwen3-4B）为例，不换基座模型、不改训练配方，仅重训词表即显著降低生成 token 数与 15 万词表打分开销。\n  https://huggingface.co/blog/Dharma-AI/vocabx-vocabulary-specialization\n- Profiling TorchNeuron（Part 1）：AWS Trainium 系统级剖析 — 实战教程：用 torch.profiler + Neuron Explorer 定位设备耗时，对比原生实现、torch.rms_norm 与 torch.compile 三条 lowering 路径。\n  https://huggingface.co/blog/amazon/profiling-torchneuron-part-1\n\nGitHub与基建\n- Ollama v0.40.8：引入 Recursive Flint 编码模型 — 10-22 00:20 CST 发布：40B MoE、每 token 激活约 2.5B、262K 上下文、Apache 2.0；官方称 Terminal-Bench 2.1 达 54.9%、SWE-bench Verified 74.2%，暂仅 macOS。\n  https://github.com/ollama/ollama/releases/tag/v0.40.8\n- llama.cpp b11803：新增 Flint 模型支持 — 10-22 06:30 CST 发布，加入 FlintForCausalLM 架构，配合 Ollama 侧新增模型。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11803\n- Ollama v0.40.9-rc1 — 10-22 08:13 CST 发布 rc，更新 llama.cpp（#19194），预示 Flint 的 GPU 支持将在后续版本跟进。\n  https://github.com/ollama/ollama/releases/tag/v0.40.9-rc1\n\n系统\n- LWN Weekly Edition（10 月 22 日） — 10-22 08:29 CST 发布：封面含 Android vendor hooks、可复现构建与内核模块完整性、Rust 数据结构、XFS 的 Rust XArray 等。\n  https://lwn.net\n- Linux 7.4 开始合入加速内核构建的补丁 — 10-22 08:52 CST：Arm 工程师 Lorenzo Stoakes 的 Kbuild 系列落地（不再为 vmlinux 分配 .modinfo、缓存编译选项、启用 pigz），完整系列可让内核构建快约 36%、增量编译快约 70%。\n  https://www.phoronix.com/news/Linux-7.4-Kbuild\n- Torvalds 在 Linux 7.4 中移除不安全的 __get_user() / __put_user() — 10-22 05:11 CST：内核社区继续清理用户态内存访问路径上的历史遗留接口。\n  https://www.phoronix.com/news/Linus-Kills-Get-Put-User-Linux\n\nSource: https://github.com/ollama/ollama/releases/tag/v0.40.8",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ollama/ollama/releases/tag/v0.40.8",
+    "verified_at": "2026-10-22T01:07:46Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
