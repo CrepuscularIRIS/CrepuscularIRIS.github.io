@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-22-saturnus-a0e7a23f",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-10-22T03:01:10Z",
+  "title": "PyPI 上的 LiteLLM 1.107.0 被植入凭据窃取器与远程后门，HN 451 分热议",
+  "summary": "AI 基建供应链爆出重大事件：LiteLLM 1.107.0 的 PyPI 轮子被植入凭据窃取器与后门，此外 Meta Muse 隐私漏洞、PHP 未认证 RCE、Recursive 开源 Flint 模型、Meta 发新类别股融资 AI 等事件均不在其他 agent 的覆盖范围内。",
+  "summary_en": "The note reports that the PyPI wheel for LiteLLM 1.107.0 was found to contain a credential stealer and remote backdoor, drawing heated Hacker News discussion with 451 points. It also briefly flags a privacy vulnerability in Meta Muse, an unauthenticated PHP remote-code-execution issue, Recursive’s open-source Flint model, and Meta issuing a new category of stock to finance AI, saying other agents did not cover these items.",
+  "body": "AI 基建供应链爆出重大事件：LiteLLM 1.107.0 的 PyPI 轮子被植入凭据窃取器与后门，此外 Meta Muse 隐私漏洞、PHP 未认证 RCE、Recursive 开源 Flint 模型、Meta 发新类别股融资 AI 等事件均不在其他 agent 的覆盖范围内。\n\n安全与供应链事件\n- LiteLLM 1.107.0 在 PyPI 被投毒：安装即装凭据窃取器与后门 — 10月21日披露：官方 PyPI 上的 1.107.0 三个平台 wheel 均被植入 cook.pth/cook.py（窃取 SSH 密钥、云凭证、CI/CD 密钥、LLM provider key）以及 sitecustomize.py（每小时从 GitHub 读地址拉取并执行代码）；上游 GitHub 源码干净，PyPI 已下架该版本。HN 451 分，属 AI 基建供应链级事件。\n  https://safedep.io/litellm-pypi-compromise-credential-stealer-backdoor\n- Meta Muse 分享链接可被枚举，泄露 6800 条用户对话，Meta 暂停该功能 — 安全公司 Claroc 用被动 DNS 一次查询即枚举出 Muse 用户创建的 6800 条分享链接，数百条中含机密面试笔记、贷款申请、银行欺诈提醒等；Meta 已暂停分享功能并调查隐私问题。\n  https://arstechnica.com/security/2026/10/meta-muse-exposes-users-personal-and-business-secrets-when-they-share-conversations\n- PHP 一次性修复两个未认证远程代码执行漏洞（8.5.12/8.4.27/8.3.36/8.2.35） — CVE-2026-109618（OOM 内存破坏）与 CVE-2026-109619（陈旧全局状态 use-after-free）在 Apache mod_php 下可在任何应用代码执行前被未认证请求触发 RCE，HN 上相关条目 1500+ 分。\n  https://thephp.foundation/blog/2026/10/21/todays-php-security-release-and-how-were-strengthening-php-security\n\n新模型与重要发布\n- Recursive 发布 Flint：几乎由 AI 自建的可跑笔记本开源编程模型 — 前 Salesforce 首席科学家 Richard Socher 带队，Eureka Machine 自动化研究系统参与几乎全部开发流程；40B MoE（激活 2.5B）、Apache 2.0、Hugging Face 免费下载，MacBook Pro M4 Pro 上约 131 tokens/s，SWE-Bench Verified 超过其他 50B 以下模型。\n  https://techcrunch.com/2026/10/21/recursive-launches-flint-a-laptop-coding-model-it-says-was-largely-built-by-ai\n- DuckDB 2.0.0 LTS \"Cinnamon Teal\" 发布 — 近 2 万次提交的最大特性版本：Quack 协议成熟化、异步 I/O、VARIANT 类型、agent mode、触发器、可扩展 SQL 解析器；LTS 支持至 2027 年 10 月，HN 374 分。\n  https://duckdb.org/2026/10/21/announcing-duckdb-200\n\n资本与政策\n- Meta 将发行新类别无投票权股票，为 AI 投入融资 — Q3 财报中首次披露该新股份类别，将用于 AI 基建、数据中心、并购与员工激励，2027 年开始交易；今年资本开支指引上调至 1350 亿–1450 亿美元。\n  https://www.theverge.com/tech/1015799/meta-shares-class-ai-q3-2026-earnings\n- Anthropic 游说国会：若模型可能致 50 人以上死亡可被叫停 — 据 Politico，Anthropic 兜售一份 AI 安全法案草案：出现\"可预见的迫近灾难性风险\"（超 50 人死亡或超 10 亿美元财产损失，且源于生物武器、模型失控或网络攻击）时，由商务部登记的独立评估者上报，72 小时内可由联邦法官叫停模型发布。\n  https://techcrunch.com/2026/10/20/anthropic-pitches-ai-safety-bill-that-may-block-a-model-if-50-people-could-be-killed\n\n平台与生态\n- Walmart 推出 MCP 版 Agent Gateway，反向拥抱 AI 代理购物 — 与 Amazon 封堵 Perplexity、Muse 等代理购物形成对立：Walmart 的 Agent Gateway 允许代理经 MCP 搜索下单并用 Agent Profiles 隔离购物记录，代理不需拿到用户个人信息与历史。\n  https://techcrunch.com/2026/10/21/while-amazon-blocks-ai-agents-walmart-rolls-out-the-welcome-mat\n- Spotify 一年下架超 5000 万首 AI 灌水与垃圾曲目 — 同时改推荐算法以更多推荐真人艺人作品，推出 AI Persona 徽章且不推荐 AI 人格内容；此前一年曾下架超 7500 万首 spam 曲目。\n  https://www.theverge.com/entertainment/1014284/spotify-ai-slop-spam-songs-removed\n\nSource: https://safedep.io/litellm-pypi-compromise-credential-stealer-backdoor",
+  "category": "breaking",
+  "source": {
+    "url": "https://safedep.io/litellm-pypi-compromise-credential-stealer-backdoor",
+    "verified_at": "2026-10-22T03:01:10Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}

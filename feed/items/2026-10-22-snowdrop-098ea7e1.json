@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-22-snowdrop-098ea7e1",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-22T05:01:54Z",
+  "title": "微软 WildAWM：全开源模型合成「计算机操作世界」，GPT-6-Astra 只解出 60% 的任务",
+  "summary": "今天 Hugging Face 日榜第一是微软研究院的 WildAWM——用开源模型批量合成可执行的 GUI+MCP+CLI 电脑环境训 agent，341 个长程任务连前沿模型都只能解六成，Qwen 训完在 8 个分布外 benchmark 上全面涨点。",
+  "summary_en": "Microsoft Research’s WildAWM reportedly ranked first on today’s Hugging Face daily leaderboard. It uses open-source models to synthesize executable GUI, MCP, and CLI computer environments for training agents. The note says frontier models solved only 60% of 341 long-horizon tasks, while a Qwen-trained agent reportedly improved across eight out-of-distribution benchmarks.",
+  "body": "今天 Hugging Face 日榜第一是微软研究院的 WildAWM——用开源模型批量合成可执行的 GUI+MCP+CLI 电脑环境训 agent，341 个长程任务连前沿模型都只能解六成，Qwen 训完在 8 个分布外 benchmark 上全面涨点。\n\n智能体与长程任务\n- Agent World Model in the Wild (WildAWM) — 微软研究院 — 日榜第一：全流程用开源模型合成可执行的 GUI+MCP+CLI 三合一电脑世界，341 个长程任务（部分需 100+ 步）连 GPT-6-Astra 也只解 60%；在其合成世界里训的 Qwen3.6-35B/3.5-4B 在 8 个分布外 agent benchmark 上全面涨点。\n  https://huggingface.co/papers/2610.26828\n- Automating ML for Science: Agent4Sci（Anthropic 等） — 跨 11 领域 20 个科学 ML 基准测「前沿 agent 能否当自动研究员」：Claude Opus 平均相对提升 10.4%，但涨点几乎全靠工程小技巧而非研究洞见；加上研究立项/实验管理/清单类插件技能后直接翻倍到 20.1%。\n  https://arxiv.org/abs/2610.28763\n- DeLoop: Repeated Actions as Self-Supervision（Google 等） — 抓出 agent「重复调同一个工具」的空转 loop，无需任务奖励或 LLM 裁判即可自监督训练；压缩上下文后含 loop 的任务从 57.3% 降到 6.1%，步数少约 2/3，Qwen3-32B 成功率从 37.7% 升到 44.8%。\n  https://arxiv.org/abs/2610.19376\n- Socratic Skill Learning（南大 LINK） — 把「老师傅教方法论」变成可复用 Skill：SkillTransferBench 408 个可执行用例上，交错式教学效用 0.801，优于 Trace2Skill/SKILL-KD 等轨迹蒸馏，且省 61.7% 老师 token。\n  https://arxiv.org/abs/2610.17860\n- Building AI Research Teams for Autonomous Discovery of Linear Attention（UCSB） — 让一群有不同学科背景、保留私有研究记忆的 AI 研究者组队搜架构，1.3B 规模上超过 GDN2；消融显示去掉学科多样性/私有历史/自适应分配都会明显变差——组织结构本身是关键变量。\n  https://arxiv.org/abs/2610.28887\n\n系统与评测\n- Cache Engineering for Agents（清华 NICS-EFC） — 提出 agent 直接操控活跃 KV cache（drop/repos）而不改写轨迹前缀，配套 AKV 引擎：平均分 +1.7、成本 -27.7%，P95 延迟 1.5 倍加速，输出吞吐最高 1.2 倍。\n  https://arxiv.org/abs/2610.28577\n- SimHack: 在 RL 开跑前预测 reward hacking 爆发点 — 用少量小规模参考 RL 跑学出 hack 动力学，模拟预测未见训练配方的 hacking onset，中位相对误差 11.3%、配方间排序相关 0.85，可用于提前筛掉高风险 curriculum。\n  https://arxiv.org/abs/2610.28707\n- Big Claims, Small Margins: GraphLLM 的收益扛得住简单基线吗 — 独立复现指出文本属性图上 LLM 方法相对 TF-IDF + Correct&Smooth、冻结 embedding + MLP 只差 2~3 个点，并列出测试集调参、复用基线数字等评测风险——值得所有 GraphLLM 论文自查。\n  https://arxiv.org/abs/2610.28714\n\n语音与多模态\n- Qwen-Audio-3.1-ASR 技术报告 — 通义语音新家族：支持 30 种语言与 16 种中文方言，主打说话人分离转写（带标签/时间戳/重叠语音）、历史上下文条件、热词分级与原生润色，并覆盖音频/音乐描述、时间定位等通用音频理解。\n  https://arxiv.org/abs/2610.28711\n- Multimodal Embodied Agents：从 computer-use 到 robot-use 的 PAPAV 框架 — 提出感知/预判/规划/执行/验证五项能力的统一视角，统计 64 个基准后发现只有 5 个测「预判」、3 个测「验证」，物理智能体的这两项能力基本被成功率掩盖。\n  https://arxiv.org/abs/2610.30108\n\nSource: https://huggingface.co/papers/2610.26828",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2610.26828",
+    "verified_at": "2026-10-22T05:01:54Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

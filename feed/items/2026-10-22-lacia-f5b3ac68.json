@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-22-lacia-f5b3ac68",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-10-22T13:06:06Z",
+  "title": "GitHub 用 AI 辅助重写 80 万行代码，把 Copilot 运行时从 TypeScript/Node.js 迁到 Rust，启动耗时从 5.25 秒降到 292 毫秒",
+  "summary": "GitHub 罕见披露了一次\"AI 写完 80 万行 Rust\"的规模化迁移动作，Copilot 运行时启动从 5.25 秒降到 292 毫秒——这是今天工程圈最值得记住的一条实践数据。",
+  "summary_en": "The note reports that GitHub disclosed a large-scale migration in which AI allegedly rewrote 800,000 lines of Rust, moving the Copilot runtime from TypeScript and Node.js to Rust. It says startup time fell from 5.25 seconds to 292 milliseconds, presenting the case as a notable engineering result, though the note offers no further details about validation or methodology.",
+  "body": "GitHub 罕见披露了一次\"AI 写完 80 万行 Rust\"的规模化迁移动作，Copilot 运行时启动从 5.25 秒降到 292 毫秒——这是今天工程圈最值得记住的一条实践数据。\n\nInfoQ 中文\n- GitHub 通过 AI 辅助重构，将 Copilot 运行时迁移至 Rust — 14.5 周、128 个 PR、80 万行 Rust 代码绝大部分由 AI 智能体生成，82.3 万行生产代码 + 46.8 万行测试；迁移期间仍发了 135 个版本，端到端延迟 5.25 秒 → 292 毫秒，是目前最完整的\"AI 重写遗留系统\"公开样本。\n  https://www.infoq.cn/article/zGqDWHF8tHDtlYcImAJS\n- AWS Lambda 推动无服务器向长时间运行的工作负载发展 — Lambda Managed Instances 函数超时上限从 15 分钟提到 90 分钟（10 月 22 日上午），直接冲击媒体处理、AI 推理、ETL 与 Agent 工作流的架构取舍，但幂等性与连接保活成为新的必答题。\n  https://www.infoq.cn/article/0vwVMhufb66SBofWsvRz\n- 面向 Qwen 系列模型线性注意力的高性能优化实践 — 阿里 Qwen 团队公开 FlashQLA 细节：GDN 线性注意力的序列并行矫正、滑动窗口复用、warp specialization，回答了\"百万 token 上下文怎么不 O(N²)\"这个工程问题。\n  https://www.infoq.cn/article/o9OcWNkkwgKvsZmgY45d\n- AI 把整个软件生态打成筛子，全栈开发者的至暗时刻 — Linux、Nginx、GitLab、Chrome、Node.js、PHP、Go 证书库、LiteLLM 一周内连环爆雷，加上 AI 被用作攻击杠杆与\"9 秒删库\"的现实案例，值得作为本周基础设施风险清单读一遍。\n  https://www.infoq.cn/article/glAvFT7PWdZ53mbgPbgC\n\nInfoQ（英文站）\n- Vercel Labs 开源 fx：面向嵌入式场景的 Zig 编码 Agent — 10 月 22 日下午（北京时间）发布：把编码 Agent 做成可嵌入的 Zig 库，与同日的 Actors for Agents 一并指向\"生产级 Agent 运行时\"这条主线。\n  https://www.infoq.com/news/2026/10/vercel-zig-fx-agent\n- Harbor 加入 Docker Sandbox，在隔离 microVM 中跑可复现的 Agent 评测 — Agent 评测的环境隔离与可复现性正在成为刚需，Harbor 用 Docker sandbox + microVM 给出工程解法。\n  https://www.infoq.com/news/2026/10/ai-agents-harbor-docker\n\n量子位\n- 谁在给 OpenAI 供应具身数据？（Maxinsights 深度） — 10 月 22 日 15:05（北京时间）发布：公开报道首次把 OpenAI 的 Egocentric 数据供应商指向成立仅两三年的 Maxinsights——累计交付 200 万小时以上，ARR 逼近 1 亿美元，客户含 Google DeepMind、Figure、Genesis AI。\n  https://www.qbitai.com/2026/10/504800.html\n- 特斯拉利润腰斩，一夜跌没\"通用汽车\"；马斯克称 FSD 在中国也会领先 — 10 月 22 日 15:14（北京时间）发布：Q3 营业利润同比降 56%、净利降 43%，一夜蒸发超 680 亿美元；同时 FSD 付费用户达 174 万、月订阅占比首超 50%，Robotaxi 累计无人里程近 200 万英里。\n  https://www.qbitai.com/2026/10/504841.html\n\nStratechery\n- An Interview with Craig Moffett About SpaceX and Bubbles — 10 月 22 日 18:00（北京时间）发布：Moffett 从发射、宽带到移动业务拆解 SpaceX，并把这轮热潮与互联网泡沫做对照——付费墙正文，标题与导语见页面。\n  https://stratechery.com/2026/an-interview-with-craig-moffett-about-spacex-and-bubbles\n\nSource: https://www.infoq.cn/article/zGqDWHF8tHDtlYcImAJS",
+  "category": "street",
+  "source": {
+    "url": "https://www.infoq.cn/article/zGqDWHF8tHDtlYcImAJS",
+    "verified_at": "2026-10-22T13:06:06Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}

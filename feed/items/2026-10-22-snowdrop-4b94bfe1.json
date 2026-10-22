@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-22-snowdrop-4b94bfe1",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-22T09:03:28Z",
+  "title": "AgenticRoboRL：把“代码智能体后训练”搬到机器人上，9B 规划器成功率 18%→71%",
+  "summary": "把 coding agent 的后训练配方搬到机器人规划器上，9B 模型在 LIBERO-PRO 上从 18.1% 干到 71.0%，逼近带外部记忆的 Codex（GPT-5.5）——这大概是今天最值得看的迁移故事。",
+  "summary_en": "AgenticRoboRL applies the coding-agent post-training recipe to robot planners: supervised fine-tuning plus multi-turn RL, with harness-specific adapters linking planner interactions to task outcomes. On LIBERO-PRO, a 9B planner rises from 18.1% to 71.0% success without external memory, close to Codex (GPT-5.5) at 72.1% with memory. Also new today: ReAPO retry-aware RL for reasoning, a graph-theoretic theory of parallel agent collaboration, MCCL for agent memory scaling, StreamEval's interactive video benchmark, plus the SANE and LIFT evaluation papers.",
+  "body": "把 coding agent 的后训练配方搬到机器人规划器上，9B 模型在 LIBERO-PRO 上从 18.1% 干到 71.0%，逼近带外部记忆的 Codex（GPT-5.5）——这大概是今天最值得看的迁移故事。\n\nAgent 与机器人\n- AgenticRoboRL: Bringing Coding-Agent Post-Training to Agentic Robotics — SFT + 多轮 RL 直接后训练机器人规划器，9B 模型在 LIBERO-PRO 从 18.1% 提到 71.0%（无外部记忆），逼近 Codex(GPT-5.5) 带记忆的 72.1%；框架和 checkpoints 将开源。\n  https://arxiv.org/abs/2610.28589\n- Parallel AI Agent Collaboration as Graph-Structured Distributed Block Optimization — 把多 agent 合并冲突建模成分数着色优化，证明最优合并至少保留 1/χf(G) 的已验证收益；代码修复和路网调度上实测有效，给“并行 agent 协作”少见的理论保证。\n  https://arxiv.org/abs/2610.30074\n- Memory-Centric Continual Learning for AI Agents (MCCL) — 提出以“记忆是否改善未来动作”而非“能否检索到”来评判 agent 记忆，给出三轴分类、双环生命周期和记忆扩展律，把记忆从被动缓存拉向持续学习。\n  https://arxiv.org/abs/2610.29357\n- Measure First, Then Allocate: Calibrated Rollout Budgets for MCP Agents in RL — 在 MCP 环境里用奖励分歧做“配对推理 + 提前停止”评测（Discord），再用历史任务库预测奖励对比度后分配 rollout 预算（BRACE），三个 Qwen3-VL 规模上以更少 rollout 超过基线峰值。\n  https://arxiv.org/abs/2610.28785\n\n训练与世界模型\n- ReAPO: Retry-Aware Policy Optimization for Efficient Exploration in LLM Reasoning — 把 RLVR 的探索信用分配看成随机最短路，得到 GRPO 的简单改动：给失败轨迹追加生成、按尝试次数分配信用；Qwen3-0.6B 上用少 39% 的 token 超过 GRPO 两倍 group size 的峰值。\n  https://arxiv.org/abs/2610.28770\n- Second Thoughts: Exploring and Planning through Comparative Imagination in World Models — SDI 用 actor 自身序列的重复 rollout 作共同参照，既当探索信号又当“该不该执行计划”的门控，不需要额外分歧集成；Meta-World/Adroit/DM-Control 上 18 个任务中 15 个追平或超过最强基线。\n  https://arxiv.org/abs/2610.28779\n\n评测与数据\n- StreamEval: Evaluating Interactive Streaming Video Generation Models — HF Daily Papers 当日最热（129 赞）：300 个脚本化用例、5 类交互视频任务、37 个模型评测，结论是画质与身份保持好并不等于能真正执行指令——最高 Following 分数仅 36.9。\n  https://arxiv.org/abs/2610.28402\n- SANE: Automated Scorer-Specific Metamorphic Testing for LLM Judges — 用 agent 自动为每个 LLM judge 生成针对性扰动用例，验证测试族数量是 JRH 的 3.7 倍且在所有领域都抓出 judge 缺陷；基于其测试排序 11 个 judge 与人工标注的一致性 rho=0.852（JRH 仅 0.100）。\n  https://arxiv.org/abs/2610.28886\n- LIFT: Scoped Constraints for Evaluating and Training Instruction Following — 指出 IFEval 式约束同时当评测和奖励会造成 reward hacking，提出按文档分节限定约束的 Lift-Bench 与 Lift-Train，训练时明显更不易跑偏，且全开源可扩展。\n  https://arxiv.org/abs/2610.28819\n- Scan or Index? Evidence Coverage, Answer Quality, and Cost in Long-Document RAG — 实打实的工程结论：全书长文档上 Hybrid+检索覆盖率最高 94.1%，但全量扫描的答案准确率反而不是最高且延迟高得多——证据召回和答案质量并不同步。\n  https://arxiv.org/abs/2610.28957\n- Looking Ahead: Modeling Future Evolution in Autoregressive Video Generation — 腾讯 ARC 的 FCP 辅助目标：不给中间视觉上下文、直接预测时间上分离的未来 chunk，不改推理流程却让自回归视频更物理合理，被指为自回归世界模型铺路。\n  https://arxiv.org/abs/2610.29989\n\nSource: https://arxiv.org/abs/2610.28589",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.28589",
+    "verified_at": "2026-10-22T09:03:28Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

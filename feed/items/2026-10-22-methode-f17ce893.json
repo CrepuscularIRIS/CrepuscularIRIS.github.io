@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-22-methode-f17ce893",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-22T07:01:46Z",
+  "title": "WildAWM：微软用开源模型合成 GUI+MCP+CLI 一体化环境训练电脑操作智能体（HF 今日榜第一）",
+  "summary": "微软研究院的 WildAWM 登上 Hugging Face 今日论文榜首，用全开源模型合成可执行环境训练电脑操作智能体，GPT-6-Astra 也只解出 60%。",
+  "summary_en": "According to the note, Microsoft Research’s WildAWM topped Hugging Face’s daily paper ranking by using fully open-source models to synthesize executable GUI, MCP, and CLI environments for training computer-use agents. The note also states that even GPT-6-Astra solved only 60% of the tasks, while describing WildAWM as an integrated environment combining these interfaces.",
+  "body": "微软研究院的 WildAWM 登上 Hugging Face 今日论文榜首，用全开源模型合成可执行环境训练电脑操作智能体，GPT-6-Astra 也只解出 60%。\n\n论文\n- WildAWM：野外合成电脑操作智能体的世界模型环境（HF 今日榜第一，53 赞） — 微软研究院用全开源模型合成同时支持 GUI、MCP 服务与命令行的可执行环境，产出 341 个需上百步的长程任务，前沿模型 GPT-6-Astra 也只解出 60%；训练出的两个 Qwen 模型在 8 个分布外基准上普遍提升。\n  https://arxiv.org/abs/2610.26828\n- Which Agent's Skill Should Change?：面向演化多智能体团队的组相对信用分配 — 把「该改哪个 agent 的技能」建模为组内相对优势问题，为多智能体团队的持续演化与信用分配给出新方法，登上 HF 今日榜。\n  https://arxiv.org/abs/2610.27227\n- Scaling in Games：具身智能体在虚拟世界中的继续预训练（清华） — 120 组训练配置覆盖 0.8B–27B 模型、50–1600 小时数据与 5 种混合配方，给出数据量/多样性/模型规模的实证 scaling law，并指出仅靠继续预训练难以成为通用具身智能体。\n  https://arxiv.org/abs/2610.28698\n- TraceForge：用「自己的思考轨迹」做蒸馏 — 自蒸馏路线的新工作：不依赖更强教师标注，直接从模型自身推理轨迹中提炼监督信号。\n  https://arxiv.org/abs/2610.29680\n- ALPS：面向世界模型的视觉状态编码器（UCSC） — 为视频/世界模型提供专门的视觉状态编码器表示，是具身与生成式世界模型方向的新基线组件。\n  https://arxiv.org/abs/2610.30120\n- Sparsity Should Be ALLOTted by Output：视频扩散 Transformer 的免训练块稀疏注意力分配（Kling AI） — 提出按输出需求自适应分配块稀疏注意力的免训练方案，直指视频扩散推理算力浪费这一实际瓶颈。\n  https://arxiv.org/abs/2610.29441\n\nGitHub与基建\n- llama.cpp b11809：WebGPU 后端加入 Q2_0 支持（10-22 13:30 CST） — 在 WebGPU 后端补齐 Q2_0 的行反量化与矩阵乘，浏览器端极低比特推理又多一条路径。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11809\n- llama.cpp b11808：dflash 支持可选 FC 输入 scale（10-22 14:47 CST） — 为 dflash 量化路径加入可选的输入缩放，进一步改善该量化格式的精度表现。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11808\n- llama.cpp b11806：LoRA 支持 prism.hadamard 折叠权重（10-22 14:29 CST） — LoRA 适配器可直接读取 prism.hadamard 折叠格式权重，方便这类模型在 llama.cpp 上做微调叠加。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11806\n\nSource: https://arxiv.org/abs/2610.26828",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.26828",
+    "verified_at": "2026-10-22T07:01:46Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

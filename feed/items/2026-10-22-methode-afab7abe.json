@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-22-methode-afab7abe",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-22T08:58:52Z",
+  "title": "llama.cpp 在两小时内连发 b11810–b11814，修正 pixtral 分词并新增 clean_spaces GGUF 键",
+  "summary": "llama.cpp 在 15:49–16:55（北京时间）两小时内连发 b11810 至 b11814 五个构建，其中 b11813 让 Pixtral 改用 Tekken 预分词、b11814 新增 clean_spaces GGUF 键；同期论文侧 Agent4Sci 显示前沿智能体在 20 个科学 ML 基准上全面刷新已发表最优。",
+  "summary_en": "The note says llama.cpp released five builds, b11810 through b11814, within two hours, from 15:49 to 16:55 Beijing time. Build b11813 switched Pixtral to Tekken pre-tokenization, while b11814 added a clean_spaces GGUF key. Separately, it reports that an Agent4Sci paper found frontier agents setting new published bests across 20 scientific machine-learning benchmarks.",
+  "body": "llama.cpp 在 15:49–16:55（北京时间）两小时内连发 b11810 至 b11814 五个构建，其中 b11813 让 Pixtral 改用 Tekken 预分词、b11814 新增 clean_spaces GGUF 键；同期论文侧 Agent4Sci 显示前沿智能体在 20 个科学 ML 基准上全面刷新已发表最优。\n\n论文\n- Automating ML for Science：Agent4Sci 测前沿智能体能否推动科学 ML 研究 — 20 个基准、11 个领域上智能体全面刷新已发表最优（Claude Opus 平均相对提升 10.4%），但收益几乎全来自工程技巧；加入研究构思/实验管理插件后 Opus 升至 20.1%、Codex 从 4.4% 升至 8.1%。\n  https://arxiv.org/abs/2610.28763\n- DeLoop：重复动作即自监督，用偏好优化切断长程智能体的循环 — 无需任务奖励与 LLM 裁判，用自身 rollout 的循环动作构造负样本，CodeGym 压缩场景下含循环任务占比从 57.3% 降到 6.1%，Qwen3-32B 成功率 37.7%→44.8%；今日 HF Daily Papers 上升。\n  https://arxiv.org/abs/2610.19376\n- Parallel AI Agent Collaboration as Graph-Structured Distributed Block Optimization — 把多智能体合并冲突建模为图上的离散块优化，证明最优分数着色可保留 1/χ_f(G) 的已验证改进；代码修复实验中「验证式合并」解决了朴素合并的失败。\n  https://arxiv.org/abs/2610.30074\n- SimHack：在 RL 训练开始前预测可检测的 reward hacking — 绕过训练期干预导致的作弊行为隐蔽化问题，转而在跑之前预测作弊何时会占主导，属于 RL 可观测性与安全侧的高信号工作。\n  https://arxiv.org/abs/2610.28707\n- Second Thoughts：用「兄弟分歧」统一世界模型的探索与规划 — SDI 复用基座模型的世界模型/actor/critic，用同一状态下的想象分歧作为参考尺度来门控动作接受，在 Meta-World、Adroit、DM-Control 上 18 个任务中 15 个持平或超过最强基线。\n  https://arxiv.org/abs/2610.28779\n- Design and Tuning of Multi-Agent Systems Using Bayesian Evolutionary Optimization — 用图感知高斯过程+EI 引导进化式搜索，在昂贵评估预算下自动发现任务特定的多智能体拓扑，BigCodeBench 上优于对比的智能体系统。\n  https://arxiv.org/abs/2610.29276\n\n研究博客\n- Ensemble forecasting with IBM Granite time-series models（10 月 22 日 15:51 北京时间发布） — 用一份「配方」组合四个互补的 Granite 架构，无需重训也无需拟合集成权重即可输出点预测与分位数预测（默认 0.1–0.9），并支持同一接口接入其他预测器。\n  https://huggingface.co/blog/ibm-research/granite-timeseries-ensemble-r1\n\nGitHub与基建\n- llama.cpp b11814：新增 clean_spaces GGUF 键（16:58 前发布） — vocab 层新特性，为 GGUF 增加空格清理相关元数据键，可直接控制量化/词表侧的空格处理。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11814\n- llama.cpp b11813：Pixtral 改用 Tekken 预分词器（16:52 北京时间） — 此前 Pixtral 走 Llama 3 的预分词路径，换成 Tekken 后与该模型族训练时分词一致，直接影响多模态模型的输入正确性。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11813\n- llama.cpp b11810–b11812：窗口内另三个连续构建（含 SYCL fp16/fp32 dequant 分支合并） — 15:49–16:33 北京时间连续发布，b11810 合并了 SYCL 的 fp16 与 fp32 反量化分支，是本地推理后端例行维护的高频节奏。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11812\n\n系统\n- Linux 7.4 内核 crypto 库引入 x86/RISC-V 优化 AES 实现 — Google 工程师 Eric Biggers 把 ECB/CBC/CBC-CTS/CTR/XCTR/XTS 的架构优化实现迁入 lib/crypto，x86_64 上可用 AVX 与 AES-NI 加速，同时消除冗余胶水代码。\n  https://www.phoronix.com/news/Linux-7.4-Crypto-Library\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11814",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11814",
+    "verified_at": "2026-10-22T08:58:52Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

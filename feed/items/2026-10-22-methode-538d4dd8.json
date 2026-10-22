@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-22-methode-538d4dd8",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-22T04:58:20Z",
+  "title": "Looking Ahead：自回归视频生成的“未来块预测”让模型真正建模场景演化（腾讯 ARC Lab，HF 日榜 25 赞）",
+  "summary": "腾讯 ARC Lab 的 Looking Ahead 登上 Hugging Face 日榜第 4（25 赞），用无需额外编码器的“未来块预测”补上自回归视频生成缺失的演化建模。",
+  "summary_en": "The note reports that Tencent ARC Lab’s “Looking Ahead” ranked fourth on Hugging Face’s daily leaderboard, with 25 likes. It introduces a “future block prediction” mechanism that requires no additional encoder and is intended to supplement the scene-evolution modeling missing from autoregressive video generation, helping models better represent how scenes develop over time.",
+  "body": "腾讯 ARC Lab 的 Looking Ahead 登上 Hugging Face 日榜第 4（25 赞），用无需额外编码器的“未来块预测”补上自回归视频生成缺失的演化建模。\n\n论文\n- Looking Ahead：自回归视频生成中的未来块预测（腾讯 ARC Lab） — 10 月 22 日 00:28（北京时间）提交，HF 日榜第 4、25 赞；用 Future Chunk Prediction 辅助目标强迫模型预测时序上分离的未来块，避免教师强制下的时序冗余捷径，推理方式不变且训练算力更低。\n  https://arxiv.org/abs/2610.29989\n- Cache Engineering for Agents（清华 NICS-EFC） — HF 日榜 34 赞；提出 agent 直接操作 KV cache（drop / repos）而不改动轨迹前缀，并配套 AKV 无状态服务引擎，成本降 27.7%、吞吐 1.2 倍、P95 延迟 1.5 倍。\n  https://arxiv.org/abs/2610.28577\n- To Keep or Not to Keep：分离式 LLM 服务中的 KV Cache 保留学习（KVLearn，ACM SYSTOR 2026） — 把网络传输成本纳入 cache 决策，用前缀复用预测器 + 成本感知打分 + 自适应阈值，TTFT 相对 No-Cache 最多降 56%，节点间 KV 传输量降 53%。\n  https://arxiv.org/abs/2610.28637\n- Measure First, Then Allocate：MCP 智能体 RL 的校准 rollout 预算（BRACE / Discord） — 用奖励分歧度先预测再分配生成预算，在 Qwen3-VL 三种规模下以更少新 rollout 超过基线峰值，并在 BFCL / NESTFUL 上领先。\n  https://arxiv.org/abs/2610.28785\n- Building AI Research Teams for Autonomous Discovery of Linear Attention Architectures（UCSB） — 组建各有学科背景、私有研究记忆与自适应机会分配的 AI 研究团队，自动搜索出 1.3B 规模上语言建模与检索任务超过 GDN2 的线性注意力结构。\n  https://arxiv.org/abs/2610.28887\n- Multimodal Embodied Agents：以能力为中心的统一框架 PAPAV（Show Lab 等） — 把计算机使用智能体与机器人系统统一为感知/预判/规划/执行/验证五项能力；统计 64 个基准后发现只有 5 个评估预判、3 个评估验证，暴露具身智能评测盲区。\n  https://arxiv.org/abs/2610.30108\n- Target Regeneration Shrinks the Gains of Draft-Training Objectives in Speculative Decoding — 指出投机解码里蒸馏/门控等草稿训练目标的大部分增益会被目标模型重写样本“吃掉”，建议以目标重写基线并跨训练长度衡量增益。\n  https://arxiv.org/abs/2610.29013\n- Big Claims, Small Margins：GraphLLM 的提升能扛住简单基线吗 — 用验证集调参的 C&S+TF-IDF 与冻结 e5-large-v2 MLP 基线对比，median 差距仅 2.3–2.8 个点，并记录测试集调参、测试池节点标签泄漏等评测风险。\n  https://arxiv.org/abs/2610.28714\n\nGitHub与基建\n- llama.cpp b11804 构建发布 — 10 月 22 日 09:26（北京时间）发布；本次为高通贡献的 OpenCL 后端新增 F32→I32 ARGMAX 算子，并按 CPU 行为把 opencl 初始化置 0。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11804\n\nSource: https://arxiv.org/abs/2610.29989",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.29989",
+    "verified_at": "2026-10-22T04:58:20Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

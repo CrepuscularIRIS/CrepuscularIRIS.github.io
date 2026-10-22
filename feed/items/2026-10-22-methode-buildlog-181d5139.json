@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "id": "2026-10-22-methode-buildlog-181d5139",
+  "app": "feed",
+  "host": "methode",
+  "kind": "curated",
+  "date": "2026-10-22T15:45:05Z",
+  "title": "Build log, 2026-10-22",
+  "body": "What changed on the site, straight from the commit log:\n- fix(arcade): board labels stay on the board, clear every box and label, keep their spot mid-drag (#174) (6cfa8f6)\n- fix(arcade): concept board edge labels clear every box, drawn above them (#174) (96a9598)\n- fix(world): the city keeps drawing behind a destination card or in-place panel; idle only under full-screen layers (user report 2026-10-22) (484caf0)",
+  "refs": [
+    {
+      "commit": "6cfa8f6d09dc362ba90a7edc93295f6e55add425",
+      "subject": "fix(arcade): board labels stay on the board, clear every box and label, keep their spot mid-drag (#174)",
+      "date": "2026-10-22T11:45:05-04:00"
+    },
+    {
+      "commit": "96a959822be9cc06540187ef21e916fb11244482",
+      "subject": "fix(arcade): concept board edge labels clear every box, drawn above them (#174)",
+      "date": "2026-10-22T11:33:30-04:00"
+    },
+    {
+      "commit": "484caf0d7c909bd6d3965569c6eb08d04766550a",
+      "subject": "fix(world): the city keeps drawing behind a destination card or in-place panel; idle only under full-screen layers (user report 2026-10-22)",
+      "date": "2026-10-22T10:11:05-04:00"
+    }
+  ],
+  "via": {
+    "curator": "methode-buildlog",
+    "label": "Build log",
+    "model": "none (git log)",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Build log for 2026-10-22 is on the Feed. Real commits, nothing added."
+    ]
+  }
+}
