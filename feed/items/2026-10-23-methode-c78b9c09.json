@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-23-methode-c78b9c09",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-23T05:01:52Z",
+  "title": "OpenDS-World 登顶 HF 今日论文：真实网页深度搜索智能体最好成绩 39.0%，仍低于人类 21.1% 水平线（实为低于人类表现线）",
+  "summary": "OpenDS-World 登顶 Hugging Face 今日论文榜首：200 个真实网页多步深搜任务上，最强前沿模型仅 39.0% 准确率，而人类 1000 次独立尝试也只有 21.1%，暴露出深搜智能体在工具协同与长程搜索上的短板。",
+  "summary_en": "OpenDS-World reportedly topped Hugging Face’s daily-paper ranking. On 200 real-web, multistep deep-search tasks, the strongest frontier models achieved 39.0% accuracy, while humans reached 21.1% across 1,000 independent attempts. The note says this still falls below the human performance line, creating an apparent inconsistency, and highlights weaknesses in agent tool coordination and long-horizon search.",
+  "body": "OpenDS-World 登顶 Hugging Face 今日论文榜首：200 个真实网页多步深搜任务上，最强前沿模型仅 39.0% 准确率，而人类 1000 次独立尝试也只有 21.1%，暴露出深搜智能体在工具协同与长程搜索上的短板。\n\n论文\n- OpenDS-World：真实网页环境下的多步深搜智能体评测 — HF 今日论文第一（56 赞）。200 个需自主浏览真实网页、跨来源整合证据的任务，最强模型仅 39.0% 准确率，人类 21.1%，暴露长程搜索与工具协同短板\n  https://huggingface.co/papers/2610.30181\n- Making MLLM Latents Matter（腾讯） — 今日第二（43 赞）。提出 FAPL，让视频 DiT 真正\"用得上\"MLLM 表征，实现稀疏输入下的时序推理与角色/场景/镜头因子级可控生成\n  https://huggingface.co/papers/2610.30926\n- Deep Fusion Memory：块级参数化记忆 — 今日热门（25 赞）。用因果记忆预测器 + 门控交叉注意力把外部记忆融入中间层隐状态，构建训练数据比 token 级基线少 32 倍检索查询\n  https://huggingface.co/papers/2610.25100\n- MoEZip：面向稀疏 MoE 的路由感知 KV Cache 压缩 — NeurIPS 2026 录用。用路由分布的 Fisher 信息衡量驱逐敏感性，KV 保留 10% 时比 SoTA 基线在 LongBench/RULER 上高 2.3×/4.9×\n  https://arxiv.org/abs/2610.30206\n- SWE-VERIFIER：选择性验证降低编码智能体成本 — 轻量校验器只对可疑步骤做候选采样与排序，验证步数不足 4%，MiniMax-M2.7 解决率 75.47%→77.20% 且成本仅 1.09 倍\n  https://arxiv.org/abs/2610.30284\n- The Cost of Saying Hello：AI 智能体通信协议握手开销实测 — 首个分阶段握手开销基准：旧版 MCP 握手 3 轮往返/50ms RTT 下 230ms，A2A 仅 1 轮 61ms；读取对端能力清单每能力耗 24-107 token\n  https://arxiv.org/abs/2610.30151\n- Naive RAG 强于复杂 Agentic Memory — 在 LoCoMo、LongMemEval、MEME、MemoryAgentBench 七个设置中六次排名第一，原始历史证据的覆盖率比记忆结构化更重要\n  https://huggingface.co/papers/2610.30755\n\nGitHub与基建\n- llama.cpp b11832 发布：Hexagon Op Fusion 重构与新融合算子 — 10 月 23 日 12:05（北京时间）打标，Hexagon 后端算子融合重构与优化，并新增一批融合路径\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11832\n\nSource: https://huggingface.co/papers/2610.30181",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2610.30181",
+    "verified_at": "2026-10-23T05:01:52Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

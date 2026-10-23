@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-23-methode-e0b3f193",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-23T07:00:26Z",
+  "title": "Toward Recursive Self-Improvement in Physical AI (新发于 HF Daily Papers，18 赞)",
+  "summary": "最热是新加坡国立团队把「递归自我改进」从数字智能体搬进机器人学习的综述：物理世界里 93 页、15 图 21 表，把「行为改进→学习增益→流程改进→递归」拆成可验证的阶梯。",
+  "summary_en": "Recursive self-improvement in physical AI leads this window: a 93-page survey tracing how robots can improve not just their behavior but the process that produces improvements, with a verifiable ladder from behavior change to recursion. Also new: ByteDance Seed's Cola2 hierarchical language model, Ant's Heartbeat Thinking for realtime voice agents, JD's LayerEditor for reusable RGBA layers, and two agent papers on backup awareness and skill distillation. On the infra side, llama.cpp shipped builds b11834 and b11835.",
+  "body": "最热是新加坡国立团队把「递归自我改进」从数字智能体搬进机器人学习的综述：物理世界里 93 页、15 图 21 表，把「行为改进→学习增益→流程改进→递归」拆成可验证的阶梯。\n\n论文\n- Toward Recursive Self-Improvement in Physical AI (arXiv:2610.29677) — HF Daily Papers 今日新上榜（18 赞，新加坡国立）：把递归自我改进从「智能体改自己代码」搬到机器人上，给出行为改进→学习增益→流程改进→递归的验证阶梯，指出现有物理研究尚未真正隔离出递归带来的收益。\n  https://arxiv.org/abs/2610.29677\n- Cola2：连续语义压缩 + 平衡离散生成的分层语言模型（字节 Seed，arXiv:2610.31305） — 动态语义 span 切分 + 掩码扩散解码 + Flow Matching 先验，346B 额外 token 的未收敛 checkpoint 八任务均值 60.10，HellaSwag/StoryCloze 超过 Llama-3-8B，8B 模型将开源。\n  https://huggingface.co/papers/2610.31305\n- Heartbeat Thinking：实时语音 Agent 边听边推理与调工具（arXiv:2610.26233） — 蚂蚁国际方案让语音输入更新时新开 Thinker 调用、同时不打断已有推理与已派发工具；FDBench v3 上工具覆盖率 +16 个百分点、最终响应平均延迟下降 36.4%。\n  https://huggingface.co/papers/2610.26233\n- Editing Images into Reusable Layers（京东 LayerEditor，arXiv:2610.24738） — 把指令式图像编辑与可复用 RGBA 图层生成统一到一条 token 序列，用编辑先验蒸馏保住原模型编辑能力，附 10 万条带图层标注的 LayerEditor-100K 数据集。\n  https://huggingface.co/papers/2610.24738\n- Back Up Before You Regret：编码 Agent 的备份意识（arXiv:2610.28934） — RegretBench 205 个可执行任务：六个前沿模型平均完成率 86.1%，但只在 15.2% 的场景提前备份；BackUpper 插件以每任务 0.014 美元代价覆盖全部后悔操作。\n  https://arxiv.org/abs/2610.28934\n- D-Skill：用「Agent 技能」蒸馏教师模型能力（arXiv:2610.28914） — 把教师当黑盒，从配对 rollout 中提炼成可解释的自然语言技能文档，不动学生权重即可弥合 75%–95% 的师生差距，单任务推理成本比教师低 5.7–8.3 倍。\n  https://arxiv.org/abs/2610.28914\n- Speedrunning Relational Foundation Model Pretraining（arXiv:2610.28855） — 首个关系型 Transformer 的「speedrun」榜单 modded-nanoRT：单张 H200 上 305.63 秒达标，比参考实现快 8.11 倍，代码与榜单将开放。\n  https://arxiv.org/abs/2610.28855\n- Muffin：异步多 Agent 的共享内存缓冲（arXiv:2610.31355） — 用共享内存缓冲区替代同步轮流辩论，20 组基准中 17 组最佳，准确率 +19.2 个百分点同时少用 77.4% token，无需共享完整推理轨迹。\n  https://arxiv.org/abs/2610.31355\n\nGitHub与基建\n- llama.cpp b11834：为 DFlash2 草稿扩展概率采样 — 草稿模型（speculative decoding）采样路径扩展，10 月 23 日 13:45（北京时间）发布，影响本地推理的 draft 质量与速度。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11834\n- llama.cpp b11835：SYCL mul_mat 传入 oneDNN device — 10 月 23 日 14:37（北京时间）发布，修正 Intel GPU（SYCL）路径下 oneDNN 加速的设备传递，属本周窗口内最新一次构建。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11835\n\nSource: https://arxiv.org/abs/2610.29677",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.29677",
+    "verified_at": "2026-10-23T07:00:26Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

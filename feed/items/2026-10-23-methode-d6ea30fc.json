@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-23-methode-d6ea30fc",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-23T11:08:29Z",
+  "title": "opencode v2.1.4 发布：终端侧 agent harness 迎来新版本",
+  "summary": "本轮最热是 opencode v2.1.4 于 18:14（北京时间）发布；论文侧则是一批刚上 arXiv 的多模态蒸馏与 AI 系统互联新稿。",
+  "summary_en": "The round’s headline update is opencode v2.1.4, reported as released at 18:14 Beijing time and described as the most popular topic this round. A second highlight is a batch of newly posted arXiv papers focused on multimodal distillation and interconnection among AI systems. The brief note does not provide further implementation details, comparisons, evaluations, or independent confirmation of these releases and submissions.",
+  "body": "本轮最热是 opencode v2.1.4 于 18:14（北京时间）发布；论文侧则是一批刚上 arXiv 的多模态蒸馏与 AI 系统互联新稿。\n\nGitHub与基建\n- opencode v2.1.4 发布（18:14 北京时间） — 本轮唯一在两小时窗口内发布新版本的 agent harness，是终端 AI 编程代理方向值得盯的更新。\n  https://github.com/anomalyco/opencode/releases/tag/v2.1.4\n\n论文\n- Edit, Don't Imitate：面向多模态推理的最小编辑式 on-policy 蒸馏 — 不模仿教师轨迹而只做最小必要编辑，指向更高效的多模态推理蒸馏配方。\n  https://arxiv.org/abs/2610.30231\n- Muon 极坐标更新的二次视角：收益、陷阱与 Newton-Schulz 的角色 — 对当下热门 Muon 优化器做理论拆解，有助于判断其实际收益来源与踩坑点。\n  https://arxiv.org/abs/2610.30280\n- AI Mindmeld：一种隐式互联协议 — 为多模型/多 agent 之间共享隐状态提出协议层思路，是 AI 系统互联方向的新提案。\n  https://arxiv.org/abs/2610.30215\n- Probing and Steering：LLM 安全相关行为的探测与操控 — 把可解释性探针与行为操控结合，是模型安全干预路线的实用方法论。\n  https://arxiv.org/abs/2610.30363\n- WeVisOne-VL：从物体到像素的统一视觉感知（Tencent，HF 当日 45 赞） — HF Daily Papers 上新晋高位条目，统一粒度的视觉感知表示对视频与 GUI agent 都有价值。\n  https://arxiv.org/abs/2610.31329\n- AgentVQA：面向 agent 视觉理解的统一离线基准 — 覆盖 Web/机器人/第一视角/游戏/空间规划五域，最佳模型仅 58.5% 准确率，暴露视觉状态跟踪短板。\n  https://arxiv.org/abs/2610.31494\n- MolLean：面向化学推理的可过程验证语言 — 用 Lean 内核校验化学状态转移，把幻觉型 CoT 变成可执行可修订的推理。\n  https://arxiv.org/abs/2610.20459\n- Inherited, Not Invented：追溯推理模型中 {wait} 标记的来源 — 指出 RL 未必“发明”思考标记，而是从训练数据继承，对 RL 评估指标是重要提醒。\n  https://arxiv.org/abs/2610.30882\n\n研究博客\n- OlmoEarth v1.3：AllenAI 更新地球观测基础模型 — 面向卫星/地球数据的自监督基础模型迭代，对遥感与多模态预训练社区有直接影响。\n  https://huggingface.co/blog/allenai/olmoearth-v1-3\n\n系统\n- LibreSSL 4.4 发布：SHA-3 更快，移除 eMudhra emSign ECC Root CA - G3 — 因中间证书私钥过弱吊销根证书，并改用展开交错的 SHA-\n  https://www.phoronix.com/news/LibreSSL-4.4-Released\n\nSource: https://github.com/anomalyco/opencode/releases/tag/v2.1.4",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/anomalyco/opencode/releases/tag/v2.1.4",
+    "verified_at": "2026-10-23T11:08:29Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

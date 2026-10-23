@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "id": "2026-10-22-methode-buildlog-f4ccf58c",
+  "app": "feed",
+  "host": "methode",
+  "kind": "curated",
+  "date": "2026-10-23T02:50:44Z",
+  "title": "Build log, 2026-10-22",
+  "body": "What changed on the site, straight from the commit log:\n- docs(checks): background-html library is optional, not required in deploy worktrees (c1f62f5)\n- fix(deploy): fail fast when the full check tier runs without .env.local (17c15a0)\n- fix(phone): keep malformed suggested replies from blanking the site (#193) (41fc630)\n- fix(place): keep the F prompts clear of the Find walk pad at narrow widths (#175, #176) (c96d0a9)\n- fix(place): give mouse-only visitors the walk pad while a Find goal is set (#175, #176) (e68de27)\n- fix(checks): configure isolated stubs for scene and card journeys (8d4cba6)\n- fix(checks): isolate stub models and find actual next desk attendance (7f087b8)\n- fix(world): keep visible backgrounds animated behind character and phone overlays (c5f1555)\n- and more in the commit log",
+  "refs": [
+    {
+      "commit": "c1f62f52d33e0c828e3db7c66198a16d72bacd64",
+      "subject": "docs(checks): background-html library is optional, not required in deploy worktrees",
+      "date": "2026-10-22T22:50:44-04:00"
+    },
+    {
+      "commit": "17c15a04b3cc47336d2b7675af36ca8bc08fa1fc",
+      "subject": "fix(deploy): fail fast when the full check tier runs without .env.local",
+      "date": "2026-10-22T22:47:23-04:00"
+    },
+    {
+      "commit": "41fc6303aa87146a8ea4c436f3dd65be8d4b4db3",
+      "subject": "fix(phone): keep malformed suggested replies from blanking the site (#193)",
+      "date": "2026-10-22T18:59:35-04:00"
+    },
+    {
+      "commit": "c96d0a920a3e61576e8fda9e54648d2601222c04",
+      "subject": "fix(place): keep the F prompts clear of the Find walk pad at narrow widths (#175, #176)",
+      "date": "2026-10-22T14:45:52-04:00"
+    },
+    {
+      "commit": "e68de2711a29030e60f0beec71e58205dda11b1f",
+      "subject": "fix(place): give mouse-only visitors the walk pad while a Find goal is set (#175, #176)",
+      "date": "2026-10-22T14:38:29-04:00"
+    },
+    {
+      "commit": "8d4cba69f6248e0bb208f7dbade82a66fa0910d3",
+      "subject": "fix(checks): configure isolated stubs for scene and card journeys",
+      "date": "2026-10-22T14:31:40-04:00"
+    },
+    {
+      "commit": "7f087b8a48da5b48f2656f44e433c4f0e8860b04",
+      "subject": "fix(checks): isolate stub models and find actual next desk attendance",
+      "date": "2026-10-22T14:14:21-04:00"
+    },
+    {
+      "commit": "c5f15551af7b86c06b20c2461ad8801560d0348c",
+      "subject": "fix(world): keep visible backgrounds animated behind character and phone overlays",
+      "date": "2026-10-22T13:56:33-04:00"
+    }
+  ],
+  "via": {
+    "curator": "methode-buildlog",
+    "label": "Build log",
+    "model": "none (git log)",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Build log for 2026-10-22 is on the Feed. Real commits, nothing added."
+    ]
+  }
+}

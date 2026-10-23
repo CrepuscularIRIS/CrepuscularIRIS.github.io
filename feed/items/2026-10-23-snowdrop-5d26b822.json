@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-23-snowdrop-5d26b822",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-23T01:15:01Z",
+  "title": "DiffResearch：把扩散语言模型塞进 Deep Research，端到端快约 6 倍",
+  "summary": "最值得看的是 DiffResearch——把扩散语言模型（dLLM）放到 Deep Research 流水线的每一环，端到端延迟降到约 1/6，还在公开榜单上压过了几家商业系统；同批还有一批新论文在说\"agent 的下一个 scaling 维度在哪\"。",
+  "summary_en": "DiffResearch reportedly integrates diffusion language models into every stage of a Deep Research pipeline, reducing end-to-end latency to roughly one-sixth and outperforming several commercial systems on public leaderboards. The same batch also includes papers exploring where the next scaling dimension for agents may lie, though the note provides no further details, evidence, or draft-status information.",
+  "body": "最值得看的是 DiffResearch——把扩散语言模型（dLLM）放到 Deep Research 流水线的每一环，端到端延迟降到约 1/6，还在公开榜单上压过了几家商业系统；同批还有一批新论文在说\"agent 的下一个 scaling 维度在哪\"。\n\narXiv · Agent 与 RL\n- DiffResearch: Accelerating Deep Research with Diffusion Language Models — 把扩散模型作为 backbone 塞进多智能体 deep research 全流程，在固定脚手架下端到端快约 6 倍，分解阶段再快 1.99 倍，公开系统榜单里超过了若干商业产品（EMNLP 2026 Industry）。\n  https://arxiv.org/abs/2610.28909\n- Environment Duels: A Microcosm of LLM Co-Evolution — 让模型互相出题、互相解题的动态基准：最强的解题者不是最强的出题者，而小模型从别人的题里学到更多——像是在实验室里复刻了大模型互相污染的生态。\n  https://arxiv.org/abs/2610.30116\n- Harness Scaling for Generalizable Agentic RL — 提出 agentic RL 的新 scaling 维度是\"harness 多样性\"：在因子化 harness 空间上训练，模型对没见过的新 harness 泛化明显更好（人大 Ji-Rong Wen 组）。\n  https://arxiv.org/abs/2610.29458\n- BIRD-RL: Scaling Agentic RL over Stateful Data-Centric Environments — 用轨迹隔离的持久化数据库复用把 RL 空间效率提升 12.8 倍，7B/14B 模型在 SQL 调试上打到 44.4%/48.0%，逼近 Claude-Opus-4.6 Agent（48.2%），NeurIPS 2026 主会。\n  https://arxiv.org/abs/2610.29426\n- LongZero: Enhancing Long-Context Reasoning in LLMs from Zero Data — 把\"零数据 RL\"从短上下文推到长上下文：模型自己先写结构化问答再扩展成长文档，五个长上下文基准上超过用外部语料合成数据的基线。\n  https://arxiv.org/abs/2610.30132\n- Agent Behavior Maps: Locating Agents by What They Would Do, Without Running Them — Sakana AI 提出用参考轨迹上的动作对数似然给 agent 定位\"行为坐标\"，不用真跑环境就能预测性能并比较模型/脚手架差异。\n  https://arxiv.org/abs/2610.30014\n\narXiv · 可解释与评测\n- Building Auditable AI Text Detectors with Sparse Autoencoders — 在检测器的残差流上直接训稀疏自编码器再标注特征，把黑盒神经检测器转成基于人类可读概念的分类器，OOD 表现反而超过神经与风格学两类基线（EMNLP 2026）。\n  https://arxiv.org/abs/2610.30006\n\nHugging Face Daily Papers\n- SpatialScout: Can VLM Agents Actively Explore and Map 3D Scenes? — 昨日 Daily Papers 第二名（129 赞）：让 VLM 主动操控相机建 3D 物体地图，最强的 Claude Opus 5.5 平均重叠分只有 41.71%，IoU>0.9 的目标仅 3.25%——空间智能离\"精确建图\"还很远。\n  https://arxiv.org/abs/2610.26659\n\nNature\n- Can maths survive AI? Fields medallist Terence Tao calls for a 'Maths 2.0' world — 陶哲轩在 Nature 发文谈 AI 时代数学研究的重塑，直指\"机器能解、但谁来提问\"这个真问题，是这轮讨论里少见的顶级数学家正面表态。\n  https://www.nature.com/articles/d41586-026-03389-1\n\nSource: https://arxiv.org/abs/2610.28909",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.28909",
+    "verified_at": "2026-10-23T01:15:01Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

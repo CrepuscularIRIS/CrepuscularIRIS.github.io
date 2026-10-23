@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-23-methode-5653d3fc",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-23T01:03:57Z",
+  "title": "StreamEval 登顶 Hugging Face 每日论文：37 个流式视频生成模型在“听懂并执行指令”上集体失灵",
+  "summary": "StreamEval 以 353 赞登顶 HF 每日论文（10月22日榜单第一），显示实时视频生成的核心瓶颈已从画质转向“按请求执行并保持状态一致”。",
+  "summary_en": "StreamEval reportedly topped Hugging Face’s Daily Papers on October 22 with 353 likes and ranked first that day. The note highlights a broader evaluation finding: 37 streaming video-generation models collectively struggle to understand and execute user instructions. It frames the field’s main bottleneck as shifting away from visual quality toward reliably following requests and maintaining consistent state over time.",
+  "body": "StreamEval 以 353 赞登顶 HF 每日论文（10月22日榜单第一），显示实时视频生成的核心瓶颈已从画质转向“按请求执行并保持状态一致”。\n\n论文\n- StreamEval: Evaluating Interactive Streaming Video Generation Models — HF 每日论文 10月22日第一名（353 赞）。300 个脚本化用例覆盖头像对话/表演、世界生成、指令与参考编辑，37 个模型里“Following”最高仅 36.90 分，指明实时交互视频的核心短板是执行指令与状态一致性，而非画质。\n  https://arxiv.org/abs/2610.28402\n- SpatialScout: Can VLM Agents Actively Explore and Map 3D Scenes? — 80 个室内场景、3140 个目标的主动 3D 建图基准；最强模型 Claude Opus 5.5 的平均重叠分仅 41.71%，量化了 VLM 智能体“看得见”与“建得准”之间的鸿沟。\n  https://arxiv.org/abs/2610.26659\n- SANE: Automated Scorer-Specific Metamorphic Testing for LLM Judges — 自动为每个 LLM 裁判生成针对性扰动配方，产出 3.7 倍于 JRH 的有效测试族；其测试排序与人类 FaithBench 标注的 Spearman 相关达 0.852（JRH 仅 0.100），直指裁判评测的可靠性问题。\n  https://arxiv.org/abs/2610.28886\n- LIFT: Scoped Constraints for Evaluating and Training Instruction Following — Lift-Bench/Lift-Train 把约束按文档分节作用域化，同时给出可验证与需裁判两类约束；训练在 Lift-Train 上的奖励黑客行为明显少于常见 IFTrain，数据与流水线公开。\n  https://arxiv.org/abs/2610.28819\n- Scan or Index? Evidence Coverage, Answer Quality, and Cost in Long-Document RAG — 对比 11 种检索配置与全量扫描：混合检索证据覆盖率 94.1%，但覆盖率更高并不必然带来更准答案，扫描延迟与复用成本是选型关键。\n  https://arxiv.org/abs/2610.28957\n- Omni-Woodpecker: Hallucination Correction via Evidence-Prior Rebalancing for Omni LLMs — 面向全模态模型的幻觉纠正方法，通过在推理时重平衡“证据”与“先验”的权重来抑制模型编造。\n  https://arxiv.org/abs/2610.27103\n- PORA: Learning When More Reasoning Pays Off for LLM Agents — 让智能体学习在何时增加推理预算才划算，把“想多久”与“做多少步”变成可学习的决策，而非固定开销。\n  https://arxiv.org/abs/2610.27119\n- Charts as Epistemic Actions for Experience-Driven Agentic Data Analysis — 把图表生成当作智能体的“认知动作”，让分析过程以可视证据累积经验，而非只输出结论。\n  https://arxiv.org/abs/2610.30072\n\nGitHub与基建\n- llama.cpp 发布 b11829（10月23日 07:43 北京时间） — 夜间发布节奏延续，本次修复 server 端 rerank 占位符替换，避免模板里原样透出占位符。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11829\n- Ollama v0.40.9 正式版 — 继 v0.40.9-rc1 后的 GA 版本，本地模型运行时的当前稳定基线。\n  https://github.com/ollama/ollama/releases/tag/v0.40.9\n- vLLM v0.32.0 / v0.32.1rc0 — 近期发布 0.32 系列主线，推理框架侧需要跟进升级的部署方应关注。\n  https://github.com/vllm-project/vllm/releases/tag/v0.32.0\n- Hugging Face transformers v5.20.2 — 5.20 系列补丁版本，模型加载/推理栈的例行更新。\n  https://github.com/huggingface/transformers/releases/tag/v5.20.2\n- SGLang v0.5.22 — 10月19日发布的新版本，是 vLLM 之外另一条活跃的高性能推理路线。\n  https://github.com/sgl-project/sglang/releases/tag/v0.5.22\n- LangGraph 1.2.16 — agent 编排框架的稳定迭代版本。\n  https://github.com/langchain-ai/langgraph/releases/tag/1.2.16\n\n系统\n- Linux 7.4 workqueue 改动带来“10 到 100 倍”优化 — 新内核对 workqueue 调度路径重做优化，性能提升幅度被称可达一到两个数量级，利好高并发 I/O 与 AI 数据管线场景。\n  https://www.phoronix.com/news/Linux-7.4-Workqueue\n- Fedora 45 二次 NO-GO：推迟到 11 月 3 日 — 10月22日 17:20 EDT（北京时间 10月23日 05:20）宣布，未决 blocker 包括 eMudhra 缓解更新、Fedora Server 45 AArch64 镜像超限、LUKS/LVM 自动激活失效等。\n  https://www.phoronix.com/news/Fedora-45-Second-NO-GO\n- Modular 完整开源 MAX 栈 — MAX 及其组件全面开放源码，为本地 AI 推理栈提供了另一条非 CUDA 的开放路径。\n  https://www.phoronix.com/news/Modular-MAX-Complete-Open\n- Mesa 放宽对 AI 代理撰写代码注释/提交信息的规则 — 驱动栈开始正式适配 AI 代理参与上游协作，是 AI 生成代码进入内核/驱动开发流程的一个信号。\n  https://www.phoronix.com/news/Mesa-Loosens-AGENTS-MD\n- LWN：Upstreaming Tyr — Rust、DRM 与 Linux 内核（Collabora） — Collabora 撰文详解 Tyr 如何把 Rust 代码与 DRM 处理机制一并带入内核主线。\n  https://lwn.net/Articles/1102024\n- LWN：Rust features in the future — 讨论 Rust 语言特性未来将如何影响内核代码的演进路径。\n  https://lwn.net/Articles/1099606\n\nSource: https://arxiv.org/abs/2610.28402",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.28402",
+    "verified_at": "2026-10-23T01:03:57Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

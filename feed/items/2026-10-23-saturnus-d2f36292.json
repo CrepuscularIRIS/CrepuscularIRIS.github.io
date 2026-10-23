@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-23-saturnus-d2f36292",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-10-23T03:04:17Z",
+  "title": "法国法院判决逼停 Quad9，递归 DNS 服务 11 月 24 日退出法国",
+  "summary": "法国法院要求 DNS 屏蔽 qatar beIN 版权域名，Quad9 拒绝从众，宣布 11 月 24 日全面退出法国——本轮最大政策炸弹；另外美国财政部对外投资新规、英伟达 Minerva、OpenAI 安全研究员离职也在窗口内。",
+  "summary_en": "The note reports that a French court ordered DNS blocking of copyright-infringing qatar beIN domains, prompting Quad9 to refuse compliance and announce its full withdrawal from France on November 24, described as a major policy shock. It also briefly flags new U.S. Treasury rules on outbound investment, Nvidia’s Minerva initiative, and the departure of an OpenAI security researcher during the same period.",
+  "body": "法国法院要求 DNS 屏蔽 qatar beIN 版权域名，Quad9 拒绝从众，宣布 11 月 24 日全面退出法国——本轮最大政策炸弹；另外美国财政部对外投资新规、英伟达 Minerva、OpenAI 安全研究员离职也在窗口内。\n\n政策与治理\n- Quad9 因法国法院裁决全面退出法国（11 月 24 日起） — 法国法院要求免费公共 DNS 服务商屏蔽 beIN 版权纠纷域名，罚款从每日 58 万欧元降至 1000 欧元；Quad9 仍拒绝在递归解析结果上撒谎，宣布 11 月 24 日起停止在法国提供服务，HN 讨论破千分，属重大互联网治理事件。\n  https://quad9.net/news/blog/au-revoir-france\n- Etsy 出手整治 AI 垃圾商品：首图必须未编辑、禁止机器人铺货 — 10 月 23 日 08:09（北京时间）Etsy 宣布新规：每个 listing 必须包含至少一张真实背景下的未编辑实物照，检测到 AI 生成图会弹出申报提示，教程类商品内容必须出自卖家本人，禁止机器人批量上架。\n  https://www.theverge.com/tech/1017261/etsy-ai-rules-policies-restrictions-listing\n- 333 个 Tor 出口节点被劫持，用于截获 SSH 与明文邮件 — 攻击者自 8 月底用复用密码入侵 Tor 管理服务器并植入 Ebury 后门，重配置 333 个中继，在 10 月 2—5 日把 SSH 流量导向 12 台自有服务器、并阻断加密邮件端口以诱导降级，Tor 用户可能遭中间人窃取凭据。\n  https://arstechnica.com/information-technology/2026/10/300-tor-exit-nodes-hijacked-to-intercept-ssh-traffic-and-retrieve-plaintext-email\n\n公司与产品\n- 英伟达发布 Minerva：给“AI 工厂”做统一运维与故障预测 — 10 月 23 日 01:25（北京时间）在 GTC Berlin 发布的 AIOps 软件，汇聚 GPU、网络、存储、调度器与 AI 负载数据，用机器学习预测故障并把告警聚合成单一事件，IREN、Lambda、IBM、Tesla、Bitdeer 计划采用。\n  https://thenextweb.com/news/nvidia-minerva-aiops-ai-factory-monitoring\n- OpenAI 与三名安全研究员切割，WSJ 指其向外泄露内部模型设计 — OpenAI 确认三名安全研究员因“ mishandling 敏感信息”离职，WSJ 报道称公司怀疑他们向外部安全研究者 Ryan Greenblatt 泄露内部模型设计，牵涉 Signal 聊天记录消失；事件与 FTC 对 AI 公司的消费者风险调查形成合流。\n  https://www.cbsnews.com/news/openai-parts-ways-with-three-researchers-who-mishandled-sensitive-information\n- Switch 2 被部分越狱：SmileBasic 整数溢出可跑自制软件 — 研究员 Sammy Hajhamid（Pepsipu）用 OpenAI Codex 辅助发现 SmileBasic 4 数组删除时的 32 位整数溢出，进一步借 FileSystem 模块缓冲区溢出取得任意读写与原生代码执行，已演示修改《马里奥赛车世界》角色；目前仍是 userland 级，HN 700+ 分。\n  https://arstechnica.com/gaming/2026/10/switch-2-jailbreak-gives-hackers-new-ways-to-run-homebrew-and-mod-games\n- MIT：13 个 Claude 智能体在荒岛“自己玩”，随后做题更强 — 10 月 23 日 08:45（北京时间）报道：研究让 13 个基于 Claude Opus 4.7 的 Eko 智能体在模拟荒岛自由探索 30 小时，自发发明游戏并“解锁”跳远技巧，之后在指定挑战中胜过未玩过的对照智能体，论文已挂 arXiv 预印。\n  https://techcrunch.com/2026/10/22/left-alone-with-nothing-to-do-ai-agents-started-playing\n\nSource: https://quad9.net/news/blog/au-revoir-france",
+  "category": "breaking",
+  "source": {
+    "url": "https://quad9.net/news/blog/au-revoir-france",
+    "verified_at": "2026-10-23T03:04:17Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}

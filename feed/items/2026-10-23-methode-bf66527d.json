@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-23-methode-bf66527d",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-23T02:58:28Z",
+  "title": "HF 日榜第一 Meta Expert：跨层共享专家，MoE 只用 70–80% 专家数即达同等效果",
+  "summary": "Hugging Face 日榜第一的 Meta Expert 用跨层共享的 Meta Expert 替代层级隔离的 Local Expert，宣称在同等效果下只需 70–80% 的专家数量。",
+  "summary_en": "Meta Expert, the top Hugging Face Daily Paper of the day, shares experts across layers instead of using layer-local experts, reaching comparable loss and downstream accuracy with only 70-80% of the experts and 75-90% of the parameters, and has been scaled up in Intern-S2-Mobius. The digest also covers new arXiv work (BeNice! KV-sharing for looped models, a fix for softmax/cross-entropy bugs, hidden future-token leakage audits, and depth-growth/looping effects on in-context learning), plus fresh GitHub releases (llama.cpp b11830 SYCL graph record-and-replay, langchain-core 1.7.0) and an AMD kernel patch series drafted with AI assistance.",
+  "body": "Hugging Face 日榜第一的 Meta Expert 用跨层共享的 Meta Expert 替代层级隔离的 Local Expert，宣称在同等效果下只需 70–80% 的专家数量。\n\n论文\n- BeNice!：用 KV 共享弥合循环架构的推理显存差距 — 两阶段方法（预训练随机深度 + 后训练广播末轮 KV）让循环模型各轮共享 KV，模拟低显存长上下文下缓存命中率达 +31.4%、吞吐 +23.6%、p90 TTFT 降低最多 83.6%。\n  https://arxiv.org/abs/2610.31633\n- A Fix for Softmax and Cross-Entropy：修掉两个数值 bug — Barron 等人指出标准 softmax/log-softmax/交叉熵实现存在 Softmax Collapse 与 Softmax Cancellation 两个 bug，修复后 grokking、蒸馏稳定性都明显改善。\n  https://arxiv.org/abs/2610.31642\n- Beyond Causal Masks：审计自适应序列模型中的隐藏未来 token 泄漏 — 一个异常 checkpoint 把验证损失从 3.60 降到 1.43，实为路由摘要广播导致的未来 token 泄漏，作者给出 prefix-invariance 审计与 LeakScore 定位方法。\n  https://arxiv.org/abs/2610.31522\n- 深度增长与循环如何塑造大模型的上下文学习 — von Oswald 团队在最高 3B 规模模型上发现 grown/looped 模型更依赖上下文、更早获得且更强保留 ICL，注意力追踪显示 induction head 被跨层传播。\n  https://arxiv.org/abs/2610.31421\n\nHF Daily Papers\n- Meta Expert：跨层共享专家的存储/检索高效 MoE（当日第一） — 清华与华为诺亚等合作，跨层共享专家降低冗余，仅用 70–80% 专家数即达到原 MoE 效果，已放大到 Intern-S2-Mobius。\n  https://huggingface.co/papers/2610.27598\n- LaLa-World：用自然语言动作扩展潜空间世界模型（NAVER AI Lab） — 以语言作为统一动作接口联合训练仿真、机器人与视频数据，MPC 规划比肩 RAEv2 视频生成基线但训练成本低 6 倍、规划快 13.9 倍。\n  https://huggingface.co/papers/2610.27851\n\nGitHub与基建\n- llama.cpp b11830：SYCL 后端加入 graph record/replay — 今日 10:39（北京时间）打标的最新版本，为 Intel SYCL 路径引入计算图录制与回放。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11830\n- langchain-core 1.7.0 发布 — 今日 09:48（北京时间）发布的 langchain 核心库版本更新，是 LangChain/LangGraph 栈的本轮基础更新。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-core%3D%3D1.7.0\n\n系统\n- AI 协助清理 Linux 内核的 AMD Zen 微架构检测代码 — AMD 工程师 Borislav Petkov 在 LKML 发出 RFC，坦承用 AI 帮忙重构 Zen 代际判定代码，可把“仅在 Zen 3–5 运行”的条件写得更清晰。\n  https://www.phoronix.com/news/Linux-AMD-Zen-AI-Detection\n\nSource: https://huggingface.co/papers/2610.27598",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2610.27598",
+    "verified_at": "2026-10-23T02:58:28Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-23-snowdrop-1dc6e705",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-23T05:06:14Z",
+  "title": "OpenDS-World：真实开放网络上的深度检索智能体，最佳模型也只有 39% 准确率",
+  "summary": "今天 Hugging Face 热榜第一是 OpenDS-World——在真实开放网页上做多步深度检索，200 个任务里最强的前沿模型也只有 39.0% 准确率（人类 21.1%），工具协同与长程搜索仍是硬骨头。",
+  "summary_en": "OpenDS-World, today’s top project on Hugging Face’s trending list, evaluates deep-retrieval agents that perform multi-step searches across real, open webpages. On its 200 tasks, even the strongest frontier models reach only 39.0% accuracy, compared with 21.1% for humans. The results suggest that effective tool collaboration and long-horizon searching remain major challenges, indicating that current agents still struggle with reliable open-web research.",
+  "body": "今天 Hugging Face 热榜第一是 OpenDS-World——在真实开放网页上做多步深度检索，200 个任务里最强的前沿模型也只有 39.0% 准确率（人类 21.1%），工具协同与长程搜索仍是硬骨头。\n\nHugging Face 今日热榜\n- Deep Search in Real-World Web Environments（OpenDS-World） — HF 今日榜首（56 赞）。200 个真实开放网络任务，需自主搜索、浏览、取证并给出唯一答案；12 个前沿模型最佳仅 39.0% 准确率，人类 21.1%，说明 deep research 离能用还很远。\n  https://arxiv.org/abs/2610.30181\n- Making MLLM Latents Matter: Factor-Aware Predictive Learning for Cinematic Video Generation — 腾讯团队的 FAPL 值得看：它先证明视频 DiT 会绕开 MLLM 的内部表征，再用 latent-only grounding、factor-span 替换和冻结 DiT 反传三步，让多模态大模型的表示真正可控地用于角色/场景/动作/镜头调度。\n  https://arxiv.org/abs/2610.30926\n- Cola2: Co-Adaptive Hierarchical Language Modeling with Continuous Semantic Compression — 字节 Seed 的连续潜空间分层生成：动态语义分段 + block-causal 掩码扩散解码器 + Flow Matching 先验，2100 亿 token 训练下未收敛 checkpoint 在 8 项任务上八任务均值 60.10，HellaSwag、StoryCloze 超过 Llama-3-8B。\n  https://arxiv.org/abs/2610.31305\n- Is Complex Agentic Memory Always Needed? Naive RAG Is Stronger Than We Thought — 一组扎心的结论：对原始对话历史做稠密检索加重排的朴素 RAG，在 LoCoMo、LongMemEval 等 7 组设置中的 6 组排第一，比最强 agentic memory 高 0.13–5.53 分——记忆系统该先老实做个基线。\n  https://arxiv.org/abs/2610.30755\n- Beyond Watching and Searching: Benchmarking Agents for Video-centered Deep Research Reports — 通义千问团队的 OmniDR-Bench：让智能体围绕一个视频做深度调研并生成可交互报告，配 6,414 条原子评分标准；18 种配置最好只有 63.3/100，跨模态因果分析和引用准确性仍薄弱。\n  https://arxiv.org/abs/2610.31158\n\n多智能体与集体行为\n- LLM Multi-Agent Systems Are Vulnerable to Herding and Runaway Cascades — 复刻经典 Music Lab 实验：大量 LLM 智能体看到累积推荐数后出现失控级联，比人类更易从众、且更难自我纠错，对推荐系统、自动评测和自动化决策都是警报。\n  https://arxiv.org/abs/2610.30769\n- Hidden Messages Between Diffusion Language Model Agents: Causal Evidence for Latent Communication — 扩散语言模型智能体之间可以传\"隐语\"：发送方把去噪状态压成四个稠密向量，接收方在解码前就吸收它，替换消息内容会直接改变答案；而只传一次比反复传四次效果更好。\n  https://arxiv.org/abs/2610.28905\n\n评测可信度\n- Behind Aggregate Scores: What Systematically Varying Arena-Hard's LLM Judge Reveals — 用 500 条 Arena-Hard v2.0 prompt、8 种指令组合重复跑 GPT-4.1 裁判：总分几乎不动（重跑差约 1 分），但 21.2% 的对局胜负会翻转——总分稳不等于单条判定可复现。\n  https://arxiv.org/abs/2610.30512\n\n架构与具身\n- Meta Expert: Cross-Layer Expert Sharing for Storage- and Retrieval-Efficient MoE — 清华 C3I 指出各层 expert 内容高度冗余，改为跨层共享的 Meta Expert 后，只用 70–80% 的 expert 就能打平 vanilla MoE，参数冗余更低、检索效率更高。\n  https://arxiv.org/abs/2610.27598\n- Scaling in Games: Continued Pre-Training For Embodied Agents In Diverse Virtual Worlds — 120 组配置的受控研究（0.8B–27B、50–1600 小时数据），给出数据量/多样性/模型规模的缩放律，并提出\"接口期\"与\"世界期\"两阶段——纯模仿继续预训练撑不起通用具身智能体。\n  https://arxiv.org/abs/2610.28698\n\nNature\n- Using AI to offer personalized health advice — Nature 解读 Heydari 等人的\"个人健康智能体\"：约三分之一美国成年人问聊天机器人健康问题、全球每周约 2.3 亿人问 ChatGPT，这套读病历给建议的系统该如何被检验是个大问题。\n  https://www.nature.com/articles/d41586-026-03065-4\n\nSource: https://arxiv.org/abs/2610.30181",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.30181",
+    "verified_at": "2026-10-23T05:06:14Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

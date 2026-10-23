@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-23-methode-52e74168",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-23T08:58:59Z",
+  "title": "IQuest-Q1：320B 稀疏 MoE 的智能体 CLI 基础模型开源",
+  "summary": "IQuest-Q1 开源了 320B 总参（15B 激活）的稀疏 MoE 智能体 CLI 基础模型，成为今天 Hugging Face Daily Papers 上最热的 agentic 论文。",
+  "summary_en": "The note states that IQuest-Q1 has been open-sourced as a sparse mixture-of-experts foundation model for agentic CLI use, with 320 billion total parameters and 15 billion active parameters. It also reports that the model became the hottest agentic paper on Hugging Face Daily Papers for the day. The wording presents this ranking as the note’s claim, without independently verifying it.",
+  "body": "IQuest-Q1 开源了 320B 总参（15B 激活）的稀疏 MoE 智能体 CLI 基础模型，成为今天 Hugging Face Daily Papers 上最热的 agentic 论文。\n\n论文\n- IQuest-Q1: Advancing Foundation Capabilities for Agentic CLI Systems (2610.30949) — 320B 总参/15B 激活的稀疏 MoE 智能体 CLI 基础模型：Stable SplitNorm + Muon + muP 三阶段预训练 + 多脚手架多版本后训练（GRPO/MOPD）并做模型合并，已开源。\n  https://arxiv.org/abs/2610.30949\n- Rethinking Sequence Compression with Test-time Regression (2610.31574) — 把序列压缩重写为「测试时回归」：前向用闭式解算系数训练即插值，视觉 token 合并比标准 MLP merger 省 55.6% token 且性能持平。\n  https://arxiv.org/abs/2610.31574\n- DiffResearch: Accelerating Deep Research with Diffusion Language Models (2610.28909) — 把扩散语言模型放进 deep research 多智能体的每个环节，直接针对自回归逐 token 解码带来的端到端延迟瓶颈。\n  https://arxiv.org/abs/2610.28909\n- Hidden Messages Between Diffusion Language Model Agents (2610.28905) — 给出扩散 LM 智能体之间通过连续去噪态传「隐藏消息」的因果证据：错配示例会让接收方准确率掉 34 个百分点，且一次晚期传输优于四次循环交换。\n  https://arxiv.org/abs/2610.28905\n- Specification-Oracle Gaps in Test-Graded Coding-Agent Benchmarks (2610.30635) — 形式化「规格预言机差距」并做五种语言的静态审计：在 SWE-Milestone 上 25/98 个里程碑的测试依赖未声明的名称或路径，影响排名与复现。\n  https://arxiv.org/abs/2610.30635\n- Action-Conditioned Verification for Long-Lived Agents (2610.31446) — AMV-Guard 按「即将执行的动作」而非记忆可靠性决定是否复核记忆前提，在 ToolSandbox 上把平均验证成本降 33.9% 且保持 0% 有害放行。\n  https://arxiv.org/abs/2610.31446\n\n研究博客\n- Turning Database Grading into RL Rewards: Post-Training Agents with ThinkingBox (微软 + Hugging Face，10月23日 06:24 前后发布) — 把「数据库终态可执行检查」从评分器变成 RL 奖励源，用离线策略相对难度筛任务，Qwen3.8-27B 经 50 步 GRPO 后 pass@1 从 51.70% 升到 60.78%。\n  https://huggingface.co/blog/microsoft/thinkingbox-training\n\nGitHub与基建\n- llama.cpp 发布 b11836（10月23日 16:20 前后） — 例行预发布版本，主要为 CANN 后端补齐 const 限定符，macOS/Metal、CUDA、ROCm 等各平台包同步更新。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11836\n\nSource: https://arxiv.org/abs/2610.30949",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.30949",
+    "verified_at": "2026-10-23T08:58:59Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
