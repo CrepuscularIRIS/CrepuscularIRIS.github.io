@@ -5,36 +5,36 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 191794,
-  "drawCalls": 663,
-  "textures": 43,
-  "textureMB": 70.9
+  "triangles": 193192,
+  "drawCalls": 485,
+  "textures": 47,
+  "textureMB": 77.9
  },
  "exported": {
-  "triangles": 179088,
-  "drawCalls": 515,
-  "textures": 38,
-  "textureMB": 70.7
+  "triangles": 180498,
+  "drawCalls": 357,
+  "textures": 42,
+  "textureMB": 77.7
  },
  "lights": [
   {
    "type": "HemisphereLight",
    "name": "",
-   "color": 16041658,
-   "intensity": 0.2,
+   "color": 12903920,
+   "intensity": 0.42,
    "position": [
     0,
     1,
     0
    ],
    "visible": true,
-   "groundColor": 6173240
+   "groundColor": 4016722
   },
   {
    "type": "DirectionalLight",
    "name": "",
-   "color": 16774380,
-   "intensity": 22.959999999999997,
+   "color": 15398911,
+   "intensity": 13.94,
    "position": [
     11.1,
     7.6,
@@ -68,8 +68,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16767439,
-   "intensity": 3.2,
+   "color": 12312063,
+   "intensity": 1.2757935984731117,
    "position": [
     3.1,
     1.7,
@@ -82,8 +82,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16767439,
-   "intensity": 3.2,
+   "color": 12312063,
+   "intensity": 1.2757935984731117,
    "position": [
     3.1,
     1.7,
@@ -96,8 +96,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16767439,
-   "intensity": 3.2,
+   "color": 12312063,
+   "intensity": 1.2757935984731117,
    "position": [
     3.1,
     1.7,
@@ -110,8 +110,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16767439,
-   "intensity": 3.2,
+   "color": 13169407,
+   "intensity": 2.48,
    "position": [
     3.1,
     1.7,
@@ -124,12 +124,12 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16763024,
-   "intensity": 3.6,
+   "color": 12908287,
+   "intensity": 1.04,
    "position": [
     -1.55,
-    1.7,
-    0.95
+    1.858,
+    0.44
    ],
    "visible": true,
    "distance": 3.2,
@@ -138,12 +138,12 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16763024,
-   "intensity": 3.6,
+   "color": 12908287,
+   "intensity": 1.04,
    "position": [
     -0.1,
-    1.7,
-    0.95
+    1.858,
+    0.44
    ],
    "visible": true,
    "distance": 3.2,
@@ -152,12 +152,12 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16763024,
-   "intensity": 3.6,
+   "color": 12908287,
+   "intensity": 1.04,
    "position": [
     1.6,
-    1.7,
-    0.95
+    1.858,
+    0.44
    ],
    "visible": true,
    "distance": 3.2,
@@ -166,12 +166,12 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16763024,
-   "intensity": 3.6,
+   "color": 12908287,
+   "intensity": 1.04,
    "position": [
     3.05,
-    1.7,
-    0.95
+    1.858,
+    0.44
    ],
    "visible": true,
    "distance": 3.2,
@@ -180,99 +180,163 @@
   {
    "type": "HemisphereLight",
    "name": "",
-   "color": 13147040,
-   "intensity": 0.16,
+   "color": 8893892,
+   "intensity": 0.12,
    "position": [
     0,
     1,
     0
    ],
    "visible": true,
-   "groundColor": 5913146
+   "groundColor": 3359562
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-01",
+   "color": 15265002,
+   "intensity": 20,
+   "position": [
+    1.6,
+    0.04,
+    2.6
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 1.6,
+   "angle": 1.25,
+   "penumbra": 1,
+   "target": [
+    1,
+    3,
+    2.6
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-02",
+   "color": 15265002,
+   "intensity": 16,
+   "position": [
+    1.1,
+    0.04,
+    5
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 1.6,
+   "angle": 1.25,
+   "penumbra": 1,
+   "target": [
+    0.5000000000000001,
+    3,
+    5
+   ]
   },
   {
    "type": "PointLight",
-   "name": "",
-   "color": 16764344,
-   "intensity": 1.68,
+   "name": "light-pool-03",
+   "color": 5564146,
+   "intensity": 1.28,
    "position": [
-    2.9,
-    2,
-    1.1
+    1.05,
+    1.45,
+    0.5
    ],
    "visible": true,
-   "distance": 4.2,
+   "distance": 2.8,
    "decay": 2
   },
   {
    "type": "PointLight",
-   "name": "",
-   "color": 16764344,
-   "intensity": 0.9799999999999999,
+   "name": "light-pool-04",
+   "color": 16732058,
+   "intensity": 0.96,
    "position": [
-    1.2,
-    1.9,
-    1
-   ],
-   "visible": true,
-   "distance": 4.2,
-   "decay": 2
-  },
-  {
-   "type": "PointLight",
-   "name": "",
-   "color": 16764344,
-   "intensity": 1.54,
-   "position": [
-    3.1,
+    2.25,
     1.5,
-    0.25
+    0.48
    ],
    "visible": true,
-   "distance": 4.2,
+   "distance": 2.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-05",
+   "color": 7465458,
+   "intensity": 1.28,
+   "position": [
+    -2.25,
+    1.7,
+    5.45
+   ],
+   "visible": true,
+   "distance": 2.5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-06",
+   "color": 5564146,
+   "intensity": 0.8,
+   "position": [
+    -1.7000000000000002,
+    0.65,
+    5.55
+   ],
+   "visible": true,
+   "distance": 2.3,
    "decay": 2
   }
  ],
- "lowDrop": [],
+ "lowDrop": [
+  "furniture",
+  "furniture",
+  "furniture"
+ ],
  "clocks": [
   {
-   "material": "c983af53-d81b-437c-9202-d443d7bfbf5b",
+   "material": "813a39b3-a9b1-48ee-ba87-41166012443f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "75cf6eb3-685b-48e6-86a6-937b0dcf0c0a",
+   "material": "b57a442e-d256-4e52-b49e-d781b6a5fcc5",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "52ea1ab9-1bd9-4dd5-86d7-284a1afcdd62",
+   "material": "2b4f1280-3975-4c17-a5b5-7e541b868299",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "c2316dbc-33f6-48e2-9940-048364a03886",
+   "material": "bccb0376-fedc-4b94-99e2-41feaac312e9",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "71defa7b-5441-487d-b440-23cc4098e6fa",
+   "material": "aa280c99-eea5-453b-9fab-19d5cc7fd500",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "b9db44d7-f324-4c9d-aeac-ee6f9eda5978",
+   "material": "39a8de5a-d7d1-490a-add0-26c2cb21d14c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [
   {
@@ -281,10 +345,10 @@
    "x": 0.44999999999999996,
    "y": 0,
    "z": 4.05,
-   "strength": 0.15,
-   "blur": 3.6,
-   "f0": 0.05,
-   "tint": 16769236,
+   "strength": 0.05,
+   "blur": 4.2,
+   "f0": 0.04,
+   "tint": 12904688,
    "fade": 40,
    "maskRepeat": [
     1,
@@ -404,6 +468,21 @@
     "fov": 55
    },
    {
+    "name": "menu",
+    "label": "LED menu",
+    "position": [
+     -0.75,
+     1.65,
+     5.45
+    ],
+    "target": [
+     -2.66,
+     1.7,
+     5.45
+    ],
+    "fov": 43
+   },
+   {
     "name": "reverse",
     "label": "Reverse",
     "position": [
@@ -463,12 +542,14 @@
   ]
  },
  "env": {
-  "background": 16180446,
+  "background": 14149869,
+  "toneMapping": "aces",
+  "exposure": 1.04,
   "ibl": {
-   "top": 15254712,
-   "wall": 12093560,
-   "floor": 6961706,
-   "intensity": 0.7,
+   "top": 11130080,
+   "wall": 7900310,
+   "floor": 6052952,
+   "intensity": 0.48,
    "lights": [
     {
      "pos": [
@@ -480,8 +561,8 @@
       7,
       1.4
      ],
-     "color": 16773352,
-     "power": 7,
+     "color": 14284543,
+     "power": 5,
      "lookAt": [
       0,
       1.6,
@@ -502,31 +583,42 @@
     "radius": 0.3
    },
    "bloom": {
-    "threshold": 0.76,
-    "strength": 0.62
+    "threshold": 0.88,
+    "knee": 0.45,
+    "strength": 0.28,
+    "weights": [
+     0.5,
+     0.32,
+     0.2,
+     0.1,
+     0.04
+    ]
    },
    "grade": {
-    "exposure": 0.95,
-    "saturation": 1.06,
+    "exposure": 1.03,
+    "contrast": 1.04,
+    "saturation": 0.96,
     "lift": [
-     0.012,
-     0.005,
-     0.008
+     0.007,
+     0.011,
+     0.014
     ],
     "gain": [
      0.98,
-     0.96,
-     1.02
+     1.02,
+     1.04
     ],
-    "vignette": 0.28
+    "vignette": 0.24,
+    "staticGrain": 0.0015,
+    "guard": 0.06
    },
    "dof": {
     "enabled": true,
     "focus": 6.2,
     "range": 3.6,
-    "near": 1.2,
-    "far": 0.7,
-    "maxRadius": 7,
+    "near": 0.8,
+    "far": 0.5,
+    "maxRadius": 4.5,
     "tilt": {
      "center": [
       0.52,
@@ -537,7 +629,7 @@
       0.4
      ],
      "soft": 0.4,
-     "strength": 0.75
+     "strength": 0.45
     }
    }
   }
@@ -686,6 +778,11 @@
     1.3629207465332,
     6.35
    ],
+   "built": [
+    -2.5229169436953964,
+    1.3629207465332,
+    6.35
+   ],
    "reach": 3.2
   },
   {
@@ -695,6 +792,11 @@
    "object": "spot:lacia-meet",
    "typed": true,
    "anchor": [
+    1.65,
+    1,
+    1.55
+   ],
+   "built": [
     1.65,
     1,
     1.55
@@ -712,6 +814,11 @@
     1,
     2.7
    ],
+   "built": [
+    2.5,
+    1,
+    2.7
+   ],
    "reach": 3.2
   },
   {
@@ -721,6 +828,11 @@
    "object": "frontDoor",
    "typed": false,
    "anchor": [
+    1.1600000000000001,
+    1.0500000003352763,
+    8.125734152272344
+   ],
+   "built": [
     1.1600000000000001,
     1.0500000003352763,
     8.125734152272344
@@ -738,6 +850,11 @@
     1.2149999966099858,
     5.425464459075384
    ],
+   "built": [
+    -2.2686984168321547,
+    1.2149999966099858,
+    5.425464459075384
+   ],
    "reach": 3.2
   },
   {
@@ -747,6 +864,11 @@
    "object": "clock",
    "typed": false,
    "anchor": [
+    -0.3,
+    1.9,
+    8.064999999776482
+   ],
+   "built": [
     -0.3,
     1.9,
     8.064999999776482
@@ -764,6 +886,11 @@
     1.2,
     4.5
    ],
+   "built": [
+    3.3,
+    1.2,
+    4.5
+   ],
    "reach": 3.2
   },
   {
@@ -777,6 +904,11 @@
     0.9,
     5
    ],
+   "built": [
+    0.6,
+    0.9,
+    5
+   ],
    "reach": 3.2
   },
   {
@@ -786,6 +918,11 @@
    "object": "backDoor",
    "typed": false,
    "anchor": [
+    -2.5979999993368983,
+    1.0499999766051769,
+    1.3
+   ],
+   "built": [
     -2.5979999993368983,
     1.0499999766051769,
     1.3
@@ -816,8 +953,8 @@
   },
   "cafe-window": {
    "object": "spot:cafe-window",
-   "how": "mesh",
-   "on": "room < CafeLoft",
+   "how": "node",
+   "on": null,
    "at": [
     3.3,
     1.2,
@@ -845,6 +982,11 @@
    2.5,
    1,
    2.7
+  ],
+  "spot:cafe-window": [
+   3.3,
+   1.2,
+   4.5
   ],
   "spot:frag-5": [
    0.6,
@@ -877,6 +1019,7 @@
    1.3
   ]
  },
+ "doorProps": {},
  "anchorsBefore": {
   "named": 5,
   "typed": 4
@@ -895,41 +1038,41 @@
  "three": "170",
  "key": "cafe-1-day",
  "hour": 13,
- "bakedAt": "2026-10-21T04:51:35.521Z",
+ "bakedAt": "2026-10-24T11:58:32.066Z",
+ "quantizePosition": 14,
  "source": {
   "family": "CafeLoft (D) built at runtime by lab/src/scenes",
-  "exportBytes": 26685448,
-  "triangles": 191794,
-  "drawCalls": 663,
-  "textures": 43,
-  "textureMB": 70.9
+  "exportBytes": 27770732,
+  "triangles": 193192,
+  "drawCalls": 485,
+  "textures": 47,
+  "textureMB": 77.9
  },
  "lods": {
   "lod0": {
    "file": "cafe-1-day.glb",
-   "triangles": 184426,
-   "primitives": 264,
-   "materials": 238,
-   "textures": 35,
-   "textureKB": 888,
-   "bytes": 2362244
+   "triangles": 169520,
+   "primitives": 292,
+   "materials": 257,
+   "textures": 39,
+   "textureKB": 1040,
+   "bytes": 2450192
   },
   "lod1": {
    "file": "cafe-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 100374,
-   "primitives": 264,
-   "materials": 238,
-   "textures": 35,
-   "textureKB": 293,
-   "bytes": 1350576
+   "triangles": 94765,
+   "primitives": 292,
+   "materials": 257,
+   "textures": 39,
+   "textureKB": 357,
+   "bytes": 1435532
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
-   "spot:cafe-window",
    "coffeeMachine",
    "readingShelf",
    "frontDoor",
@@ -937,33 +1080,15 @@
    "clock",
    "spot:lacia-meet",
    "spot:snowdrop",
+   "spot:cafe-window",
    "spot:frag-5"
   ],
-  "exportBytes": 803224
+  "exportBytes": 802688
  },
  "live": {
   "file": "cafe-1-day.live.json",
-  "bytes": 101582,
+  "bytes": 99416,
   "objects": [
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
    "Sprite",
    "Sprite",
    "Sprite",
@@ -971,10 +1096,6 @@
    "Sprite",
    "Sprite",
    "Sprite",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",
@@ -1014,7 +1135,11 @@
    "smokePlume",
    "smokePlume",
    "smokePlume",
-   "motes"
+   "motes",
+   "furniture",
+   "Mesh",
+   "furniture",
+   "furniture"
   ]
  },
  "notes": [

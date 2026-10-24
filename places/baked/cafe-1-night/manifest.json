@@ -5,36 +5,48 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 112692,
-  "drawCalls": 284,
-  "textures": 58,
-  "textureMB": 85.5
+  "triangles": 113534,
+  "drawCalls": 299,
+  "textures": 59,
+  "textureMB": 88.9
  },
  "exported": {
-  "triangles": 95552,
-  "drawCalls": 268,
-  "textures": 55,
-  "textureMB": 85.4
+  "triangles": 98726,
+  "drawCalls": 283,
+  "textures": 56,
+  "textureMB": 88.8
  },
  "lights": [
   {
    "type": "HemisphereLight",
    "name": "",
-   "color": 16768429,
-   "intensity": 0.3,
+   "color": 9546418,
+   "intensity": 0.38,
    "position": [
     0,
     1,
     0
    ],
    "visible": true,
-   "groundColor": 3809298
+   "groundColor": 3556428
+  },
+  {
+   "type": "AmbientLight",
+   "name": "",
+   "color": 8293778,
+   "intensity": 0.16,
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "visible": true
   },
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16768955,
-   "intensity": 22.799999999999997,
+   "color": 12965875,
+   "intensity": 6.2556212234009285,
    "position": [
     -3.9,
     2.56,
@@ -69,8 +81,8 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16769990,
-   "intensity": 21.6,
+   "color": 16768952,
+   "intensity": 10.2,
    "position": [
     -3.6,
     2.56,
@@ -90,8 +102,8 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 15780000,
-   "intensity": 20.4,
+   "color": 16767408,
+   "intensity": 9.600000000000001,
    "position": [
     2.3,
     1.8700000000000003,
@@ -100,8 +112,8 @@
    "visible": true,
    "distance": 8,
    "decay": 1.7,
-   "angle": 0.62,
-   "penumbra": 0.85,
+   "angle": 0.68,
+   "penumbra": 0.9,
    "target": [
     2.3,
     0.4,
@@ -111,8 +123,8 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 15780000,
-   "intensity": 4.199999999999999,
+   "color": 15266028,
+   "intensity": 12,
    "position": [
     3.25,
     2.56,
@@ -132,8 +144,8 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 15780000,
-   "intensity": 6,
+   "color": 15266028,
+   "intensity": 9,
    "position": [
     -0.1,
     2.56,
@@ -153,8 +165,8 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 15780000,
-   "intensity": 4.800000000000001,
+   "color": 15266028,
+   "intensity": 7.199999999999999,
    "position": [
     -1.3,
     2.56,
@@ -172,136 +184,17 @@
    ]
   },
   {
-   "type": "PointLight",
-   "name": "",
-   "color": 16767392,
-   "intensity": 2.7,
-   "position": [
-    -5,
-    2.0700000000000003,
-    4
-   ],
-   "visible": true,
-   "distance": 2.6,
-   "decay": 2
-  },
-  {
    "type": "SpotLight",
    "name": "",
-   "color": 16764826,
-   "intensity": 2.2,
-   "position": [
-    0.6,
-    2.56,
-    5.4
-   ],
-   "visible": true,
-   "distance": 14,
-   "decay": 0,
-   "angle": 1.25,
-   "penumbra": 1,
-   "target": [
-    0.6,
-    0,
-    5.4
-   ]
-  },
-  {
-   "type": "SpotLight",
-   "name": "",
-   "color": 16764826,
-   "intensity": 1.8,
-   "position": [
-    2.6,
-    2.56,
-    7
-   ],
-   "visible": true,
-   "distance": 14,
-   "decay": 0,
-   "angle": 1.25,
-   "penumbra": 1,
-   "target": [
-    2.6,
-    0,
-    7
-   ]
-  },
-  {
-   "type": "SpotLight",
-   "name": "",
-   "color": 16764826,
-   "intensity": 1.7,
-   "position": [
-    -1.6,
-    2.56,
-    3.4
-   ],
-   "visible": true,
-   "distance": 14,
-   "decay": 0,
-   "angle": 1.25,
-   "penumbra": 1,
-   "target": [
-    -1.6,
-    0,
-    3.4
-   ]
-  },
-  {
-   "type": "SpotLight",
-   "name": "",
-   "color": 16764826,
-   "intensity": 1.8,
-   "position": [
-    -1.9,
-    2.56,
-    7.4
-   ],
-   "visible": true,
-   "distance": 14,
-   "decay": 0,
-   "angle": 1.25,
-   "penumbra": 1,
-   "target": [
-    -1.9,
-    0,
-    7.4
-   ]
-  },
-  {
-   "type": "SpotLight",
-   "name": "",
-   "color": 16764826,
-   "intensity": 1.6,
-   "position": [
-    3.8,
-    2.56,
-    3.2
-   ],
-   "visible": true,
-   "distance": 14,
-   "decay": 0,
-   "angle": 1.25,
-   "penumbra": 1,
-   "target": [
-    3.8,
-    0,
-    3.2
-   ]
-  },
-  {
-   "type": "SpotLight",
-   "name": "",
-   "color": 16767144,
-   "intensity": 0.7,
+   "color": 13036013,
+   "intensity": 0.12,
    "position": [
     1,
     1.8499999999999999,
     9.44
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 5,
    "decay": 2,
    "angle": 0.7,
    "penumbra": 1,
@@ -314,15 +207,15 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16767144,
-   "intensity": 1.3,
+   "color": 13036013,
+   "intensity": 0.8,
    "position": [
     1,
     1.8499999999999999,
     9.44
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 5,
    "decay": 2,
    "angle": 0.8,
    "penumbra": 1,
@@ -335,15 +228,15 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16767144,
-   "intensity": 0.7,
+   "color": 13036013,
+   "intensity": 0.12,
    "position": [
     4.4,
     1.8499999999999999,
     9.44
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 5,
    "decay": 2,
    "angle": 0.7,
    "penumbra": 1,
@@ -356,15 +249,15 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16767144,
-   "intensity": 1.3,
+   "color": 13036013,
+   "intensity": 0.8,
    "position": [
     4.4,
     1.8499999999999999,
     9.44
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 5,
    "decay": 2,
    "angle": 0.8,
    "penumbra": 1,
@@ -377,15 +270,15 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16767144,
-   "intensity": 0.7,
+   "color": 13036013,
+   "intensity": 0.12,
    "position": [
     5.64,
     1.8499999999999999,
     2.6
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 5,
    "decay": 2,
    "angle": 0.7,
    "penumbra": 1,
@@ -398,15 +291,15 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16767144,
-   "intensity": 1.3,
+   "color": 13036013,
+   "intensity": 0.8,
    "position": [
     5.64,
     1.8499999999999999,
     2.6
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 5,
    "decay": 2,
    "angle": 0.8,
    "penumbra": 1,
@@ -419,15 +312,15 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16767144,
-   "intensity": 0.7,
+   "color": 13036013,
+   "intensity": 0.12,
    "position": [
     5.64,
     1.8499999999999999,
     8.3
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 5,
    "decay": 2,
    "angle": 0.7,
    "penumbra": 1,
@@ -440,15 +333,15 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16767144,
-   "intensity": 1.3,
+   "color": 13036013,
+   "intensity": 0.8,
    "position": [
     5.64,
     1.8499999999999999,
     8.3
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 5,
    "decay": 2,
    "angle": 0.8,
    "penumbra": 1,
@@ -461,15 +354,15 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16767144,
-   "intensity": 0.7,
+   "color": 12245237,
+   "intensity": 0.06255621223400928,
    "position": [
     -4,
     1.8499999999999999,
     0.17
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 5,
    "decay": 2,
    "angle": 0.7,
    "penumbra": 1,
@@ -482,15 +375,15 @@
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16767144,
-   "intensity": 1.3,
+   "color": 12245237,
+   "intensity": 0.41704141489339525,
    "position": [
     -4,
     1.8499999999999999,
     0.17
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 5,
    "decay": 2,
    "angle": 0.8,
    "penumbra": 1,
@@ -503,92 +396,92 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16770502,
-   "intensity": 6.6000000000000005,
+   "color": 16768952,
+   "intensity": 1.92,
    "position": [
     -4.6,
-    2.1,
-    4.1
+    2.38,
+    3.8
    ],
    "visible": true,
-   "distance": 3.4,
+   "distance": 2.1,
    "decay": 2
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 16770502,
-   "intensity": 6.6000000000000005,
+   "color": 14602972,
+   "intensity": 1.0008993957441485,
    "position": [
     -4.6,
-    2.1,
-    2.7
+    2.38,
+    2.2
    ],
    "visible": true,
-   "distance": 3.4,
+   "distance": 2.1,
    "decay": 2
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 16772544,
-   "intensity": 1.08,
+   "color": 10805247,
+   "intensity": 0.437893485638065,
    "position": [
     -5.25,
     1.15,
     2
    ],
    "visible": true,
-   "distance": 2.2,
+   "distance": 2,
    "decay": 2
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 16772544,
-   "intensity": 1.08,
+   "color": 10482943,
+   "intensity": 0.8400000000000001,
    "position": [
     -5.25,
     1.15,
     3.6
    ],
    "visible": true,
-   "distance": 2.2,
+   "distance": 2,
    "decay": 2
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 16773064,
-   "intensity": 2.0999999999999996,
+   "color": 14742252,
+   "intensity": 1.5,
    "position": [
     -4.35,
     0.5,
     6
    ],
    "visible": true,
-   "distance": 1.4,
+   "distance": 2.4,
    "decay": 2
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 16051408,
-   "intensity": 3.5999999999999996,
+   "color": 12121343,
+   "intensity": 2.7,
    "position": [
     1.2,
     1.5,
     0.6
    ],
    "visible": true,
-   "distance": 3.4,
+   "distance": 3,
    "decay": 2
   },
   {
    "type": "DirectionalLight",
    "name": "",
-   "color": 12101848,
-   "intensity": 0.18,
+   "color": 6937074,
+   "intensity": 0.35,
    "position": [
     -1,
     2.5,
@@ -604,8 +497,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 13621741,
-   "intensity": 21,
+   "color": 13625840,
+   "intensity": 12,
    "position": [
     -4.2,
     2.3,
@@ -614,36 +507,348 @@
    "visible": true,
    "distance": 5.2,
    "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-01",
+   "color": 14586063,
+   "intensity": 1.5639053058502321,
+   "position": [
+    -3.48,
+    2.25,
+    0.55
+   ],
+   "visible": true,
+   "distance": 3.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-02",
+   "color": 5564146,
+   "intensity": 3.9000000000000004,
+   "position": [
+    2.8,
+    1.45,
+    0.55
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-03",
+   "color": 16732058,
+   "intensity": 1.5,
+   "position": [
+    -1.55,
+    1.35,
+    0.5
+   ],
+   "visible": true,
+   "distance": 3.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-04",
+   "color": 5564146,
+   "intensity": 2.0999999999999996,
+   "position": [
+    -4.12,
+    0.72,
+    3.35
+   ],
+   "visible": true,
+   "distance": 3,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-05",
+   "color": 9361656,
+   "intensity": 0.5630059101060836,
+   "position": [
+    -5.1,
+    2,
+    2.2
+   ],
+   "visible": true,
+   "distance": 2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-06",
+   "color": 7986152,
+   "intensity": 3,
+   "position": [
+    1.3,
+    0.38,
+    9.15
+   ],
+   "visible": true,
+   "distance": 5.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-07",
+   "color": 7986152,
+   "intensity": 1.5,
+   "position": [
+    5.55,
+    0.34,
+    2.8
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-08",
+   "color": 7986152,
+   "intensity": 1.5,
+   "position": [
+    5.55,
+    0.34,
+    6.7
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-09",
+   "color": 10410208,
+   "intensity": 6.6000000000000005,
+   "position": [
+    -2.7,
+    0.67,
+    3.1999999999999997
+   ],
+   "visible": true,
+   "distance": 2.4,
+   "decay": 2,
+   "angle": 0.95,
+   "penumbra": 1,
+   "target": [
+    -2.7,
+    0,
+    3.3
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-10",
+   "color": 10410208,
+   "intensity": 6.6000000000000005,
+   "position": [
+    -0.3,
+    0.67,
+    3.1999999999999997
+   ],
+   "visible": true,
+   "distance": 2.4,
+   "decay": 2,
+   "angle": 0.95,
+   "penumbra": 1,
+   "target": [
+    -0.3,
+    0,
+    3.3
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-11",
+   "color": 10410208,
+   "intensity": 6.6000000000000005,
+   "position": [
+    -0.05,
+    0.67,
+    6.62
+   ],
+   "visible": true,
+   "distance": 2.4,
+   "decay": 2,
+   "angle": 0.95,
+   "penumbra": 1,
+   "target": [
+    -0.05,
+    0,
+    6.72
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-12",
+   "color": 15001310,
+   "intensity": 36,
+   "position": [
+    -1.2,
+    2.56,
+    4.4
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 1.8,
+   "angle": 0.85,
+   "penumbra": 1,
+   "target": [
+    -1.35,
+    0,
+    5
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-13",
+   "color": 15001310,
+   "intensity": 24,
+   "position": [
+    0.2,
+    2.56,
+    5.6
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 1.8,
+   "angle": 0.85,
+   "penumbra": 1,
+   "target": [
+    0.5,
+    0,
+    5.4
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-14",
+   "color": 15001310,
+   "intensity": 15,
+   "position": [
+    0.8,
+    2.56,
+    2.6
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 1.8,
+   "angle": 0.85,
+   "penumbra": 1,
+   "target": [
+    0.9,
+    0,
+    2.9
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-15",
+   "color": 16766632,
+   "intensity": 1.7999999999999998,
+   "position": [
+    1.1,
+    1.25,
+    9.15
+   ],
+   "visible": true,
+   "distance": 2.4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-16",
+   "color": 7986152,
+   "intensity": 1.32,
+   "position": [
+    2.15,
+    1.1,
+    9.2
+   ],
+   "visible": true,
+   "distance": 1.8,
+   "decay": 2
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-17",
+   "color": 12114144,
+   "intensity": 6,
+   "position": [
+    -3.03,
+    2.25,
+    9.35
+   ],
+   "visible": true,
+   "distance": 3.2,
+   "decay": 2,
+   "angle": 0.8,
+   "penumbra": 1,
+   "target": [
+    -3.03,
+    0.8,
+    9.799999999999999
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-18",
+   "color": 7986152,
+   "intensity": 1.5,
+   "position": [
+    5.64,
+    2.46,
+    2.2
+   ],
+   "visible": true,
+   "distance": 3.2,
+   "decay": 2,
+   "angle": 0.75,
+   "penumbra": 1,
+   "target": [
+    4.6,
+    0.4,
+    2.8
+   ]
   }
  ],
  "lowDrop": [],
  "clocks": [
   {
-   "material": "11046830-939b-40c9-b631-9dfe5c79d06f",
+   "material": "89ec40ba-1bd4-4248-8eef-3ac9c4ef7182",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "bd6916db-74dc-4503-b9bd-ba464fb44879",
+   "material": "f7265a6b-963a-49b6-9709-8bcf69b312ec",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "78de8022-2877-439f-b51f-98391cf25e76",
+   "material": "b408b069-6b73-4913-9fcd-304c330b8602",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "c76dd2ba-709a-44a9-a7d7-ea8131a33f10",
+   "material": "b37549bc-6a7e-4ddd-8a26-d18bdad3d25f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [
   {
@@ -652,10 +857,10 @@
    "x": 0.10000000000000009,
    "y": 0,
    "z": 4.8,
-   "strength": 0.08,
-   "blur": 5,
-   "f0": 0.04,
-   "tint": 16766632,
+   "strength": 0.1,
+   "blur": 4.5,
+   "f0": 0.035,
+   "tint": 11065568,
    "fade": 40,
    "maskRepeat": [
     1,
@@ -728,6 +933,21 @@
      2.6
     ],
     "fov": 55
+   },
+   {
+    "name": "menu",
+    "label": "LED menu",
+    "position": [
+     -4.05,
+     1.8,
+     2.2
+    ],
+    "target": [
+     -5.52,
+     2.05,
+     2.2
+    ],
+    "fov": 43
    },
    {
     "name": "espresso",
@@ -819,12 +1039,15 @@
   ]
  },
  "env": {
-  "background": 1708070,
+  "background": 859174,
+  "toneMapping": "aces",
+  "exposure": 1,
+  "budgetFill": 0.12,
   "ibl": {
-   "top": 4861984,
-   "wall": 6965808,
-   "floor": 2364424,
-   "intensity": 0.55,
+   "top": 2111556,
+   "wall": 2900554,
+   "floor": 1583150,
+   "intensity": 0.38,
    "lights": [
     {
      "pos": [
@@ -836,8 +1059,8 @@
       3,
       1.2
      ],
-     "color": 16767400,
-     "power": 6,
+     "color": 16767408,
+     "power": 3,
      "lookAt": [
       -4.6,
       0,
@@ -854,8 +1077,8 @@
       6,
       1.4
      ],
-     "color": 11573976,
-     "power": 1,
+     "color": 6937074,
+     "power": 2.2,
      "lookAt": [
       1.5,
       1.5,
@@ -866,41 +1089,42 @@
   },
   "post": {
    "outline": {
-    "color": 2363912,
-    "opacity": 0.55,
+    "color": 1057580,
+    "opacity": 0.48,
     "depthTh": 0.014,
     "normalTh": 0.3
    },
    "ao": {
-    "strength": 0.6,
+    "strength": 0.55,
     "radius": 0.3
    },
    "bloom": {
-    "threshold": 0.66,
-    "strength": 0.62,
+    "threshold": 0.78,
+    "knee": 0.45,
+    "strength": 0.4,
     "weights": [
-     0.45,
-     0.35,
-     0.3,
-     0.25,
-     0.2
+     0.5,
+     0.32,
+     0.2,
+     0.1,
+     0.04
     ]
    },
    "fog": {
     "enabled": true,
-    "color": 5913130,
-    "density": 0.035,
-    "falloff": 0.5,
+    "color": 1522764,
+    "density": 0.018,
+    "falloff": 0.4,
     "base": 0,
     "near": 1.5,
-    "maxOpacity": 0.5
+    "maxOpacity": 0.28
    },
    "rays": {
-    "enabled": true,
-    "threshold": 0.75,
+    "enabled": false,
+    "threshold": 0.82,
     "knee": 0.4,
     "decay": 0.95,
-    "density": 0.8,
+    "density": 0.65,
     "samples": 24,
     "lights": [
      {
@@ -909,8 +1133,8 @@
        1.5,
        -0.4
       ],
-      "color": 12099808,
-      "strength": 0.25
+      "color": 6937074,
+      "strength": 0.12
      },
      {
       "pos": [
@@ -918,38 +1142,41 @@
        2.1,
        2.7
       ],
-      "color": 16766880,
-      "strength": 0.35
+      "color": 16767408,
+      "strength": 0.16
      }
     ]
    },
    "paint": {
     "enabled": true,
-    "strength": 0.55,
+    "strength": 0.35,
     "radius": 2
    },
    "grade": {
-    "exposure": 1.16,
-    "saturation": 1.06,
+    "exposure": 1,
+    "contrast": 1.08,
+    "saturation": 1.05,
     "lift": [
-     0.012,
-     0.007,
-     0.005
+     0.006,
+     0.01,
+     0.014
     ],
     "gain": [
-     1.08,
-     0.98,
-     0.93
+     0.96,
+     1.03,
+     1.08
     ],
-    "vignette": 0.3
+    "vignette": 0.28,
+    "staticGrain": 0.0025,
+    "guard": 0.06
    },
    "dof": {
     "enabled": true,
     "focus": 5.5,
     "range": 5,
-    "near": 0.6,
-    "far": 0.4,
-    "maxRadius": 5
+    "near": 0.4,
+    "far": 0.3,
+    "maxRadius": 3.5
    }
   }
  },
@@ -1231,14 +1458,14 @@
    "object": "spot:cafe-window",
    "typed": true,
    "anchor": [
-    1,
+    0.16,
     1.3,
-    0.4
+    0.35
    ],
    "built": [
-    1,
+    0.16,
     1.3,
-    0.4
+    0.35
    ],
    "reach": 3.2
   },
@@ -1289,7 +1516,7 @@
     1.1,
     2.6
    ],
-   "triangles": 12432
+   "triangles": 12408
   },
   "lacia-meet": {
    "object": "spot:lacia-meet",
@@ -1323,14 +1550,19 @@
   },
   "cafe-window": {
    "object": "spot:cafe-window",
-   "how": "carved",
-   "on": "fridge < furniture",
+   "how": "node",
+   "on": null,
    "at": [
-    1,
+    0.16,
     1.3,
-    0.4
+    0.35
    ],
-   "triangles": 2308
+   "near": [
+    "room<CafeNight d0.35 s12.1",
+    "room<CafeNight d0.41 s8.3",
+    "room<CafeNight d0.43 s8.1",
+    "fridge<furniture d0.59 s2.2"
+   ]
   },
   "frag-5": {
    "object": "spot:frag-5",
@@ -1375,6 +1607,11 @@
    1,
    0.15
   ],
+  "spot:cafe-window": [
+   0.16,
+   1.3,
+   0.35
+  ],
   "spot:frag-5": [
    3.4,
    0.9,
@@ -1396,6 +1633,7 @@
    9.561999999776482
   ]
  },
+ "doorProps": {},
  "anchorsBefore": {
   "named": 2,
   "typed": 7
@@ -1414,35 +1652,36 @@
  "three": "170",
  "key": "cafe-1-night",
  "hour": 22,
- "bakedAt": "2026-10-21T07:19:07.200Z",
+ "bakedAt": "2026-10-24T11:58:39.400Z",
+ "quantizePosition": 14,
  "source": {
   "family": "CafeNight (N) built at runtime by lab/src/scenes",
-  "exportBytes": 21024480,
-  "triangles": 112692,
-  "drawCalls": 284,
-  "textures": 58,
-  "textureMB": 85.5
+  "exportBytes": 21483884,
+  "triangles": 113534,
+  "drawCalls": 299,
+  "textures": 59,
+  "textureMB": 88.9
  },
  "lods": {
   "lod0": {
    "file": "cafe-1-night.glb",
-   "triangles": 97960,
-   "primitives": 268,
-   "materials": 261,
-   "textures": 52,
-   "textureKB": 1113,
-   "bytes": 2203060
+   "triangles": 98802,
+   "primitives": 283,
+   "materials": 276,
+   "textures": 53,
+   "textureKB": 1117,
+   "bytes": 2229844
   },
   "lod1": {
    "file": "cafe-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 63228,
-   "primitives": 268,
-   "materials": 261,
-   "textures": 52,
-   "textureKB": 388,
-   "bytes": 1263372
+   "triangles": 63056,
+   "primitives": 283,
+   "materials": 276,
+   "textures": 53,
+   "textureKB": 385,
+   "bytes": 1276560
   }
  },
  "parts": {
@@ -1451,18 +1690,18 @@
    "coffeeMachine",
    "clock",
    "spot:shelf",
-   "spot:cafe-window",
    "spot:lacia-meet",
    "spot:snowdrop",
    "spot:door-street",
+   "spot:cafe-window",
    "spot:frag-5",
    "spot:cafe-backdoor"
   ],
-  "exportBytes": 1444400
+  "exportBytes": 1210824
  },
  "live": {
   "file": "cafe-1-night.live.json",
-  "bytes": 77182,
+  "bytes": 77265,
   "objects": [
    "Sprite",
    "Sprite",
