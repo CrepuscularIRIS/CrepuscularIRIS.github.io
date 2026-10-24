@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 138276,
-  "drawCalls": 354,
-  "textures": 160,
-  "textureMB": 247.7
+  "triangles": 165034,
+  "drawCalls": 374,
+  "textures": 165,
+  "textureMB": 249.2
  },
  "exported": {
-  "triangles": 158784,
-  "drawCalls": 335,
-  "textures": 159,
-  "textureMB": 247.2
+  "triangles": 185542,
+  "drawCalls": 355,
+  "textures": 164,
+  "textureMB": 248.7
  },
  "lights": [
   {
@@ -34,21 +34,21 @@
   {
    "type": "HemisphereLight",
    "name": "",
-   "color": 4873440,
-   "intensity": 0.3,
+   "color": 4483720,
+   "intensity": 0.22,
    "position": [
     0,
     1,
     0
    ],
    "visible": true,
-   "groundColor": 6963798
+   "groundColor": 7031362
   },
   {
    "type": "DirectionalLight",
    "name": "",
-   "color": 9083647,
-   "intensity": 0.55,
+   "color": 8566224,
+   "intensity": 0.38,
    "position": [
     30,
     60,
@@ -64,8 +64,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16754832,
-   "intensity": 30,
+   "color": 16758922,
+   "intensity": 24,
    "position": [
     -10.1,
     2.4,
@@ -78,8 +78,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16771806,
-   "intensity": 66,
+   "color": 16765606,
+   "intensity": 42,
    "position": [
     -10.1,
     2.4,
@@ -92,8 +92,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16763040,
-   "intensity": 60,
+   "color": 16761468,
+   "intensity": 48,
    "position": [
     -10.1,
     2.4,
@@ -106,8 +106,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16765152,
-   "intensity": 48,
+   "color": 16758392,
+   "intensity": 36,
    "position": [
     -10.1,
     2.4,
@@ -120,8 +120,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16751288,
-   "intensity": 42,
+   "color": 16751216,
+   "intensity": 30,
    "position": [
     -10.1,
     2.4,
@@ -133,27 +133,41 @@
   },
   {
    "type": "PointLight",
-   "name": "",
-   "color": 10514656,
-   "intensity": 27,
+   "name": "light-pool-01",
+   "color": 5229272,
+   "intensity": 19.200000000000003,
    "position": [
-    -9,
-    5.8,
-    -16
+    -10.6,
+    4.55,
+    -26
    ],
    "visible": true,
-   "distance": 12,
+   "distance": 11,
    "decay": 1.8
   },
   {
    "type": "PointLight",
-   "name": "",
-   "color": 14190776,
-   "intensity": 15,
+   "name": "light-pool-02",
+   "color": 14705820,
+   "intensity": 13.200000000000001,
    "position": [
-    -8,
-    9,
-    -8
+    -10.5,
+    5.8,
+    -17
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-03",
+   "color": 3722717,
+   "intensity": 14.399999999999999,
+   "position": [
+    -9.8,
+    6.4,
+    -40
    ],
    "visible": true,
    "distance": 10,
@@ -161,9 +175,23 @@
   },
   {
    "type": "PointLight",
+   "name": "light-pool-04",
+   "color": 16747096,
+   "intensity": 12,
+   "position": [
+    -9.8,
+    6.4,
+    -23
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
    "name": "",
-   "color": 16756880,
-   "intensity": 21,
+   "color": 16757124,
+   "intensity": 18,
    "position": [
     0.2,
     2.6,
@@ -176,8 +204,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16756880,
-   "intensity": 21,
+   "color": 16757124,
+   "intensity": 18,
    "position": [
     0.2,
     2.6,
@@ -190,8 +218,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16760960,
-   "intensity": 54,
+   "color": 16760184,
+   "intensity": 42,
    "position": [
     0,
     5.5,
@@ -205,133 +233,133 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "19038894-4d21-4f0c-b90e-47edd67f1077",
+   "material": "621b1160-e620-4f42-b731-e1b0dccafd21",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "4063f5d0-fc6a-41b2-b847-301cfbccaceb",
+   "material": "720c1494-d7fa-42c5-b8b7-386b37ac3d3f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "542750e3-4ac0-4ddc-ad71-d655e139b257",
+   "material": "ac889194-b3ce-4e11-a286-6524f698d871",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "af165195-ddd4-4578-af25-689b7910cd7d",
+   "material": "9627334f-0733-46dc-a1be-71c9d64c5d69",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "a53116ca-7589-4cc3-ae93-63d06d8721b2",
+   "material": "d09b655e-82f6-409c-be70-7a559fb697f7",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "a64b4a51-8611-40ea-90b8-1bac9043dc7d",
+   "material": "610b38fe-a6f7-4162-80eb-b439ae74bd22",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "f4921f43-3b20-42df-ba3f-ac217b090061",
+   "material": "852098fe-2861-4b18-b5f9-e45e80625c6f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "61292987-4e4a-4a6b-9ee7-9b7b85ac74f7",
+   "material": "57c460f4-e217-4920-a1f9-d349e63b6c1b",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "b981d1b9-9893-4375-8ac7-47da148a48d1",
+   "material": "b99099bf-ebb2-4fc5-b009-48a4cd8fe266",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "9ffa33cc-95a1-4d44-b5a8-f6285a432edb",
+   "material": "7c49e49f-1590-4d6e-b548-009095ae5c36",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "72c320c6-20ff-43f4-b28b-3e6c0f08a8c6",
+   "material": "93cba0e3-e858-4bcb-9b2e-3ab55784c45e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "87dd8404-7abf-4113-a075-37d3b060ac00",
+   "material": "1fc79d26-d24e-406f-8dc8-9dd8be9bdcc2",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "63adeb85-6463-4c02-aadd-6fbebb709985",
+   "material": "cd878091-6367-458f-a9a0-541573a2cf5b",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "63adeb85-6463-4c02-aadd-6fbebb709985",
+   "material": "cd878091-6367-458f-a9a0-541573a2cf5b",
    "uniform": "uWT",
    "a": 0.25,
    "b": 0
   },
   {
-   "material": "e91b28e0-3b01-41a5-9db7-3fc4e944c0f8",
+   "material": "e6bc6fd7-5c74-4711-981e-eccaef410fe3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "e91b28e0-3b01-41a5-9db7-3fc4e944c0f8",
+   "material": "e6bc6fd7-5c74-4711-981e-eccaef410fe3",
    "uniform": "uWT",
    "a": 0.25,
    "b": 0
   },
   {
-   "material": "20666e7b-802e-46e2-ac96-f8989fe07477",
+   "material": "cca3812e-5aa7-476d-9364-523716a70e7c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "20666e7b-802e-46e2-ac96-f8989fe07477",
+   "material": "cca3812e-5aa7-476d-9364-523716a70e7c",
    "uniform": "uWT",
    "a": 0.25,
    "b": 0
   },
   {
-   "material": "f5c6e3c1-11ac-4913-99d3-04ce776f65d2",
+   "material": "038b255e-a7a1-4ad8-bc1a-47f8a7a8852b",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "f5c6e3c1-11ac-4913-99d3-04ce776f65d2",
+   "material": "038b255e-a7a1-4ad8-bc1a-47f8a7a8852b",
    "uniform": "uWT",
    "a": 0.25,
    "b": 0
   },
   {
-   "material": "de57f80a-cb4d-4aa8-9053-80ac411b026a",
+   "material": "4410d601-e027-4fad-9767-f7ce76903b34",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "de57f80a-cb4d-4aa8-9053-80ac411b026a",
+   "material": "4410d601-e027-4fad-9767-f7ce76903b34",
    "uniform": "uWT",
    "a": 0.25,
    "b": 0
@@ -343,23 +371,23 @@
  "hooks": {},
  "patchClocks": {},
  "uniformArrays": {
-  "63adeb85-6463-4c02-aadd-6fbebb709985": {
+  "cd878091-6367-458f-a9a0-541573a2cf5b": {
    "uL": "v4",
    "uLC": "c"
   },
-  "e91b28e0-3b01-41a5-9db7-3fc4e944c0f8": {
+  "e6bc6fd7-5c74-4711-981e-eccaef410fe3": {
    "uL": "v4",
    "uLC": "c"
   },
-  "20666e7b-802e-46e2-ac96-f8989fe07477": {
+  "cca3812e-5aa7-476d-9364-523716a70e7c": {
    "uL": "v4",
    "uLC": "c"
   },
-  "f5c6e3c1-11ac-4913-99d3-04ce776f65d2": {
+  "038b255e-a7a1-4ad8-bc1a-47f8a7a8852b": {
    "uL": "v4",
    "uLC": "c"
   },
-  "de57f80a-cb4d-4aa8-9053-80ac411b026a": {
+  "4410d601-e027-4fad-9767-f7ce76903b34": {
    "uL": "v4",
    "uLC": "c"
   }
@@ -371,11 +399,14 @@
    "x": -3.45,
    "y": 0,
    "z": -45,
-   "strength": 0.92,
-   "blur": 1.8,
-   "f0": 0.14,
-   "tint": 14733286,
+   "strength": 1.05,
+   "blur": 1.45,
+   "f0": 0.16,
+   "tint": 13820127,
    "fade": 90,
+   "zones": 1,
+   "smear": 0.55,
+   "near": 7,
    "maskRepeat": [
     1,
     1
@@ -523,12 +554,12 @@
   ]
  },
  "env": {
-  "background": 3823824,
+  "background": 1453896,
   "ibl": {
-   "top": 3820208,
-   "wall": 8016016,
-   "floor": 8014440,
-   "intensity": 0.75,
+   "top": 2374994,
+   "wall": 5985376,
+   "floor": 5655112,
+   "intensity": 0.55,
    "lights": [
     {
      "pos": [
@@ -540,8 +571,8 @@
       14,
       5
      ],
-     "color": 16748744,
-     "power": 3,
+     "color": 14705820,
+     "power": 2,
      "lookAt": [
       -4,
       0,
@@ -558,8 +589,8 @@
       12,
       4
      ],
-     "color": 10529023,
-     "power": 2,
+     "color": 7391448,
+     "power": 1.5,
      "lookAt": [
       -4,
       0,
@@ -569,23 +600,23 @@
    ]
   },
   "fog": {
-   "color": 4873424,
-   "density": 0.0055
+   "color": 2506074,
+   "density": 0.0045
   },
   "post": {
    "outline": {
-    "color": 1707050,
-    "opacity": 0.45,
+    "color": 1055782,
+    "opacity": 0.42,
     "depthTh": 0.02,
     "normalTh": 0.3
    },
    "ao": {
-    "strength": 0.4,
+    "strength": 0.45,
     "radius": 0.4
    },
    "bloom": {
-    "threshold": 0.62,
-    "strength": 0.7,
+    "threshold": 0.68,
+    "strength": 0.55,
     "weights": [
      0.45,
      0.35,
@@ -596,40 +627,40 @@
    },
    "fog": {
     "enabled": true,
-    "color": 4872392,
-    "density": 0.008,
+    "color": 2705500,
+    "density": 0.005,
     "falloff": 0.12,
     "base": 0,
-    "near": 15,
-    "maxOpacity": 0.5
+    "near": 18,
+    "maxOpacity": 0.32
    },
    "paint": {
     "enabled": true,
-    "strength": 0.4,
+    "strength": 0.3,
     "radius": 2
    },
    "grade": {
-    "exposure": 0.67,
-    "saturation": 1.1,
+    "exposure": 0.72,
+    "saturation": 1.04,
     "lift": [
-     0.012,
-     0.009,
-     0.028
+     0.006,
+     0.008,
+     0.012
     ],
     "gain": [
-     0.95,
-     0.97,
-     1.07
+     0.94,
+     1,
+     1.03
     ],
-    "vignette": 0.26
+    "vignette": 0.28
    },
    "dof": {
     "enabled": true,
-    "focus": 18,
-    "range": 30,
-    "near": 0.8,
-    "far": 0.6,
-    "maxRadius": 7,
+    "focus": 14,
+    "range": 34,
+    "near": 0.5,
+    "far": 0.45,
+    "maxRadius": 5,
     "tilt": {
      "center": [
       0.45,
@@ -640,7 +671,7 @@
       0.4
      ],
      "soft": 0.45,
-     "strength": 0.7
+     "strength": 0.45
     }
    }
   }
@@ -1138,36 +1169,36 @@
  "three": "170",
  "key": "street-1-night",
  "hour": 22,
- "bakedAt": "2026-10-24T10:41:35.970Z",
+ "bakedAt": "2026-10-24T13:18:38.533Z",
  "quantizePosition": 14,
  "source": {
   "family": "StreetNight (N) built at runtime by lab/src/scenes",
-  "exportBytes": 70458940,
-  "triangles": 138276,
-  "drawCalls": 354,
-  "textures": 160,
-  "textureMB": 247.7
+  "exportBytes": 71667192,
+  "triangles": 165034,
+  "drawCalls": 374,
+  "textures": 165,
+  "textureMB": 249.2
  },
  "lods": {
   "lod0": {
    "file": "street-1-night.glb",
-   "triangles": 158784,
-   "primitives": 293,
-   "materials": 293,
-   "textures": 132,
-   "textureKB": 5413,
-   "bytes": 6949780
+   "triangles": 185542,
+   "primitives": 313,
+   "materials": 313,
+   "textures": 137,
+   "textureKB": 5448,
+   "bytes": 7100704
   },
   "lod1": {
    "file": "street-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 81955,
-   "primitives": 293,
-   "materials": 293,
-   "textures": 132,
-   "textureKB": 1697,
-   "bytes": 2792032
+   "triangles": 95523,
+   "primitives": 313,
+   "materials": 313,
+   "textures": 137,
+   "textureKB": 1735,
+   "bytes": 2971748
   }
  },
  "parts": {
@@ -1189,7 +1220,7 @@
  },
  "live": {
   "file": "street-1-night.live.json",
-  "bytes": 521671,
+  "bytes": 522511,
   "objects": [
    "Mesh",
    "smokePlume",
