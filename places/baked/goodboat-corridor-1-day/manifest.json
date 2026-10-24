@@ -1,0 +1,955 @@
+{
+ "version": 2,
+ "place": "goodboat-corridor-1",
+ "family": "GoodboatCorridor1",
+ "variant": "D",
+ "tod": "day",
+ "cost": {
+  "triangles": 93026,
+  "drawCalls": 183,
+  "textures": 62,
+  "textureMB": 101.6
+ },
+ "exported": {
+  "triangles": 89242,
+  "drawCalls": 125,
+  "textures": 59,
+  "textureMB": 101.1
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 12572898,
+   "intensity": 0.28,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 4864816
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-01",
+   "color": 16730797,
+   "intensity": 1.3,
+   "position": [
+    -1,
+    1.85,
+    2.75
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-02",
+   "color": 4581631,
+   "intensity": 1.8,
+   "position": [
+    1,
+    1.85,
+    2.75
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-03",
+   "color": 3721448,
+   "intensity": 2.4,
+   "position": [
+    -1,
+    1.45,
+    8.55
+   ],
+   "visible": true,
+   "distance": 3.4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-04",
+   "color": 13152225,
+   "intensity": 0.6665092161702412,
+   "position": [
+    1,
+    1.45,
+    8.55
+   ],
+   "visible": true,
+   "distance": 3.4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-05",
+   "color": 16769208,
+   "intensity": 1.3,
+   "position": [
+    0,
+    2.05,
+    19.5
+   ],
+   "visible": true,
+   "distance": 6.5,
+   "decay": 2,
+   "shadow": {
+    "mapSize": [
+     512,
+     512
+    ],
+    "bias": -0.002,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 0.08,
+     "far": 6.5,
+     "fov": 90
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-06",
+   "color": 12181738,
+   "intensity": 1.6,
+   "position": [
+    0,
+    2.05,
+    26
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-07",
+   "color": 12181738,
+   "intensity": 2.2,
+   "position": [
+    0,
+    1.9,
+    34.3
+   ],
+   "visible": true,
+   "distance": 10,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-08",
+   "color": 16767152,
+   "intensity": 1,
+   "position": [
+    0,
+    1.7,
+    -3
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 2
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 13163752,
+   "intensity": 0.42,
+   "position": [
+    -2,
+    5,
+    12
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "ecfc4404-e2c7-419d-8f3e-fee2a593b507",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "ecfc4404-e2c7-419d-8f3e-fee2a593b507",
+   "uniform": "uWT",
+   "a": 0.35,
+   "b": 3.552714e-15
+  },
+  {
+   "material": "8b86fdfa-6589-47ee-9e19-73c998481ca6",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "bc896434-19fe-41a4-b7b6-3d5a9f775bc5",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "ac58f295-2516-4f7b-b571-b88cf6fdbbb6",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "2af0e0d4-d89a-41c5-a550-ccd96fc2eb83",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "b42148f3-2f9b-4771-ae44-ad96cc5951bd",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "7b54c676-e46f-4621-a7ea-6848fabde333",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "c0fd70de-066d-4f47-88de-f788212d58c3",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "f484ba97-d472-4bc0-93b5-552bde309a87",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
+ "uniformArrays": {
+  "ecfc4404-e2c7-419d-8f3e-fee2a593b507": {
+   "uL": "v4",
+   "uLC": "c"
+  }
+ },
+ "reflectors": [
+  {
+   "w": 17,
+   "d": 40,
+   "x": 0,
+   "y": 0,
+   "z": 15.799999999999999,
+   "strength": 0.045,
+   "blur": 4.5,
+   "f0": 0.025,
+   "tint": 14075050,
+   "fade": 28,
+   "maskRepeat": [
+    11.333333333333334,
+    57.735026918962575
+   ],
+   "size": 384,
+   "mask": "goodboat-corridor-1-day.mask0.webp"
+  }
+ ],
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    1.25,
+    0
+   ],
+   "target": [
+    0,
+    1.25,
+    10
+   ],
+   "fov": 40,
+   "shift": [
+    -0.001,
+    -0.0139
+   ]
+  },
+  "views": [
+   {
+    "name": "dolly-low",
+    "label": "Low dolly",
+    "position": [
+     0,
+     0.7,
+     2
+    ],
+    "target": [
+     0,
+     0.95,
+     14
+    ],
+    "fov": 55
+   },
+   {
+    "name": "directory",
+    "label": "Floor directory",
+    "position": [
+     -0.5,
+     1.5,
+     1
+    ],
+    "target": [
+     1.6,
+     1.55,
+     -1.45
+    ],
+    "fov": 50
+   },
+   {
+    "name": "ajar",
+    "label": "Door ajar",
+    "position": [
+     0.5,
+     1.45,
+     11.6
+    ],
+    "target": [
+     -1.8,
+     1.15,
+     14.1
+    ],
+    "fov": 52
+   },
+   {
+    "name": "tray",
+    "label": "Tray at the door",
+    "position": [
+     -0.2,
+     1.2,
+     -0.2
+    ],
+    "target": [
+     1.2,
+     0.2,
+     -2.9
+    ],
+    "fov": 50
+   },
+   {
+    "name": "reverse",
+    "label": "Lift lobby",
+    "position": [
+     0.6,
+     1.6,
+     6.5
+    ],
+    "target": [
+     -0.3,
+     1.3,
+     -4
+    ],
+    "fov": 55
+   },
+   {
+    "name": "cross-end",
+    "label": "Cross corridor",
+    "position": [
+     -0.6,
+     1.55,
+     33.9
+    ],
+    "target": [
+     7.5,
+     1.45,
+     34.6
+    ],
+    "fov": 60
+   },
+   {
+    "name": "port",
+    "label": "Porthole",
+    "position": [
+     0.5,
+     1.5,
+     33.6
+    ],
+    "target": [
+     0.5,
+     1.4,
+     41
+    ],
+    "fov": 52
+   },
+   {
+    "name": "port-sky",
+    "label": "Sky through the port",
+    "position": [
+     0.2,
+     1.1,
+     35.3
+    ],
+    "target": [
+     1.6,
+     4.6,
+     40
+    ],
+    "fov": 66
+   },
+   {
+    "name": "cross-back",
+    "label": "Back down the hall",
+    "position": [
+     0.3,
+     1.55,
+     34.7
+    ],
+    "target": [
+     0,
+     1.35,
+     12
+    ],
+    "fov": 55
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -1.48,
+   0.2,
+   -4
+  ],
+  "max": [
+   1.48,
+   2.32,
+   35.599999999999994
+  ]
+ },
+ "env": {
+  "background": 9416376,
+  "toneMapping": "aces",
+  "exposure": 1,
+  "fog": {
+   "color": 9416376,
+   "near": 24,
+   "far": 85
+  },
+  "ibl": {
+   "top": 12114144,
+   "wall": 11451850,
+   "floor": 4082260,
+   "intensity": 0.45,
+   "lights": [
+    {
+     "pos": [
+      0,
+      2.2,
+      31
+     ],
+     "size": [
+      3,
+      0.5
+     ],
+     "color": 12181738,
+     "power": 1.2,
+     "lookAt": [
+      0,
+      1.6,
+      0
+     ]
+    },
+    {
+     "pos": [
+      0,
+      2.3,
+      -3.4
+     ],
+     "size": [
+      2.4,
+      0.4
+     ],
+     "color": 10472408,
+     "power": 1.2,
+     "lookAt": [
+      0,
+      1.6,
+      12
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 2366488,
+    "opacity": 0.28,
+    "depthTh": 0.014,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.55,
+    "radius": 0.26
+   },
+   "fog": {
+    "enabled": true,
+    "color": 10139836,
+    "density": 0.012,
+    "falloff": 0.32,
+    "base": 0,
+    "near": 3,
+    "maxOpacity": 0.3
+   },
+   "bloom": {
+    "threshold": 0.85,
+    "knee": 0.45,
+    "strength": 0.24,
+    "weights": [
+     0.45,
+     0.3,
+     0.22,
+     0.1,
+     0.05
+    ]
+   },
+   "grade": {
+    "exposure": 1.02,
+    "contrast": 1.04,
+    "saturation": 0.96,
+    "lift": [
+     0.006,
+     0.01,
+     0.012
+    ],
+    "gain": [
+     1.03,
+     1,
+     0.97
+    ],
+    "vignette": 0.24,
+    "staticGrain": 0.002,
+    "guard": 0.1
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 9,
+    "range": 12,
+    "near": 0.35,
+    "far": 0.3,
+    "maxRadius": 3.5
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -1.55,
+   -3.95,
+   1.55,
+   35.55
+  ],
+  "eye": 1.55,
+  "start": {
+   "position": [
+    0,
+    0,
+    0.6
+   ],
+   "target": [
+    0,
+    1.35,
+    10
+   ]
+  },
+  "colliders": [],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "directory",
+   "kind": "terminal",
+   "label": "Floor directory",
+   "object": "directory",
+   "typed": false,
+   "anchor": [
+    1.5710000001862645,
+    1.55,
+    -1.4500000000000002
+   ],
+   "built": [
+    1.5710000001862645,
+    1.55,
+    -1.4500000000000002
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-cabin",
+   "kind": "link",
+   "label": "Cabin 314",
+   "object": "cabinGlimpse",
+   "typed": false,
+   "anchor": [
+    1.6,
+    1.2,
+    24.299999999999997
+   ],
+   "built": [
+    1.6,
+    1.2,
+    24.299999999999997
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-cross",
+   "kind": "link",
+   "label": "Cross hall",
+   "object": "spot:door-cross",
+   "typed": true,
+   "anchor": [
+    0,
+    1.3,
+    34.4
+   ],
+   "built": [
+    0,
+    1.3,
+    34.4
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "gb1-lifts",
+   "kind": "inspect",
+   "label": "Brass lifts",
+   "object": "elevators",
+   "typed": false,
+   "anchor": [
+    0,
+    1.189999997764826,
+    -4.144999999701977
+   ],
+   "built": [
+    0,
+    1.189999997764826,
+    -4.144999999701977
+   ],
+   "reach": 5
+  },
+  {
+   "id": "gb1-tray",
+   "kind": "inspect",
+   "label": "Room service tray",
+   "object": "tray",
+   "typed": false,
+   "anchor": [
+    1.1800000000000002,
+    0.10575000012293458,
+    -2.9
+   ],
+   "built": [
+    1.1800000000000002,
+    0.10575000012293458,
+    -2.9
+   ],
+   "reach": 5
+  },
+  {
+   "id": "gb1-ajar",
+   "kind": "inspect",
+   "label": "Door ajar",
+   "object": "cabinGlimpse",
+   "typed": false,
+   "anchor": [
+    -1.6,
+    1.2,
+    14.1
+   ],
+   "built": [
+    -1.6,
+    1.2,
+    14.1
+   ],
+   "reach": 5
+  },
+  {
+   "id": "gb1-carpet",
+   "kind": "inspect",
+   "label": "The carpet",
+   "object": "spot:gb1-carpet",
+   "typed": true,
+   "anchor": [
+    0,
+    0.05,
+    16
+   ],
+   "built": [
+    0,
+    0.05,
+    16
+   ],
+   "reach": 5
+  },
+  {
+   "id": "gb1-cabin-301",
+   "kind": "inspect",
+   "label": "Cabin 301",
+   "object": "door",
+   "typed": false,
+   "anchor": [
+    -1.6,
+    1.2,
+    3.9
+   ],
+   "built": [
+    -1.6,
+    1.2,
+    3.9
+   ],
+   "reach": 5
+  },
+  {
+   "id": "gb1-door-315",
+   "kind": "inspect",
+   "label": "Cabin 315",
+   "object": "door",
+   "typed": false,
+   "anchor": [
+    -1.6,
+    1.2,
+    27.7
+   ],
+   "built": [
+    -1.6,
+    1.2,
+    27.7
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "gb1-door-320",
+   "kind": "inspect",
+   "label": "Cabin 320",
+   "object": "door",
+   "typed": false,
+   "anchor": [
+    1.6,
+    1.2,
+    0.5
+   ],
+   "built": [
+    1.6,
+    1.2,
+    0.5
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "door-cross": {
+   "object": "spot:door-cross",
+   "how": "node",
+   "on": null,
+   "at": [
+    0,
+    1.3,
+    34.4
+   ]
+  },
+  "gb1-carpet": {
+   "object": "spot:gb1-carpet",
+   "how": "node",
+   "on": null,
+   "at": [
+    0,
+    0.05,
+    16
+   ]
+  }
+ },
+ "premerge": {
+  "spot:door-cross": [
+   0,
+   1.3,
+   34.4
+  ],
+  "spot:gb1-carpet": [
+   0,
+   0.05,
+   16
+  ],
+  "directory": [
+   1.5710000001862645,
+   1.55,
+   -1.4500000000000002
+  ],
+  "cabinGlimpse@1.6,0,24.3": [
+   1.6,
+   1.2,
+   24.299999999999997
+  ],
+  "elevators": [
+   0,
+   1.189999997764826,
+   -4.144999999701977
+  ],
+  "tray": [
+   1.1800000000000002,
+   0.10575000012293458,
+   -2.9
+  ],
+  "cabinGlimpse@-1.6,0,14.1": [
+   -1.6,
+   1.2,
+   14.1
+  ],
+  "door@-1.6,0,3.9": [
+   -1.6,
+   1.2,
+   3.9
+  ],
+  "door@-1.6,0,27.7": [
+   -1.6,
+   1.2,
+   27.7
+  ],
+  "door@1.6,0,0.5": [
+   1.6,
+   1.2,
+   0.5
+  ]
+ },
+ "doorProps": {},
+ "anchorsBefore": {
+  "named": 8,
+  "typed": 2
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 0,
+  "triangles": 0
+ },
+ "manifestColliders": 0,
+ "manifest": true,
+ "three": "170",
+ "key": "goodboat-corridor-1-day",
+ "hour": 13,
+ "bakedAt": "2026-10-24T09:50:04.222Z",
+ "quantizePosition": 14,
+ "source": {
+  "family": "GoodboatCorridor1 (D) built at runtime by lab/src/scenes",
+  "exportBytes": 31681944,
+  "triangles": 93026,
+  "drawCalls": 183,
+  "textures": 62,
+  "textureMB": 101.6
+ },
+ "lods": {
+  "lod0": {
+   "file": "goodboat-corridor-1-day.glb",
+   "triangles": 91072,
+   "primitives": 115,
+   "materials": 115,
+   "textures": 48,
+   "textureKB": 2093,
+   "bytes": 2965224
+  },
+  "lod1": {
+   "file": "goodboat-corridor-1-day.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 52178,
+   "primitives": 115,
+   "materials": 115,
+   "textures": 48,
+   "textureKB": 532,
+   "bytes": 1164972
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "cabinGlimpse",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "cabinGlimpse",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "elevators",
+   "directory",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "door",
+   "tray",
+   "spot:door-cross",
+   "spot:gb1-carpet"
+  ],
+  "exportBytes": 3019132
+ },
+ "live": {
+  "file": "goodboat-corridor-1-day.live.json",
+  "bytes": 72478,
+  "objects": [
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "skyDome",
+   "water",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "smokePlume",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "motes"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs goodboat-corridor-1 --variant day (dev server running, BASE=...)"
+ ]
+}

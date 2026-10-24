@@ -6,13 +6,13 @@
  "tod": "day",
  "cost": {
   "triangles": 81184,
-  "drawCalls": 492,
+  "drawCalls": 377,
   "textures": 42,
   "textureMB": 44
  },
  "exported": {
   "triangles": 61850,
-  "drawCalls": 250,
+  "drawCalls": 176,
   "textures": 32,
   "textureMB": 40
  },
@@ -110,8 +110,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16773344,
-   "intensity": 6,
+   "color": 14540015,
+   "intensity": 3.090184634135593,
    "position": [
     0.3,
     3.1,
@@ -188,49 +188,53 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "696b863f-8ada-49fb-b3ca-9c14e4b6514f",
+   "material": "ca800970-a862-4a33-9adf-4cd601fb9a60",
    "uniform": "uT",
    "a": 1,
    "b": 0
   },
   {
-   "material": "1bdc61ec-602b-4cce-b95e-1cd03316fb4f",
+   "material": "97d88278-6b10-4136-a439-80f1fb2969a1",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "d03d1649-e864-4042-8903-0d921f5cd5ba",
+   "material": "940bb0c8-1546-4356-8577-885ab6543308",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "7882b926-7aa3-4c15-8746-6faa9ed99cd1",
+   "material": "1e4a8cda-9531-411d-9b07-6b328ecd97df",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "1fe58f52-671f-4a55-8403-3e73ed777a71",
+   "material": "3a48df3e-abd2-43ef-8724-4ab3160bdbf5",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "62549335-2907-4c7c-96f0-8a164928fcb8",
+   "material": "31cf8ee0-4ba3-460a-b103-a8950fad0eed",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "cd6c0ad7-df46-4b16-9a3d-7698f42c17d2",
+   "material": "0437d976-e609-47d1-8764-96dd75611400",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [
   {
@@ -642,7 +646,16 @@
    "label": "Kouka",
    "object": "spot:kouka-meet",
    "typed": true,
-   "anchor": null,
+   "anchor": [
+    0.4,
+    1.3,
+    1.5
+   ],
+   "built": [
+    0.4,
+    1.3,
+    1.5
+   ],
    "reach": 3.2
   },
   {
@@ -652,6 +665,11 @@
    "object": "spot:door-street",
    "typed": true,
    "anchor": [
+    0.6,
+    1.3,
+    5.4
+   ],
+   "built": [
     0.6,
     1.3,
     5.4
@@ -669,6 +687,11 @@
     1.326499999947846,
     -0.862
    ],
+   "built": [
+    1.867619965672493,
+    1.326499999947846,
+    -0.862
+   ],
    "reach": 3.2
   },
   {
@@ -678,6 +701,11 @@
    "object": "fareboard",
    "typed": false,
    "anchor": [
+    -0.9300000000000002,
+    0.919999993108213,
+    1.2
+   ],
+   "built": [
     -0.9300000000000002,
     0.919999993108213,
     1.2
@@ -695,6 +723,11 @@
     1.25,
     -4.194
    ],
+   "built": [
+    3.25,
+    1.25,
+    -4.194
+   ],
    "reach": 3.2
   },
   {
@@ -708,6 +741,11 @@
     1.2,
     -12.5
    ],
+   "built": [
+    -2.2,
+    1.2,
+    -12.5
+   ],
    "reach": 3.2
   },
   {
@@ -717,6 +755,11 @@
    "object": "spot:frag-7",
    "typed": true,
    "anchor": [
+    -2.2,
+    1.1,
+    -4
+   ],
+   "built": [
     -2.2,
     1.1,
     -4
@@ -803,6 +846,7 @@
    -4.194
   ]
  },
+ "doorProps": {},
  "anchorsBefore": {
   "named": 3,
   "typed": 4
@@ -817,39 +861,40 @@
   "triangles": 32732
  },
  "manifestColliders": 0,
- "manifest": false,
+ "manifest": true,
  "three": "170",
  "key": "platform-1-day",
  "hour": 13,
- "bakedAt": "2026-10-21T00:08:44.561Z",
+ "bakedAt": "2026-10-24T09:19:41.095Z",
+ "quantizePosition": 14,
  "source": {
   "family": "Platform (D) built at runtime by lab/src/scenes",
-  "exportBytes": 11362156,
+  "exportBytes": 11366208,
   "triangles": 81184,
-  "drawCalls": 492,
+  "drawCalls": 377,
   "textures": 42,
   "textureMB": 44
  },
  "lods": {
   "lod0": {
    "file": "platform-1-day.glb",
-   "triangles": 65336,
-   "primitives": 167,
-   "materials": 165,
+   "triangles": 54872,
+   "primitives": 175,
+   "materials": 172,
    "textures": 38,
    "textureKB": 647,
-   "bytes": 1331088
+   "bytes": 1278788
   },
   "lod1": {
    "file": "platform-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 35252,
-   "primitives": 167,
-   "materials": 165,
+   "triangles": 29938,
+   "primitives": 175,
+   "materials": 172,
    "textures": 38,
    "textureKB": 296,
-   "bytes": 810232
+   "bytes": 795208
   }
  },
  "parts": {
@@ -869,16 +914,19 @@
    "pf",
    "gates",
    "fareboard",
+   "pf",
+   "pf",
+   "pf",
    "spot:kouka-meet",
    "spot:door-street",
    "spot:plat-phone",
    "spot:frag-7"
   ],
-  "exportBytes": 920336
+  "exportBytes": 925324
  },
  "live": {
   "file": "platform-1-day.live.json",
-  "bytes": 44218,
+  "bytes": 44038,
   "objects": [
    "Mesh",
    "Mesh",
@@ -888,7 +936,8 @@
    "motes",
    "smokePlume",
    "smokePlume",
-   "groundMist"
+   "Mesh",
+   "Mesh"
   ]
  },
  "notes": [

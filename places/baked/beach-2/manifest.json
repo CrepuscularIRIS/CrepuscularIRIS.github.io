@@ -11,8 +11,8 @@
   "textureMB": 50.8
  },
  "exported": {
-  "triangles": 184539,
-  "drawCalls": 98,
+  "triangles": 185027,
+  "drawCalls": 107,
   "textures": 39,
   "textureMB": 44.3
  },
@@ -742,14 +742,14 @@
    "object": null,
    "typed": false,
    "anchor": [
-    -13.193970576744066,
-    1.3171266787366074,
-    -69.77061214442664
+    -12.794142315409765,
+    1.2891266787366074,
+    -69.77057743160019
    ],
    "built": [
-    -13.193970576744066,
-    1.3171266787366074,
-    -69.77061214442664
+    -12.794142315409765,
+    1.2891266787366074,
+    -69.77057743160019
    ],
    "reach": 3.2
   },
@@ -768,42 +768,6 @@
     1.321712500287872,
     0.15158916829549116,
     -3.2301024801650944
-   ],
-   "reach": 5
-  },
-  {
-   "id": "beach2-shell",
-   "kind": "inspect",
-   "label": "Shell",
-   "object": "shell",
-   "typed": false,
-   "anchor": [
-    0.19755139512980763,
-    0.14739854610357775,
-    -3.1984766618761213
-   ],
-   "built": [
-    0.19755139512980763,
-    0.14739854610357775,
-    -3.1984766618761213
-   ],
-   "reach": 5
-  },
-  {
-   "id": "beach2-driftwood",
-   "kind": "inspect",
-   "label": "Driftwood",
-   "object": "driftwood",
-   "typed": false,
-   "anchor": [
-    -0.6597280049759671,
-    0.40678405264499046,
-    -7.810718443016016
-   ],
-   "built": [
-    -0.6597280049759671,
-    0.40678405264499046,
-    -7.810718443016016
    ],
    "reach": 5
   },
@@ -910,16 +874,6 @@
    0.15158916829549116,
    -3.2301024801650944
   ],
-  "shell": [
-   0.19755139512980763,
-   0.14739854610357775,
-   -3.1984766618761213
-  ],
-  "driftwood": [
-   -0.6597280049759671,
-   0.40678405264499046,
-   -7.810718443016016
-  ],
   "palm": [
    -3.462836191621621,
    3.4183356180787086,
@@ -949,22 +903,22 @@
  "doorProps": {
   "door-beach-1": {
    "p": [
-    -13.194,
-    -0.0179,
+    -12.7941,
+    -0.0459,
     -69.7706
    ],
    "q": [
     0,
-    0.101007,
+    0.098101,
     0,
-    0.994886
+    0.995176
    ],
    "gate": true,
    "tint": 0
   }
  },
  "anchorsBefore": {
-  "named": 9,
+  "named": 7,
   "typed": 0
  },
  "models": {
@@ -989,11 +943,11 @@
  "three": "170",
  "key": "beach-2",
  "hour": 13,
- "bakedAt": "2026-10-21T15:16:06.606Z",
+ "bakedAt": "2026-10-24T09:20:52.426Z",
  "quantizePosition": 14,
  "source": {
   "family": "Beach (D2) built at runtime by lab/src/scenes",
-  "exportBytes": 17274976,
+  "exportBytes": 17305984,
   "triangles": 271323,
   "drawCalls": 134,
   "textures": 47,
@@ -1003,22 +957,22 @@
   "lod0": {
    "file": "beach-2.glb",
    "triangles": 168177,
-   "primitives": 66,
+   "primitives": 65,
    "materials": 60,
    "textures": 42,
-   "textureKB": 1622,
-   "bytes": 3530676
+   "textureKB": 1625,
+   "bytes": 3534848
   },
   "lod1": {
    "file": "beach-2.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
    "triangles": 94718,
-   "primitives": 66,
+   "primitives": 65,
    "materials": 60,
    "textures": 42,
-   "textureKB": 1028,
-   "bytes": 2287724
+   "textureKB": 1031,
+   "bytes": 2290748
   }
  },
  "parts": {
@@ -1027,8 +981,6 @@
    "palm",
    "driftwood-sign",
    "message-bottle",
-   "shell",
-   "driftwood",
    "campfire",
    "canoe",
    "picnic-lantern",
@@ -1038,7 +990,7 @@
    "hook:sea",
    "hook:sky"
   ],
-  "exportBytes": 431628
+  "exportBytes": 417204
  },
  "live": null,
  "notes": [

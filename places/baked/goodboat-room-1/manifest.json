@@ -11,10 +11,10 @@
   "textureMB": 62.1
  },
  "exported": {
-  "triangles": 27984,
-  "drawCalls": 98,
-  "textures": 26,
-  "textureMB": 49.6
+  "triangles": 28284,
+  "drawCalls": 104,
+  "textures": 30,
+  "textureMB": 61.9
  },
  "lights": [
   {
@@ -64,7 +64,7 @@
    "color": 16758928,
    "intensity": 0.8999999999999999,
    "position": [
-    -1,
+    -1.17,
     0.62,
     0.5
    ],
@@ -90,10 +90,10 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16758928,
-   "intensity": 0.8999999999999999,
+   "color": 13811162,
+   "intensity": 0.3487694951441312,
    "position": [
-    1,
+    1.17,
     0.62,
     0.5
    ],
@@ -118,8 +118,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16754816,
-   "intensity": 1.08,
+   "color": 13809623,
+   "intensity": 0.41852339417295753,
    "position": [
     1.05,
     0.9,
@@ -146,8 +146,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 8040703,
-   "intensity": 1.7999999999999998,
+   "color": 10009343,
+   "intensity": 0.6975389902882624,
    "position": [
     0,
     1.2,
@@ -160,8 +160,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16748736,
-   "intensity": 3,
+   "color": 13807336,
+   "intensity": 1.1625649838137708,
    "position": [
     2.4,
     1.7,
@@ -234,45 +234,49 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "bb9f0ca8-1691-4fad-980b-c36baa1d0f6a",
+   "material": "40fd4694-22a3-47ce-b8a8-6e5b9ef78f9a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "bb9f0ca8-1691-4fad-980b-c36baa1d0f6a",
+   "material": "40fd4694-22a3-47ce-b8a8-6e5b9ef78f9a",
    "uniform": "uWT",
    "a": 0.3,
    "b": 0
   },
   {
-   "material": "785b52d1-931d-47f4-a116-487f0eb248c1",
+   "material": "f1199c2f-fdd5-4e5f-81be-5934b54273d4",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "194e7c2f-a1f9-433e-9c52-587e6d9fae6a",
+   "material": "0567b772-667f-4a8b-bcfb-ba95646052b6",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "1df9c1c9-1733-4e8c-9623-1f12ec96fcb0",
+   "material": "7063a0c9-fc8f-4c07-884b-4bf6c4a630ed",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "23783d46-3111-44e8-8997-8e6f745ee4ce",
+   "material": "40cd8c43-d972-4970-9de1-0f8dca0748ae",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {
-  "bb9f0ca8-1691-4fad-980b-c36baa1d0f6a": {
+  "40fd4694-22a3-47ce-b8a8-6e5b9ef78f9a": {
    "uL": "v4",
    "uLC": "c"
   }
@@ -331,14 +335,14 @@
     "name": "lamp",
     "label": "Lamp",
     "position": [
-     0.55,
+     0.6,
      0.75,
      1
     ],
     "target": [
-     1,
+     1.17,
      0.4,
-     0.2
+     0.22
     ],
     "fov": 42
    },
@@ -646,78 +650,6 @@
     0.06
    ],
    "reach": 5
-  },
-  {
-   "id": "gb3-bed",
-   "kind": "inspect",
-   "label": "Platform bed",
-   "object": "spot:gb3-bed",
-   "typed": true,
-   "anchor": [
-    0,
-    0.45,
-    1.3
-   ],
-   "built": [
-    0,
-    0.45,
-    1.3
-   ],
-   "reach": 5
-  },
-  {
-   "id": "gb3-lamp",
-   "kind": "inspect",
-   "label": "Mushroom lamp",
-   "object": "spot:gb3-lamp",
-   "typed": true,
-   "anchor": [
-    1,
-    0.5,
-    0.22
-   ],
-   "built": [
-    1,
-    0.5,
-    0.22
-   ],
-   "reach": 5
-  },
-  {
-   "id": "gb3-shower",
-   "kind": "inspect",
-   "label": "Corner shower",
-   "object": "spot:gb3-shower",
-   "typed": true,
-   "anchor": [
-    2.5,
-    1.2,
-    0.4
-   ],
-   "built": [
-    2.5,
-    1.2,
-    0.4
-   ],
-   "reach": 5
-  },
-  {
-   "id": "gb3-wardrobe",
-   "kind": "inspect",
-   "label": "Wardrobe and mirror",
-   "object": "wardrobe",
-   "typed": false,
-   "anchor": [
-    1.2,
-    1.15,
-    7.407500002980233
-   ],
-   "built": [
-    1.2,
-    1.15,
-    7.407500002980233
-   ],
-   "reach": 5
   }
  ],
  "bind": {
@@ -750,36 +682,6 @@
     1.3,
     0.06
    ]
-  },
-  "gb3-bed": {
-   "object": "spot:gb3-bed",
-   "how": "node",
-   "on": null,
-   "at": [
-    0,
-    0.45,
-    1.3
-   ]
-  },
-  "gb3-lamp": {
-   "object": "spot:gb3-lamp",
-   "how": "node",
-   "on": null,
-   "at": [
-    1,
-    0.5,
-    0.22
-   ]
-  },
-  "gb3-shower": {
-   "object": "spot:gb3-shower",
-   "how": "node",
-   "on": null,
-   "at": [
-    2.5,
-    1.2,
-    0.4
-   ]
   }
  },
  "premerge": {
@@ -798,36 +700,16 @@
    1.3,
    0.06
   ],
-  "spot:gb3-bed": [
-   0,
-   0.45,
-   1.3
-  ],
-  "spot:gb3-lamp": [
-   1,
-   0.5,
-   0.22
-  ],
-  "spot:gb3-shower": [
-   2.5,
-   1.2,
-   0.4
-  ],
   "laptop": [
    2.75,
    0.8890123815696447,
    3.3
-  ],
-  "wardrobe": [
-   1.2,
-   1.15,
-   7.407500002980233
   ]
  },
  "doorProps": {},
  "anchorsBefore": {
-  "named": 2,
-  "typed": 6
+  "named": 1,
+  "typed": 3
  },
  "models": {
   "baked": [],
@@ -843,10 +725,11 @@
  "three": "170",
  "key": "goodboat-room-1",
  "hour": 13,
- "bakedAt": "2026-10-21T13:03:25.177Z",
+ "bakedAt": "2026-10-24T09:54:28.138Z",
+ "quantizePosition": 14,
  "source": {
   "family": "GoodboatRoom (N) built at runtime by lab/src/scenes",
-  "exportBytes": 16294728,
+  "exportBytes": 17520992,
   "triangles": 31108,
   "drawCalls": 115,
   "textures": 32,
@@ -855,48 +738,46 @@
  "lods": {
   "lod0": {
    "file": "goodboat-room-1.glb",
-   "triangles": 28382,
-   "primitives": 90,
-   "materials": 90,
-   "textures": 21,
-   "textureKB": 909,
-   "bytes": 1260160
+   "triangles": 28550,
+   "primitives": 91,
+   "materials": 91,
+   "textures": 22,
+   "textureKB": 922,
+   "bytes": 1278128
   },
   "lod1": {
    "file": "goodboat-room-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 16834,
-   "primitives": 90,
-   "materials": 90,
-   "textures": 21,
-   "textureKB": 258,
-   "bytes": 529000
+   "triangles": 16892,
+   "primitives": 91,
+   "materials": 91,
+   "textures": 22,
+   "textureKB": 266,
+   "bytes": 541712
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
    "laptop",
-   "wardrobe",
    "spot:door-hall",
    "spot:gb3-flamingo",
-   "spot:gb3-blind",
-   "spot:gb3-bed",
-   "spot:gb3-lamp",
-   "spot:gb3-shower"
+   "spot:gb3-blind"
   ],
-  "exportBytes": 2859824
+  "exportBytes": 73976
  },
  "live": {
   "file": "goodboat-room-1.live.json",
-  "bytes": 108404,
+  "bytes": 52030,
   "objects": [
    "Mesh",
    "Mesh",
-   "harborOutside",
+   "skyDome",
+   "water",
    "smokePlume",
-   "groundMist",
+   "Mesh",
+   "Mesh",
    "motes"
   ]
  },

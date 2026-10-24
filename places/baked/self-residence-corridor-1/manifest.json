@@ -6,13 +6,13 @@
  "tod": "day",
  "cost": {
   "triangles": 12404,
-  "drawCalls": 217,
+  "drawCalls": 188,
   "textures": 25,
   "textureMB": 48.1
  },
  "exported": {
-  "triangles": 8412,
-  "drawCalls": 101,
+  "triangles": 9048,
+  "drawCalls": 111,
   "textures": 23,
   "textureMB": 47.9
  },
@@ -312,13 +312,17 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "e60d9914-06a8-45ab-8423-e7a56ba01a07",
+   "material": "a8b82b98-9d4d-4413-a8e4-03afdac6906a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [],
  "camera": {
@@ -419,12 +423,12 @@
     "name": "board",
     "label": "Notice board",
     "position": [
-     -2.3,
+     -2,
      1.5,
      1.6
     ],
     "target": [
-     -2.75,
+     -2.45,
      1.45,
      0
     ],
@@ -680,12 +684,12 @@
    "object": "board",
    "typed": false,
    "anchor": [
-    -2.75,
+    -2.45,
     1.45,
     0.016
    ],
    "built": [
-    -2.75,
+    -2.45,
     1.45,
     0.016
    ],
@@ -728,24 +732,6 @@
    "reach": 3.2
   },
   {
-   "id": "cor-neighbour",
-   "kind": "inspect",
-   "label": "Neighbour door",
-   "object": "door-neighbour",
-   "typed": false,
-   "anchor": [
-    1.1,
-    1.0350000000000001,
-    -0.039999999999999994
-   ],
-   "built": [
-    1.1,
-    1.0350000000000001,
-    -0.039999999999999994
-   ],
-   "reach": 5
-  },
-  {
    "id": "cor-parcels",
    "kind": "inspect",
    "label": "Parcels",
@@ -760,24 +746,6 @@
     3.100119706111303,
     0.23000000149011612,
     0.4209928064429133
-   ],
-   "reach": 5
-  },
-  {
-   "id": "cor-extinguisher",
-   "kind": "inspect",
-   "label": "Extinguisher",
-   "object": "extinguisher",
-   "typed": false,
-   "anchor": [
-    2.75,
-    1.2,
-    0.07749999947845936
-   ],
-   "built": [
-    2.75,
-    1.2,
-    0.07749999947845936
    ],
    "reach": 5
   },
@@ -798,30 +766,12 @@
     2.843000000372529
    ],
    "reach": 5
-  },
-  {
-   "id": "cor-stairs",
-   "kind": "inspect",
-   "label": "Stair door",
-   "object": "stairdoor",
-   "typed": false,
-   "anchor": [
-    8.959999999999999,
-    1.04,
-    1.45
-   ],
-   "built": [
-    8.959999999999999,
-    1.04,
-    1.45
-   ],
-   "reach": 5
   }
  ],
  "bind": {},
  "premerge": {
   "board": [
-   -2.75,
+   -2.45,
    1.45,
    0.016
   ],
@@ -830,30 +780,15 @@
    1.0350000000000001,
    -0.039999999999999994
   ],
-  "door-neighbour": [
-   1.1,
-   1.0350000000000001,
-   -0.039999999999999994
-  ],
   "parcel": [
    3.100119706111303,
    0.23000000149011612,
    0.4209928064429133
   ],
-  "extinguisher": [
-   2.75,
-   1.2,
-   0.07749999947845936
-  ],
   "mailboxes": [
    7.2,
    1.2,
    2.843000000372529
-  ],
-  "stairdoor": [
-   8.959999999999999,
-   1.04,
-   1.45
   ]
  },
  "doorProps": {
@@ -874,7 +809,7 @@
   }
  },
  "anchorsBefore": {
-  "named": 7,
+  "named": 4,
   "typed": 0
  },
  "models": {
@@ -887,53 +822,51 @@
   "triangles": 0
  },
  "manifestColliders": 0,
- "manifest": false,
+ "manifest": true,
  "three": "170",
  "key": "self-residence-corridor-1",
  "hour": 13,
- "bakedAt": "2026-10-21T13:00:16.732Z",
+ "bakedAt": "2026-10-24T09:19:51.952Z",
+ "quantizePosition": 14,
  "source": {
   "family": "ApartmentCorridor (D) built at runtime by lab/src/scenes",
-  "exportBytes": 11072616,
+  "exportBytes": 11096340,
   "triangles": 12404,
-  "drawCalls": 217,
+  "drawCalls": 188,
   "textures": 25,
   "textureMB": 48.1
  },
  "lods": {
   "lod0": {
    "file": "self-residence-corridor-1.glb",
-   "triangles": 3972,
-   "primitives": 117,
+   "triangles": 3948,
+   "primitives": 114,
    "materials": 97,
    "textures": 18,
    "textureKB": 619,
-   "bytes": 825364
+   "bytes": 822080
   },
   "lod1": {
    "file": "self-residence-corridor-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 3137,
-   "primitives": 117,
+   "triangles": 3065,
+   "primitives": 114,
    "materials": 97,
    "textures": 18,
    "textureKB": 150,
-   "bytes": 345524
+   "bytes": 342828
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
    "door-home",
-   "door-neighbour",
-   "stairdoor",
    "board",
-   "extinguisher",
    "parcel",
    "mailboxes"
   ],
-  "exportBytes": 119824
+  "exportBytes": 92408
  },
  "live": {
   "file": "self-residence-corridor-1.live.json",

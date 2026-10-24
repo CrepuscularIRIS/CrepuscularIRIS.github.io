@@ -5,13 +5,13 @@
  "variant": "N",
  "tod": "day",
  "cost": {
-  "triangles": 85556,
+  "triangles": 84356,
   "drawCalls": 179,
   "textures": 43,
   "textureMB": 36.4
  },
  "exported": {
-  "triangles": 78412,
+  "triangles": 78184,
   "drawCalls": 163,
   "textures": 36,
   "textureMB": 31.5
@@ -25,7 +25,7 @@
    "position": [
     3.3000000000000003,
     1.2,
-    4.3
+    4.5
    ],
    "visible": true,
    "distance": 3.2,
@@ -75,8 +75,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 13152511,
-   "intensity": 9.6875,
+   "color": 12302335,
+   "intensity": 5.0039648092110385,
    "position": [
     0.2,
     1.7,
@@ -195,8 +195,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16747232,
-   "intensity": 3.1000000000000005,
+   "color": 14591471,
+   "intensity": 1.6012687389475326,
    "position": [
     2.55,
     2.6,
@@ -209,8 +209,8 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 6982399,
-   "intensity": 2.3249999999999997,
+   "color": 9151999,
+   "intensity": 1.200951554210649,
    "position": [
     3.1,
     1.7,
@@ -354,37 +354,41 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "d2d9bcaa-5da5-4a11-b3c0-e091f74f00f1",
+   "material": "439ffdb9-96a6-4c0e-8144-3af6d53682b1",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "8d32c2ad-5083-4bed-8370-0bf6a9a58370",
+   "material": "cd4687a6-79bb-44c1-a6d6-c8b1f675ab2e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "4a5ef77e-5f01-4419-9156-c8b9e2fc8970",
+   "material": "e5898e49-5885-4160-bd0f-67248aa51a8f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "2e06b382-cd92-4e66-a87b-00fb1416f02d",
+   "material": "e8290f49-eab6-46b7-bcd1-0e6ae36cca47",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "1befc00b-5e7f-4b1f-9d49-21c968190f5a",
+   "material": "4f525bf3-2692-4359-9967-206e71bb17e9",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [
   {
@@ -848,7 +852,7 @@
    [
     -3.9799999999999995,
     5.9799999999999995,
-    -0.9,
+    -2.1,
     6.6
    ],
    [
@@ -895,9 +899,9 @@
    ],
    [
     3.58,
-    3.8,
+    4.1,
     4.2,
-    4.8
+    4.9
    ],
    [
     -2.45,
@@ -958,12 +962,12 @@
    "object": null,
    "typed": false,
    "anchor": [
-    1.3279055640757274,
+    -1.3279055640757262,
     1.1537500132620335,
     6.518356415517628
    ],
    "built": [
-    1.3279055640757274,
+    -1.3279055640757262,
     1.1537500132620335,
     6.518356415517628
    ],
@@ -976,12 +980,12 @@
    "object": null,
    "typed": false,
    "anchor": [
-    -0.6162831170379564,
+    1.3279055640757274,
     1.1537500132620335,
     6.518356415517628
    ],
    "built": [
-    -0.6162831170379564,
+    1.3279055640757274,
     1.1537500132620335,
     6.518356415517628
    ],
@@ -996,84 +1000,12 @@
    "anchor": [
     3.95,
     0.9,
-    4.3
+    4.5
    ],
    "built": [
     3.95,
     0.9,
-    4.3
-   ],
-   "reach": 5
-  },
-  {
-   "id": "bar-art",
-   "kind": "inspect",
-   "label": "Neon fruit panel",
-   "object": "spot:bar-art",
-   "typed": true,
-   "anchor": [
-    1.75,
-    1.9,
-    0.15
-   ],
-   "built": [
-    1.75,
-    1.9,
-    0.15
-   ],
-   "reach": 5
-  },
-  {
-   "id": "bar-candle",
-   "kind": "inspect",
-   "label": "Counter candle",
-   "object": "spot:bar-candle",
-   "typed": true,
-   "anchor": [
-    0.35,
-    1.18,
-    2.05
-   ],
-   "built": [
-    0.35,
-    1.18,
-    2.05
-   ],
-   "reach": 5
-  },
-  {
-   "id": "bar-door",
-   "kind": "inspect",
-   "label": "Staff door",
-   "object": "spot:bar-door",
-   "typed": true,
-   "anchor": [
-    -3.8,
-    1.1,
-    -1.2
-   ],
-   "built": [
-    -3.8,
-    1.1,
-    -1.2
-   ],
-   "reach": 5
-  },
-  {
-   "id": "bar-lounge-art",
-   "kind": "inspect",
-   "label": "Lounge neon",
-   "object": "spot:bar-lounge-art",
-   "typed": true,
-   "anchor": [
-    -4.5,
-    1.65,
-    3.6
-   ],
-   "built": [
-    -4.5,
-    1.65,
-    3.6
+    4.5
    ],
    "reach": 5
   },
@@ -1189,7 +1121,7 @@
     1.7,
     0.3
    ],
-   "triangles": 1128
+   "triangles": 740
   },
   "bar-jukebox": {
    "object": "spot:bar-jukebox",
@@ -1198,53 +1130,9 @@
    "at": [
     3.95,
     0.9,
-    4.3
+    4.5
    ],
    "triangles": 302
-  },
-  "bar-art": {
-   "object": "spot:bar-art",
-   "how": "carved",
-   "on": "backBar",
-   "at": [
-    1.75,
-    1.9,
-    0.15
-   ],
-   "triangles": 2
-  },
-  "bar-candle": {
-   "object": "spot:bar-candle",
-   "how": "carved",
-   "on": "counter",
-   "at": [
-    0.35,
-    1.18,
-    2.05
-   ],
-   "triangles": 80
-  },
-  "bar-door": {
-   "object": "spot:bar-door",
-   "how": "carved",
-   "on": "room",
-   "at": [
-    -3.8,
-    1.1,
-    -1.2
-   ],
-   "triangles": 500
-  },
-  "bar-lounge-art": {
-   "object": "spot:bar-lounge-art",
-   "how": "carved",
-   "on": "room",
-   "at": [
-    -4.5,
-    1.65,
-    3.6
-   ],
-   "triangles": 2
   }
  },
  "premerge": {
@@ -1274,9 +1162,41 @@
    6.583999999832362
   ]
  },
+ "doorProps": {
+  "door-street-1": {
+   "p": [
+    -1.3279,
+    0,
+    6.57
+   ],
+   "q": [
+    0,
+    1,
+    0,
+    0
+   ],
+   "gate": false,
+   "tint": 0
+  },
+  "door-izakaya-1": {
+   "p": [
+    1.3279,
+    0,
+    6.57
+   ],
+   "q": [
+    0,
+    1,
+    0,
+    0
+   ],
+   "gate": false,
+   "tint": 1
+  }
+ },
  "anchorsBefore": {
   "named": 5,
-  "typed": 7
+  "typed": 3
  },
  "models": {
   "baked": [],
@@ -1300,11 +1220,12 @@
  "three": "170",
  "key": "bar-1",
  "hour": 13,
- "bakedAt": "2026-10-21T07:20:56.280Z",
+ "bakedAt": "2026-10-24T10:10:55.439Z",
+ "quantizePosition": 14,
  "source": {
   "family": "Bar (N) built at runtime by lab/src/scenes",
-  "exportBytes": 10429844,
-  "triangles": 85556,
+  "exportBytes": 10647040,
+  "triangles": 84356,
   "drawCalls": 179,
   "textures": 43,
   "textureMB": 36.4
@@ -1312,23 +1233,23 @@
  "lods": {
   "lod0": {
    "file": "bar-1.glb",
-   "triangles": 78414,
-   "primitives": 163,
-   "materials": 153,
+   "triangles": 77214,
+   "primitives": 162,
+   "materials": 154,
    "textures": 39,
-   "textureKB": 523,
-   "bytes": 1363788
+   "textureKB": 551,
+   "bytes": 1382560
   },
   "lod1": {
    "file": "bar-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 48664,
-   "primitives": 163,
-   "materials": 153,
+   "triangles": 47825,
+   "primitives": 162,
+   "materials": 154,
    "textures": 39,
-   "textureKB": 236,
-   "bytes": 910868
+   "textureKB": 253,
+   "bytes": 923304
   }
  },
  "parts": {
@@ -1341,20 +1262,18 @@
    "gig-poster",
    "spot:last-call-board",
    "spot:display-case",
-   "spot:bar-jukebox",
-   "spot:bar-art",
-   "spot:bar-candle",
-   "spot:bar-door",
-   "spot:bar-lounge-art"
+   "spot:bar-jukebox"
   ],
-  "exportBytes": 1054796
+  "exportBytes": 895664
  },
  "live": {
   "file": "bar-1.live.json",
-  "bytes": 25978,
+  "bytes": 25788,
   "objects": [
    "skyDome",
-   "groundMist",
+   "Mesh",
+   "Mesh",
+   "Mesh",
    "smokePlume",
    "smokePlume"
   ]

@@ -11,10 +11,10 @@
   "textureMB": 66.9
  },
  "exported": {
-  "triangles": 50864,
-  "drawCalls": 109,
-  "textures": 19,
-  "textureMB": 57.6
+  "triangles": 51026,
+  "drawCalls": 114,
+  "textures": 24,
+  "textureMB": 65.7
  },
  "lights": [
   {
@@ -135,19 +135,23 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "e4ab2f4e-b185-4923-81ea-36c3054197b8",
+   "material": "9a3042f0-108e-4624-9b8b-551fb4706af3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "12051022-fd95-44de-927b-3945d3039c67",
+   "material": "f9212395-c004-4885-a448-0feda037da07",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [],
  "camera": {
@@ -326,6 +330,15 @@
    "ao": {
     "strength": 0.55,
     "radius": 0.3
+   },
+   "vol": {
+    "enabled": true,
+    "density": 0.4,
+    "max": 0.75,
+    "phase": 0.7,
+    "steps": 24,
+    "dist": 20,
+    "floor": 0.5
    },
    "bloom": {
     "threshold": 0.78,
@@ -685,6 +698,24 @@
     5
    ],
    "reach": 3.2
+  },
+  {
+   "id": "snow-desk",
+   "kind": "inspect",
+   "label": "Front desk",
+   "object": "spot:snow-desk",
+   "typed": true,
+   "anchor": [
+    4.1,
+    0.8,
+    1.8
+   ],
+   "built": [
+    4.1,
+    0.8,
+    1.8
+   ],
+   "reach": 3.2
   }
  ],
  "bind": {
@@ -727,6 +758,16 @@
     0.8,
     5
    ]
+  },
+  "snow-desk": {
+   "object": "spot:snow-desk",
+   "how": "node",
+   "on": null,
+   "at": [
+    4.1,
+    0.8,
+    1.8
+   ]
   }
  },
  "premerge": {
@@ -740,15 +781,21 @@
    0.8,
    5
   ],
+  "spot:snow-desk": [
+   4.1,
+   0.8,
+   1.8
+  ],
   "lockerDetail": [
    3.3000000417232513,
    0.592500027269125,
    8.570000171661377
   ]
  },
+ "doorProps": {},
  "anchorsBefore": {
   "named": 1,
-  "typed": 4
+  "typed": 5
  },
  "models": {
   "baked": [],
@@ -764,10 +811,11 @@
  "three": "170",
  "key": "classroom-1",
  "hour": 13,
- "bakedAt": "2026-10-21T07:22:06.179Z",
+ "bakedAt": "2026-10-24T10:41:22.439Z",
+ "quantizePosition": 14,
  "source": {
   "family": "Classroom (D) built at runtime by lab/src/scenes",
-  "exportBytes": 14177680,
+  "exportBytes": 14842080,
   "triangles": 54982,
   "drawCalls": 124,
   "textures": 26,
@@ -776,23 +824,23 @@
  "lods": {
   "lod0": {
    "file": "classroom-1.glb",
-   "triangles": 15126,
-   "primitives": 82,
-   "materials": 76,
-   "textures": 16,
-   "textureKB": 795,
-   "bytes": 1047472
+   "triangles": 15288,
+   "primitives": 88,
+   "materials": 82,
+   "textures": 21,
+   "textureKB": 856,
+   "bytes": 1117960
   },
   "lod1": {
    "file": "classroom-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 9488,
-   "primitives": 82,
-   "materials": 76,
-   "textures": 16,
-   "textureKB": 193,
-   "bytes": 410576
+   "triangles": 9570,
+   "primitives": 88,
+   "materials": 82,
+   "textures": 21,
+   "textureKB": 230,
+   "bytes": 457420
   }
  },
  "parts": {
@@ -802,18 +850,19 @@
    "lockerDetail",
    "spot:class-board",
    "spot:door-street",
-   "spot:frag-6"
+   "spot:frag-6",
+   "spot:snow-desk"
   ],
-  "exportBytes": 196080
+  "exportBytes": 196212
  },
  "live": {
   "file": "classroom-1.live.json",
-  "bytes": 897925,
+  "bytes": 30822,
   "objects": [
    "Mesh",
    "Mesh",
    "Mesh",
-   "eveningView",
+   "skyDome",
    "motes"
   ]
  },

@@ -8,13 +8,13 @@
   "triangles": 120787,
   "drawCalls": 605,
   "textures": 79,
-  "textureMB": 104.3
+  "textureMB": 104
  },
  "exported": {
-  "triangles": 104083,
-  "drawCalls": 449,
-  "textures": 60,
-  "textureMB": 64.9
+  "triangles": 104463,
+  "drawCalls": 459,
+  "textures": 70,
+  "textureMB": 98.6
  },
  "lights": [
   {
@@ -244,25 +244,34 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "710988d1-cd4c-4552-b4b2-9b486bc41b7f",
+   "material": "c672fa01-6200-48cb-8382-976e057345d4",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "96d17673-8efb-40c0-ad7e-e981977355f9",
+   "material": "1859df70-cb2d-443e-9530-9b3ac97d8b8a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "aca22c6b-ade6-4148-b519-f195a443d4e6",
+   "material": "c2677d74-ec61-485d-b531-41ca06134363",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
+ "unsheared": {
+  "nodes": 14,
+  "geometries": 12,
+  "instanced": 0
+ },
  "uniformArrays": {},
  "reflectors": [],
  "camera": {
@@ -753,12 +762,12 @@
    "anchor": [
     4.593999999832362,
     1.52,
-    3.95
+    7.12
    ],
    "built": [
     4.593999999832362,
     1.52,
-    3.95
+    7.12
    ],
    "reach": 3.2
   },
@@ -903,7 +912,7 @@
   "build-log": [
    4.593999999832362,
    1.52,
-   3.95
+   7.12
   ],
   "workbench": [
    4.0955076060530455,
@@ -979,35 +988,36 @@
  "three": "170",
  "key": "company-office",
  "hour": 13,
- "bakedAt": "2026-10-21T07:26:40.926Z",
+ "bakedAt": "2026-10-24T09:20:25.647Z",
+ "quantizePosition": 14,
  "source": {
   "family": "CompanyOffice (D) built at runtime by lab/src/scenes",
-  "exportBytes": 20163420,
+  "exportBytes": 23971048,
   "triangles": 120787,
   "drawCalls": 605,
   "textures": 79,
-  "textureMB": 104.3
+  "textureMB": 104
  },
  "lods": {
   "lod0": {
    "file": "company-office.glb",
-   "triangles": 92439,
-   "primitives": 358,
-   "materials": 340,
-   "textures": 61,
-   "textureKB": 1905,
-   "bytes": 3358256
+   "triangles": 92819,
+   "primitives": 368,
+   "materials": 350,
+   "textures": 71,
+   "textureKB": 2241,
+   "bytes": 3724080
   },
   "lod1": {
    "file": "company-office.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 67004,
-   "primitives": 358,
-   "materials": 340,
-   "textures": 61,
-   "textureKB": 657,
-   "bytes": 1927692
+   "triangles": 67186,
+   "primitives": 368,
+   "materials": 350,
+   "textures": 71,
+   "textureKB": 830,
+   "bytes": 2130700
   }
  },
  "parts": {
@@ -1026,14 +1036,14 @@
    "spot:door-meetingroom",
    "spot:frag-9"
   ],
-  "exportBytes": 1222840
+  "exportBytes": 1255360
  },
  "live": {
   "file": "company-office.live.json",
-  "bytes": 4829553,
+  "bytes": 31797,
   "objects": [
    "Mesh",
-   "nightView",
+   "skyDome",
    "smokePlume",
    "motes"
   ]
