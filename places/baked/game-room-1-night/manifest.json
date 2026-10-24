@@ -1,0 +1,901 @@
+{
+ "version": 2,
+ "place": "game-room-1",
+ "family": "GameRoom",
+ "variant": "N",
+ "tod": "night",
+ "cost": {
+  "triangles": 156450,
+  "drawCalls": 221,
+  "textures": 76,
+  "textureMB": 80.4
+ },
+ "exported": {
+  "triangles": 151622,
+  "drawCalls": 205,
+  "textures": 73,
+  "textureMB": 79.8
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 6719372,
+   "intensity": 0.22,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 1317408
+  },
+  {
+   "type": "AmbientLight",
+   "name": "",
+   "color": 8426648,
+   "intensity": 0.045,
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "visible": true
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-01",
+   "color": 16736156,
+   "intensity": 2.6,
+   "position": [
+    -3.5,
+    1.35,
+    1.55
+   ],
+   "visible": true,
+   "distance": 3.8,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-02",
+   "color": 16756066,
+   "intensity": 2.5,
+   "position": [
+    -3.5,
+    1.35,
+    -1.15
+   ],
+   "visible": true,
+   "distance": 3.8,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-03",
+   "color": 16761978,
+   "intensity": 2,
+   "position": [
+    -3.5,
+    1.35,
+    -2.5
+   ],
+   "visible": true,
+   "distance": 3.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-04",
+   "color": 16738972,
+   "intensity": 2.8,
+   "position": [
+    -3.45,
+    1.35,
+    -7.45
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-05",
+   "color": 4572884,
+   "intensity": 3.6,
+   "position": [
+    2.35,
+    1.35,
+    0.6
+   ],
+   "visible": true,
+   "distance": 3.8,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-06",
+   "color": 3520720,
+   "intensity": 3.8,
+   "position": [
+    2.35,
+    1.35,
+    -2.6
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-07",
+   "color": 3713224,
+   "intensity": 3.6,
+   "position": [
+    2.35,
+    1.35,
+    -5.6
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-08",
+   "color": 4886712,
+   "intensity": 2.6,
+   "position": [
+    2.35,
+    1.35,
+    -8.6
+   ],
+   "visible": true,
+   "distance": 3.8,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-09",
+   "color": 16732058,
+   "intensity": 2.2,
+   "position": [
+    -5.05,
+    3.32,
+    -2.2
+   ],
+   "visible": true,
+   "distance": 4.5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-10",
+   "color": 16732058,
+   "intensity": 1.4,
+   "position": [
+    2.25,
+    2.68,
+    -1.5
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-11",
+   "color": 16732058,
+   "intensity": 1.4,
+   "position": [
+    2.25,
+    2.68,
+    -7
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-12",
+   "color": 16736145,
+   "intensity": 0.8,
+   "position": [
+    -3.55,
+    0.85,
+    0.2
+   ],
+   "visible": true,
+   "distance": 2.4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-13",
+   "color": 3520712,
+   "intensity": 0.8,
+   "position": [
+    2.35,
+    0.85,
+    -2.5
+   ],
+   "visible": true,
+   "distance": 2.4,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-14",
+   "color": 6539464,
+   "intensity": 1.5,
+   "position": [
+    0.55,
+    2.05,
+    -5.1
+   ],
+   "visible": true,
+   "distance": 3.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-15",
+   "color": 6998224,
+   "intensity": 2,
+   "position": [
+    0.75,
+    1.5,
+    -9.1
+   ],
+   "visible": true,
+   "distance": 3.8,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-16",
+   "color": 14216936,
+   "intensity": 6.4,
+   "position": [
+    -0.4,
+    2.45,
+    1.2
+   ],
+   "visible": true,
+   "distance": 6.5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-17",
+   "color": 14216936,
+   "intensity": 5.4,
+   "position": [
+    -0.4,
+    2.45,
+    -3.6
+   ],
+   "visible": true,
+   "distance": 6.5,
+   "decay": 2,
+   "shadow": {
+    "mapSize": [
+     1024,
+     1024
+    ],
+    "bias": -0.0008,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 0.5,
+     "far": 6.5,
+     "fov": 90
+    }
+   }
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-18",
+   "color": 14216936,
+   "intensity": 5,
+   "position": [
+    -0.2,
+    2.45,
+    -8
+   ],
+   "visible": true,
+   "distance": 6.5,
+   "decay": 2
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "ce84d772-dab8-4900-b7bd-9e2624fba3b4",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "b327c5ff-4f52-478a-8f8b-16b0a5f3cf3d",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "651ce646-5de1-4e7f-a46a-1703e188f4d2",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "2245ec6e-6b4b-4a8f-ad96-818d7245aa33",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "ec8319a4-9b5e-4a35-9cca-ef85857789fe",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
+ "uniformArrays": {},
+ "reflectors": [
+  {
+   "w": 9,
+   "d": 14.6,
+   "x": -0.7999999999999998,
+   "y": 0,
+   "z": -2.7,
+   "strength": 0.42,
+   "blur": 1.4,
+   "f0": 0.06,
+   "tint": 11589852,
+   "fade": 40,
+   "zones": 1,
+   "smear": 0.12,
+   "near": 0,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 768,
+   "mask": "game-room-1-night.mask0.webp"
+  }
+ ],
+ "camera": {
+  "ref": {
+   "position": [
+    1.491,
+    1.409,
+    2.716
+   ],
+   "target": [
+    -2,
+    1.211,
+    -0.927
+   ],
+   "fov": 57.75,
+   "roll": -0.0081
+  },
+  "views": [
+   {
+    "name": "table",
+    "label": "Pool table",
+    "position": [
+     1.6,
+     1.5,
+     1.8
+    ],
+    "target": [
+     0.1,
+     0.8,
+     0.3
+    ],
+    "fov": 48
+   },
+   {
+    "name": "cabinets",
+    "label": "Cabinet row",
+    "position": [
+     -2.4,
+     1.55,
+     1.8
+    ],
+    "target": [
+     -4.3,
+     1.4,
+     -1.2
+    ],
+    "fov": 55
+   },
+   {
+    "name": "screens",
+    "label": "CRT and marquee",
+    "position": [
+     -2.55,
+     1.55,
+     0.2
+    ],
+    "target": [
+     -3.82,
+     1.52,
+     0.2
+    ],
+    "fov": 42,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "blue-row",
+    "label": "Blue row",
+    "position": [
+     0.4,
+     1.6,
+     -1
+    ],
+    "target": [
+     2.7,
+     1.5,
+     -5
+    ],
+    "fov": 55
+   },
+   {
+    "name": "back-bay",
+    "label": "Back bay",
+    "position": [
+     -0.6,
+     1.6,
+     -4.4
+    ],
+    "target": [
+     -1,
+     1.2,
+     -9
+    ],
+    "fov": 60
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     -1,
+     1.7,
+     -6
+    ],
+    "target": [
+     0.5,
+     1,
+     3.5
+    ],
+    "fov": 62
+   },
+   {
+    "name": "deck",
+    "label": "Control deck",
+    "position": [
+     -2.95,
+     1.5,
+     -0.2
+    ],
+    "target": [
+     -3.85,
+     1.15,
+     -1
+    ],
+    "fov": 45,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -5.1499999999999995,
+   0.15,
+   -9.85
+  ],
+  "max": [
+   3.5500000000000003,
+   3.5,
+   4.449999999999999
+  ]
+ },
+ "env": {
+  "background": 463126,
+  "ibl": {
+   "top": 1586234,
+   "wall": 2370613,
+   "floor": 1120284,
+   "intensity": 0.3,
+   "lights": [
+    {
+     "pos": [
+      -3.5,
+      1.35,
+      -1
+     ],
+     "size": [
+      1.2,
+      2.4
+     ],
+     "color": 16738972,
+     "power": 2.4,
+     "lookAt": [
+      0,
+      1.2,
+      -1
+     ]
+    },
+    {
+     "pos": [
+      2.35,
+      1.35,
+      -3
+     ],
+     "size": [
+      1.2,
+      2.4
+     ],
+     "color": 4569288,
+     "power": 2.4,
+     "lookAt": [
+      -2,
+      1.2,
+      -3
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 463126,
+    "opacity": 0.35,
+    "depthTh": 0.014,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.55,
+    "radius": 0.35
+   },
+   "bloom": {
+    "threshold": 0.72,
+    "strength": 0.42,
+    "weights": [
+     0.5,
+     0.32,
+     0.2,
+     0.12,
+     0.06
+    ]
+   },
+   "grade": {
+    "exposure": 0.82,
+    "contrast": 1.06,
+    "saturation": 0.94,
+    "lift": [
+     0.004,
+     0.006,
+     0.007
+    ],
+    "gain": [
+     0.99,
+     1.01,
+     1.02
+    ],
+    "vignette": 0.24,
+    "staticGrain": 0.0015,
+    "guard": 0.06
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 4,
+    "range": 6,
+    "near": 0.25,
+    "far": 0.2,
+    "maxRadius": 2
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -5.3,
+   -10,
+   3.7,
+   4.6
+  ],
+  "eye": 1.55,
+  "start": {
+   "position": [
+    1.5,
+    0,
+    3
+   ],
+   "target": [
+    -2,
+    1.2,
+    -1
+   ]
+  },
+  "colliders": [],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "game-table",
+   "kind": "games",
+   "label": "Board games · play",
+   "object": "anchor:board-games",
+   "typed": false,
+   "anchor": [
+    -1.2,
+    1.1,
+    0.2
+   ],
+   "built": [
+    -1.2,
+    1.1,
+    0.2
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-street",
+   "kind": "link",
+   "label": "Up to the main street",
+   "object": "anchor:street-door",
+   "typed": false,
+   "anchor": [
+    0.2,
+    1.3,
+    4.58
+   ],
+   "built": [
+    0.2,
+    1.3,
+    4.58
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "arcade-claw",
+   "kind": "use",
+   "label": "Claw machine",
+   "object": "anchor:claw-machine",
+   "typed": false,
+   "anchor": [
+    2.5,
+    0.9,
+    -3.5000000000000004
+   ],
+   "built": [
+    2.5,
+    0.9,
+    -3.5000000000000004
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "arcade-scores",
+   "kind": "note",
+   "label": "High score board",
+   "object": "anchor:hiscore-board",
+   "typed": false,
+   "anchor": [
+    -1,
+    1.3,
+    -6.8
+   ],
+   "built": [
+    -1,
+    1.3,
+    -6.8
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "arcade-coin",
+   "kind": "use",
+   "label": "Cabinet",
+   "object": "anchor:coin-cabinet",
+   "typed": false,
+   "anchor": [
+    -3.85,
+    1,
+    -1.5
+   ],
+   "built": [
+    -3.85,
+    1,
+    -1.5
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "arcade-poster",
+   "kind": "inspect",
+   "label": "Faded poster",
+   "object": "anchor:fighter-poster",
+   "typed": false,
+   "anchor": [
+    -4.9,
+    1.5,
+    -4.5
+   ],
+   "built": [
+    -4.9,
+    1.5,
+    -4.5
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "rig-seven",
+   "kind": "use",
+   "label": "Rig seven",
+   "object": "spot:rig-seven",
+   "typed": true,
+   "anchor": [
+    -4.3,
+    0.35,
+    -2.2
+   ],
+   "built": [
+    -4.3,
+    0.35,
+    -2.2
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "rig-seven": {
+   "object": "spot:rig-seven",
+   "how": "carved",
+   "on": "cabinet < layout",
+   "at": [
+    -4.3,
+    0.35,
+    -2.2
+   ],
+   "triangles": 4780
+  }
+ },
+ "premerge": {
+  "anchor:board-games": [
+   -1.2,
+   1.1,
+   0.2
+  ],
+  "anchor:street-door": [
+   0.2,
+   1.3,
+   4.58
+  ],
+  "anchor:claw-machine": [
+   2.5,
+   0.9,
+   -3.5000000000000004
+  ],
+  "anchor:hiscore-board": [
+   -1,
+   1.3,
+   -6.8
+  ],
+  "anchor:coin-cabinet": [
+   -3.85,
+   1,
+   -1.5
+  ],
+  "anchor:fighter-poster": [
+   -4.9,
+   1.5,
+   -4.5
+  ]
+ },
+ "doorProps": {},
+ "anchorsBefore": {
+  "named": 6,
+  "typed": 1
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 30,
+  "triangles": 22032
+ },
+ "manifestColliders": 0,
+ "manifest": true,
+ "three": "170",
+ "key": "game-room-1-night",
+ "hour": 22,
+ "bakedAt": "2026-10-24T22:54:49.241Z",
+ "quantizePosition": 14,
+ "source": {
+  "family": "GameRoom (N) built at runtime by lab/src/scenes",
+  "exportBytes": 18356172,
+  "triangles": 156450,
+  "drawCalls": 221,
+  "textures": 76,
+  "textureMB": 80.4
+ },
+ "lods": {
+  "lod0": {
+   "file": "game-room-1-night.glb",
+   "triangles": 156402,
+   "primitives": 214,
+   "materials": 199,
+   "textures": 73,
+   "textureKB": 793,
+   "bytes": 2136932
+  },
+  "lod1": {
+   "file": "game-room-1-night.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 89436,
+   "primitives": 214,
+   "materials": 199,
+   "textures": 73,
+   "textureKB": 693,
+   "bytes": 1679556
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "anchor:street-door",
+   "anchor:fighter-poster",
+   "anchor:coin-cabinet",
+   "anchor:claw-machine",
+   "anchor:board-games",
+   "anchor:hiscore-board",
+   "spot:rig-seven"
+  ],
+  "exportBytes": 707372
+ },
+ "live": {
+  "file": "game-room-1-night.live.json",
+  "bytes": 43167,
+  "objects": [
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "motes"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs game-room-1 --variant night (dev server running, BASE=...)"
+ ]
+}
