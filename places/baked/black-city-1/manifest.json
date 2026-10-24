@@ -3,38 +3,52 @@
  "place": "black-city-1",
  "family": "BlackCityHall",
  "variant": "N",
- "tod": "day",
+ "tod": "night",
  "cost": {
-  "triangles": 108082,
-  "drawCalls": 284,
-  "textures": 51,
-  "textureMB": 63.6
+  "triangles": 132576,
+  "drawCalls": 326,
+  "textures": 45,
+  "textureMB": 51.5
  },
  "exported": {
-  "triangles": 72048,
-  "drawCalls": 225,
-  "textures": 41,
-  "textureMB": 58.3
+  "triangles": 86452,
+  "drawCalls": 249,
+  "textures": 32,
+  "textureMB": 45.2
  },
  "lights": [
   {
+   "type": "PointLight",
+   "name": "",
+   "color": 10151167,
+   "intensity": 1.2,
+   "position": [
+    -1.8000000000000003,
+    1.38,
+    4.2
+   ],
+   "visible": true,
+   "distance": 2.4,
+   "decay": 1.7
+  },
+  {
    "type": "HemisphereLight",
    "name": "",
-   "color": 4610458,
-   "intensity": 0.2,
+   "color": 4287860,
+   "intensity": 0.26,
    "position": [
     0,
     1,
     0
    ],
    "visible": true,
-   "groundColor": 922662
+   "groundColor": 463127
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 6271720,
-   "intensity": 15,
+   "color": 6473930,
+   "intensity": 14,
    "position": [
     0,
     4.5,
@@ -47,12 +61,12 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 6728414,
-   "intensity": 17,
+   "color": 7460048,
+   "intensity": 16,
    "position": [
     0,
-    3.4,
-    1.125
+    2.7,
+    0.36000000000000004
    ],
    "visible": true,
    "distance": 16,
@@ -61,26 +75,26 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 13285616,
-   "intensity": 10,
+   "color": 14722244,
+   "intensity": 7,
    "position": [
     0,
-    1.9,
-    1.08
+    1.15,
+    0.54
    ],
    "visible": true,
-   "distance": 8,
+   "distance": 7,
    "decay": 1.8
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 10470632,
-   "intensity": 12,
+   "color": 11854298,
+   "intensity": 14,
    "position": [
     0,
-    5.4,
-    2.07
+    4.5,
+    1.1700000000000002
    ],
    "visible": true,
    "distance": 15,
@@ -89,54 +103,68 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16774892,
-   "intensity": 13,
+   "color": 16767404,
+   "intensity": 10.5,
    "position": [
     0,
-    3.7,
-    6.84
+    3.05,
+    5.4
    ],
    "visible": true,
-   "distance": 11,
+   "distance": 10,
    "decay": 1.8
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 16752342,
-   "intensity": 22.5,
+   "color": 15432110,
+   "intensity": 8,
    "position": [
     0,
-    1.8,
-    8.91
+    1.2,
+    11.97
    ],
    "visible": true,
-   "distance": 12,
+   "distance": 4.2,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 6868690,
+   "intensity": 3.25,
+   "position": [
+    -2.48,
+    1.12,
+    2.7
+   ],
+   "visible": true,
+   "distance": 7,
    "decay": 1.8
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 16752342,
-   "intensity": 15,
+   "color": 6868690,
+   "intensity": 3.25,
    "position": [
-    0,
-    0.9,
-    7.74
+    2.48,
+    1.12,
+    2.7
    ],
    "visible": true,
-   "distance": 9,
+   "distance": 7,
    "decay": 1.8
   },
   {
    "type": "DirectionalLight",
    "name": "",
-   "color": 9082568,
-   "intensity": 0.3,
+   "color": 8629682,
+   "intensity": 0.34,
    "position": [
-    2,
-    9,
-    10.8
+    -3,
+    8,
+    9
    ],
    "visible": true,
    "target": [
@@ -144,21 +172,6 @@
     0,
     0
    ]
-  },
-  {
-   "type": "PointLight",
-   "name": "dress:light",
-   "color": 16769736,
-   "intensity": 2.2,
-   "position": [
-    0,
-    2.6,
-    10.6
-   ],
-   "visible": true,
-   "distance": 5,
-   "decay": 1.6,
-   "dress": true
   }
  ],
  "lowDrop": [
@@ -166,145 +179,145 @@
  ],
  "clocks": [
   {
-   "material": "1bbae274-e483-4bd5-b361-1c52b767516a",
+   "material": "60a83eb0-fb7c-421a-9de6-edf8c0146a5c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "b92b4cf1-1213-4324-b987-44968594b40b",
+   "material": "8c55becb-11b2-4f22-9ce5-bd8d206fd47d",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "558dfb76-f634-4c36-86a8-51725f1d52b7",
+   "material": "1570605e-29e9-4f50-9f56-dd06233be71b",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "94aadc30-37f9-4ee9-a64f-485fa41be399",
+   "material": "d99fb2c5-037d-4f9d-b996-50f0029d54d1",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "4740c2eb-125d-4c70-961d-2780af8d3b86",
+   "material": "f307bf32-1dc2-4ff1-8291-e6c8d7aa7dbd",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "7d4972f3-579d-490b-8195-8557d217881f",
+   "material": "7f8a6626-88a8-4d42-9c47-7b5ce0d43c56",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "99b76c95-79dc-4e2d-9abe-ab62c1bd1002",
+   "material": "4094d63f-a793-4cb2-a8f4-84eb7cc37813",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "04d382d5-31f0-4ade-b9bf-7c8ba4f34fc6",
+   "material": "3db27395-0a68-4240-bbe7-b28b2738fc35",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "fb07ef74-05d7-4735-a8c6-53c7b8f41a10",
+   "material": "0b0c6532-cffb-4650-87b9-b838e1a974d0",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "618f4196-28ac-4a8c-8aa3-2f4dff43dcb4",
+   "material": "a1fbe298-1ac3-4cdc-9b01-fc14b0af2eca",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "2d42b189-4942-42f7-bfa3-ef37bc8bc69b",
+   "material": "a5730849-c249-4be1-8f7a-52838c77d1b6",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "6d8db53d-70df-4fa3-8a48-1ea803d2963c",
+   "material": "1dbb6b80-baf3-4305-9755-bcfccf1495d2",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "6f7301be-8dc7-4c3f-89c4-e4493a8004b3",
+   "material": "fd0f963b-2a60-49df-a1a2-eaa28d3cb0ed",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "07a88653-ec43-470c-8424-6ac42e6d5a42",
+   "material": "0b7bb509-0276-4881-ad07-48f509f45576",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "b925c243-847c-4063-9ea3-e03c3edb0616",
+   "material": "50308797-e14b-4e31-8dff-9e4eabe0a750",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "1086b12c-1b11-401d-aec3-cce06940a131",
+   "material": "f081a757-af54-4fb4-8e60-fe565deac47b",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "b9990f01-239a-422d-94b9-9150319ad330",
+   "material": "f8d6f1d6-71c7-4ccd-b549-057370081fe8",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "537a6d83-44be-4cc7-84e4-3faaced44385",
+   "material": "5a37f4f4-7d2b-43d8-ad8f-db45533bb12c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "191c4d58-ddae-4f95-b6ef-f0519c6d4629",
+   "material": "626c7928-ead0-4362-84aa-48048ff7cc2c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "89fd6b83-d5e9-48c6-a7da-266e95a3059c",
+   "material": "d965d254-13cd-497a-ad1c-3c98aa69dfb3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "af8bfbfc-7fb7-4ec4-97a8-2ee0a584f3da",
+   "material": "5ce1c921-edbe-40a4-82d7-f8d49410be9a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "45f67139-c5eb-4045-8957-d57202a18b48",
+   "material": "377a3ffe-6e4f-46aa-b28f-d1c0ba33e35d",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "d2bf0e21-6028-4a60-b829-91180478fbc7",
+   "material": "1ffb8fee-7536-4563-adf1-ec04c2d2df56",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "cfac545a-0882-48cf-88c9-bfccef767e01",
+   "material": "0a3f7879-2ce7-49ec-8b65-50f682f66d68",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -313,7 +326,7 @@
  "motions": [],
  "tracks": [
   {
-   "id": "ca41f5c3-7317-4055-af4c-03816193926f",
+   "id": "3faab3ab-c763-489b-bf09-c00fa53e0390",
    "name": "Mesh",
    "ch": {
     "o": {
@@ -541,7 +554,7 @@
    }
   },
   {
-   "id": "1a45f4a3-8f55-45b3-b6bb-839a99356fde",
+   "id": "c916764b-eaea-4288-b844-dda75845459b",
    "name": "Mesh",
    "ch": {
     "o": {
@@ -819,6 +832,26 @@
     "fov": 52
    },
    {
+    "name": "register",
+    "label": "Hall register",
+    "position": [
+     -1.05,
+     1.78,
+     3.9
+    ],
+    "target": [
+     -1.66,
+     1.02,
+     3.9
+    ],
+    "fov": 40,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
     "name": "tank",
     "label": "Inside the tank",
     "position": [
@@ -938,12 +971,12 @@
   ]
  },
  "env": {
-  "background": 659228,
+  "background": 396562,
   "ibl": {
-   "top": 2766936,
-   "wall": 3031140,
-   "floor": 4867192,
-   "intensity": 0.48,
+   "top": 2705230,
+   "wall": 2704973,
+   "floor": 2440000,
+   "intensity": 0.44999999999999996,
    "lights": [
     {
      "pos": [
@@ -955,7 +988,7 @@
       9,
       5
      ],
-     "color": 6271720,
+     "color": 6473930,
      "power": 3,
      "lookAt": [
       0,
@@ -973,7 +1006,7 @@
       4,
       3
      ],
-     "color": 13624575,
+     "color": 12838367,
      "power": 3,
      "lookAt": [
       0,
@@ -984,24 +1017,24 @@
    ]
   },
   "fog": {
-   "color": 1253182,
-   "near": 26,
-   "far": 60
+   "color": 729128,
+   "near": 22,
+   "far": 56
   },
   "post": {
    "outline": {
-    "color": 658716,
-    "opacity": 0.5,
+    "color": 330512,
+    "opacity": 0.44,
     "depthTh": 0.014,
     "normalTh": 0.3
    },
    "ao": {
-    "strength": 0.45,
-    "radius": 0.35
+    "strength": 0.55,
+    "radius": 0.42
    },
    "bloom": {
-    "threshold": 0.88,
-    "strength": 0.35,
+    "threshold": 0.84,
+    "strength": 0.3,
     "weights": [
      0.5,
      0.3,
@@ -1011,19 +1044,20 @@
     ]
    },
    "grade": {
-    "exposure": 0.9675999999999999,
-    "saturation": 1.05,
+    "exposure": 0.918,
+    "contrast": 1.08,
+    "saturation": 0.94,
     "lift": [
-     0.023,
-     0.018000000000000002,
-     0.044
+     0.006,
+     0.013000000000000001,
+     0.019
     ],
     "gain": [
-     1,
-     0.98,
-     0.98
+     0.94,
+     1.02,
+     1.04
     ],
-    "vignette": 0.3
+    "vignette": 0.36
    },
    "dof": {
     "enabled": true,
@@ -1031,7 +1065,7 @@
     "range": 9,
     "near": 1.2,
     "far": 0.35,
-    "maxRadius": 3,
+    "maxRadius": 2.5,
     "tilt": {
      "center": [
       0.5,
@@ -1042,7 +1076,7 @@
       0.42
      ],
      "soft": 0.35,
-     "strength": 0.5
+     "strength": 0.42
     }
    }
   }
@@ -1078,14 +1112,14 @@
    "object": "spot:hall-register",
    "typed": true,
    "anchor": [
-    0,
+    -1.62,
     1.05,
-    2.7
+    3.9
    ],
    "built": [
-    0,
+    -1.62,
     1.05,
-    2.7
+    3.9
    ],
    "reach": 3.2
   },
@@ -1093,17 +1127,17 @@
    "id": "door-black-city-corridor-1",
    "kind": "link",
    "label": "Black city corridor",
-   "object": null,
+   "object": "vestibule",
    "typed": false,
    "anchor": [
-    -2.413546265191239,
-    1.1537500132620335,
-    11.61835651088506
+    0,
+    2.5,
+    12.430125
    ],
    "built": [
-    -2.413546265191239,
-    1.1537500132620335,
-    11.61835651088506
+    0,
+    2.5,
+    12.430125
    ],
    "reach": 3.2
   },
@@ -1111,17 +1145,17 @@
    "id": "door-black-city-2",
    "kind": "link",
    "label": "Black city aquarium",
-   "object": null,
+   "object": "dais",
    "typed": false,
    "anchor": [
-    1.9889702333188675,
-    1.3350000120699406,
-    11.272101178394783
+    0,
+    0.08874999985098839,
+    1.035
    ],
    "built": [
-    1.9889702333188675,
-    1.3350000120699406,
-    11.272101178394783
+    0,
+    0.08874999985098839,
+    1.035
    ],
    "reach": 3.2
   },
@@ -1129,17 +1163,17 @@
    "id": "door-neverland-room",
    "kind": "link",
    "label": "Neverland room",
-   "object": null,
+   "object": "neverland-door",
    "typed": false,
    "anchor": [
-    1.9977313113926791,
-    1.3350000120699406,
-    3.729914094537576
+    2.2,
+    1.1100000000000003,
+    11.677499999899418
    ],
    "built": [
-    1.9977313113926791,
-    1.3350000120699406,
-    3.729914094537576
+    2.2,
+    1.1100000000000003,
+    11.677499999899418
    ],
    "reach": 3.2
   },
@@ -1180,42 +1214,6 @@
    "reach": 5
   },
   {
-   "id": "side-tank",
-   "kind": "inspect",
-   "label": "Side tank",
-   "object": "spot:side-tank",
-   "typed": true,
-   "anchor": [
-    3.15,
-    2.1,
-    2
-   ],
-   "built": [
-    3.15,
-    2.1,
-    2
-   ],
-   "reach": 5
-  },
-  {
-   "id": "bench-ledge",
-   "kind": "inspect",
-   "label": "Bench ledge",
-   "object": "spot:bench-ledge",
-   "typed": true,
-   "anchor": [
-    2.9,
-    1.05,
-    6
-   ],
-   "built": [
-    2.9,
-    1.05,
-    6
-   ],
-   "reach": 5
-  },
-  {
    "id": "hall-reefguide",
    "kind": "note",
    "label": "Species placard",
@@ -1240,14 +1238,14 @@
    "object": "feeding-board",
    "typed": false,
    "anchor": [
-    1.6111368553329675,
-    0.7545160494412215,
-    8.407798146438013
+    2.3037199558151134,
+    0.6036128395529772,
+    10.410220564312324
    ],
    "built": [
-    1.6111368553329675,
-    0.7545160494412215,
-    8.407798146438013
+    2.3037199558151134,
+    0.6036128395529772,
+    10.410220564312324
    ],
    "reach": 3.2
   },
@@ -1292,11 +1290,11 @@
   "hall-register": {
    "object": "spot:hall-register",
    "how": "mesh",
-   "on": "register < BlackCityHall",
+   "on": "register-body < register",
    "at": [
-    0,
+    -1.62,
     1.05,
-    2.7
+    3.9
    ]
   },
   "egg-gate": {
@@ -1318,33 +1316,23 @@
     3.5,
     0.7
    ]
-  },
-  "side-tank": {
-   "object": "spot:side-tank",
-   "how": "node",
-   "on": null,
-   "at": [
-    3.15,
-    2.1,
-    2
-   ]
-  },
-  "bench-ledge": {
-   "object": "spot:bench-ledge",
-   "how": "mesh",
-   "on": "dress:sign-face < dress:sign < dress",
-   "at": [
-    2.9,
-    1.05,
-    6
-   ]
   }
  },
  "premerge": {
-  "spot:side-tank": [
-   3.15,
-   2.1,
-   2
+  "vestibule": [
+   0,
+   2.5,
+   12.430125
+  ],
+  "dais@0,0.1,1": [
+   0,
+   0.08874999985098839,
+   1.035
+  ],
+  "neverland-door": [
+   2.2,
+   1.1100000000000003,
+   11.677499999899418
   ],
   "reef-guide": [
    -2.86573576436351,
@@ -1352,9 +1340,9 @@
    3.6
   ],
   "feeding-board": [
-   1.6111368553329675,
-   0.7545160494412215,
-   8.407798146438013
+   2.3037199558151134,
+   0.6036128395529772,
+   10.410220564312324
   ],
   "hall-bench": [
    -1.455427248775959,
@@ -1367,56 +1355,10 @@
    11.66399999994412
   ]
  },
- "doorProps": {
-  "door-black-city-corridor-1": {
-   "p": [
-    -2.4135,
-    0,
-    11.67
-   ],
-   "q": [
-    0,
-    1,
-    0,
-    0
-   ],
-   "gate": false,
-   "tint": 0
-  },
-  "door-black-city-2": {
-   "p": [
-    1.989,
-    0,
-    11.2721
-   ],
-   "q": [
-    0,
-    0.982334,
-    0,
-    -0.187135
-   ],
-   "gate": true,
-   "tint": 1
-  },
-  "door-neverland-room": {
-   "p": [
-    1.9977,
-    0,
-    3.7299
-   ],
-   "q": [
-    0,
-    -0.037839,
-    0,
-    0.999284
-   ],
-   "gate": true,
-   "tint": 2
-  }
- },
+ "doorProps": {},
  "anchorsBefore": {
-  "named": 4,
-  "typed": 5
+  "named": 7,
+  "typed": 3
  },
  "models": {
   "baked": [],
@@ -1426,7 +1368,7 @@
   "props": 5,
   "instanced": 4,
   "signs": 10,
-  "lights": 1,
+  "lights": 0,
   "retextured": 0,
   "triangles": 10768,
   "failed": 0
@@ -1439,58 +1381,60 @@
  "manifest": true,
  "three": "170",
  "key": "black-city-1",
- "hour": 13,
- "bakedAt": "2026-10-21T15:36:31.980Z",
+ "hour": 22,
+ "bakedAt": "2026-10-24T20:53:55.047Z",
  "quantizePosition": 14,
  "source": {
   "family": "BlackCityHall (N) built at runtime by lab/src/scenes",
-  "exportBytes": 22546564,
-  "triangles": 108082,
-  "drawCalls": 284,
-  "textures": 51,
-  "textureMB": 63.6
+  "exportBytes": 16276948,
+  "triangles": 132576,
+  "drawCalls": 326,
+  "textures": 45,
+  "textureMB": 51.5
  },
  "lods": {
   "lod0": {
    "file": "black-city-1.glb",
-   "triangles": 31110,
-   "primitives": 158,
-   "materials": 142,
-   "textures": 38,
-   "textureKB": 866,
-   "bytes": 1380072
+   "triangles": 34988,
+   "primitives": 178,
+   "materials": 160,
+   "textures": 41,
+   "textureKB": 937,
+   "bytes": 1495580
   },
   "lod1": {
    "file": "black-city-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 22331,
-   "primitives": 158,
-   "materials": 142,
-   "textures": 38,
-   "textureKB": 249,
-   "bytes": 728028
+   "triangles": 24729,
+   "primitives": 178,
+   "materials": 160,
+   "textures": 41,
+   "textureKB": 292,
+   "bytes": 816616
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
+   "dais",
+   "neverland-door",
+   "vestibule",
    "spot:hex-window",
    "spot:egg-gate",
    "spot:hall-register",
+   "dais",
    "hall-bench",
    "feeding-board",
    "reef-guide",
-   "spot:bench-ledge",
    "hours-plaque",
-   "spot:side-tank",
    "hook:fish"
   ],
-  "exportBytes": 1616376
+  "exportBytes": 1516752
  },
  "live": {
   "file": "black-city-1.live.json",
-  "bytes": 103727,
+  "bytes": 105982,
   "objects": [
    "Mesh",
    "Mesh",
@@ -1527,6 +1471,8 @@
    "smokePlume",
    "motes",
    "motes",
+   "Mesh",
+   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",
