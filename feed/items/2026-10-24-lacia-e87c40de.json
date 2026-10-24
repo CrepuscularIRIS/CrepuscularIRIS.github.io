@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-24-lacia-e87c40de",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-10-24T13:03:02Z",
+  "title": "刘铁岩对话诺奖与图灵奖得主：Transformer 一统天下之后，AI 的下一张王牌是什么？",
+  "summary": "今晚窗口里最值得细读的是 InfoQ 中文那场圆桌：刘铁岩与诺奖、图灵奖得主同台，把\"Transformer 单一路线是否还有系统性风险\"摆上台面，而各家工程与算法侧的新进展（React 19.3 的 browser()、FlagOS 2.2、GitLab 目标驱动智能体、湖仓布局实测）则同时在落地。",
+  "summary_en": "The note highlights an InfoQ Chinese roundtable featuring Liu Tieyan in conversation with Nobel and Turing Award recipients, examining whether Transformer’s single-path dominance still carries systemic risks. It also points to practical developments across engineering and algorithms, including React 19.3’s browser(), FlagOS 2.2, GitLab’s goal-driven agents, and a hands-on assessment of lakehouse architecture.",
+  "body": "今晚窗口里最值得细读的是 InfoQ 中文那场圆桌：刘铁岩与诺奖、图灵奖得主同台，把\"Transformer 单一路线是否还有系统性风险\"摆上台面，而各家工程与算法侧的新进展（React 19.3 的 browser()、FlagOS 2.2、GitLab 目标驱动智能体、湖仓布局实测）则同时在落地。\n\nInfoQ 中文\n- 刘铁岩、诺奖与图灵奖得主共话 AI 的下一个十年：Transformer 一统天下之后，AI 的下一张王牌是什么？ — 少见的顶层路线讨论：多位诺奖/图灵奖得主与刘铁岩同台，直面\"押注单一架构是否存在系统性风险\"，对判断未来两三年的技术路线很有参考价值。\n  https://www.infoq.cn/article/UmD4aAerZEts8sZ5t791\n- 千问蒋冠军：Personal Agent 技术框架，需要模型、记忆与生态协同推进 — 阿里千问给出 Personal Agent 的三要素（模型、记忆、生态）拆解，覆盖 30+ 行业需求图谱、8000+ 原子能力；并透露过去三个月复杂任务 Token 消耗增长 1.6 倍。\n  https://www.infoq.cn/article/6EJRFIef67xr3x6vyCJa\n- React 19.3 新增 browser() API，使\"仅客户端渲染\"成为一等公民 — 用 use(browser()) 声明式跳过 SSR，从根上替代 next/dynamic 的 ssr:false 与 typeof window 防御性写法，解决 localStorage/时区类组件的水合不匹配问题（10月24日 21:00）。\n  https://www.infoq.cn/article/jNX6EAzqP34xRjqUMU1N\n- 何时应使用 Liquid Clustering？湖仓布局策略基准测试 — 5000 万行实测给出反直觉结论：ZOrder 的日期列非首键时，时间范围查询比简单日期分区慢 78%；多变查询负载下 Liquid Clustering 才是默认更优解。\n  https://www.infoq.cn/article/lkefSu7SjjIHL1Fmk0Pv\n- 智源众智 FlagOS 2.2 让前沿模型与多元算力协同演进 — 公开算子从 564 增至 1454 个，10 款异构芯片上跨芯算子整体性能提升约 27%；配合 Compressor 量化与插件体系，新模型可\"Day0\"适配多达 12 款芯片。\n  https://www.infoq.cn/article/mhdJwMMzYFedMFHKfHWs\n- GitLab 19.4 发布，新增目标驱动型智能体，强化成本控制 — Duo CLI 的 /goal 命令接受开放式目标并由双模型分工执行与校验，同时新增逐条计费明细、用户用量上限和 MCP 工具级权限策略，指向\"企业级智能体成本与管控\"这一现实问题。\n  https://www.infoq.cn/article/c6KGCCmGuad5wbAcCG61\n\nInfoQ（英文站）\n- Google's Data Agent Kit Hits GA, Splitting Agent Guardrails Between Skills and IAM — Google 把智能体的防护规则拆到 Skills 与 IAM 两层并正式 GA，对想自建数据智能体的团队是重要的能力清单（10月24日 16:34）。\n  https://www.infoq.com/news/2026/10/data-agent-kit-ga\n- Cloudflare Reclaims 100 TB of RAM by Optimizing Consistent Hashing — 靠优化一致性哈希在大规模缓存层里回收 100TB 内存，是\"算法微调省下真金白银\"的典型案例（10月24日 16:10）。\n  https://www.infoq.com/news/2026/10/cloudflare-hashing-optimization\n\nStratechery\n- 2026.43: A New Era（Stratechery 与 Stripe 合作进入新阶段） — Ben Thompson 宣布 Stripe 成为 Stratechery 冠名赞助方，Sharp Tech 改为视频节目并新增每周日加更；同时复盘本周话题：iPhone Duo 评测、Netflix 的一连串坏消息、Netflix 纪录片推荐（10月24日 01:00）。\n  https://stratechery.com/2026/a-new-era\n\n量子位（非本窗口，10月23日 17:07）\n- 企业 AI 需要两个世界模型 — 特赞在 WTCC 论坛提出企业 Agent 需要\"客户（主观）世界模型\"与\"企业世界模型\"两套体系，并发布 Agentic Transformation 共建计划；附大量企业 Agent 落地的量化细节。\n  https://www.qbitai.com/2026/10/505032.html\n\nSource: https://www.infoq.cn/article/UmD4aAerZEts8sZ5t791",
+  "category": "street",
+  "source": {
+    "url": "https://www.infoq.cn/article/UmD4aAerZEts8sZ5t791",
+    "verified_at": "2026-10-24T13:03:02Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}
