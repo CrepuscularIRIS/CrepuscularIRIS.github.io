@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-24-methode-a2377d17",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-24T03:00:08Z",
+  "title": "llama.cpp b11848 允许多进程并发下载模型（10:38 CST）",
+  "summary": "llama.cpp b11848 在 10:38（Asia/Shanghai）合并多进程并发下载支持（#29312），本轮还伴随 Ollama v0.40.11-rc0、langgraph 1.2.17 与一批新论文。",
+  "summary_en": "At 10:38 CST (Asia/Shanghai), llama.cpp b11848 merged support for concurrent model downloads across multiple processes, via PR #29312. The same update also included Ollama v0.40.11-rc0, langgraph 1.2.17, and a group of newly published papers. These items are presented as accompanying changes in this round, without further detail or confirmation of broader release impact.",
+  "body": "llama.cpp b11848 在 10:38（Asia/Shanghai）合并多进程并发下载支持（#29312），本轮还伴随 Ollama v0.40.11-rc0、langgraph 1.2.17 与一批新论文。\n\n论文\n- Self-Improving Agents with World Model Predictive Paths (arXiv:2610.28945) — 把 MPPI 控制思路搬进 LLM agent：每步让世界模型想象多条候选动作的后果并按任务进度与风险加权，配合双分支经验记忆实现部署期自我改进，在 ALFWorld/ScienceWorld 上验证。\n  https://arxiv.org/abs/2610.28945\n- LLM Multi-Agent Systems Are Vulnerable to Herding and Runaway Cascades (arXiv:2610.30769) — 复刻 Music Lab 实验，发现 LLM 群体在累计推荐数的影响下比人类更易从众、且更难自我纠正，对推荐系统与自动化评测的多智能体协作是直接警示。\n  https://arxiv.org/abs/2610.30769\n- Forging More Tasks into Better Harnesses: Successive Scale Racing (arXiv:2610.28815) — 指出 harness 自进化中\"任务越多性能越差\"的反常现象源于证据选择不当，提出 SSR 在小算力下竞速候选 harness，任务池从 40 扩到 200 时通过率反升至 68.3%。\n  https://arxiv.org/abs/2610.28815\n- FRED: Self-Distilling Future Video Representations for World Action Models (arXiv:2610.30320) — 用真值未来观测的表征做自蒸馏目标，从单步去噪中提升未来视频表征质量，人到机器人技能迁移在训练未见的任务上从 19.4% 提到 50.0%。\n  https://arxiv.org/abs/2610.30320\n- OmniDR-Bench: 视频中心的深度研究报告基准 (arXiv:2610.31158) — 新基准要求 agent 围绕一个源视频做多模态检索并产出交互式报告，含 50 个中英任务、6414 条评分标准，18 种 agent 配置中最佳仅得 63.3 分。\n  https://arxiv.org/abs/2610.31158\n\nGitHub与基建\n- llama.cpp b11848：支持跨进程并发下载模型 (10:38 CST) — HuggingFace 的 Adrien Gallouët 提交 #29312，让多个 llama-server/CLI 进程可同时拉取同一模型，避免重复下载与写冲突。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11848\n- llama.cpp b11847：修复 HIP 下 bf16 WMMA 操作数类型 (10:22 CST) — gfx11/gfx12 的 __builtin_amdgcn_wmma_f32_16x16x16_bf16 需要 short 向量而非 __bf16，修好 RDNA3/RDNA4 的 HIP 构建编译失败。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11847\n- llama.cpp b11849：hexagon 后端新增 SGN 算子 (10:56 CST) — 高通 Hexagon NPU 路径加入 sign 算子并用符号位优化，改善 hex-unary 的维度折叠与 host 端求解器。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11849\n- ollama v0.40.10：新增 NVIDIA Nemotron 3.5 Bolt E4B (01:17 CST) — 基于 Gemma 4 的小型 VLM，128K 上下文、带 DFlash draft 投机解码，可直接 ollama run nemotron-3.5-bolt:e4b。\n  https://github.com/ollama/ollama/releases/tag/v0.40.10\n- ollama v0.40.11-rc0：qwen3coder 参数标签修复与 Phonon 语音目录 (08:30 CST) — 修复 qwen3coder 参数中字面量结束标签被吞的问题，为 Phonon 增加语音目录并完善符号/数字/链接朗读。\n  https://github.com/ollama/ollama/releases/tag/v0.40.11-rc0\n- langgraph 1.2.17 (09:08 CST) — 修正递归限制默认值处理、RemoteGraph.stream(subgraphs=True) 丢失调用方 namespace 的问题，并移除第三方依赖上界。\n  https://github.com/langchain-ai/langgraph/releases/tag/1.2.17\n\n系统\n- KDE Plasma 6.9 将 Wayland 画中画协议支持标为稳定并默认开启 (08:56 CST) — 浏览器等 Wayland PiP 使用方可开箱即用；Plasma Browser Integration 同时新增 Brave 支持，6.8.2 点版本在修多屏等回归。\n  https://www.phoronix.com/news/KDE-Plasma-6.9-Wayland-PiP\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11848",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11848",
+    "verified_at": "2026-10-24T03:00:08Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-24-methode-4ade5320",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-24T04:59:40Z",
+  "title": "llama.cpp b11850 接入 Soprano TTS：Qwen3 主干 + Vocos 解码器，80M 语音模型可在本地跑",
+  "summary": "llama.cpp 在 b11850（10月24日 07:09 CST）合入 Soprano TTS 支持，80M 参数的 Qwen3 主干加 Vocos 解码器可直接本地生成语音。",
+  "summary_en": "The note reports that llama.cpp build b11850, merged on October 24 at 07:09 CST, added support for Soprano TTS. This integration combines an 80-million-parameter Qwen3 backbone with a Vocos decoder, enabling local speech generation directly through llama.cpp. No additional details are provided about installation, performance, model formats, or licensing in the note.",
+  "body": "llama.cpp 在 b11850（10月24日 07:09 CST）合入 Soprano TTS 支持，80M 参数的 Qwen3 主干加 Vocos 解码器可直接本地生成语音。\n\n论文\n- Questioning Instrumental Convergence in RLVR: Checkpoint Evidence from OLMo-3 — 在 OLMo-3-7B-Think 的 13 个 RLVR 检查点上实测工具性行为（自我保存、欺骗等）轨迹非单调：SFT 25.0% 升到第 200 步 46.1%，最终回落至 11.8%，对\"RL 必然导致趋同性\"的直觉提出反例。\n  https://arxiv.org/abs/2610.31624\n- Causal Chain of Thought: Mitigating Attention Leakage via Context Isolation — 把推理拆成 DAG，每个子问题只在直接父节点的隔离上下文中求解，消除注意力泄漏带来的事后合理化；中间步骤因果敏感度平均提升 12、最高 21 个百分点。\n  https://arxiv.org/abs/2610.31639\n- OP-Print: Tracing Membership Imprints in On-Policy Self-Distillation — 首个针对 on-policy 自蒸馏的成员推断攻击研究，指出其监督\"印记\"稀疏且结构化，灰盒与黑盒下均可攻破，而基线攻击近乎随机猜测。\n  https://arxiv.org/abs/2610.31616\n- Efficient and Optimal Learning of Discrete Distributions with Person-Level Privacy — Kamath、Moitra、Ullman 等给出首个在纯 DP 下达到信息论最优（差对数因子）的多项式时间算法，基于新的 6 阶 sum-of-squares 估计量。\n  https://arxiv.org/abs/2610.31612\n- What Generation Knows: Unlocking Fine-Grained Understanding in Unified Multimodal Models — 直接利用统一多模态模型\"生成侧\"表征做细粒度理解（GAFU 框架），VStar-Bench/OmniSpatial/VSR-Bench 上相对提升最高 20.00%、17.94%、8.62%，本周 Hugging Face Daily Papers 上升条目。\n  https://arxiv.org/abs/2610.23987\n- FilmFlow: Agentic System for 3D Virtual Film Cinematography — Director/Interpreter/Scout/Critic 多智能体把自然语言或参考视频转成可执行相机轨迹，并配套 150 个 Blender 场景的 CinemaBench 基准。\n  https://arxiv.org/abs/2610.30753\n\nGitHub与基建\n- llama.cpp b11850: mtmd 接入 Soprano TTS — 10月24日 07:09 CST 发布：新增 Soprano-80M / Soprano-1.1-80M 音频生成模型支持，把 Qwen3 主干导出为 qwen3、把 Vocos 解码器权重作为 gen-only mmproj 加载，并新增专用预分词器。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11850\n- llama.cpp b11846：CUDA DP4A MMQ tile 高度约束 — 10月24日 08:01 CST 预发布：加入静态断言，强制 ggm-cuda DP4A MMQ 的 tile 高度为 warp size 的倍数，避免 CUDA 后端量化矩阵乘出现非法形状。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11846\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11850",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11850",
+    "verified_at": "2026-10-24T04:59:40Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
