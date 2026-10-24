@@ -5,92 +5,247 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 279601,
-  "drawCalls": 381,
-  "textures": 53,
-  "textureMB": 98.8
+  "triangles": 336550,
+  "drawCalls": 511,
+  "textures": 72,
+  "textureMB": 105.1
  },
  "exported": {
-  "triangles": 267163,
-  "drawCalls": 245,
-  "textures": 52,
-  "textureMB": 97.3
+  "triangles": 313697,
+  "drawCalls": 318,
+  "textures": 68,
+  "textureMB": 103
  },
  "lights": [
   {
-   "type": "HemisphereLight",
-   "name": "",
-   "color": 15247496,
-   "intensity": 0.6075,
+   "type": "PointLight",
+   "name": "light-pool-wheel-queue",
+   "color": 5890278,
+   "intensity": 18,
    "position": [
-    0,
-    1,
-    0
+    -13.37557143330775,
+    2.7,
+    -80.07350234419823
    ],
    "visible": true,
-   "groundColor": 10508360
+   "distance": 16,
+   "decay": 1.8
   },
   {
-   "type": "DirectionalLight",
-   "name": "",
-   "color": 16754794,
-   "intensity": 4.369999999999999,
+   "type": "SpotLight",
+   "name": "light-pool-pavilion-hero",
+   "color": 16767136,
+   "intensity": 48,
    "position": [
-    -72,
-    24,
-    -42
+    3.191731190003412,
+    3.12,
+    -71.55038347076416
    ],
    "visible": true,
+   "distance": 11,
+   "decay": 1.8,
+   "angle": 0.5,
+   "penumbra": 1,
    "target": [
-    -10,
+    3.6482095365774727,
     0,
-    -55
+    -68.88925071963936
    ],
    "shadow": {
     "mapSize": [
-     2048,
-     2048
+     1024,
+     1024
     ],
     "bias": -0.0006,
     "normalBias": 0.025,
     "radius": 2,
     "autoUpdate": true,
     "camera": {
-     "near": 5,
-     "far": 320,
-     "left": -60,
-     "right": 60,
-     "top": 55,
-     "bottom": -45
+     "near": 0.5,
+     "far": 11,
+     "fov": 57.29577951308232
     }
    }
   },
   {
+   "type": "PointLight",
+   "name": "light-pool-promenade--10--28",
+   "color": 16767136,
+   "intensity": 14,
+   "position": [
+    -10,
+    3.1999999999999997,
+    -28
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-promenade--3.5--42",
+   "color": 16767136,
+   "intensity": 14,
+   "position": [
+    -3.5,
+    3.1999999999999997,
+    -42
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-promenade-6.2--46",
+   "color": 16767136,
+   "intensity": 14,
+   "position": [
+    6.2,
+    3.1999999999999997,
+    -46
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-promenade--14--58",
+   "color": 16767136,
+   "intensity": 14,
+   "position": [
+    -14,
+    3.1999999999999997,
+    -58
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-entrance--1",
+   "color": 16767136,
+   "intensity": 10,
+   "position": [
+    -7.5,
+    5,
+    10.5
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-entrance-1",
+   "color": 16767136,
+   "intensity": 10,
+   "position": [
+    7.5,
+    5,
+    10.5
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-promenade--3-2.4",
+   "color": 16767136,
+   "intensity": 14,
+   "position": [
+    -3,
+    2.8,
+    2.4
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-shop-61",
+   "color": 16767136,
+   "intensity": 16,
+   "position": [
+    11.852623548180635,
+    2.1620000000000004,
+    -29.116664715707316
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-shop-63",
+   "color": 16767136,
+   "intensity": 16,
+   "position": [
+    16.320338830065825,
+    2.068,
+    -46.0088053781577
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-shop-65",
+   "color": 16767136,
+   "intensity": 16,
+   "position": [
+    19.42471366687019,
+    2.256,
+    -63.219252230944974
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 1.7
+  },
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 7443875,
+   "intensity": 0.29250000000000004,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 3556170
+  },
+  {
    "type": "DirectionalLight",
    "name": "",
-   "color": 9071260,
-   "intensity": 0.6000000000000001,
+   "color": 9156552,
+   "intensity": 0.418,
    "position": [
-    -40,
-    30,
-    60
+    -45,
+    55,
+    20
    ],
    "visible": true,
    "target": [
+    -10,
     0,
-    0,
-    0
+    -55
    ]
   },
   {
    "type": "DirectionalLight",
    "name": "",
-   "color": 16752744,
-   "intensity": 0.7,
+   "color": 5143432,
+   "intensity": 0.24,
    "position": [
-    -60,
-    18,
-    15
+    -40,
+    30,
+    60
    ],
    "visible": true,
    "target": [
@@ -167,7 +322,7 @@
  "motions": [],
  "tracks": [
   {
-   "id": "25cd1ef3-4ba1-4641-b5d0-d5c2521dd7d6",
+   "id": "8217445b-f1a0-4b06-89a3-cbe9712f8aca",
    "name": "disc",
    "ch": {
     "rz": {
@@ -877,7 +1032,7 @@
    }
   },
   {
-   "id": "97437591-a626-41f8-8f1d-ff7ab71bd016",
+   "id": "3ed1c018-8653-49bb-bd81-6083637cd4ec",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -1587,7 +1742,7 @@
    }
   },
   {
-   "id": "6dbe70ee-9ada-4456-a94d-24a0bcc560bc",
+   "id": "bf1fce55-3fa3-49ae-b063-ecf7d86bdca9",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -2297,7 +2452,7 @@
    }
   },
   {
-   "id": "5f782c3c-9bc7-4069-b769-e1fc7b5f08d2",
+   "id": "10786a3a-d126-4ad9-a4e5-d285996b7593",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -3007,7 +3162,7 @@
    }
   },
   {
-   "id": "487b3d0c-5bbd-4bc3-824c-8e9c400a592b",
+   "id": "02b34923-19c3-4568-bdff-54f4fb72a61e",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -3717,7 +3872,7 @@
    }
   },
   {
-   "id": "6f6b7944-657c-4c4c-bba7-ca4f83cec1af",
+   "id": "8ca207b2-2b46-4119-a8a6-db3448d36621",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -4427,7 +4582,7 @@
    }
   },
   {
-   "id": "a6478bfd-ed7f-44a3-b4ee-7c79edbde1dd",
+   "id": "c989cd3c-c359-4051-acdb-f8ada65b573a",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -5137,7 +5292,7 @@
    }
   },
   {
-   "id": "5a6c3af8-d482-4e09-b143-20bfe74de24b",
+   "id": "1deb6050-b035-4915-85a2-c55222362a65",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -5847,7 +6002,7 @@
    }
   },
   {
-   "id": "f9f8caae-4134-4f45-90e4-de09b6735663",
+   "id": "5b0f7645-b336-4007-a4ff-c924e8f0a591",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -6557,7 +6712,7 @@
    }
   },
   {
-   "id": "cdc6c776-b530-4f97-ad2a-bc6907b6fb62",
+   "id": "ea8c0c72-b758-4f22-99f4-013683dfb4f7",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -7267,7 +7422,7 @@
    }
   },
   {
-   "id": "2f875d72-d7ab-436d-bc79-7293e2dd8521",
+   "id": "fddde259-a4cd-498b-91b6-57475713996d",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -7977,7 +8132,7 @@
    }
   },
   {
-   "id": "36857328-e44d-4beb-af5a-18e08c1b4501",
+   "id": "fde0666c-07ee-41cf-bba4-abe6c4683c13",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -8687,7 +8842,7 @@
    }
   },
   {
-   "id": "17f08a1c-367a-463a-87cc-d41899f0c2f4",
+   "id": "43118e40-eb1a-4d2a-a610-718c26b351f3",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -9397,7 +9552,7 @@
    }
   },
   {
-   "id": "a6fb8a58-7655-457c-a479-a637f9703880",
+   "id": "9dcda3cd-3044-4b4b-897b-2c4f3c2bec0b",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -10107,7 +10262,7 @@
    }
   },
   {
-   "id": "c18becee-8145-4ce4-8a1a-96dab57e85b0",
+   "id": "37629f63-2cf5-48a6-9671-c66e92cbcafe",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -10817,7 +10972,7 @@
    }
   },
   {
-   "id": "38c8664a-54e6-4568-b293-df4156f11bab",
+   "id": "77890b26-c69e-4f85-853c-ad9335980572",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -11527,7 +11682,7 @@
    }
   },
   {
-   "id": "b8c260f3-89cb-436d-b424-2318e39aa653",
+   "id": "573f05b9-6e94-43f6-93b6-8e70e0869c42",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -12241,7 +12396,29 @@
  "hooks": {},
  "patchClocks": {},
  "uniformArrays": {},
- "reflectors": [],
+ "reflectors": [
+  {
+   "w": 64,
+   "d": 116,
+   "x": -1,
+   "y": 0.025999999999999995,
+   "z": -44,
+   "strength": 0.42,
+   "blur": 1.8,
+   "f0": 0.035,
+   "tint": 9419972,
+   "fade": 100,
+   "zones": 1,
+   "smear": 0.18,
+   "near": 1.8,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 768,
+   "mask": "amusement-park-1-night.mask0.webp"
+  }
+ ],
  "camera": {
   "ref": {
    "position": [
@@ -12277,6 +12454,26 @@
     "fov": 55
    },
    {
+    "name": "fare",
+    "label": "Wheel fares",
+    "fov": 38,
+    "position": [
+     -1.966826995056719,
+     1.4,
+     -82.92316027852583
+    ],
+    "target": [
+     -5.101392705742832,
+     1,
+     -85.07129849693519
+    ],
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
     "name": "gondola",
     "label": "Gondolas",
     "position": [
@@ -12289,7 +12486,12 @@
      15,
      -83
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "pavilion",
@@ -12304,7 +12506,12 @@
      4.2,
      -70
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "promenade",
@@ -12340,16 +12547,61 @@
     "name": "shopfront",
     "label": "Shop front",
     "position": [
-     3.2,
-     1.5,
-     -21
+     7.6,
+     1.7,
+     -46.2
     ],
     "target": [
-     10.5,
-     3.2,
-     -26
+     15,
+     2.3,
+     -39.6
     ],
-    "fov": 50
+    "fov": 48,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "entrance",
+    "label": "Back to the gate",
+    "position": [
+     1.5,
+     1.6,
+     -9
+    ],
+    "target": [
+     0,
+     2.4,
+     6
+    ],
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "map-board",
+    "label": "Plaza map",
+    "position": [
+     -6.9,
+     1.6,
+     -35
+    ],
+    "target": [
+     -7.25,
+     1.15,
+     -38.2
+    ],
+    "fov": 45,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    }
   ]
  },
@@ -12366,56 +12618,75 @@
   ]
  },
  "env": {
-  "background": 15765614,
+  "background": 1321783,
   "ibl": {
-   "top": 13157307,
-   "wall": 12958897,
-   "floor": 8413272,
-   "intensity": 0.6,
+   "top": 4352118,
+   "wall": 3362393,
+   "floor": 6967616,
+   "intensity": 0.42,
    "lights": []
   },
   "fog": {
-   "color": 15765614,
-   "near": 28,
-   "far": 230
+   "color": 1585726,
+   "near": 32,
+   "far": 210
+  },
+  "air": {
+   "color": 10468544,
+   "opacity": 0.2
   },
   "post": {
    "outline": {
-    "color": 4858936,
-    "opacity": 0.4,
+    "color": 1059637,
+    "opacity": 0.46,
     "depthTh": 0.02,
     "normalTh": 0.32
    },
    "ao": {
-    "strength": 0.35,
+    "strength": 0.44,
     "radius": 0.5
    },
    "bloom": {
-    "threshold": 0.66,
-    "strength": 0.55
+    "threshold": 0.72,
+    "strength": 0.42
+   },
+   "vol": {
+    "enabled": true,
+    "color": 16762250,
+    "strength": 0.22,
+    "density": 0.1,
+    "max": 0.16,
+    "phase": 0.35,
+    "steps": 24,
+    "dist": 26,
+    "floor": 0.15,
+    "top": 3.4,
+    "bottom": 0
    },
    "grade": {
-    "exposure": 1.02,
-    "saturation": 0.9,
+    "exposure": 0.94,
+    "contrast": 1.06,
+    "saturation": 1.02,
     "lift": [
-     0.02,
-     0.02,
-     0.02
+     0.003,
+     0.006,
+     0.009
     ],
     "gain": [
-     1,
-     1,
-     1
+     0.9,
+     1.02,
+     1.08
     ],
-    "vignette": 0.12
+    "vignette": 0.28,
+    "guard": 0.06
    },
    "dof": {
     "enabled": true,
-    "focus": 75,
-    "range": 55,
-    "near": 1.4,
-    "far": 0.4,
-    "maxRadius": 5,
+    "focus": 55,
+    "range": 65,
+    "near": 1,
+    "far": 0.35,
+    "maxRadius": 2.8,
     "tilt": {
      "center": [
       0.47,
@@ -12426,7 +12697,7 @@
       0.22
      ],
      "soft": 0.4,
-     "strength": 4.5
+     "strength": 1.2
     }
    }
   }
@@ -12628,17 +12899,17 @@
    "id": "door-shrine",
    "kind": "link",
    "label": "Out the arch, up the hill",
-   "object": "spot:door-shrine",
-   "typed": true,
+   "object": "anchor:arch-gate",
+   "typed": false,
    "anchor": [
     0,
     1.5,
-    10
+    6.2
    ],
    "built": [
     0,
     1.5,
-    10
+    6.2
    ],
    "reach": 3.2
   },
@@ -12740,12 +13011,12 @@
    "typed": false,
    "anchor": [
     -20.6,
-    1.4428665668691965,
+    1.4454022773647286,
     -5.400000001405752
    ],
    "built": [
     -20.6,
-    1.2794163704529653,
+    1.4456645947490188,
     -5.400000001405752
    ],
    "reach": 3.2
@@ -12806,16 +13077,6 @@
   }
  ],
  "bind": {
-  "door-shrine": {
-   "object": "spot:door-shrine",
-   "how": "node",
-   "on": null,
-   "at": [
-    0,
-    1.5,
-    10
-   ]
-  },
   "frag-12": {
    "object": "spot:frag-12",
    "how": "node",
@@ -12828,15 +13089,15 @@
   }
  },
  "premerge": {
-  "spot:door-shrine": [
-   0,
-   1.5,
-   10
-  ],
   "spot:frag-12": [
    -2,
    1,
    -52
+  ],
+  "anchor:arch-gate": [
+   0,
+   1.5,
+   6.2
   ],
   "anchor:arch-sign": [
    0,
@@ -12860,7 +13121,7 @@
   ],
   "golf-windmill": [
    -20.6,
-   1.3466502962455191,
+   1.4329575318455778,
    -5.400000001405752
   ],
   "candy-stall": [
@@ -12879,26 +13140,10 @@
    -22
   ]
  },
- "doorProps": {
-  "door-shrine": {
-   "p": [
-    -1.9892,
-    0,
-    5.172
-   ],
-   "q": [
-    0,
-    0.983195,
-    0,
-    0.182557
-   ],
-   "gate": true,
-   "tint": 0
-  }
- },
+ "doorProps": {},
  "anchorsBefore": {
-  "named": 8,
-  "typed": 2
+  "named": 9,
+  "typed": 1
  },
  "models": {
   "baked": [
@@ -12933,36 +13178,36 @@
  "three": "170",
  "key": "amusement-park-1-night",
  "hour": 22,
- "bakedAt": "2026-10-24T09:21:11.262Z",
+ "bakedAt": "2026-10-24T20:25:15.195Z",
  "quantizePosition": 14,
  "source": {
   "family": "AmusementPark (N) built at runtime by lab/src/scenes",
-  "exportBytes": 34941228,
-  "triangles": 279601,
-  "drawCalls": 381,
-  "textures": 53,
-  "textureMB": 98.8
+  "exportBytes": 36805264,
+  "triangles": 336550,
+  "drawCalls": 511,
+  "textures": 72,
+  "textureMB": 105.1
  },
  "lods": {
   "lod0": {
    "file": "amusement-park-1-night.glb",
-   "triangles": 240364,
-   "primitives": 154,
-   "materials": 138,
-   "textures": 49,
-   "textureKB": 1595,
-   "bytes": 4522452
+   "triangles": 283190,
+   "primitives": 179,
+   "materials": 163,
+   "textures": 65,
+   "textureKB": 1753,
+   "bytes": 5037544
   },
   "lod1": {
    "file": "amusement-park-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 126106,
-   "primitives": 154,
-   "materials": 138,
-   "textures": 49,
-   "textureKB": 664,
-   "bytes": 2738620
+   "triangles": 147263,
+   "primitives": 179,
+   "materials": 163,
+   "textures": 65,
+   "textureKB": 820,
+   "bytes": 3113344
   }
  },
  "parts": {
@@ -12972,18 +13217,18 @@
    "anchor:arch-sign",
    "anchor:pavilion",
    "anchor:brass-bell",
+   "anchor:arch-gate",
    "golf-windmill",
    "candy-stall",
    "plaza-fountain",
    "park-map",
-   "spot:door-shrine",
    "spot:frag-12"
   ],
-  "exportBytes": 210824
+  "exportBytes": 195048
  },
  "live": {
   "file": "amusement-park-1-night.live.json",
-  "bytes": 472995,
+  "bytes": 792548,
   "objects": [
    "disc",
    "Mesh"
