@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-24-methode-7c10b2a1",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-24T09:02:32Z",
+  "title": "LiteLLM 紧急轮换镜像签名密钥并移除 eMudhra 根证书，老的 cosign 校验脚本会直接失败",
+  "summary": "LiteLLM 在 16:52（北京时间）连发 v1.105.4 / v1.104.6 / v1.103.8，切换 Docker 与 Helm 图表的 cosign 签名密钥并从证书捆绑中删除 eMudhra 根 CA，CI 里固定旧 cosign.pub 的团队今天就会红。",
+  "summary_en": "LiteLLM urgently rotated its image-signing keys and removed the eMudhra root CA from its certificate bundle. At 16:52 Beijing time, it released v1.105.4, v1.104.6, and v1.103.8, covering Docker images and Helm charts. CI pipelines pinning the previous cosign.pub key will fail today, requiring verification scripts and trusted keys to be updated.",
+  "body": "LiteLLM 在 16:52（北京时间）连发 v1.105.4 / v1.104.6 / v1.103.8，切换 Docker 与 Helm 图表的 cosign 签名密钥并从证书捆绑中删除 eMudhra 根 CA，CI 里固定旧 cosign.pub 的团队今天就会红。\n\n论文\n- Low-Bit N-Gram Embeddings for Language Models — n-gram 记忆表是开源大模型的显存大头，本文给出 4-bit 量化方案：省约 75% 表内存仍保留 99% 以上的效果，在 DeepSeek-V4.1-Flash / Qwen3.8-Flash-Next 上可省 47–55% 内存。\n  https://arxiv.org/abs/2610.31646\n- Direct Pass@k Optimization for Thought Pruning — 把测试时推理的“质量 vs 多样性”取舍直接写进 pass@k 目标来做候选剪枝，在 8 个开源推理模型上超过现有质量类与多样性类剪枝策略。\n  https://arxiv.org/abs/2610.31667\n- Can an Agent Debug a Web Corpus?（斯洛伐克语 FineWeb2 审计） — 用带工具的 agent 当“语料调试器”，几美元开销在 2650 万文档中揪出 140 万篇机器生成内容农场，并沉淀成可复用测试集，替代每轮上万美元的分类式清洗。\n  https://arxiv.org/abs/2610.31636\n\nGitHub与基建\n- LiteLLM v1.105.4（16:52 北京时间） — 镜像签名换用新 cosign 密钥（commit e82a3c6），旧 cosign.pub 校验、Kyverno/Sigstore 准入策略会失败，需按 release 页更新；同批 v1.103.8 / v1.104.6（16:45）从 SDK、代理与 Docker 镜像的证书捆绑中移除 eMudhra 根 CA。\n  https://github.com/BerriAI/litellm/releases/tag/v1.105.4\n- llama.cpp b11852（15:51 北京时间） — mtmd 重构：把 build_inp_temporal_merge 下沉到基类，多模态输入路径的预处理结构更干净，是后续视觉模型支持的铺垫。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11852\n- llama.cpp b11851（15:22 北京时间） — 让 LFM2 与 d1-omni 的双线性/双三次缩放结果对齐 torchvision（含 int16 定点权重与抗锯齿细节），多模态评测结果可与 Python 侧对齐。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11851\n\n系统\n- OBS Studio 33.0 发布 — 跨平台录制/直播工具大版本：Chromium 内嵌框架从 CEF 127 跳到 150，重做插件加载机制，并为 ARM64 + NVIDIA 平台启用 NVENC 编码。\n  https://www.phoronix.com/news/OBS-Studio-33.0\n- Linux 7.4 合并 slab 更新 — sheaf prefill API 允许 barn 持有部分 sheaf 并回填，使 will-it-scale 的 mmap1 吞吐提升 24%，是内核内存管理子系统的一次可观优化。\n  https://www.phoronix.com/news/Linux-7.4-Slab-Updates\n\nSource: https://github.com/BerriAI/litellm/releases/tag/v1.105.4",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/BerriAI/litellm/releases/tag/v1.105.4",
+    "verified_at": "2026-10-24T09:02:32Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
