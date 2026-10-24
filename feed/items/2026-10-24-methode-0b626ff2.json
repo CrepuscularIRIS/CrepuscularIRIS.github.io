@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-24-methode-0b626ff2",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-24T11:03:13Z",
+  "title": "LiteLLM v1.106.3 更换镜像签名密钥并移除 eMudhra 根证书，CI 校验需同步更新",
+  "summary": "LiteLLM v1.106.3（10月24日 17:36 北京时间）更换了镜像签名用的 cosign 密钥并从所有证书包中移除 eMudhra 根 CA，固定旧公钥的流水线会直接失败；同期 systemd 合并 Rust 程序支持、Wild 0.11 链接器发布。",
+  "summary_en": "LiteLLM v1.106.3, released October 24 at 17:36 Beijing time, changed the cosign key used for image signing and removed the eMudhra root CA from all certificate bundles. Pipelines pinning the old public key will fail unless CI validation is updated accordingly. The same period also saw systemd merge Rust program support and the Wild 0.11 linker release.",
+  "body": "LiteLLM v1.106.3（10月24日 17:36 北京时间）更换了镜像签名用的 cosign 密钥并从所有证书包中移除 eMudhra 根 CA，固定旧公钥的流水线会直接失败；同期 systemd 合并 Rust 程序支持、Wild 0.11 链接器发布。\n\nGitHub与基建\n- LiteLLM v1.106.3 发布：cosign 签名密钥轮换 + 移除 eMudhra 根证书 — 10月24日 17:36（北京时间）发布：所有 Docker 镜像与 Helm chart 改用 commit e82a3c6 的新 cosign 密钥，旧公钥校验将失败；同时 SDK/代理/镜像信任链中移除 eMudhra 根 CA。部署方需更新 CI 签名校验、Kyverno、Sigstore policy-controller 等策略。\n  https://github.com/BerriAI/litellm/releases/tag/v1.106.3\n\n论文\n- MCP vs CLI for AI Agents: A Comparative Analysis of Tool Integration Strategies — 从 14 个维度对比 CLI 与 MCP 两种 agent 工具接入范式：CLI 适合本地单用户高效执行，MCP 提供细粒度权限、凭据隔离与多租户治理；渐进式披露让 MCP 的 token 开销接近 CLI，结论推荐混合架构。\n  https://arxiv.org/abs/2610.30157\n\n系统\n- systemd 合并 Rust 程序支持 — 10月24日 18:20（北京时间）：systemd 各子程序现在可用 Rust 编写（仅 Meson、无 Cargo、只做 C 链接），核心 lib 仍不支持；首个组件 systemd-keyring-setup 用 Rust 编写，用于向 dm-verity/fs-verity/BPF keyring 注册 X.509 证书。\n  https://www.phoronix.com/news/systemd-Merges-Rust-Programs\n- Wild 0.11 链接器发布：默认支持 WASM，可链接内核模块 — 10月24日 18:12（北京时间）：这个高性能链接器新版本默认支持链接 WebAssembly，扩展 GNU 链接脚本支持后已可链接 Linux 内核模块，macOS 移植继续推进。\n  https://www.phoronix.com/news/Wild-0.11-Released\n- Linux 7.4 显卡驱动更新：AMDGPU 默认启用 HDMI 2.1 FRL — 10月24日 18:00（北京时间）：Linux 7.4 的 DRM 更新中 AMDGPU 默认开启 HDMI 2.1 FRL 并支持 UALink over Ethernet、Ryzen AI Max 400 NPU；Intel Xe 加入 vRAM 健康检查，NVIDIA Nova 驱动继续引入 Rust 代码。\n  https://www.phoronix.com/news/Linux-7.4-Graphics-Drivers\n\nSource: https://github.com/BerriAI/litellm/releases/tag/v1.106.3",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/BerriAI/litellm/releases/tag/v1.106.3",
+    "verified_at": "2026-10-24T11:03:13Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
