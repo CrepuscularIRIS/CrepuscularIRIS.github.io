@@ -5,36 +5,36 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 81184,
-  "drawCalls": 377,
-  "textures": 42,
-  "textureMB": 44
+  "triangles": 89076,
+  "drawCalls": 416,
+  "textures": 46,
+  "textureMB": 44.2
  },
  "exported": {
-  "triangles": 61850,
-  "drawCalls": 176,
-  "textures": 32,
-  "textureMB": 40
+  "triangles": 69760,
+  "drawCalls": 214,
+  "textures": 35,
+  "textureMB": 40.7
  },
  "lights": [
   {
    "type": "HemisphereLight",
    "name": "",
-   "color": 16052479,
-   "intensity": 0.45,
+   "color": 5536139,
+   "intensity": 0.36,
    "position": [
     0,
     1,
     0
    ],
    "visible": true,
-   "groundColor": 12101816
+   "groundColor": 3830918
   },
   {
    "type": "DirectionalLight",
    "name": "",
-   "color": 16773344,
-   "intensity": 1.2,
+   "color": 7181488,
+   "intensity": 0.34,
    "position": [
     -2,
     8,
@@ -45,31 +45,63 @@
     1.5,
     0,
     -4
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-01",
+   "color": 9430260,
+   "intensity": 25,
+   "position": [
+    -0.4,
+    2.3600000000000003,
+    -17.78
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.7,
+   "angle": 0.36,
+   "penumbra": 1,
+   "target": [
+    -0.4,
+    0,
+    -15
    ],
    "shadow": {
     "mapSize": [
-     2048,
-     2048
+     1024,
+     1024
     ],
-    "bias": -0.0004,
+    "bias": -0.0006,
     "normalBias": 0.025,
     "radius": 2,
     "autoUpdate": true,
     "camera": {
-     "near": 1,
-     "far": 30,
-     "left": -10,
-     "right": 10,
-     "top": 12,
-     "bottom": -12
+     "near": 0.5,
+     "far": 9,
+     "fov": 41.25296124941927
     }
    }
   },
   {
    "type": "PointLight",
-   "name": "",
-   "color": 16773344,
-   "intensity": 6,
+   "name": "light-pool-02",
+   "color": 9430260,
+   "intensity": 8,
+   "position": [
+    -0.4,
+    4.3,
+    -21.699999999999996
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-03",
+   "color": 8641003,
+   "intensity": 5,
    "position": [
     -1.36,
     3.1,
@@ -77,27 +109,55 @@
    ],
    "visible": true,
    "distance": 7,
-   "decay": 1.6
+   "decay": 1.65
   },
   {
    "type": "PointLight",
-   "name": "",
-   "color": 16773344,
-   "intensity": 6,
+   "name": "light-pool-04",
+   "color": 8641003,
+   "intensity": 4.5,
    "position": [
-    2.4,
+    -0.9,
     3.1,
-    -4.15
+    0.6
    ],
    "visible": true,
    "distance": 7,
-   "decay": 1.6
+   "decay": 1.65
   },
   {
    "type": "PointLight",
-   "name": "",
-   "color": 16773344,
-   "intensity": 6,
+   "name": "light-pool-05",
+   "color": 8641003,
+   "intensity": 4.5,
+   "position": [
+    2.9,
+    3.1,
+    0.4
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.65
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-06",
+   "color": 8641003,
+   "intensity": 3.9000000000000004,
+   "position": [
+    -1.3,
+    3.1,
+    -15.5
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.65
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-07",
+   "color": 8641003,
+   "intensity": 4.25,
    "position": [
     0.4,
     3.1,
@@ -105,119 +165,269 @@
    ],
    "visible": true,
    "distance": 7,
-   "decay": 1.6
+   "decay": 1.65
   },
   {
-   "type": "PointLight",
-   "name": "",
-   "color": 14540015,
-   "intensity": 3.086782760001322,
+   "type": "SpotLight",
+   "name": "light-pool-08",
+   "color": 8641003,
+   "intensity": 8.5,
    "position": [
-    0.3,
-    3.1,
-    0.5
+    2.05,
+    3.26,
+    -4
    ],
    "visible": true,
    "distance": 7,
-   "decay": 1.6
+   "decay": 1.7,
+   "angle": 0.95,
+   "penumbra": 0.75,
+   "target": [
+    1.5,
+    0,
+    -3.6
+   ]
   },
   {
    "type": "PointLight",
-   "name": "",
-   "color": 16773344,
-   "intensity": 6,
-   "position": [
-    2,
-    3.1,
-    -8
-   ],
-   "visible": true,
-   "distance": 7,
-   "decay": 1.6
-  },
-  {
-   "type": "PointLight",
-   "name": "",
-   "color": 16751816,
-   "intensity": 12,
+   "name": "light-pool-09",
+   "color": 16732058,
+   "intensity": 5.25,
    "position": [
     0.4,
     3.3,
     -5.7
    ],
    "visible": true,
-   "distance": 7,
-   "decay": 1.5
+   "distance": 6,
+   "decay": 1.7
   },
   {
-   "type": "PointLight",
-   "name": "",
-   "color": 9085183,
-   "intensity": 5,
+   "type": "SpotLight",
+   "name": "light-pool-10",
+   "color": 7913471,
+   "intensity": 6,
    "position": [
-    1.5,
-    2.8,
-    4.5
+    -3.6,
+    2.34,
+    -11.5
    ],
    "visible": true,
    "distance": 6,
-   "decay": 1.6
+   "decay": 1.7,
+   "angle": 1,
+   "penumbra": 0.75,
+   "target": [
+    -3,
+    0,
+    -11.2
+   ]
   },
   {
    "type": "PointLight",
-   "name": "",
-   "color": 16774378,
-   "intensity": 10,
+   "name": "light-pool-11",
+   "color": 5560548,
+   "intensity": 1.9,
    "position": [
-    -3.2,
+    -0.93,
+    1.3,
+    1.36
+   ],
+   "visible": true,
+   "distance": 3.2,
+   "decay": 2
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-12",
+   "color": 16756816,
+   "intensity": 2.5,
+   "position": [
+    1.68,
+    2.6,
+    -0.85
+   ],
+   "visible": true,
+   "distance": 3.2,
+   "decay": 1.7,
+   "angle": 0.55,
+   "penumbra": 0.75,
+   "target": [
+    1.68,
+    0.9,
+    0.1
+   ]
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 5216939,
+   "intensity": 0.95,
+   "position": [
+    0.5,
+    -4,
+    -5
+   ],
+   "visible": true,
+   "target": [
+    0.5,
+    0,
+    -5
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-13",
+   "color": 5212054,
+   "intensity": 1.5,
+   "position": [
     1.6,
-    -11
+    -0.4,
+    1.3
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 4.5,
    "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-14",
+   "color": 5212054,
+   "intensity": 1.1,
+   "position": [
+    -0.4,
+    -0.4,
+    2.6
+   ],
+   "visible": true,
+   "distance": 3.5,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-15",
+   "color": 6262684,
+   "intensity": 3.5,
+   "position": [
+    1,
+    -0.25,
+    -3.2
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-16",
+   "color": 6262684,
+   "intensity": 3.5,
+   "position": [
+    3.4,
+    -0.25,
+    -3.2
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 1.6
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-17",
+   "color": 6262684,
+   "intensity": 4,
+   "position": [
+    2.4,
+    -0.25,
+    -6.7
+   ],
+   "visible": true,
+   "distance": 4.5,
+   "decay": 1.6
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-18",
+   "color": 5232868,
+   "intensity": 1.4000000000000001,
+   "position": [
+    -1.2,
+    0.055,
+    -8.9
+   ],
+   "visible": true,
+   "distance": 2.4,
+   "decay": 1.7,
+   "angle": 1.05,
+   "penumbra": 0.75,
+   "target": [
+    -0.1,
+    0,
+    -8.9
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-19",
+   "color": 5232868,
+   "intensity": 1.4000000000000001,
+   "position": [
+    -1.2,
+    0.055,
+    2.3
+   ],
+   "visible": true,
+   "distance": 2.4,
+   "decay": 1.7,
+   "angle": 1.05,
+   "penumbra": 0.75,
+   "target": [
+    -0.1,
+    0,
+    2.3
+   ]
   }
  ],
  "lowDrop": [],
  "clocks": [
   {
-   "material": "9e4f3fae-16b2-472b-a9b7-006be288a24a",
+   "material": "302819a4-3d9e-4a4a-bfdf-788e7d515f22",
    "uniform": "uT",
    "a": 1,
    "b": 0
   },
   {
-   "material": "53a9f13f-e4b9-437e-858b-8f9874927307",
+   "material": "e5120779-05b5-4caf-8b4f-11c1c7dcd68c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "06bfc7c0-0530-4397-ae48-c950c4becfbc",
+   "material": "f6c8c7c5-b75f-4d6b-aab4-3021606ce799",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "462f784d-0af4-4ec1-aba6-b74f01dd9787",
+   "material": "1890ad9b-18a1-4eaa-b298-df1aee400bdd",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "174c6269-1b0b-40e3-a006-60666aeff5f4",
+   "material": "2af36f19-dea5-405c-a208-65dee8582ab3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "96cb76a4-56d8-439c-9046-ce632c3dce13",
+   "material": "95b89b92-8661-467a-9e29-292c3ede71f6",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "d3e7910c-3bac-4740-b908-164ac4c61ff8",
+   "material": "5e0207bb-e450-4c3c-8286-3fb10bed5cfe",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -232,21 +442,24 @@
  "reflectors": [
   {
    "w": 7.199999999999999,
-   "d": 5.5,
+   "d": 23,
    "x": 0.9999999999999998,
    "y": 0,
-   "z": 2.75,
-   "strength": 0.5,
-   "blur": 1.4,
-   "f0": 0.06,
-   "tint": 16773344,
+   "z": -6,
+   "strength": 0.62,
+   "blur": 1.6,
+   "f0": 0.04,
+   "tint": 8632776,
    "fade": 40,
+   "zones": 1,
+   "smear": 0,
+   "near": 1.2,
    "maskRepeat": [
     1,
     1
    ],
    "size": 768,
-   "mask": null
+   "mask": "platform-1-night.mask0.webp"
   }
  ],
  "camera": {
@@ -337,7 +550,32 @@
      3.2,
      -6
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "info",
+    "label": "Departures",
+    "position": [
+     -0.93,
+     1.34,
+     3.05
+    ],
+    "target": [
+     -0.93,
+     1.25,
+     1.2
+    ],
+    "fov": 40,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "reverse",
@@ -353,6 +591,21 @@
      6
     ],
     "fov": 62
+   },
+   {
+    "name": "exit-b",
+    "label": "Exit B passage",
+    "position": [
+     1.8,
+     1.5,
+     -11
+    ],
+    "target": [
+     -6,
+     1.3,
+     -11
+    ],
+    "fov": 46
    },
    {
     "name": "exit-light",
@@ -414,13 +667,31 @@
   ]
  },
  "env": {
-  "background": 2762288,
+  "background": 793894,
   "ibl": {
-   "top": 12101792,
-   "wall": 9996416,
-   "floor": 5787728,
-   "intensity": 0.45,
+   "top": 2705234,
+   "wall": 2309448,
+   "floor": 2377818,
+   "intensity": 0.32,
    "lights": [
+    {
+     "pos": [
+      0.4,
+      3.2,
+      -6
+     ],
+     "size": [
+      1.2,
+      5
+     ],
+     "color": 8641003,
+     "power": 3,
+     "lookAt": [
+      0.4,
+      0,
+      -6
+     ]
+    },
     {
      "pos": [
       0.4,
@@ -431,8 +702,8 @@
       2.2,
       5
      ],
-     "color": 16754892,
-     "power": 7,
+     "color": 16732058,
+     "power": 1.4,
      "lookAt": [
       0.4,
       0,
@@ -449,8 +720,8 @@
       1.5,
       2.4
      ],
-     "color": 16774378,
-     "power": 6,
+     "color": 7913471,
+     "power": 2,
      "lookAt": [
       4,
       1.6,
@@ -461,59 +732,84 @@
   },
   "post": {
    "outline": {
-    "color": 2760220,
-    "opacity": 0.55,
+    "color": 729130,
+    "opacity": 0.48,
     "depthTh": 0.012,
     "normalTh": 0.25
    },
    "ao": {
-    "strength": 0.45,
+    "strength": 0.52,
     "radius": 0.35
    },
+   "vol": {
+    "enabled": true,
+    "color": 9430260,
+    "strength": 0.6,
+    "density": 0.22,
+    "max": 0.32,
+    "phase": 0.45,
+    "steps": 40,
+    "dist": 26,
+    "floor": 0.2,
+    "top": 4.6,
+    "bottom": 0.1
+   },
    "bloom": {
-    "threshold": 0.82,
-    "strength": 0.5,
+    "threshold": 0.78,
+    "strength": 0.3,
     "weights": [
-     0.45,
-     0.35,
+     0.5,
      0.3,
-     0.25,
-     0.15
+     0.18,
+     0.1,
+     0.05
     ]
    },
+   "fog": {
+    "enabled": true,
+    "color": 1061693,
+    "density": 0.009,
+    "falloff": 0.5,
+    "base": 0,
+    "near": 2,
+    "maxOpacity": 0.1
+   },
    "grade": {
-    "exposure": 0.98,
-    "saturation": 0.95,
+    "exposure": 0.94,
+    "contrast": 1.08,
+    "saturation": 1.02,
     "lift": [
-     0.01,
-     0.01,
-     0.03
+     0.002,
+     0.005,
+     0.008
     ],
     "gain": [
-     1,
-     0.97,
-     0.98
+     0.9,
+     1.02,
+     1.08
     ],
-    "vignette": 0.3
+    "vignette": 0.34,
+    "staticGrain": 0.0015,
+    "guard": 0.08
    },
    "dof": {
     "enabled": true,
-    "focus": 4,
-    "range": 2.2,
-    "near": 1.2,
-    "far": 0.35,
-    "maxRadius": 9,
+    "focus": 5,
+    "range": 3.4,
+    "near": 1,
+    "far": 0.5,
+    "maxRadius": 2.8,
     "tilt": {
      "center": [
       0.5,
       0.55
      ],
      "radius": [
-      0.36,
-      0.42
+      0.42,
+      0.44
      ],
-     "soft": 0.25,
-     "strength": 8
+     "soft": 0.3,
+     "strength": 1
     }
    }
   }
@@ -655,17 +951,17 @@
    "id": "door-street",
    "kind": "link",
    "label": "Stairs to the street",
-   "object": "spot:door-street",
-   "typed": true,
+   "object": "exit-a-stair",
+   "typed": false,
    "anchor": [
-    0.6,
-    1.3,
-    5.4
+    -1,
+    2.8,
+    5.48
    ],
    "built": [
-    0.6,
-    1.3,
-    5.4
+    -1,
+    2.8,
+    5.48
    ],
    "reach": 3.2
   },
@@ -771,16 +1067,6 @@
     1.5
    ]
   },
-  "door-street": {
-   "object": "spot:door-street",
-   "how": "node",
-   "on": null,
-   "at": [
-    0.6,
-    1.3,
-    5.4
-   ]
-  },
   "plat-phone": {
    "object": "spot:plat-phone",
    "how": "node",
@@ -808,11 +1094,6 @@
    1.3,
    1.5
   ],
-  "spot:door-street": [
-   0.6,
-   1.3,
-   5.4
-  ],
   "spot:plat-phone": [
    -2.2,
    1.2,
@@ -822,6 +1103,11 @@
    -2.2,
    1.1,
    -4
+  ],
+  "exit-a-stair": [
+   -1,
+   2.8,
+   5.48
   ],
   "gates": [
    1.867619965672493,
@@ -841,8 +1127,8 @@
  },
  "doorProps": {},
  "anchorsBefore": {
-  "named": 3,
-  "typed": 4
+  "named": 4,
+  "typed": 3
  },
  "models": {
   "baked": [],
@@ -858,41 +1144,42 @@
  "three": "170",
  "key": "platform-1-night",
  "hour": 22,
- "bakedAt": "2026-10-24T09:19:46.598Z",
+ "bakedAt": "2026-10-24T17:50:13.854Z",
  "quantizePosition": 14,
  "source": {
   "family": "Platform (N) built at runtime by lab/src/scenes",
-  "exportBytes": 11366484,
-  "triangles": 81184,
-  "drawCalls": 377,
-  "textures": 42,
-  "textureMB": 44
+  "exportBytes": 11981480,
+  "triangles": 89076,
+  "drawCalls": 416,
+  "textures": 46,
+  "textureMB": 44.2
  },
  "lods": {
   "lod0": {
    "file": "platform-1-night.glb",
-   "triangles": 54872,
-   "primitives": 175,
-   "materials": 172,
-   "textures": 38,
-   "textureKB": 639,
-   "bytes": 1269900
+   "triangles": 61088,
+   "primitives": 196,
+   "materials": 191,
+   "textures": 41,
+   "textureKB": 643,
+   "bytes": 1322024
   },
   "lod1": {
    "file": "platform-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 29938,
-   "primitives": 175,
-   "materials": 172,
-   "textures": 38,
-   "textureKB": 290,
-   "bytes": 789152
+   "triangles": 33122,
+   "primitives": 196,
+   "materials": 191,
+   "textures": 41,
+   "textureKB": 298,
+   "bytes": 855656
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
+   "exit-a-stair",
    "pf",
    "pf",
    "pf",
@@ -911,16 +1198,17 @@
    "pf",
    "pf",
    "spot:kouka-meet",
-   "spot:door-street",
    "spot:plat-phone",
    "spot:frag-7"
   ],
-  "exportBytes": 919940
+  "exportBytes": 824596
  },
  "live": {
   "file": "platform-1-night.live.json",
-  "bytes": 44024,
+  "bytes": 44284,
   "objects": [
+   "Mesh",
+   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",
