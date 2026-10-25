@@ -5,10 +5,10 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 72820,
-  "drawCalls": 362,
-  "textures": 65,
-  "textureMB": 81.4
+  "triangles": 72816,
+  "drawCalls": 360,
+  "textures": 64,
+  "textureMB": 81.3
  },
  "exported": {
   "triangles": 64806,
@@ -37,7 +37,7 @@
    "intensity": 2.4,
    "position": [
     1,
-    5.5,
+    3.6,
     -4
    ],
    "visible": true,
@@ -68,8 +68,8 @@
   {
    "type": "PointLight",
    "name": "light-pool-01",
-   "color": 12965366,
-   "intensity": 3.2391939871506388,
+   "color": 14279918,
+   "intensity": 6.300000000000001,
    "position": [
     0.8,
     1.55,
@@ -80,45 +80,38 @@
    "decay": 1.8
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "light-pool-02",
    "color": 16757354,
    "intensity": 0,
    "position": [
-    0.2,
-    1.13,
-    0.39
+    0.16,
+    1.17,
+    0.34
    ],
    "visible": true,
-   "distance": 3.4,
-   "decay": 2
+   "distance": 2.4,
+   "decay": 2,
+   "angle": 0.82,
+   "penumbra": 0.78,
+   "target": [
+    0.1,
+    0.73,
+    0.44
+   ]
   },
   {
    "type": "PointLight",
    "name": "light-pool-03",
-   "color": 9165055,
-   "intensity": 0.3701935985315015,
+   "color": 6941439,
+   "intensity": 0.72,
    "position": [
     0.5,
-    1.05,
+    1.38,
     0.82
    ],
    "visible": true,
    "distance": 2.4,
-   "decay": 2
-  },
-  {
-   "type": "PointLight",
-   "name": "light-pool-04",
-   "color": 8955840,
-   "intensity": 0.24,
-   "position": [
-    2.81,
-    2.27,
-    2.7
-   ],
-   "visible": true,
-   "distance": 3.4,
    "decay": 2
   },
   {
@@ -142,13 +135,13 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "37120ba9-4253-446a-b869-aed549612910",
+   "material": "c3c436c1-4e70-4cdd-b374-5776fffc857e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "26cfd58a-f5bf-441d-97bc-36ff7215abe4",
+   "material": "aaf40a8e-a5fd-44a3-9230-4f7ba87470aa",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -165,15 +158,15 @@
   "ref": {
    "position": [
     -0.6,
-    1.55,
+    1.2,
     5.1
    ],
    "target": [
     2.5,
-    1.4,
+    1.15,
     1.2
    ],
-   "fov": 66
+   "fov": 56
   },
   "views": [
    {
@@ -189,7 +182,12 @@
      5,
      -9
     ],
-    "fov": 62
+    "fov": 62,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "room-wide",
@@ -204,7 +202,12 @@
      0.7,
      1
     ],
-    "fov": 60
+    "fov": 60,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "desk",
@@ -219,7 +222,12 @@
      0.95,
      0.15
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "bed",
@@ -234,7 +242,12 @@
      0.55,
      1
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "window",
@@ -249,7 +262,12 @@
      1.9,
      -8
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "reverse",
@@ -264,7 +282,12 @@
      1,
      5
     ],
-    "fov": 60
+    "fov": 60,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "chair",
@@ -279,7 +302,12 @@
      0.75,
      1.2
     ],
-    "fov": 45
+    "fov": 45,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "door",
@@ -294,7 +322,12 @@
      1.15,
      5.7
     ],
-    "fov": 62
+    "fov": 62,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "wardrobe",
@@ -309,7 +342,12 @@
      1.2,
      3
     ],
-    "fov": 62
+    "fov": 62,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "leftwall",
@@ -324,7 +362,12 @@
      1.4,
      5
     ],
-    "fov": 60
+    "fov": 60,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "bedside",
@@ -339,7 +382,12 @@
      0.5,
      0.3
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "shelf",
@@ -354,7 +402,12 @@
      1.2,
      0.2
     ],
-    "fov": 52
+    "fov": 52,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    }
   ]
  },
@@ -655,36 +708,36 @@
  "three": "170",
  "key": "self-residence-1-day",
  "hour": 13,
- "bakedAt": "2026-10-24T09:20:04.941Z",
+ "bakedAt": "2026-10-25T10:53:06.806Z",
  "quantizePosition": 14,
  "source": {
   "family": "SelfResidence (D) built at runtime by lab/src/scenes",
-  "exportBytes": 22859664,
-  "triangles": 72820,
-  "drawCalls": 362,
-  "textures": 65,
-  "textureMB": 81.4
+  "exportBytes": 22953336,
+  "triangles": 72816,
+  "drawCalls": 360,
+  "textures": 64,
+  "textureMB": 81.3
  },
  "lods": {
   "lod0": {
    "file": "self-residence-1-day.glb",
    "triangles": 68136,
-   "primitives": 269,
-   "materials": 253,
-   "textures": 55,
-   "textureKB": 2218,
-   "bytes": 3020636
+   "primitives": 270,
+   "materials": 254,
+   "textures": 59,
+   "textureKB": 2247,
+   "bytes": 3049112
   },
   "lod1": {
    "file": "self-residence-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 46058,
-   "primitives": 269,
-   "materials": 253,
-   "textures": 55,
-   "textureKB": 653,
-   "bytes": 1375132
+   "triangles": 46086,
+   "primitives": 270,
+   "materials": 254,
+   "textures": 59,
+   "textureKB": 667,
+   "bytes": 1390060
   }
  },
  "parts": {
@@ -696,16 +749,14 @@
    "corkboard",
    "spot:door"
   ],
-  "exportBytes": 714436
+  "exportBytes": 627476
  },
  "live": {
   "file": "self-residence-1-day.live.json",
-  "bytes": 31905,
+  "bytes": 23837,
   "objects": [
    "Mesh",
    "skyDome",
-   "Mesh",
-   "Mesh",
    "smokePlume",
    "motes"
   ]
