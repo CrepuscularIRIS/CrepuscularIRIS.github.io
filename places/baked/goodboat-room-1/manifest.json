@@ -5,23 +5,23 @@
  "variant": "N",
  "tod": "day",
  "cost": {
-  "triangles": 31108,
-  "drawCalls": 115,
-  "textures": 32,
-  "textureMB": 62.1
+  "triangles": 38382,
+  "drawCalls": 138,
+  "textures": 34,
+  "textureMB": 67.1
  },
  "exported": {
-  "triangles": 28284,
-  "drawCalls": 104,
-  "textures": 30,
-  "textureMB": 61.9
+  "triangles": 35384,
+  "drawCalls": 123,
+  "textures": 31,
+  "textureMB": 66.1
  },
  "lights": [
   {
    "type": "PointLight",
-   "name": "",
-   "color": 16763024,
-   "intensity": 2.2,
+   "name": "light-desk",
+   "color": 16765088,
+   "intensity": 1.25,
    "position": [
     2.7,
     0.98,
@@ -32,13 +32,34 @@
    "decay": 2
   },
   {
+   "type": "SpotLight",
+   "name": "light-cabin-notice",
+   "color": 16766624,
+   "intensity": 0.55,
+   "position": [
+    2.775,
+    1.8399999999999999,
+    5.25
+   ],
+   "visible": true,
+   "distance": 1.8,
+   "decay": 2,
+   "angle": 0.85,
+   "penumbra": 1,
+   "target": [
+    2.935,
+    1.38,
+    5.25
+   ]
+  },
+  {
    "type": "PointLight",
-   "name": "",
-   "color": 16758920,
-   "intensity": 2,
+   "name": "light-sofa",
+   "color": 16762250,
+   "intensity": 1.1,
    "position": [
     -1.95,
-    0.9,
+    0.68,
     6
    ],
    "visible": true,
@@ -48,223 +69,171 @@
   {
    "type": "HemisphereLight",
    "name": "",
-   "color": 11561626,
-   "intensity": 0.18,
+   "color": 5533824,
+   "intensity": 0.28,
    "position": [
     0,
     1,
     0
    ],
    "visible": true,
-   "groundColor": 3805216
+   "groundColor": 1577752
   },
   {
    "type": "PointLight",
-   "name": "",
-   "color": 16758928,
-   "intensity": 0.8999999999999999,
+   "name": "light-pool-01",
+   "color": 16762250,
+   "intensity": 0.85,
    "position": [
     -1.17,
-    0.62,
-    0.5
+    0.3,
+    0.26
    ],
    "visible": true,
-   "distance": 2.2,
+   "distance": 2.6,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-02",
+   "color": 16762250,
+   "intensity": 0.75,
+   "position": [
+    1.17,
+    0.3,
+    0.26
+   ],
+   "visible": true,
+   "distance": 2.6,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-03",
+   "color": 16726941,
+   "intensity": 0.42,
+   "position": [
+    -1.72,
+    1.05,
+    0.28
+   ],
+   "visible": true,
+   "distance": 1.15,
+   "decay": 2
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-04",
+   "color": 6543600,
+   "intensity": 2.4,
+   "position": [
+    0,
+    1.4,
+    -0.35
+   ],
+   "visible": true,
+   "distance": 6,
+   "decay": 2,
+   "angle": 0.72,
+   "penumbra": 0.75,
+   "target": [
+    0,
+    0.3,
+    2.8
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-05",
+   "color": 12116200,
+   "intensity": 0.65,
+   "position": [
+    2.42,
+    1.96,
+    0.34
+   ],
+   "visible": true,
+   "distance": 2.6,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-06",
+   "color": 16765088,
+   "intensity": 2.4,
+   "position": [
+    0.2,
+    2.28,
+    3.6
+   ],
+   "visible": true,
+   "distance": 6.8,
    "decay": 2,
    "shadow": {
     "mapSize": [
-     1024,
-     1024
+     512,
+     512
     ],
     "bias": -0.002,
     "normalBias": 0.025,
     "radius": 2,
     "autoUpdate": true,
     "camera": {
-     "near": 0.5,
-     "far": 2.2,
+     "near": 0.08,
+     "far": 6.8,
      "fov": 90
     }
    }
   },
   {
    "type": "PointLight",
-   "name": "",
-   "color": 13811162,
-   "intensity": 0.3487694951441312,
+   "name": "light-pool-07",
+   "color": 16763024,
+   "intensity": 0.28,
    "position": [
-    1.17,
-    0.62,
-    0.5
+    0.2,
+    2.5,
+    3.6
    ],
    "visible": true,
-   "distance": 2.2,
-   "decay": 2
-  },
-  {
-   "type": "PointLight",
-   "name": "",
-   "color": 16754816,
-   "intensity": 1.08,
-   "position": [
-    -1.05,
-    0.9,
-    0.6
-   ],
-   "visible": true,
-   "distance": 2.2,
-   "decay": 2
-  },
-  {
-   "type": "PointLight",
-   "name": "",
-   "color": 13809623,
-   "intensity": 0.41852339417295753,
-   "position": [
-    1.05,
-    0.9,
-    0.6
-   ],
-   "visible": true,
-   "distance": 2.2,
-   "decay": 2
-  },
-  {
-   "type": "PointLight",
-   "name": "",
-   "color": 16728256,
-   "intensity": 2.7,
-   "position": [
-    -1.7,
-    1,
-    0.95
-   ],
-   "visible": true,
-   "distance": 3.5,
-   "decay": 2
-  },
-  {
-   "type": "PointLight",
-   "name": "",
-   "color": 10009343,
-   "intensity": 0.6975389902882624,
-   "position": [
-    0,
-    1.2,
-    0.7
-   ],
-   "visible": true,
-   "distance": 3.5,
-   "decay": 2
-  },
-  {
-   "type": "PointLight",
-   "name": "",
-   "color": 13807336,
-   "intensity": 1.1625649838137708,
-   "position": [
-    2.4,
-    1.7,
-    0.9
-   ],
-   "visible": true,
-   "distance": 3,
-   "decay": 2
-  },
-  {
-   "type": "DirectionalLight",
-   "name": "",
-   "color": 16754872,
-   "intensity": 0.2,
-   "position": [
-    -1,
-    4,
-    8
-   ],
-   "visible": true,
-   "target": [
-    0,
-    0,
-    0
-   ]
-  },
-  {
-   "type": "PointLight",
-   "name": "",
-   "color": 16752776,
-   "intensity": 3.3000000000000003,
-   "position": [
-    0,
-    2.15,
-    3.2
-   ],
-   "visible": true,
-   "distance": 7,
-   "decay": 2
-  },
-  {
-   "type": "PointLight",
-   "name": "",
-   "color": 16751264,
-   "intensity": 3.3000000000000003,
-   "position": [
-    0.4,
-    2.15,
-    6
-   ],
-   "visible": true,
-   "distance": 7,
-   "decay": 2
-  },
-  {
-   "type": "PointLight",
-   "name": "",
-   "color": 16747096,
-   "intensity": 3,
-   "position": [
-    0,
-    0.8,
-    3.2
-   ],
-   "visible": true,
-   "distance": 4.5,
+   "distance": 2.6,
    "decay": 2
   }
  ],
  "lowDrop": [],
  "clocks": [
   {
-   "material": "40fd4694-22a3-47ce-b8a8-6e5b9ef78f9a",
+   "material": "31441d5c-7304-4930-9443-d6f914b33b93",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "40fd4694-22a3-47ce-b8a8-6e5b9ef78f9a",
+   "material": "31441d5c-7304-4930-9443-d6f914b33b93",
    "uniform": "uWT",
    "a": 0.3,
    "b": 0
   },
   {
-   "material": "f1199c2f-fdd5-4e5f-81be-5934b54273d4",
+   "material": "522b0225-8156-45c1-9003-ea7174d1fe72",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "0567b772-667f-4a8b-bcfb-ba95646052b6",
+   "material": "3561d4d5-279a-4ec6-aeb1-80cdccc0360b",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "7063a0c9-fc8f-4c07-884b-4bf6c4a630ed",
+   "material": "8121eb9a-eb3d-4314-a656-067b8eca6d70",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "40cd8c43-d972-4970-9de1-0f8dca0748ae",
+   "material": "fe36e7aa-6339-4e53-a124-9126c2b79d01",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -276,7 +245,7 @@
  "hooks": {},
  "patchClocks": {},
  "uniformArrays": {
-  "40fd4694-22a3-47ce-b8a8-6e5b9ef78f9a": {
+  "31441d5c-7304-4930-9443-d6f914b33b93": {
    "uL": "v4",
    "uLC": "c"
   }
@@ -314,7 +283,12 @@
      0.4,
      0.8
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "flamingo",
@@ -329,7 +303,12 @@
      0.9,
      0.1
     ],
-    "fov": 48
+    "fov": 48,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "lamp",
@@ -344,7 +323,12 @@
      0.4,
      0.22
     ],
-    "fov": 42
+    "fov": 42,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "shower",
@@ -359,7 +343,12 @@
      1.1,
      0.3
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "reverse",
@@ -389,7 +378,32 @@
      0.9,
      3.2
     ],
-    "fov": 52
+    "fov": 52,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "notice",
+    "label": "Night passage notice",
+    "position": [
+     1.7,
+     1.55,
+     5.2
+    ],
+    "target": [
+     2.93,
+     1.48,
+     5.25
+    ],
+    "fov": 38,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "window",
@@ -404,7 +418,12 @@
      1.3,
      -3
     ],
-    "fov": 30
+    "fov": 30,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "ceiling",
@@ -434,7 +453,12 @@
      1.2,
      7.7
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    }
   ]
  },
@@ -451,29 +475,31 @@
   ]
  },
  "env": {
-  "background": 1707034,
+  "background": 463903,
+  "toneMapping": "aces",
+  "exposure": 1,
   "ibl": {
-   "top": 10111594,
-   "wall": 10506346,
-   "floor": 4854808,
-   "intensity": 0.22,
+   "top": 2373708,
+   "wall": 3946036,
+   "floor": 1321010,
+   "intensity": 0.21,
    "lights": [
     {
      "pos": [
-      -2.4,
-      1.4,
-      1.5
+      -1.75,
+      1.2,
+      0.25
      ],
      "size": [
+      0.6,
+      1.5
+     ],
+     "color": 16726941,
+     "power": 0.16,
+     "lookAt": [
+      0,
       0.8,
       2
-     ],
-     "color": 16728256,
-     "power": 5,
-     "lookAt": [
-      1,
-      1,
-      3
      ]
     },
     {
@@ -486,72 +512,73 @@
       1.8,
       1.4
      ],
-     "color": 7391487,
-     "power": 3,
+     "color": 4581631,
+     "power": 1.5,
      "lookAt": [
       0,
-      1,
-      4
+      0.8,
+      3
      ]
     }
    ]
   },
   "post": {
    "outline": {
-    "color": 2099220,
-    "opacity": 0.55,
+    "color": 1055784,
+    "opacity": 0.28,
     "depthTh": 0.014,
     "normalTh": 0.3
    },
    "ao": {
-    "strength": 0.5,
-    "radius": 0.3
+    "strength": 0.58,
+    "radius": 0.26
+   },
+   "fog": {
+    "enabled": true,
+    "color": 1586759,
+    "density": 0.012,
+    "falloff": 0.3,
+    "base": 0,
+    "near": 3,
+    "maxOpacity": 0.18
    },
    "bloom": {
-    "threshold": 0.8,
-    "strength": 0.5,
+    "threshold": 0.85,
+    "knee": 0.45,
+    "strength": 0.2,
     "weights": [
-     0.5,
-     0.35,
+     0.45,
      0.3,
-     0.2,
-     0.1
+     0.22,
+     0.1,
+     0.05
     ]
    },
    "grade": {
-    "exposure": 0.86,
-    "saturation": 1.05,
+    "exposure": 1,
+    "contrast": 1.04,
+    "saturation": 1.03,
     "lift": [
-     0.02,
-     0,
-     0.02
+     0.01,
+     0.014,
+     0.018
     ],
     "gain": [
-     1.04,
-     1.02,
-     0.82
+     1.03,
+     1,
+     1.02
     ],
-    "vignette": 0.3
+    "vignette": 0.32,
+    "staticGrain": 0.0025,
+    "guard": 0.08
    },
    "dof": {
     "enabled": true,
     "focus": 6.4,
-    "range": 2.2,
-    "near": 0.7,
-    "far": 0.6,
-    "maxRadius": 8,
-    "tilt": {
-     "center": [
-      0.5,
-      0.5
-     ],
-     "radius": [
-      0.3,
-      0.42
-     ],
-     "soft": 0.3,
-     "strength": 8
-    }
+    "range": 7,
+    "near": 0.25,
+    "far": 0.25,
+    "maxRadius": 2.5
    }
   }
  },
@@ -650,6 +677,24 @@
     0.06
    ],
    "reach": 5
+  },
+  {
+   "id": "gb3-notice",
+   "kind": "inspect",
+   "label": "Night passage notice",
+   "object": "cabinNotice",
+   "typed": false,
+   "anchor": [
+    2.8899999999999997,
+    1.515,
+    5.25
+   ],
+   "built": [
+    2.8899999999999997,
+    1.515,
+    5.25
+   ],
+   "reach": 4
   }
  ],
  "bind": {
@@ -704,11 +749,16 @@
    2.75,
    0.8890123815696447,
    3.3
+  ],
+  "cabinNotice": [
+   2.8899999999999997,
+   1.515,
+   5.25
   ]
  },
  "doorProps": {},
  "anchorsBefore": {
-  "named": 1,
+  "named": 2,
   "typed": 3
  },
  "models": {
@@ -721,63 +771,64 @@
   "triangles": 0
  },
  "manifestColliders": 0,
- "manifest": false,
+ "manifest": true,
  "three": "170",
  "key": "goodboat-room-1",
  "hour": 13,
- "bakedAt": "2026-10-24T09:54:28.138Z",
+ "bakedAt": "2026-10-25T03:20:28.493Z",
  "quantizePosition": 14,
  "source": {
   "family": "GoodboatRoom (N) built at runtime by lab/src/scenes",
-  "exportBytes": 17520992,
-  "triangles": 31108,
-  "drawCalls": 115,
-  "textures": 32,
-  "textureMB": 62.1
+  "exportBytes": 18199020,
+  "triangles": 38382,
+  "drawCalls": 138,
+  "textures": 34,
+  "textureMB": 67.1
  },
  "lods": {
   "lod0": {
    "file": "goodboat-room-1.glb",
-   "triangles": 28550,
-   "primitives": 91,
-   "materials": 91,
-   "textures": 22,
-   "textureKB": 922,
-   "bytes": 1278128
+   "triangles": 35688,
+   "primitives": 114,
+   "materials": 114,
+   "textures": 24,
+   "textureKB": 992,
+   "bytes": 1426036
   },
   "lod1": {
    "file": "goodboat-room-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 16892,
-   "primitives": 91,
-   "materials": 91,
-   "textures": 22,
-   "textureKB": 266,
-   "bytes": 541712
+   "triangles": 20845,
+   "primitives": 114,
+   "materials": 114,
+   "textures": 24,
+   "textureKB": 298,
+   "bytes": 627268
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
    "laptop",
+   "cabinNotice",
    "spot:door-hall",
    "spot:gb3-flamingo",
    "spot:gb3-blind"
   ],
-  "exportBytes": 73976
+  "exportBytes": 124700
  },
  "live": {
   "file": "goodboat-room-1.live.json",
-  "bytes": 52030,
+  "bytes": 50671,
   "objects": [
-   "Mesh",
    "Mesh",
    "skyDome",
    "water",
    "smokePlume",
    "Mesh",
    "Mesh",
+   "buoy-flash",
    "motes"
   ]
  },
