@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 158600,
+  "triangles": 159572,
   "drawCalls": 211,
-  "textures": 59,
-  "textureMB": 73.7
+  "textures": 63,
+  "textureMB": 75.3
  },
  "exported": {
-  "triangles": 153808,
+  "triangles": 154780,
   "drawCalls": 205,
-  "textures": 57,
-  "textureMB": 73.1
+  "textures": 61,
+  "textureMB": 74.8
  },
  "lights": [
   {
@@ -50,21 +50,7 @@
    "position": [
     -0.4,
     2.45,
-    1.2
-   ],
-   "visible": true,
-   "distance": 8,
-   "decay": 2
-  },
-  {
-   "type": "PointLight",
-   "name": "light-pool-02",
-   "color": 15921896,
-   "intensity": 9.6,
-   "position": [
-    -0.4,
-    2.45,
-    -3.6
+    0.2
    ],
    "visible": true,
    "distance": 8,
@@ -84,6 +70,20 @@
      "fov": 90
     }
    }
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-02",
+   "color": 15921896,
+   "intensity": 9.6,
+   "position": [
+    -0.4,
+    2.45,
+    -3.6
+   ],
+   "visible": true,
+   "distance": 8,
+   "decay": 2
   },
   {
    "type": "PointLight",
@@ -145,7 +145,7 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "06212443-b684-4a0d-9ed4-cb3daf055b4b",
+   "material": "be06d152-55fa-4795-b4c1-1998c1e86547",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -215,16 +215,16 @@
     "name": "cabinets",
     "label": "Cabinet row",
     "position": [
-     -2.4,
+     -1.85,
      1.55,
-     1.8
+     0.65
     ],
     "target": [
-     -4.3,
-     1.4,
-     -1.2
+     -3.9,
+     1.35,
+     -2
     ],
-    "fov": 55
+    "fov": 58
    },
    {
     "name": "screens",
@@ -630,36 +630,36 @@
  "three": "170",
  "key": "game-room-1-day",
  "hour": 13,
- "bakedAt": "2026-10-24T22:58:00.340Z",
+ "bakedAt": "2026-10-25T17:05:49.963Z",
  "quantizePosition": 14,
  "source": {
   "family": "GameRoom (D) built at runtime by lab/src/scenes",
-  "exportBytes": 16284912,
-  "triangles": 158600,
+  "exportBytes": 15648236,
+  "triangles": 159572,
   "drawCalls": 211,
-  "textures": 59,
-  "textureMB": 73.7
+  "textures": 63,
+  "textureMB": 75.3
  },
  "lods": {
   "lod0": {
    "file": "game-room-1-day.glb",
-   "triangles": 158588,
+   "triangles": 159560,
    "primitives": 211,
    "materials": 194,
-   "textures": 53,
-   "textureKB": 552,
-   "bytes": 1910252
+   "textures": 57,
+   "textureKB": 448,
+   "bytes": 1833308
   },
   "lod1": {
    "file": "game-room-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 91425,
+   "triangles": 89828,
    "primitives": 211,
    "materials": 194,
-   "textures": 53,
-   "textureKB": 453,
-   "bytes": 1453832
+   "textures": 57,
+   "textureKB": 392,
+   "bytes": 1416488
   }
  },
  "parts": {
@@ -673,15 +673,15 @@
    "anchor:hiscore-board",
    "spot:rig-seven"
   ],
-  "exportBytes": 627644
+  "exportBytes": 626232
  },
  "live": {
   "file": "game-room-1-day.live.json",
-  "bytes": 18241,
+  "bytes": 17352,
   "objects": [
-   "Mesh",
-   "Mesh",
-   "Mesh",
+   "gapShade",
+   "shadow",
+   "heroShade",
    "Mesh",
    "motes"
   ]

@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 156450,
-  "drawCalls": 221,
-  "textures": 76,
-  "textureMB": 80.4
+  "triangles": 159198,
+  "drawCalls": 236,
+  "textures": 81,
+  "textureMB": 83.1
  },
  "exported": {
-  "triangles": 151622,
-  "drawCalls": 205,
-  "textures": 73,
-  "textureMB": 79.8
+  "triangles": 154390,
+  "drawCalls": 222,
+  "textures": 78,
+  "textureMB": 82.5
  },
  "lights": [
   {
@@ -260,21 +260,7 @@
    "position": [
     -0.4,
     2.45,
-    1.2
-   ],
-   "visible": true,
-   "distance": 6.5,
-   "decay": 2
-  },
-  {
-   "type": "PointLight",
-   "name": "light-pool-17",
-   "color": 14216936,
-   "intensity": 5.4,
-   "position": [
-    -0.4,
-    2.45,
-    -3.6
+    0.2
    ],
    "visible": true,
    "distance": 6.5,
@@ -297,6 +283,20 @@
   },
   {
    "type": "PointLight",
+   "name": "light-pool-17",
+   "color": 14216936,
+   "intensity": 5.4,
+   "position": [
+    -0.4,
+    2.45,
+    -3.6
+   ],
+   "visible": true,
+   "distance": 6.5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
    "name": "light-pool-18",
    "color": 14216936,
    "intensity": 5,
@@ -313,31 +313,31 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "ce84d772-dab8-4900-b7bd-9e2624fba3b4",
+   "material": "2d246097-eca3-4106-99f5-774dff121639",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "b327c5ff-4f52-478a-8f8b-16b0a5f3cf3d",
+   "material": "271a22c3-39c3-4a54-9a26-e4dd6226242c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "651ce646-5de1-4e7f-a46a-1703e188f4d2",
+   "material": "154cedb6-f4e5-4383-b0c8-c29189c26207",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "2245ec6e-6b4b-4a8f-ad96-818d7245aa33",
+   "material": "733b579c-abce-4d14-a248-ed1d33d593b7",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "ec8319a4-9b5e-4a35-9cca-ef85857789fe",
+   "material": "cc347e4f-41f6-4fd1-a02d-bcd73b4e78a5",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -356,7 +356,7 @@
    "x": -0.7999999999999998,
    "y": 0,
    "z": -2.7,
-   "strength": 0.42,
+   "strength": 0.55,
    "blur": 1.4,
    "f0": 0.06,
    "tint": 11589852,
@@ -407,16 +407,16 @@
     "name": "cabinets",
     "label": "Cabinet row",
     "position": [
-     -2.4,
+     -1.85,
      1.55,
-     1.8
+     0.65
     ],
     "target": [
-     -4.3,
-     1.4,
-     -1.2
+     -3.9,
+     1.35,
+     -2
     ],
-    "fov": 55
+    "fov": 58
    },
    {
     "name": "screens",
@@ -828,36 +828,36 @@
  "three": "170",
  "key": "game-room-1-night",
  "hour": 22,
- "bakedAt": "2026-10-24T22:54:49.241Z",
+ "bakedAt": "2026-10-25T17:05:57.025Z",
  "quantizePosition": 14,
  "source": {
   "family": "GameRoom (N) built at runtime by lab/src/scenes",
-  "exportBytes": 18356172,
-  "triangles": 156450,
-  "drawCalls": 221,
-  "textures": 76,
-  "textureMB": 80.4
+  "exportBytes": 18253832,
+  "triangles": 159198,
+  "drawCalls": 236,
+  "textures": 81,
+  "textureMB": 83.1
  },
  "lods": {
   "lod0": {
    "file": "game-room-1-night.glb",
-   "triangles": 156402,
-   "primitives": 214,
-   "materials": 199,
-   "textures": 73,
-   "textureKB": 793,
-   "bytes": 2136932
+   "triangles": 159170,
+   "primitives": 231,
+   "materials": 216,
+   "textures": 78,
+   "textureKB": 765,
+   "bytes": 2134244
   },
   "lod1": {
    "file": "game-room-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 89436,
-   "primitives": 214,
-   "materials": 199,
-   "textures": 73,
-   "textureKB": 693,
-   "bytes": 1679556
+   "triangles": 90756,
+   "primitives": 231,
+   "materials": 216,
+   "textures": 78,
+   "textureKB": 673,
+   "bytes": 1686264
   }
  },
  "parts": {
@@ -871,17 +871,15 @@
    "anchor:hiscore-board",
    "spot:rig-seven"
   ],
-  "exportBytes": 707372
+  "exportBytes": 705964
  },
  "live": {
   "file": "game-room-1-night.live.json",
-  "bytes": 43167,
+  "bytes": 38463,
   "objects": [
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
+   "gapShade",
+   "shadow",
+   "heroShade",
    "Mesh",
    "Mesh",
    "Mesh",
