@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 336550,
-  "drawCalls": 511,
-  "textures": 72,
-  "textureMB": 105.1
+  "triangles": 339016,
+  "drawCalls": 519,
+  "textures": 78,
+  "textureMB": 105.4
  },
  "exported": {
-  "triangles": 313697,
-  "drawCalls": 318,
-  "textures": 68,
-  "textureMB": 103
+  "triangles": 313733,
+  "drawCalls": 325,
+  "textures": 74,
+  "textureMB": 103.4
  },
  "lights": [
   {
@@ -66,6 +66,20 @@
      "fov": 57.29577951308232
     }
    }
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-pavilion-eave",
+   "color": 16757864,
+   "intensity": 10,
+   "position": [
+    3.1579179791460743,
+    2.85,
+    -71.74750441529191
+   ],
+   "visible": true,
+   "distance": 7.5,
+   "decay": 1.5
   },
   {
    "type": "PointLight",
@@ -169,7 +183,7 @@
    "type": "PointLight",
    "name": "light-pool-shop-61",
    "color": 16767136,
-   "intensity": 16,
+   "intensity": 10,
    "position": [
     11.852623548180635,
     2.1620000000000004,
@@ -183,7 +197,7 @@
    "type": "PointLight",
    "name": "light-pool-shop-63",
    "color": 16767136,
-   "intensity": 16,
+   "intensity": 10,
    "position": [
     16.320338830065825,
     2.068,
@@ -197,7 +211,7 @@
    "type": "PointLight",
    "name": "light-pool-shop-65",
    "color": 16767136,
-   "intensity": 16,
+   "intensity": 10,
    "position": [
     19.42471366687019,
     2.256,
@@ -318,11 +332,24 @@
  "lowDrop": [
   "disc"
  ],
- "clocks": [],
+ "clocks": [
+  {
+   "material": "ea7fb961-5ef9-4fb8-b1d8-9d7174542368",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "ea7fb961-5ef9-4fb8-b1d8-9d7174542368",
+   "uniform": "uWT",
+   "a": 0.3,
+   "b": 0
+  }
+ ],
  "motions": [],
  "tracks": [
   {
-   "id": "8217445b-f1a0-4b06-89a3-cbe9712f8aca",
+   "id": "9abbb84f-d582-4922-bf17-40bcb35eb02c",
    "name": "disc",
    "ch": {
     "rz": {
@@ -1032,7 +1059,7 @@
    }
   },
   {
-   "id": "3ed1c018-8653-49bb-bd81-6083637cd4ec",
+   "id": "2f8b8383-e765-4f18-868f-202d19c95a09",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -1742,7 +1769,7 @@
    }
   },
   {
-   "id": "bf1fce55-3fa3-49ae-b063-ecf7d86bdca9",
+   "id": "6922e90f-4a2c-4f36-aacf-9dd2c76e5001",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -2452,7 +2479,7 @@
    }
   },
   {
-   "id": "10786a3a-d126-4ad9-a4e5-d285996b7593",
+   "id": "e2298e0f-3f5a-4f15-b768-653550245bbd",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -3162,7 +3189,7 @@
    }
   },
   {
-   "id": "02b34923-19c3-4568-bdff-54f4fb72a61e",
+   "id": "54251c45-3b38-4e98-a5eb-6cb9be719e41",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -3872,7 +3899,7 @@
    }
   },
   {
-   "id": "8ca207b2-2b46-4119-a8a6-db3448d36621",
+   "id": "7bda2a38-ba2f-485a-b3f2-706f147d02d8",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -4582,7 +4609,7 @@
    }
   },
   {
-   "id": "c989cd3c-c359-4051-acdb-f8ada65b573a",
+   "id": "66f706d8-44ca-4a0b-a15a-79e5ef4949f4",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -5292,7 +5319,7 @@
    }
   },
   {
-   "id": "1deb6050-b035-4915-85a2-c55222362a65",
+   "id": "e0d66763-3bb9-462d-bb86-4739b957c969",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -6002,7 +6029,7 @@
    }
   },
   {
-   "id": "5b0f7645-b336-4007-a4ff-c924e8f0a591",
+   "id": "620dc042-da3b-4f58-9047-93631924e214",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -6712,7 +6739,7 @@
    }
   },
   {
-   "id": "ea8c0c72-b758-4f22-99f4-013683dfb4f7",
+   "id": "d645a2f8-0b55-42a1-95bb-de94c21d6499",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -7422,7 +7449,7 @@
    }
   },
   {
-   "id": "fddde259-a4cd-498b-91b6-57475713996d",
+   "id": "c1fa79d6-2a47-4025-832a-4eeebf356b13",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -8132,7 +8159,7 @@
    }
   },
   {
-   "id": "fde0666c-07ee-41cf-bba4-abe6c4683c13",
+   "id": "3d162e5b-3a97-40b9-8255-077f6533f331",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -8842,7 +8869,7 @@
    }
   },
   {
-   "id": "43118e40-eb1a-4d2a-a610-718c26b351f3",
+   "id": "457ae34f-bd10-44d2-aad0-4ca99e751db6",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -9552,7 +9579,7 @@
    }
   },
   {
-   "id": "9dcda3cd-3044-4b4b-897b-2c4f3c2bec0b",
+   "id": "78cb6d8a-9fcf-469c-8112-884ee5a69982",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -10262,7 +10289,7 @@
    }
   },
   {
-   "id": "37629f63-2cf5-48a6-9671-c66e92cbcafe",
+   "id": "ea2c23b1-aa6b-4c87-b349-026218e2b48c",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -10972,7 +10999,7 @@
    }
   },
   {
-   "id": "77890b26-c69e-4f85-853c-ad9335980572",
+   "id": "5ddfb0e1-736f-4baa-8e2c-b637d2386151",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -11682,7 +11709,7 @@
    }
   },
   {
-   "id": "573f05b9-6e94-43f6-93b6-8e70e0869c42",
+   "id": "d6aec941-9aac-4712-8213-1d69d92e8e23",
    "name": "gondola",
    "ch": {
     "rz": {
@@ -12395,7 +12422,12 @@
  "tracksUnfitted": [],
  "hooks": {},
  "patchClocks": {},
- "uniformArrays": {},
+ "uniformArrays": {
+  "ea7fb961-5ef9-4fb8-b1d8-9d7174542368": {
+   "uL": "v4",
+   "uLC": "c"
+  }
+ },
  "reflectors": [
   {
    "w": 64,
@@ -12403,9 +12435,9 @@
    "x": -1,
    "y": 0.025999999999999995,
    "z": -44,
-   "strength": 0.42,
+   "strength": 0.6,
    "blur": 1.8,
-   "f0": 0.035,
+   "f0": 0.06,
    "tint": 9419972,
    "fade": 100,
    "zones": 1,
@@ -12575,6 +12607,46 @@
      0,
      2.4,
      6
+    ],
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "arrival",
+    "label": "Arrive at the gate",
+    "position": [
+     3,
+     1.6,
+     21
+    ],
+    "target": [
+     -5,
+     5,
+     -60
+    ],
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "bay",
+    "label": "The bay",
+    "position": [
+     -14,
+     3.2,
+     -62
+    ],
+    "target": [
+     -60,
+     0.6,
+     -40
     ],
     "fov": 55,
     "post": {
@@ -13011,12 +13083,12 @@
    "typed": false,
    "anchor": [
     -20.6,
-    1.4454022773647286,
+    1.316978291659432,
     -5.400000001405752
    ],
    "built": [
     -20.6,
-    1.4456645947490188,
+    1.2999080478742249,
     -5.400000001405752
    ],
    "reach": 3.2
@@ -13121,7 +13193,7 @@
   ],
   "golf-windmill": [
    -20.6,
-   1.4329575318455778,
+   1.4198120623114194,
    -5.400000001405752
   ],
   "candy-stall": [
@@ -13178,36 +13250,36 @@
  "three": "170",
  "key": "amusement-park-1-night",
  "hour": 22,
- "bakedAt": "2026-10-24T20:25:15.195Z",
+ "bakedAt": "2026-10-25T16:57:04.593Z",
  "quantizePosition": 14,
  "source": {
   "family": "AmusementPark (N) built at runtime by lab/src/scenes",
-  "exportBytes": 36805264,
-  "triangles": 336550,
-  "drawCalls": 511,
-  "textures": 72,
-  "textureMB": 105.1
+  "exportBytes": 37258436,
+  "triangles": 339016,
+  "drawCalls": 519,
+  "textures": 78,
+  "textureMB": 105.4
  },
  "lods": {
   "lod0": {
    "file": "amusement-park-1-night.glb",
-   "triangles": 283190,
-   "primitives": 179,
-   "materials": 163,
-   "textures": 65,
-   "textureKB": 1753,
-   "bytes": 5037544
+   "triangles": 283262,
+   "primitives": 195,
+   "materials": 179,
+   "textures": 71,
+   "textureKB": 1770,
+   "bytes": 5093116
   },
   "lod1": {
    "file": "amusement-park-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 147263,
-   "primitives": 179,
-   "materials": 163,
-   "textures": 65,
-   "textureKB": 820,
-   "bytes": 3113344
+   "triangles": 147335,
+   "primitives": 195,
+   "materials": 179,
+   "textures": 71,
+   "textureKB": 832,
+   "bytes": 3179912
   }
  },
  "parts": {
@@ -13224,13 +13296,14 @@
    "park-map",
    "spot:frag-12"
   ],
-  "exportBytes": 195048
+  "exportBytes": 216928
  },
  "live": {
   "file": "amusement-park-1-night.live.json",
-  "bytes": 792548,
+  "bytes": 807778,
   "objects": [
    "disc",
+   "bay-water",
    "Mesh"
   ]
  },
