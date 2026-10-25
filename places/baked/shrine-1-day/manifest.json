@@ -1,0 +1,810 @@
+{
+ "version": 2,
+ "place": "shrine-1",
+ "family": "Shrine",
+ "variant": "D",
+ "tod": "day",
+ "cost": {
+  "triangles": 685178,
+  "drawCalls": 616,
+  "textures": 112,
+  "textureMB": 130.1
+ },
+ "exported": {
+  "triangles": 684354,
+  "drawCalls": 610,
+  "textures": 112,
+  "textureMB": 130.1
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 13688052,
+   "intensity": 0.55,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 4872296
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16774376,
+   "intensity": 5.4,
+   "position": [
+    -18,
+    34,
+    14
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    -7
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0005,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 5,
+     "far": 90,
+     "left": -22,
+     "right": 22,
+     "top": 22,
+     "bottom": -22
+    }
+   }
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 10134760,
+   "intensity": 0.35,
+   "position": [
+    15,
+    8,
+    20
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "lowDrop": [
+  "Mesh",
+  "Mesh",
+  "Mesh"
+ ],
+ "clocks": [
+  {
+   "material": "8c1f019d-bd80-486a-a9ad-5f25a9ee6919",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "660f2aa7-e3a1-4261-9586-25864879fe36",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "660f2aa7-e3a1-4261-9586-25864879fe36",
+   "uniform": "uWT",
+   "a": 0.3,
+   "b": 0
+  },
+  {
+   "material": "bc4e349c-10bd-41ce-9219-02930320895d",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "5c126ce1-4bf5-4254-b680-9ca1472a16f3",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "e0d5c5d1-7425-46e0-a99e-94de9e62f347",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
+ "uniformArrays": {
+  "660f2aa7-e3a1-4261-9586-25864879fe36": {
+   "uL": "v4",
+   "uLC": "c"
+  }
+ },
+ "reflectors": [],
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    1.6,
+    0
+   ],
+   "target": [
+    0,
+    1.6,
+    -10
+   ],
+   "fov": 45,
+   "shift": [
+    0,
+    0.083
+   ]
+  },
+  "views": [
+   {
+    "name": "torii",
+    "label": "Torii",
+    "position": [
+     3.4,
+     1.5,
+     -5.2
+    ],
+    "target": [
+     2.6,
+     2.6,
+     -9.2
+    ],
+    "fov": 55
+   },
+   {
+    "name": "hall",
+    "label": "Hall",
+    "position": [
+     -2.6,
+     2.4,
+     -6.2
+    ],
+    "target": [
+     -4.6,
+     3,
+     -11.4
+    ],
+    "fov": 55
+   },
+   {
+    "name": "wishes",
+    "label": "Wish tablets",
+    "position": [
+     -4.35,
+     2.25,
+     -8.7
+    ],
+    "target": [
+     -4.44,
+     2.16,
+     -10
+    ],
+    "fov": 45
+   },
+   {
+    "name": "rite-notice",
+    "label": "Festival notice",
+    "position": [
+     0.3,
+     1.45,
+     -7.4
+    ],
+    "target": [
+     0.25,
+     1,
+     -10.05
+    ],
+    "fov": 42
+   },
+   {
+    "name": "rear-stair",
+    "label": "Rear stair",
+    "position": [
+     3.8,
+     1.5,
+     -9.4
+    ],
+    "target": [
+     3.8,
+     2.6,
+     -16
+    ],
+    "fov": 60
+   },
+   {
+    "name": "from-precinct",
+    "label": "From above",
+    "position": [
+     5.5,
+     4.4,
+     -17
+    ],
+    "target": [
+     -0.5,
+     0.5,
+     -5
+    ],
+    "fov": 60
+   },
+   {
+    "name": "terrace",
+    "label": "Terrace",
+    "position": [
+     -11.5,
+     3.2,
+     -13.5
+    ],
+    "target": [
+     -3.5,
+     2.6,
+     -10
+    ],
+    "fov": 60
+   },
+   {
+    "name": "basin",
+    "label": "Water basin",
+    "position": [
+     -4.4,
+     2.1,
+     -7.4
+    ],
+    "target": [
+     -4.5,
+     0.95,
+     -5.4
+    ],
+    "fov": 52
+   },
+   {
+    "name": "incense",
+    "label": "Incense burner",
+    "position": [
+     -0.2,
+     1.5,
+     -5.3
+    ],
+    "target": [
+     -1.7,
+     1.3,
+     -7.7
+    ],
+    "fov": 50
+   },
+   {
+    "name": "sky-gap",
+    "label": "Sky through the canopy",
+    "position": [
+     0.5,
+     1.6,
+     -3
+    ],
+    "target": [
+     -2.2,
+     7.5,
+     -12
+    ],
+    "fov": 66
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     2,
+     1.6,
+     -8
+    ],
+    "target": [
+     -1,
+     1.2,
+     4
+    ],
+    "fov": 60
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -15,
+   0.3,
+   -24
+  ],
+  "max": [
+   12,
+   14,
+   6
+  ]
+ },
+ "env": {
+  "background": 12109036,
+  "ibl": {
+   "top": 11057376,
+   "wall": 7244380,
+   "floor": 12104880,
+   "intensity": 0.35,
+   "lights": []
+  },
+  "fog": {
+   "color": 11847896,
+   "near": 15,
+   "far": 60
+  },
+  "post": {
+   "outline": {
+    "color": 2763844,
+    "opacity": 0.45,
+    "depthTh": 0.015,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.5,
+    "radius": 0.4
+   },
+   "bloom": {
+    "threshold": 0.78,
+    "strength": 0.6,
+    "weights": [
+     0.45,
+     0.35,
+     0.3,
+     0.25,
+     0.2
+    ]
+   },
+   "paint": {
+    "enabled": true,
+    "strength": 0.3,
+    "radius": 2
+   },
+   "grade": {
+    "exposure": 1.04,
+    "saturation": 1.1,
+    "lift": [
+     0.03,
+     0.035,
+     0.055
+    ],
+    "gain": [
+     0.99,
+     1,
+     1.03
+    ],
+    "vignette": 0.26
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 10,
+    "range": 6,
+    "near": 0.6,
+    "far": 0.35,
+    "maxRadius": 6,
+    "tilt": {
+     "center": [
+      0.5,
+      0.52
+     ],
+     "radius": [
+      0.42,
+      0.36
+     ],
+     "soft": 0.3,
+     "strength": 5
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -14,
+   -23,
+   8.3,
+   4.4
+  ],
+  "eye": 1.6,
+  "start": {
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "target": [
+    1.5,
+    1.6,
+    -10
+   ]
+  },
+  "colliders": [
+   [
+    0.95,
+    -9.35,
+    2.05,
+    -8.65
+   ],
+   [
+    3.15,
+    -9.35,
+    4.25,
+    -8.65
+   ],
+   [
+    -0.7,
+    -11.5,
+    1,
+    -10
+   ],
+   [
+    4.4,
+    -8.8,
+    9.2,
+    -8
+   ],
+   [
+    8.7,
+    -8.2,
+    9.3,
+    2.2
+   ],
+   [
+    2.1,
+    -11,
+    2.65,
+    -10.3
+   ],
+   [
+    4.1,
+    -9.8,
+    4.8,
+    -8
+   ],
+   [
+    -5.5,
+    -6,
+    -3.5,
+    -4.8
+   ],
+   [
+    2,
+    -6.9,
+    6.8,
+    -4.4
+   ],
+   [
+    -5.4,
+    -13.1,
+    -3.4,
+    -10
+   ],
+   [
+    2.4,
+    -14.4,
+    2.95,
+    -11
+   ],
+   [
+    4.75,
+    -14.4,
+    5.4,
+    -11
+   ],
+   [
+    -1.3,
+    -14.4,
+    2.4,
+    -11.1
+   ],
+   [
+    5.4,
+    -8.1,
+    12,
+    -3.7
+   ],
+   [
+    -14,
+    -9.9,
+    -13,
+    -7.2
+   ]
+  ],
+  "floor": {
+   "x0": -15,
+   "z0": -24,
+   "cell": 0.2,
+   "nx": 123,
+   "nz": 148,
+   "rle": "8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwCSCTYA8AVCAOgDAwAAABUAkgkJAAAAGADwBUIA6AMDAAAAFQANCQkAAAAYAPAFQgDoAwMAAAAVAIcICQAAABgA8AVCAOgDAwAAABUAAggJAAAAGADwBUIA6AMDAAAAFQB9BwkAAAAYAPAFQgDoAwMAAAAVAPcGCQAAABgA8AVCAOgDAwAAABUAcgYJAAAAGADwBUIA6AMDAAAAFQDtBQkAAAAYAPAFQgDoAwMAAAAVAGcFCQAAABgA8AVCAOgDAwAAABUA4gQJAAAAGADwBUIA6AMDAAAAFQBdBAkAAAAYAPAFQgDoAwMAAAAVANcDCQAAABgA8AVCAOgDAwAAABUAUgMJAAAAGADwBUIA6AMDAAAAFQDNAgkAAAAYAPAFQgDoAwMAAAAVAEcCCQAAABgA8AVCAOgDAwAAABUAwgEJAAAAGADwBUIA6AMDAAAAFQA9AQkAAAAYAPAFQgDoAwMAAAAHAPoAGQAAABYA8AVCAOgDAwAAAAcA+gAZAAAAFgDwBUIA6AMDAAAABwD6ABkAAAAWAPAFQgDoAwMAAAAHAPoAGQAAABYA8AVCAOgDAwAAAAcA+gAZAAAAFgDwBUIA6AMDAAAABwD6ABkAAAAWAPAFMwDzBAMA9QMCAPgCAgD7AQIA/QACAOgDBwAAAAcA+gAZAAAAFgDwBTMA8wQDAPUDAgD4AgIA+wECAP0AAgD0AQcAAAAHAPoAGQAAACEA8wQrAPUDAgD4AgIA+wECAP0AAgAAAA4A+gAZAAAAIQDzBCsA9QMCAPgCAgD7AQIA/QACAAAADgD6ABkAAAAhAPUDLQD4AgIA+wECAP0AAgAAAA4A+gAZAAAAIQD1Ay0A+AICAPsBAgD9AAIAAAAOAPoAGQAAACEA+AIvAPsBAgD9AAIAAAAOAPoAGQAAACEA+AIvAPsBAgD9AAIAAAAOAHgAGQAAACEA+wExAP0AAgAAAEgA+wExAP0AAgAAAEgA+wExAP0AAgAAAEgA/QAzAAAAeB8="
+  }
+ },
+ "interactables": [
+  {
+   "id": "door-park",
+   "kind": "link",
+   "label": "Through the great gate",
+   "object": "spot:door-park",
+   "typed": true,
+   "anchor": [
+    7.6,
+    1.6,
+    -5.9
+   ],
+   "built": [
+    7.6,
+    1.6,
+    -5.9
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "shrine-torii",
+   "kind": "inspect",
+   "label": "Roofed torii",
+   "object": "anchor:torii-beams",
+   "typed": false,
+   "anchor": [
+    2.6,
+    3,
+    -9
+   ],
+   "built": [
+    2.6,
+    3,
+    -9
+   ],
+   "reach": 5
+  },
+  {
+   "id": "shrine-basin",
+   "kind": "use",
+   "label": "Water basin",
+   "object": "basin-water",
+   "typed": false,
+   "anchor": [
+    -4.5,
+    0.975,
+    -5.4
+   ],
+   "built": [
+    -4.5,
+    0.975,
+    -5.4
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "shrine-lantern",
+   "kind": "inspect",
+   "label": "Stone lantern",
+   "object": "anchor:stand-lantern",
+   "typed": false,
+   "anchor": [
+    2.35,
+    1.1,
+    -10.65
+   ],
+   "built": [
+    2.35,
+    1.1,
+    -10.65
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "shrine-prayers",
+   "kind": "note",
+   "label": "Wish tablets",
+   "object": "anchor:wish-tablets",
+   "typed": false,
+   "anchor": [
+    -4.4,
+    1.3,
+    -10.1
+   ],
+   "built": [
+    -4.4,
+    1.3,
+    -10.1
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "shrine-bell",
+   "kind": "use",
+   "label": "Shrine bell",
+   "object": "anchor:torii-rope",
+   "typed": false,
+   "anchor": [
+    2.6,
+    2,
+    -9
+   ],
+   "built": [
+    2.6,
+    2,
+    -9
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "shrine-stone",
+   "kind": "inspect",
+   "label": "Mossy stone",
+   "object": "anchor:mossy-stone",
+   "typed": false,
+   "anchor": [
+    4.4,
+    0.8,
+    -5.6
+   ],
+   "built": [
+    4.4,
+    0.8,
+    -5.6
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "door-park": {
+   "object": "spot:door-park",
+   "how": "node",
+   "on": null,
+   "at": [
+    7.6,
+    1.6,
+    -5.9
+   ]
+  }
+ },
+ "premerge": {
+  "spot:door-park": [
+   7.6,
+   1.6,
+   -5.9
+  ],
+  "anchor:torii-beams": [
+   2.6,
+   3,
+   -9
+  ],
+  "basin-water": [
+   -4.5,
+   0.975,
+   -5.4
+  ],
+  "anchor:stand-lantern": [
+   2.35,
+   1.1,
+   -10.65
+  ],
+  "anchor:wish-tablets": [
+   -4.4,
+   1.3,
+   -10.1
+  ],
+  "anchor:torii-rope": [
+   2.6,
+   2,
+   -9
+  ],
+  "anchor:mossy-stone": [
+   4.4,
+   0.8,
+   -5.6
+  ]
+ },
+ "doorProps": {
+  "door-park": {
+   "p": [
+    7.5781,
+    0,
+    -2.7795
+   ],
+   "q": [
+    0,
+    -0.397603,
+    0,
+    0.917558
+   ],
+   "gate": true,
+   "tint": 0
+  }
+ },
+ "anchorsBefore": {
+  "named": 6,
+  "typed": 1
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 4,
+  "triangles": 102782
+ },
+ "manifestColliders": 0,
+ "manifest": true,
+ "three": "170",
+ "key": "shrine-1-day",
+ "hour": 13,
+ "bakedAt": "2026-10-25T02:36:22.276Z",
+ "quantizePosition": 14,
+ "source": {
+  "family": "Shrine (D) built at runtime by lab/src/scenes",
+  "exportBytes": 62099720,
+  "triangles": 685178,
+  "drawCalls": 616,
+  "textures": 112,
+  "textureMB": 130.1
+ },
+ "lods": {
+  "lod0": {
+   "file": "shrine-1-day.glb",
+   "triangles": 572972,
+   "primitives": 164,
+   "materials": 164,
+   "textures": 79,
+   "textureKB": 3037,
+   "bytes": 12140492
+  },
+  "lod1": {
+   "file": "shrine-1-day.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 288996,
+   "primitives": 164,
+   "materials": 164,
+   "textures": 79,
+   "textureKB": 1293,
+   "bytes": 7533288
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "anchor:mossy-stone",
+   "anchor:torii-beams",
+   "anchor:torii-rope",
+   "anchor:wish-tablets",
+   "anchor:stand-lantern",
+   "spot:door-park"
+  ],
+  "exportBytes": 932
+ },
+ "live": {
+  "file": "shrine-1-day.live.json",
+  "bytes": 426062,
+  "objects": [
+   "smokePlume",
+   "basin-water",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs shrine-1 --variant day (dev server running, BASE=...)"
+ ]
+}
