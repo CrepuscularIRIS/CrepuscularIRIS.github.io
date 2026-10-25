@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-25-methode-2b9e0a63",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-25T02:57:24Z",
+  "title": "llama.cpp b11870 支持 DeepSeek-V4.1-Flash（10:15 CST）",
+  "summary": "llama.cpp 在 10:15（北京时间）发布 b11870，加入 DeepSeek-V4.1-Flash 支持，把 Engram 表从 MXFP8 转为 BF16 并做图内稀疏 gather，同时把该模型纳入 Metal 融合基线测试。",
+  "summary_en": "llama.cpp release b11870 (published 02:15 UTC / 10:15 Asia/Shanghai on Oct 25) adds support for the DeepSeek-V4.1-Flash model (deepseek41). The patch series removes MXFP8 from the model and converts the Engram table to BF16, computes the compressed-KV read layers once inside the cache, gathers Engram rows in-graph like the qwen4exp path, drops host gathers and the LLAMA_DSV41_KV_MIRROR toggle, and keeps the Engram hash constants in hparams. It also adds deepseek41 to the Metal fusion baseline tests.",
+  "body": "llama.cpp 在 10:15（北京时间）发布 b11870，加入 DeepSeek-V4.1-Flash 支持，把 Engram 表从 MXFP8 转为 BF16 并做图内稀疏 gather，同时把该模型纳入 Metal 融合基线测试。\n\nGitHub与基建\n- llama.cpp b11870：新增 DeepSeek-V4.1-Flash 模型支持 — 10:15（北京时间）发布：移除 MXFP8、Engram 表转 BF16，压缩 KV 只读层在 cache 内算一次并做图内稀疏 gather，同时进入 Metal 融合基线测试。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11870\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11870",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11870",
+    "verified_at": "2026-10-25T02:57:24Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
