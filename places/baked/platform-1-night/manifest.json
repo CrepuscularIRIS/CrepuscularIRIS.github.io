@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 89076,
-  "drawCalls": 416,
-  "textures": 46,
-  "textureMB": 44.2
+  "triangles": 96428,
+  "drawCalls": 454,
+  "textures": 72,
+  "textureMB": 56.2
  },
  "exported": {
-  "triangles": 69760,
-  "drawCalls": 214,
-  "textures": 35,
-  "textureMB": 40.7
+  "triangles": 77088,
+  "drawCalls": 240,
+  "textures": 36,
+  "textureMB": 42
  },
  "lights": [
   {
@@ -276,32 +276,46 @@
    ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "light-pool-13",
-   "color": 5212054,
-   "intensity": 1.5,
+   "color": 14205600,
+   "intensity": 7.5,
    "position": [
-    1.6,
-    -0.4,
-    1.3
+    -1,
+    2.34,
+    6.35
    ],
    "visible": true,
-   "distance": 4.5,
-   "decay": 1.6
+   "distance": 4.8,
+   "decay": 1.7,
+   "angle": 0.68,
+   "penumbra": 0.75,
+   "target": [
+    -1,
+    -0.45,
+    6.25
+   ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "light-pool-14",
-   "color": 5212054,
-   "intensity": 1.1,
+   "color": 14205600,
+   "intensity": 7.5,
    "position": [
-    -0.4,
-    -0.4,
-    2.6
+    2.4,
+    2.34,
+    6.35
    ],
    "visible": true,
-   "distance": 3.5,
-   "decay": 1.6
+   "distance": 4.8,
+   "decay": 1.7,
+   "angle": 0.68,
+   "penumbra": 0.75,
+   "target": [
+    2.4,
+    -0.45,
+    6.25
+   ]
   },
   {
    "type": "PointLight",
@@ -318,32 +332,46 @@
    "decay": 1.6
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "light-pool-16",
-   "color": 6262684,
-   "intensity": 3.5,
+   "color": 7854578,
+   "intensity": 8,
    "position": [
-    3.4,
-    -0.25,
-    -3.2
+    4.52,
+    2.16,
+    -6
    ],
    "visible": true,
-   "distance": 5,
-   "decay": 1.6
+   "distance": 4.8,
+   "decay": 1.7,
+   "angle": 0.62,
+   "penumbra": 0.75,
+   "target": [
+    2.7,
+    1,
+    -5.45
+   ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "light-pool-17",
-   "color": 6262684,
-   "intensity": 4,
+   "color": 7854578,
+   "intensity": 8,
    "position": [
-    2.4,
-    -0.25,
-    -6.7
+    4.52,
+    2.16,
+    -8.4
    ],
    "visible": true,
-   "distance": 4.5,
-   "decay": 1.6
+   "distance": 4.8,
+   "decay": 1.7,
+   "angle": 0.62,
+   "penumbra": 0.75,
+   "target": [
+    2.85,
+    1,
+    -9.1
+   ]
   },
   {
    "type": "SpotLight",
@@ -386,48 +414,69 @@
     0,
     2.3
    ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-20",
+   "color": 14200188,
+   "intensity": 30,
+   "position": [
+    8.2,
+    1.04,
+    0.6
+   ],
+   "visible": true,
+   "distance": 3,
+   "decay": 1.7,
+   "angle": 0.9,
+   "penumbra": 0.75,
+   "target": [
+    7.3999999999999995,
+    0.74,
+    0.14999999999999997
+   ]
   }
  ],
  "lowDrop": [],
  "clocks": [
   {
-   "material": "302819a4-3d9e-4a4a-bfdf-788e7d515f22",
+   "material": "ffbe2d50-3e61-47f5-9508-a2248875414f",
    "uniform": "uT",
    "a": 1,
    "b": 0
   },
   {
-   "material": "e5120779-05b5-4caf-8b4f-11c1c7dcd68c",
+   "material": "20ecc05c-f329-44bd-a0ef-864f6d94e277",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "f6c8c7c5-b75f-4d6b-aab4-3021606ce799",
+   "material": "b60fb593-21bc-4e91-8e02-0e0291908a63",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "1890ad9b-18a1-4eaa-b298-df1aee400bdd",
+   "material": "c25d038a-b7ca-4b90-b59d-fbe3d5253ff7",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "2af36f19-dea5-405c-a208-65dee8582ab3",
+   "material": "80eca7cd-e31a-4ffa-abb6-54ed0b5aa464",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "95b89b92-8661-467a-9e29-292c3ede71f6",
+   "material": "a6238f0d-9464-4dd7-8481-c13cf42a1195",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "5e0207bb-e450-4c3c-8286-3fb10bed5cfe",
+   "material": "06e55a4e-29cf-44f9-be3c-1c2f8fcac23e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -448,11 +497,11 @@
    "z": -6,
    "strength": 0.62,
    "blur": 1.6,
-   "f0": 0.04,
+   "f0": 0.1,
    "tint": 8632776,
    "fade": 40,
    "zones": 1,
-   "smear": 0,
+   "smear": 0.27,
    "near": 1.2,
    "maskRepeat": [
     1,
@@ -1144,36 +1193,36 @@
  "three": "170",
  "key": "platform-1-night",
  "hour": 22,
- "bakedAt": "2026-10-24T17:50:13.854Z",
+ "bakedAt": "2026-10-25T19:19:57.850Z",
  "quantizePosition": 14,
  "source": {
   "family": "Platform (N) built at runtime by lab/src/scenes",
-  "exportBytes": 11981480,
-  "triangles": 89076,
-  "drawCalls": 416,
-  "textures": 46,
-  "textureMB": 44.2
+  "exportBytes": 12415800,
+  "triangles": 96428,
+  "drawCalls": 454,
+  "textures": 72,
+  "textureMB": 56.2
  },
  "lods": {
   "lod0": {
    "file": "platform-1-night.glb",
-   "triangles": 61088,
-   "primitives": 196,
-   "materials": 191,
-   "textures": 41,
-   "textureKB": 643,
-   "bytes": 1322024
+   "triangles": 66352,
+   "primitives": 213,
+   "materials": 207,
+   "textures": 43,
+   "textureKB": 603,
+   "bytes": 1340836
   },
   "lod1": {
    "file": "platform-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 33122,
-   "primitives": 196,
-   "materials": 191,
-   "textures": 41,
-   "textureKB": 298,
-   "bytes": 855656
+   "triangles": 35996,
+   "primitives": 213,
+   "materials": 207,
+   "textures": 43,
+   "textureKB": 259,
+   "bytes": 874088
   }
  },
  "parts": {
@@ -1201,16 +1250,28 @@
    "spot:plat-phone",
    "spot:frag-7"
   ],
-  "exportBytes": 824596
+  "exportBytes": 1047560
  },
  "live": {
   "file": "platform-1-night.live.json",
-  "bytes": 44284,
+  "bytes": 216741,
   "objects": [
    "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",
+   "gate-smear--0.20-0.71",
+   "gate-smear--0.22--2.53",
+   "gate-smear-0.62-0.66",
+   "gate-smear-0.60--2.37",
+   "gate-smear-1.54-0.78",
+   "gate-smear-1.52--2.50",
+   "gate-smear-2.60-0.81",
+   "gate-smear-2.60--2.41",
+   "gate-smear-3.67-0.80",
+   "gate-smear-3.65--2.34",
+   "gate-smear-4.67-0.64",
+   "gate-smear-4.65--2.35",
    "Mesh",
    "Mesh",
    "motes",
