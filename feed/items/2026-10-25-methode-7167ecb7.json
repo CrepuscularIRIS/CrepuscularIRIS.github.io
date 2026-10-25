@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-25-methode-7167ecb7",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-25T11:04:58Z",
+  "title": "LiteLLM v1.106.4 修复代理启动 ImportError（v1.104.0 起回归），并同步回补 1.105.5 / 1.104.7",
+  "summary": "LiteLLM v1.106.4 修掉了自 v1.104.0 起\"取不到远程模型价格表就让代理启动即崩\"的 ImportError，同批还回补了 1.105.5、1.104.7 与 1.103.9。",
+  "summary_en": "LiteLLM v1.106.4 fixes an ImportError that has caused the proxy to crash at startup when the remote model pricing table cannot be retrieved, a regression introduced since v1.104.0. The same release also backports updates for v1.105.5, v1.104.7, and v1.103.9. The note does not specify uncertainty, draft status, or automatic-generation status.",
+  "body": "LiteLLM v1.106.4 修掉了自 v1.104.0 起\"取不到远程模型价格表就让代理启动即崩\"的 ImportError，同批还回补了 1.105.5、1.104.7 与 1.103.9。\n\nGitHub与基建\n- LiteLLM v1.106.4 修复代理启动 ImportError — 10月25日 17:41（北京时间）发布：自 v1.104.0 起，若无法访问远程模型价格表，proxy 启动会抛 ImportError 直接退出；本版修复该问题。\n  https://github.com/BerriAI/litellm/releases/tag/v1.106.4\n- LiteLLM v1.105.5 / v1.104.7 回补同一修复 — 10月25日 17:12（北京时间）同时发布，把启动 ImportError 修复回补到 1.105 与 1.104 分支，另清理 brotli 1.2.0 等镜像扫描告警。\n  https://github.com/BerriAI/litellm/releases/tag/v1.105.5\n- llama.cpp b11873：OpenCL 初步支持 q2_k — 10月25日 17:09（北京时间）发布，为 OpenCL 后端加入 q2_k 量化支持，移动/Adreno 设备上的低比特推理更可用。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11873\n- llama.cpp b11871：拒绝嵌套超过 128 层的 JSON 请求 — 10月25日 14:31（北京时间）发布：过深的 tool schema / chat JSON 会让 llama-server 栈溢出崩溃（macOS SIGBUS、Linux SIGSEGV），现在统一返回 400。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11871\n\n系统与内核\n- Google 的 C 版 Binder 驱动从内核移除，Rust Binder 接班 — 10月25日 17:59（北京时间）：Linus 周六合并 Linux 7.4 的 char/misc 变更，C 实现的 Binder IPC 被移除，Rust 版本将覆盖未来数十亿台 Android 设备。\n  https://www.phoronix.com/news/Linux-7.4-Char-Misc\n- Realtek rtl8723bs 驱动在 Linux 7.4 被移出 staging 区 — 10月25日 18:27（北京时间）：在 staging 区近十年的 rtl8723bs 驱动被删除，功能并入更成熟的 RTW88 驱动。\n  https://www.phoronix.com/news/Linux-7.4-Staging\n- AMD 600 系列芯片组在 Linux 上获得温度监控支持 — 10月25日 18:14（北京时间）：随 Linux 7.4 上线并回移到 7.2/7.3 系列，Ryzen 7000 同期的 AMD 600 系列芯片组可读取温度传感器。\n  https://www.phoronix.com/news/AMD-600-Series-Linux-Temp\n- AV2 编解码早期采用推进，SVT-AV2 正在开发 — 10月25日 18:42（北京时间）：AOM 宣布免版税下一代视频编码 AV2 的早期采用进展，SVT-AV2 编码器开发中。\n  https://www.phoronix.com/news/AV2-Adoption-Plus-SVT-AV2\n- 廉价 GameSir Nova Lite 手柄获 Linux 7.4 支持 — 10月25日 18:57（北京时间）：Linux 7.4 的 input 子系统改动周末合并，新增对该手柄的 HID 支持。\n  https://www.phoronix.com/news/Linux-7.4-Input\n\nSource: https://github.com/BerriAI/litellm/releases/tag/v1.106.4",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/BerriAI/litellm/releases/tag/v1.106.4",
+    "verified_at": "2026-10-25T11:04:58Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
