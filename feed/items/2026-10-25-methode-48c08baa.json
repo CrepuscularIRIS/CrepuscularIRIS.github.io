@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-25-methode-48c08baa",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-25T09:01:04Z",
+  "title": "Open WebUI v0.12.4 发布：技能按需加载 + 聊天内可见上下文压缩",
+  "summary": "Open WebUI v0.12.4（10月25日 16:07）加入技能按需加载与可见的上下文压缩标记，同时 llama.cpp b11871 修掉 llama-server 的 JSON 深嵌套栈溢出崩溃。",
+  "summary_en": "Open WebUI v0.12.4 adds lazy loading for selected skills (ENABLE_SKILL_LAZY_LOADING), makes context compaction visible in chats, and extends compaction to temporary and over-threshold chats. llama.cpp build b11871 ships a fix that rejects request JSON nested deeper than 128 levels, preventing llama-server stack overflow crashes. vLLM merged a KV-offload back-pressure fix and SGLang aligned dp-attention prefill buckets and decode padding across DP ranks.",
+  "body": "Open WebUI v0.12.4（10月25日 16:07）加入技能按需加载与可见的上下文压缩标记，同时 llama.cpp b11871 修掉 llama-server 的 JSON 深嵌套栈溢出崩溃。\n\nGitHub与基建\n- Open WebUI v0.12.4 发布 — 10月25日 16:07 发布。新增「按需加载选定技能」（ENABLE_SKILL_LAZY_LOADING），不再每轮都把技能全文塞进上下文；聊天中新增「Context compacted」标记，压缩也扩展到临时对话与已超阈值的短对话。\n  https://github.com/open-webui/open-webui/releases/tag/v0.12.4\n- llama.cpp b11871：修复 JSON 深嵌套导致的 llama-server 崩溃 — 10月25日 14:31 出包。schema 构建、jinja 引擎与 decision 代码递归遍历请求 JSON，嵌套过深会打爆 HTTP 线程栈（macOS SIGBUS、Linux SIGSEGV），现在超过 128 层直接返回 400，属于服务端 DoS 修复。\n  https://github.com/ggml-org/llama.cpp/commit/b3fa699\n- vLLM：KV Offload 二级存储失败按背压处理 — 10月25日 16:54 合并（#61780）。KV cache offload 到二级存储失败时不再被忽略，而是转为背压，避免在存储异常下静默丢数据。\n  https://github.com/vllm-project/vllm/commit/2b1f75c80f79496b313e28362f0856632dfbf5ea\n- SGLang：dp-attention 跨 DP rank 对齐 prefill 分桶与 decode padding — 10月25日 16:50 合并（#46138）。修复 DP 注意力下各 rank 图形分桶与解码填充不一致导致的性能与正确性问题。\n  https://github.com/sgl-project/sglang/commit/9b230c1dae7eb2fffd2c978e784821d7ac22d8e9\n\nSource: https://github.com/open-webui/open-webui/releases/tag/v0.12.4",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/open-webui/open-webui/releases/tag/v0.12.4",
+    "verified_at": "2026-10-25T09:01:04Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
