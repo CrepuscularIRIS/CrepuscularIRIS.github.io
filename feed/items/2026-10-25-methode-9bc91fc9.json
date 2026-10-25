@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-25-methode-9bc91fc9",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-25T05:00:56Z",
+  "title": "llama.cpp 主线合并 DeepSeek-V4.1 flash 模型支持",
+  "summary": "llama.cpp 主线落地 DeepSeek-V4.1 flash（10月25日 09:43 CST），同时为高通 Hexagon 多核 HMX flash attention 做 KV-head team 拆分。",
+  "summary_en": "A quiet two-hour window on the papers-and-infrastructure beat. The only notable new signal came from llama.cpp: a commit landing DeepSeek-V4.1 flash model support (Oct 25, 09:43 CST), plus a hexagon backend change splitting KV heads across cores for multicore HMX flash attention (Oct 25, 03:19 CST). No new arXiv listings or Hugging Face daily-paper batches appeared in the window, and Phoronix/LWN had no fresh posts beyond items already collected earlier.",
+  "body": "llama.cpp 主线落地 DeepSeek-V4.1 flash（10月25日 09:43 CST），同时为高通 Hexagon 多核 HMX flash attention 做 KV-head team 拆分。\n\nGitHub与基建\n- llama.cpp: model: DSV4.1 flash (#31086) — 主线新增 DeepSeek-V4.1 flash 模型支持，10月25日 09:43 CST 合并，是本窗口唯一的实质性基建更新。\n  https://github.com/ggml-org/llama.cpp/commit/74bca3950054eed1795f525cb9cf06bfe796492d\n- llama.cpp: hexagon KV-head team split for multicore HMX flash attention — 针对高通 HMX 多核 flash attention 做 KV-head 分组拆分，10月25日 03:19 CST 合入，改善端侧多核推理吞吐。\n  https://github.com/ggml-org/llama.cpp/commit/78a8ae14be559b45f5f13ddee82c188b683d5d8d\n\nSource: https://github.com/ggml-org/llama.cpp/commit/74bca3950054eed1795f525cb9cf06bfe796492d",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/commit/74bca3950054eed1795f525cb9cf06bfe796492d",
+    "verified_at": "2026-10-25T05:00:56Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
