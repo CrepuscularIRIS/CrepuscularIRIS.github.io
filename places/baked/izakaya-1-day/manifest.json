@@ -5,18 +5,32 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 58900,
-  "drawCalls": 276,
-  "textures": 87,
-  "textureMB": 155.7
+  "triangles": 59774,
+  "drawCalls": 284,
+  "textures": 91,
+  "textureMB": 159.9
  },
  "exported": {
-  "triangles": 56080,
-  "drawCalls": 254,
-  "textures": 81,
-  "textureMB": 152
+  "triangles": 56860,
+  "drawCalls": 262,
+  "textures": 85,
+  "textureMB": 156.2
  },
  "lights": [
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16756832,
+   "intensity": 0.35,
+   "position": [
+    0.6,
+    0.8,
+    5.78
+   ],
+   "visible": true,
+   "distance": 1.2,
+   "decay": 2
+  },
   {
    "type": "PointLight",
    "name": "",
@@ -35,7 +49,7 @@
    "type": "HemisphereLight",
    "name": "",
    "color": 12114132,
-   "intensity": 0.5,
+   "intensity": 0.42,
    "position": [
     0,
     1,
@@ -48,7 +62,7 @@
    "type": "AmbientLight",
    "name": "",
    "color": 13161676,
-   "intensity": 0.12,
+   "intensity": 0.1,
    "position": [
     0,
     0,
@@ -119,7 +133,7 @@
    "intensity": 0,
    "position": [
     0.2,
-    2.74,
+    2.58,
     3.9
    ],
    "visible": true,
@@ -133,7 +147,7 @@
    "intensity": 0,
    "position": [
     0.2,
-    2.74,
+    2.58,
     5.9
    ],
    "visible": true,
@@ -194,7 +208,7 @@
    "type": "SpotLight",
    "name": "light-pool-09",
    "color": 16766106,
-   "intensity": 0.46199999999999997,
+   "intensity": 0.27,
    "position": [
     -2.08,
     2.22,
@@ -215,7 +229,7 @@
    "type": "SpotLight",
    "name": "light-pool-10",
    "color": 16766106,
-   "intensity": 0.46199999999999997,
+   "intensity": 0.27,
    "position": [
     -2.08,
     2.22,
@@ -383,7 +397,7 @@
    "type": "SpotLight",
    "name": "light-pool-18",
    "color": 12116188,
-   "intensity": 5.76,
+   "intensity": 4.68,
    "position": [
     -3,
     2.54,
@@ -395,16 +409,16 @@
    "angle": 1.15,
    "penumbra": 0.75,
    "target": [
-    -2.75,
-    1,
-    6.4
+    -3.15,
+    1.15,
+    4.55
    ]
   },
   {
    "type": "PointLight",
    "name": "light-pool-19",
    "color": 10406084,
-   "intensity": 0.66,
+   "intensity": 0.78,
    "position": [
     -3.5,
     1.4,
@@ -458,9 +472,9 @@
    "angle": 0.3,
    "penumbra": 0.2,
    "target": [
-    -0.6,
-    0,
-    3.6
+    -1.55,
+    0.9,
+    6
    ],
    "shadow": {
     "mapSize": [
@@ -482,7 +496,7 @@
    "type": "SpotLight",
    "name": "light-pool-23",
    "color": 16054527,
-   "intensity": 144,
+   "intensity": 50.4,
    "position": [
     0.6,
     2.4,
@@ -492,7 +506,7 @@
    "distance": 16,
    "decay": 1.7,
    "angle": 0.28,
-   "penumbra": 0.25,
+   "penumbra": 0.4,
    "target": [
     -1,
     0,
@@ -532,31 +546,31 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "98eeab03-680c-4c3c-9f0e-b06cbc33841c",
+   "material": "b2227d89-cd0c-4641-b868-73512e1418b9",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "c43f1a1d-16e0-48d8-aa3e-1a9b192b9fbe",
+   "material": "05d25bfb-fc95-43fc-aaa2-dc04e2f1aa07",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "c6294704-dc2a-44ea-a1bb-ab42ca51eee7",
+   "material": "5593f311-8644-4f1f-aefb-18a37c9a284a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "ebe8f3c6-2804-49e4-b837-306651f91a69",
+   "material": "dd9b3a26-ebbe-4e06-baaa-5eef10954a6d",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "1845e9ef-3bc5-4ac8-857f-773c7575a9d5",
+   "material": "673e7373-2136-4060-b62d-723902d0dee8",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -596,12 +610,12 @@
    "x": 0.15000000000000002,
    "y": 0.72,
    "z": 3.5999999999999996,
-   "strength": 0.2,
+   "strength": 0.32000000000000006,
    "blur": 1,
    "f0": 0.12,
    "tint": 16767160,
    "fade": 40,
-   "zones": 0,
+   "zones": 1,
    "smear": 0,
    "near": 0,
    "maskRepeat": [
@@ -656,9 +670,9 @@
     "name": "wide",
     "label": "Wide",
     "position": [
-     0.9,
+     0.45,
      2.2,
-     9.1
+     8.9
     ],
     "target": [
      -1.2,
@@ -1130,36 +1144,36 @@
   {
    "id": "door-street-1",
    "kind": "link",
-   "label": "Main street",
-   "object": null,
-   "typed": false,
+   "label": "To the street",
+   "object": "spot:door-street-1",
+   "typed": true,
    "anchor": [
-    -1.1463683687406692,
-    1.335000012069942,
-    -1.7202206236734845
+    0.3,
+    1.2,
+    9.3
    ],
    "built": [
-    -1.1463683687406692,
-    1.335000012069942,
-    -1.7202206236734845
+    0.3,
+    1.2,
+    9.3
    ],
    "reach": 3.2
   },
   {
    "id": "door-bar-1",
    "kind": "link",
-   "label": "Bar Cosmos",
-   "object": null,
-   "typed": false,
+   "label": "Bar",
+   "object": "spot:door-bar-1",
+   "typed": true,
    "anchor": [
-    0.029526349153927933,
-    1.3350000120699406,
-    3.2280721724506702
+    1.05,
+    1.2,
+    8.3
    ],
    "built": [
-    0.029526349153927933,
-    1.3350000120699406,
-    3.2280721724506702
+    1.05,
+    1.2,
+    8.3
    ],
    "reach": 3.2
   },
@@ -1295,6 +1309,26 @@
    ],
    "triangles": 2
   },
+  "door-street-1": {
+   "object": "spot:door-street-1",
+   "how": "node",
+   "on": null,
+   "at": [
+    0.3,
+    1.2,
+    9.3
+   ]
+  },
+  "door-bar-1": {
+   "object": "spot:door-bar-1",
+   "how": "node",
+   "on": null,
+   "at": [
+    1.05,
+    1.2,
+    8.3
+   ]
+  },
   "iz-noren": {
    "object": "spot:iz-noren",
    "how": "carved",
@@ -1304,7 +1338,7 @@
     1.85,
     9.3
    ],
-   "triangles": 2
+   "triangles": 96
   },
   "iz-plum": {
    "object": "spot:iz-plum",
@@ -1319,6 +1353,16 @@
   }
  },
  "premerge": {
+  "spot:door-street-1": [
+   0.3,
+   1.2,
+   9.3
+  ],
+  "spot:door-bar-1": [
+   1.05,
+   1.2,
+   8.3
+  ],
   "catch-board": [
    1.248999999832362,
    1.9500000000000002,
@@ -1340,41 +1384,10 @@
    1.15
   ]
  },
- "doorProps": {
-  "door-street-1": {
-   "p": [
-    -1.1464,
-    0,
-    -1.7202
-   ],
-   "q": [
-    0,
-    0.060639,
-    0,
-    0.99816
-   ],
-   "gate": true,
-   "tint": 0
-  },
-  "door-bar-1": {
-   "p": [
-    0.0295,
-    0,
-    3.2281
-   ],
-   "q": [
-    0,
-    0.930303,
-    0,
-    -0.366792
-   ],
-   "gate": true,
-   "tint": 1
-  }
- },
+ "doorProps": {},
  "anchorsBefore": {
   "named": 4,
-  "typed": 4
+  "typed": 6
  },
  "models": {
   "baked": [],
@@ -1398,36 +1411,36 @@
  "three": "170",
  "key": "izakaya-1-day",
  "hour": 13,
- "bakedAt": "2026-10-24T16:28:25.676Z",
+ "bakedAt": "2026-10-25T13:56:44.851Z",
  "quantizePosition": 14,
  "source": {
   "family": "Izakaya (D) built at runtime by lab/src/scenes",
-  "exportBytes": 31789084,
-  "triangles": 58900,
-  "drawCalls": 276,
-  "textures": 87,
-  "textureMB": 155.7
+  "exportBytes": 31914952,
+  "triangles": 59774,
+  "drawCalls": 284,
+  "textures": 91,
+  "textureMB": 159.9
  },
  "lods": {
   "lod0": {
    "file": "izakaya-1-day.glb",
-   "triangles": 53868,
-   "primitives": 218,
-   "materials": 200,
-   "textures": 56,
-   "textureKB": 1595,
-   "bytes": 2428488
+   "triangles": 54742,
+   "primitives": 226,
+   "materials": 208,
+   "textures": 60,
+   "textureKB": 1592,
+   "bytes": 2450032
   },
   "lod1": {
    "file": "izakaya-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 32959,
-   "primitives": 218,
-   "materials": 200,
-   "textures": 56,
+   "triangles": 33550,
+   "primitives": 226,
+   "materials": 208,
+   "textures": 60,
    "textureKB": 453,
-   "bytes": 1119668
+   "bytes": 1141716
   }
  },
  "parts": {
@@ -1440,13 +1453,15 @@
    "spot:menu-boards",
    "spot:table-menu",
    "spot:iz-noren",
-   "spot:iz-plum"
+   "spot:iz-plum",
+   "spot:door-street-1",
+   "spot:door-bar-1"
   ],
-  "exportBytes": 208812
+  "exportBytes": 193604
  },
  "live": {
   "file": "izakaya-1-day.live.json",
-  "bytes": 34158,
+  "bytes": 34153,
   "objects": [
    "Sprite",
    "Sprite",
