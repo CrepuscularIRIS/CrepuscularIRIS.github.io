@@ -5,16 +5,16 @@
  "variant": "",
  "tod": "day",
  "cost": {
-  "triangles": 4190,
-  "drawCalls": 43,
-  "textures": 53,
-  "textureMB": 131.9
+  "triangles": 4232,
+  "drawCalls": 48,
+  "textures": 59,
+  "textureMB": 145.3
  },
  "exported": {
-  "triangles": 4136,
-  "drawCalls": 35,
-  "textures": 53,
-  "textureMB": 131.9
+  "triangles": 4178,
+  "drawCalls": 40,
+  "textures": 59,
+  "textureMB": 145.3
  },
  "lights": [
   {
@@ -34,10 +34,10 @@
    "type": "PointLight",
    "name": "",
    "color": 16738864,
-   "intensity": 1.5598596828502904,
+   "intensity": 0.5859044097879454,
    "position": [
     -0.45,
-    0.7,
+    0.25,
     -0.8899999999999999
    ],
    "visible": true,
@@ -48,10 +48,10 @@
    "type": "PointLight",
    "name": "",
    "color": 16738864,
-   "intensity": 1.5748596828502903,
+   "intensity": 0.5929044097879455,
    "position": [
     0.45,
-    0.7,
+    0.25,
     -0.8899999999999999
    ],
    "visible": true,
@@ -62,7 +62,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16747088,
-   "intensity": 1.3878810901727587,
+   "intensity": 1.387796668438801,
    "position": [
     0.35,
     0.5,
@@ -133,59 +133,64 @@
   }
  ],
  "lowDrop": [
-  "groundMist"
+  "Mesh",
+  "Mesh"
  ],
  "clocks": [
   {
-   "material": "dae8fc82-898f-435b-b60c-5743753b7daa",
+   "material": "3bf31e8f-6084-42ee-b59b-fbbc423a4da0",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "5e2705d9-3588-4b36-bf95-064d85fc996f",
+   "material": "e6ccf09d-2793-48e9-9d96-34c7dfa0b6c1",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "83ab87e4-8b9b-4de9-ab90-5fc2ca041d0f",
+   "material": "5ce1ebb7-7593-4cdd-b4f4-147bcb9c4eda",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "080d2c59-8dbd-45b3-8244-5a2c881f5490",
+   "material": "eb10f9d8-1eb1-43f9-858f-96961bd09d2c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "97f25d8d-f4e2-466d-b0b8-6a2c8a3cf33b",
+   "material": "2fce7979-16e2-4363-ad75-6712fd81e9a5",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "aa7d1be2-7882-4fbe-8d3f-b407410e5109",
+   "material": "2dec58ec-c530-4335-b108-ef1f809fef47",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "e3bf2aa7-2322-4798-ab20-f9e3def65a39",
+   "material": "e927bfb2-d980-4411-ad0e-6c9200ca801b",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "caa76a59-e81a-45a5-8566-07a477bb148a",
+   "material": "ad037326-2a9b-4953-827c-22d604224fe1",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [],
  "camera": {
@@ -524,24 +529,6 @@
    "reach": 3.2
   },
   {
-   "id": "gate-lattice",
-   "kind": "inspect",
-   "label": "Lattice doors",
-   "object": "spot:gate-lattice",
-   "typed": true,
-   "anchor": [
-    -0.45,
-    1.1,
-    -2.12
-   ],
-   "built": [
-    -0.45,
-    1.1,
-    -2.12
-   ],
-   "reach": 5
-  },
-  {
    "id": "gate-mural-left",
    "kind": "inspect",
    "label": "Wave mural",
@@ -556,60 +543,6 @@
     -1.45,
     1.3,
     -2.15
-   ],
-   "reach": 5
-  },
-  {
-   "id": "gate-mural-right",
-   "kind": "inspect",
-   "label": "Mural, right bay",
-   "object": "spot:gate-mural-right",
-   "typed": true,
-   "anchor": [
-    1.45,
-    1.3,
-    -2.15
-   ],
-   "built": [
-    1.45,
-    1.3,
-    -2.15
-   ],
-   "reach": 5
-  },
-  {
-   "id": "gate-andon",
-   "kind": "inspect",
-   "label": "Floor lantern",
-   "object": "spot:gate-andon",
-   "typed": true,
-   "anchor": [
-    0.35,
-    0.45,
-    1.3
-   ],
-   "built": [
-    0.35,
-    0.45,
-    1.3
-   ],
-   "reach": 5
-  },
-  {
-   "id": "gate-sill",
-   "kind": "inspect",
-   "label": "Sill track",
-   "object": "spot:gate-sill",
-   "typed": true,
-   "anchor": [
-    0,
-    0.05,
-    -2.08
-   ],
-   "built": [
-    0,
-    0.05,
-    -2.08
    ],
    "reach": 5
   },
@@ -653,16 +586,6 @@
     -2.1
    ]
   },
-  "gate-lattice": {
-   "object": "spot:gate-lattice",
-   "how": "node",
-   "on": null,
-   "at": [
-    -0.45,
-    1.1,
-    -2.12
-   ]
-  },
   "gate-mural-left": {
    "object": "spot:gate-mural-left",
    "how": "node",
@@ -671,36 +594,6 @@
     -1.45,
     1.3,
     -2.15
-   ]
-  },
-  "gate-mural-right": {
-   "object": "spot:gate-mural-right",
-   "how": "node",
-   "on": null,
-   "at": [
-    1.45,
-    1.3,
-    -2.15
-   ]
-  },
-  "gate-andon": {
-   "object": "spot:gate-andon",
-   "how": "node",
-   "on": null,
-   "at": [
-    0.35,
-    0.45,
-    1.3
-   ]
-  },
-  "gate-sill": {
-   "object": "spot:gate-sill",
-   "how": "node",
-   "on": null,
-   "at": [
-    0,
-    0.05,
-    -2.08
    ]
   },
   "gate-peek": {
@@ -725,30 +618,10 @@
    1.4,
    -2.1
   ],
-  "spot:gate-lattice": [
-   -0.45,
-   1.1,
-   -2.12
-  ],
   "spot:gate-mural-left": [
    -1.45,
    1.3,
    -2.15
-  ],
-  "spot:gate-mural-right": [
-   1.45,
-   1.3,
-   -2.15
-  ],
-  "spot:gate-andon": [
-   0.35,
-   0.45,
-   1.3
-  ],
-  "spot:gate-sill": [
-   0,
-   0.05,
-   -2.08
   ],
   "spot:gate-peek": [
    -0.05,
@@ -759,7 +632,7 @@
  "doorProps": {},
  "anchorsBefore": {
   "named": 0,
-  "typed": 8
+  "typed": 4
  },
  "models": {
   "baked": [],
@@ -775,35 +648,36 @@
  "three": "170",
  "key": "haunted-mansion-door",
  "hour": 13,
- "bakedAt": "2026-10-21T12:56:29.541Z",
+ "bakedAt": "2026-10-25T23:20:55.425Z",
+ "quantizePosition": 14,
  "source": {
   "family": "HauntedMansionDoor () built at runtime by lab/src/scenes",
-  "exportBytes": 43319116,
-  "triangles": 4190,
-  "drawCalls": 43,
-  "textures": 53,
-  "textureMB": 131.9
+  "exportBytes": 45914892,
+  "triangles": 4232,
+  "drawCalls": 48,
+  "textures": 59,
+  "textureMB": 145.3
  },
  "lods": {
   "lod0": {
    "file": "haunted-mansion-door.glb",
-   "triangles": 4136,
-   "primitives": 32,
-   "materials": 32,
-   "textures": 25,
-   "textureKB": 3027,
-   "bytes": 3250548
+   "triangles": 4178,
+   "primitives": 37,
+   "materials": 37,
+   "textures": 28,
+   "textureKB": 3044,
+   "bytes": 3274464
   },
   "lod1": {
    "file": "haunted-mansion-door.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 4136,
-   "primitives": 32,
-   "materials": 32,
-   "textures": 25,
-   "textureKB": 698,
-   "bytes": 865464
+   "triangles": 4178,
+   "primitives": 37,
+   "materials": 37,
+   "textures": 28,
+   "textureKB": 715,
+   "bytes": 889296
   }
  },
  "parts": {
@@ -811,18 +685,14 @@
   "names": [
    "spot:letter",
    "spot:gate-doors",
-   "spot:gate-lattice",
    "spot:gate-mural-left",
-   "spot:gate-mural-right",
-   "spot:gate-andon",
-   "spot:gate-sill",
    "spot:gate-peek"
   ],
-  "exportBytes": 1160
+  "exportBytes": 664
  },
  "live": {
   "file": "haunted-mansion-door.live.json",
-  "bytes": 44764,
+  "bytes": 47459,
   "objects": [
    "motes",
    "moon-window",
@@ -830,7 +700,8 @@
    "moon-shaft",
    "smokePlume",
    "motes",
-   "groundMist"
+   "Mesh",
+   "Mesh"
   ]
  },
  "notes": [
