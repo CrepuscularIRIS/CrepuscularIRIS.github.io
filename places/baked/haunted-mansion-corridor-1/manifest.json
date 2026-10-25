@@ -8,13 +8,13 @@
   "triangles": 18150,
   "drawCalls": 81,
   "textures": 94,
-  "textureMB": 215.3
+  "textureMB": 215.8
  },
  "exported": {
   "triangles": 13766,
   "drawCalls": 67,
   "textures": 87,
-  "textureMB": 212.3
+  "textureMB": 212.7
  },
  "lights": [
   {
@@ -34,7 +34,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16758134,
-   "intensity": 0.22302882963167361,
+   "intensity": 0.2230640688672603,
    "position": [
     -0.86,
     1.35,
@@ -48,7 +48,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16758134,
-   "intensity": 0.22432210667625116,
+   "intensity": 0.22431269138931575,
    "position": [
     0.86,
     1.35,
@@ -62,7 +62,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16758134,
-   "intensity": 0.4029848341365447,
+   "intensity": 0.4029022642491448,
    "position": [
     0.86,
     1.35,
@@ -76,7 +76,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16758134,
-   "intensity": 0.3162936398065727,
+   "intensity": 0.316235954448496,
    "position": [
     0.86,
     1.35,
@@ -90,7 +90,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16758134,
-   "intensity": 0.5390120703910783,
+   "intensity": 0.5390184655950592,
    "position": [
     -0.86,
     1.35,
@@ -104,7 +104,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16758134,
-   "intensity": 0.3959975993989955,
+   "intensity": 0.39607473205071114,
    "position": [
     0.86,
     1.35,
@@ -118,10 +118,10 @@
    "type": "PointLight",
    "name": "",
    "color": 16758134,
-   "intensity": 0.8180762795903811,
+   "intensity": 0.818215028042014,
    "position": [
     0,
-    2.47,
+    2.72,
     -5.62
    ],
    "visible": true,
@@ -132,36 +132,51 @@
    "type": "PointLight",
    "name": "",
    "color": 16758134,
-   "intensity": 1.3805037218087681,
+   "intensity": 1.3807378598208986,
    "position": [
     0,
-    2.47,
+    2.72,
     -6.35
    ],
    "visible": true,
-   "distance": 4.2,
+   "distance": 3.2,
    "decay": 2
   },
   {
    "type": "SpotLight",
    "name": "corridor-moon-window",
    "color": 9217450,
-   "intensity": 6.8,
+   "intensity": 20,
    "position": [
-    0.25,
-    1.65,
-    -7.2
+    0.3,
+    2.3,
+    -8.379999999999999
    ],
    "visible": true,
    "distance": 9,
    "decay": 1.7,
-   "angle": 0.72,
-   "penumbra": 0.9,
+   "angle": 0.6,
+   "penumbra": 0.5,
    "target": [
-    -0.2,
-    0.15,
-    -4.6
-   ]
+    -0.15,
+    0.16,
+    -5.4
+   ],
+   "shadow": {
+    "mapSize": [
+     1024,
+     1024
+    ],
+    "bias": -0.0006,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 0.1,
+     "far": 9,
+     "fov": 68.75493541569878
+    }
+   }
   },
   {
    "type": "PointLight",
@@ -216,37 +231,37 @@
  ],
  "clocks": [
   {
-   "material": "1ac615cd-9036-4c41-99b8-1e68b933fc4d",
+   "material": "0af48817-07e3-4dbf-884d-3fa317c37468",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "cb7f8bf4-0099-4c2f-aa22-5c95352a81e5",
+   "material": "305334d7-a23c-4b40-b8e4-ffd2b12ac1bc",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "0996daf8-5ea4-4a7c-bd16-138d7fdcf7e0",
+   "material": "e6c9459b-d8c1-44e2-b474-0d3c08db5164",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "8c7d2a1a-212d-4692-b5a0-243a56ff6515",
+   "material": "aa4e4edc-b949-4bbc-bb6e-e192442a8ae3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "d9bfe81a-dc7d-438a-849f-829429d9a9fc",
+   "material": "fce60b5d-1c9b-4ce4-8778-3a11cf6d5d7d",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "4f403a4a-8176-4624-bf6f-093257b6bb68",
+   "material": "25a93143-3c49-434d-a535-b01cd00dd268",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -581,6 +596,19 @@
    "ao": {
     "strength": 0.58,
     "radius": 0.34
+   },
+   "vol": {
+    "enabled": true,
+    "color": 9217450,
+    "strength": 0.24,
+    "density": 0.12,
+    "max": 0.18,
+    "phase": 0.4,
+    "steps": 24,
+    "dist": 9,
+    "floor": 0.25,
+    "top": 2.2,
+    "bottom": 0.18
    },
    "bloom": {
     "threshold": 0.78,
@@ -941,15 +969,15 @@
  "three": "170",
  "key": "haunted-mansion-corridor-1",
  "hour": 13,
- "bakedAt": "2026-10-25T05:30:49.677Z",
+ "bakedAt": "2026-10-25T23:12:12.792Z",
  "quantizePosition": 14,
  "source": {
   "family": "HauntedMansionCorridor () built at runtime by lab/src/scenes",
-  "exportBytes": 49520256,
+  "exportBytes": 50507232,
   "triangles": 18150,
   "drawCalls": 81,
   "textures": 94,
-  "textureMB": 215.3
+  "textureMB": 215.8
  },
  "lods": {
   "lod0": {
@@ -958,8 +986,8 @@
    "primitives": 73,
    "materials": 70,
    "textures": 50,
-   "textureKB": 1231,
-   "bytes": 1597320
+   "textureKB": 1230,
+   "bytes": 1596288
   },
   "lod1": {
    "file": "haunted-mansion-corridor-1.lod1.glb",
@@ -970,7 +998,7 @@
    "materials": 70,
    "textures": 50,
    "textureKB": 405,
-   "bytes": 740164
+   "bytes": 739868
   }
  },
  "parts": {
@@ -986,11 +1014,11 @@
    "spot:corridor-room",
    "spot:cor-coffer"
   ],
-  "exportBytes": 419776
+  "exportBytes": 414180
  },
  "live": {
   "file": "haunted-mansion-corridor-1.live.json",
-  "bytes": 27711,
+  "bytes": 27708,
   "objects": [
    "motes",
    "moon-window",
