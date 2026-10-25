@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 685748,
-  "drawCalls": 606,
-  "textures": 111,
-  "textureMB": 129.8
+  "triangles": 686322,
+  "drawCalls": 612,
+  "textures": 118,
+  "textureMB": 134
  },
  "exported": {
-  "triangles": 684926,
-  "drawCalls": 597,
-  "textures": 110,
-  "textureMB": 129.8
+  "triangles": 685498,
+  "drawCalls": 602,
+  "textures": 116,
+  "textureMB": 133.9
  },
  "lights": [
   {
@@ -86,7 +86,7 @@
    "type": "PointLight",
    "name": "torii-left-chochin",
    "color": 16758639,
-   "intensity": 3.9000000000000004,
+   "intensity": 2.25,
    "position": [
     1.35,
     2.37,
@@ -100,7 +100,7 @@
    "type": "PointLight",
    "name": "torii-right-chochin",
    "color": 16758639,
-   "intensity": 3.9000000000000004,
+   "intensity": 2.25,
    "position": [
     3.85,
     2.37,
@@ -173,31 +173,31 @@
  ],
  "clocks": [
   {
-   "material": "aba3c75f-db8c-4c80-b0f9-a756affc43b8",
+   "material": "a0ba167e-ba85-42bc-b9fa-f46d9b14c3cf",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "3eaed89a-939b-41d9-b2f8-3e1ef89fd03e",
+   "material": "79c4fd8b-155e-4f6c-90fe-34bc999bb056",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "3eaed89a-939b-41d9-b2f8-3e1ef89fd03e",
+   "material": "79c4fd8b-155e-4f6c-90fe-34bc999bb056",
    "uniform": "uWT",
    "a": 0.3,
    "b": 0
   },
   {
-   "material": "24e4e2a0-e701-44a6-ad1a-2737cad2f17c",
+   "material": "bc53864e-abdd-4eb9-95e6-b98b84f84aac",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "f4fe843f-2f02-497c-a24b-22b21648bc5e",
+   "material": "62aff3d3-7539-4888-82c7-4902fc472ebf",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -209,7 +209,7 @@
  "hooks": {},
  "patchClocks": {},
  "uniformArrays": {
-  "3eaed89a-939b-41d9-b2f8-3e1ef89fd03e": {
+  "79c4fd8b-155e-4f6c-90fe-34bc999bb056": {
    "uL": "v4",
    "uLC": "c"
   }
@@ -863,36 +863,36 @@
  "three": "170",
  "key": "shrine-1-night",
  "hour": 22,
- "bakedAt": "2026-10-25T02:37:06.921Z",
+ "bakedAt": "2026-10-25T19:44:27.680Z",
  "quantizePosition": 14,
  "source": {
   "family": "Shrine (N) built at runtime by lab/src/scenes",
-  "exportBytes": 62113580,
-  "triangles": 685748,
-  "drawCalls": 606,
-  "textures": 111,
-  "textureMB": 129.8
+  "exportBytes": 62589880,
+  "triangles": 686322,
+  "drawCalls": 612,
+  "textures": 118,
+  "textureMB": 134
  },
  "lods": {
   "lod0": {
    "file": "shrine-1-night.glb",
-   "triangles": 573544,
-   "primitives": 153,
-   "materials": 153,
-   "textures": 77,
-   "textureKB": 3031,
-   "bytes": 12128236
+   "triangles": 573514,
+   "primitives": 157,
+   "materials": 157,
+   "textures": 83,
+   "textureKB": 3123,
+   "bytes": 12238216
   },
   "lod1": {
    "file": "shrine-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 289268,
-   "primitives": 153,
-   "materials": 153,
-   "textures": 77,
-   "textureKB": 1285,
-   "bytes": 7520100
+   "triangles": 289256,
+   "primitives": 157,
+   "materials": 157,
+   "textures": 83,
+   "textureKB": 1369,
+   "bytes": 7623572
   }
  },
  "parts": {
@@ -909,7 +909,7 @@
  },
  "live": {
   "file": "shrine-1-night.live.json",
-  "bytes": 431303,
+  "bytes": 441639,
   "objects": [
    "Sprite",
    "Sprite",
@@ -917,6 +917,7 @@
    "Sprite",
    "smokePlume",
    "basin-water",
+   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh"
