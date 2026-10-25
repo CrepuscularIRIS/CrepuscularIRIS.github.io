@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-25-methode-0a422539",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-25T01:08:33Z",
+  "title": "Ollama v0.40.11 上线 macOS 语音生成与 d3 决策模型",
+  "summary": "最热是 Ollama v0.40.11：ollama run 现在能在 macOS 上边生成边朗读，另有 vLLM 语义路由的 d3 决策模型家族；MCP 官方 servers 紧跟着发布 v2.1.0 修掉 8 个漏洞。",
+  "summary_en": "Ollama v0.40.11 is reported as the main trending release: `ollama run` can now generate and read speech aloud simultaneously on macOS. The update also introduces the d3 decision-model family for semantic routing with vLLM. Separately, official MCP servers released v2.1.0, addressing eight reported security vulnerabilities, while the note provides no further implementation details or independent verification.",
+  "body": "最热是 Ollama v0.40.11：ollama run 现在能在 macOS 上边生成边朗读，另有 vLLM 语义路由的 d3 决策模型家族；MCP 官方 servers 紧跟着发布 v2.1.0 修掉 8 个漏洞。\n\n论文\n- Agent Mosaic: Recognizing Confidentiality Leaks in Agentic LLM Systems — 量化 agent 的\"马赛克效应\"：从多份可访问文档拼出敏感结论；GPT-5.6-Sol 在模拟中仍有 7.08% 的答案泄漏，加安全护栏后整体泄漏率仍达 32.37%。\n  https://arxiv.org/abs/2610.30418\n- Gandalf: Flash Shall Not Die! Increasing Flash Storage Lifetime for KV Cache Offloading — SSD 做 KV cache 卸载会把寿命从几年压到几个月；该系统按注意力类型分级写入，平均延长 SSD 寿命 7.3 倍且命中率几乎不降。\n  https://arxiv.org/abs/2610.30791\n- Harness Scaling for Generalizable Agentic Reinforcement Learning — 提出\"harness 多样性\"作为 agentic RL 的新扩展维度：跨多种执行配置训练，对未见过的白盒/黑盒 harness 泛化更好。\n  https://arxiv.org/abs/2610.29458\n- The Value of Memory in Language Agents — 用决策论把记忆价值拆成\"保留/使用/可恢复\"三段，以避免的任务损失计价，并给出 LoCoMo 等场景的失效诊断。\n  https://arxiv.org/abs/2610.31303\n- Adaptive Skill Granularity for Coding Agents: Runtime Routing and Macro-to-Micro Recovery — 把技能粒度当作可运行时调节的动作抽象策略：macro skill 失败时自动降级为微观调用，提升编码 agent 的鲁棒性。\n  https://arxiv.org/abs/2610.31461\n- Automating Feature Flag Cleanup at Scale with Multi-Agent LLM Systems (DoorDash) — 工业界落地案例：用多智能体 LLM 系统在大规模代码库中自动清理过期 feature flag。\n  https://arxiv.org/abs/2610.31351\n\n研究博客\n- LitPivot: Developing research ideas through dynamic contextualization（AI2） — AI2 与 UPenn 合作的 UIST 2026 系统：把研究提案切成\"问题/贡献/评估\"分面，检索并给出有文献支撑的修改建议；17 人实验显示比纯编辑器+AI 聊天更贴文献。\n  https://huggingface.co/blog/allenai/litpivot\n- Does Your Model Run on AWS Trainium? Look It Up（Hugging Face） — 官方上线模型是否支持 TorchNeuron/Trainium 的查询入口，帮用户确认自家模型能否在 Trainium 上跑。\n  https://huggingface.co/blog/torch-neuronx-model-support\n\nGitHub与基建\n- ollama v0.40.11（10-24 08:30 CST） — macOS 上 ollama run 可边生成边朗读，并可用 OpenAI 兼容的 /v1/audio/speech 端点流式输出音频；同时引入 vLLM 语义路由的 d3 决策模型（2B/4B/9B/27B）。\n  https://github.com/ollama/ollama/releases/tag/v0.40.11\n- MCP servers v2.1.0（10-25 08:03 CST） — 一次性修掉 filesystem、everything、fetch 三个 server 的 8 个漏洞，含符号链接竞态越界写、路径检查尾缀绕过等；建议尽快升级到 2.0.1 / 2026.10.24。\n  https://github.com/modelcontextprotocol/servers/releases/tag/v2.1.0\n- llama.cpp b11869（10-25 05:21 CST） — 最新滚动构建，修复 jinja 模板中 select/selectattr 的参数处理（#31059），影响 chat template 渲染。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11869\n\n系统\n- Linux 7.4 早期启动物理内存分配器提速：约 268s → 约 50ms — Google 工程师发现 mm/memblock.c 用线性搜索找候选区间，改二分后 KHO 内存取回时间从约 268 秒降到约 50 毫秒（10-24 21:00 CST）。\n  https://www.phoronix.com/news/Linux-7.4-memblock\n- Linux 7.4 块层更新：Apple M4 NVMe 支持与软驱修复 — block/IO_uring 合并请求入 7.4：新支持 Apple M4 (T8132) NVMe，顺带修了软驱驱动的栈越界、数据竞争等问题（10-25 08:42 CST）。\n  https://www.phoronix.com/news/Linux-7.4-Block\n- Linux 7.4 合并 539 个内存管理补丁 — MM 子系统本轮合并量创纪录，含各项优化与更多 DAMON 特性（10-24 19:05 CST）。\n  https://www.phoronix.com/news/Linux-7.4-MM\n- SteamOS 3.9.5 发布 — 带来 Linux 7.2 内核、KDE Plasma 6.7 桌面等更新（10-25 02:54 CST）。\n  https://www.phoronix.com/news/SteamOS-3.9.5\n- LWN：7.4 合并窗口的第一部分 — 本周 Linux 7.4 合并窗口的逐项梳理，适合跟进内核方向（10-24 02:54 CST）。\n  https://lwn.net/Articles/1101211\n\nSource: https://github.com/ollama/ollama/releases/tag/v0.40.11",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ollama/ollama/releases/tag/v0.40.11",
+    "verified_at": "2026-10-25T01:08:33Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
