@@ -1,0 +1,817 @@
+{
+ "version": 2,
+ "place": "alley-2",
+ "family": "Alley2",
+ "variant": "N",
+ "tod": "night",
+ "cost": {
+  "triangles": 129422,
+  "drawCalls": 525,
+  "textures": 145,
+  "textureMB": 337.5
+ },
+ "exported": {
+  "triangles": 117570,
+  "drawCalls": 449,
+  "textures": 134,
+  "textureMB": 334
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 6459281,
+   "intensity": 0.42,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 1055774
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 9091000,
+   "intensity": 0.85,
+   "position": [
+    8,
+    14,
+    2
+   ],
+   "visible": true,
+   "target": [
+    -2,
+    0,
+    -8
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0005,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 1,
+     "far": 55,
+     "left": -11,
+     "right": 11,
+     "top": 17,
+     "bottom": -6
+    }
+   }
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 5799810,
+   "intensity": 0.3,
+   "position": [
+    -4,
+    6,
+    -2
+   ],
+   "visible": true,
+   "target": [
+    1.6,
+    1.5,
+    -6
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "noodle-awning-diffuser",
+   "color": 16758895,
+   "intensity": 6.75,
+   "position": [
+    -1.48,
+    2.32,
+    -8
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "steamer-cart-lantern",
+   "color": 16762751,
+   "intensity": 2.75,
+   "position": [
+    1.58,
+    1.42,
+    -7.35
+   ],
+   "visible": true,
+   "distance": 4.5,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "hotel-24h-lightbox",
+   "color": 8575421,
+   "intensity": 3.75,
+   "position": [
+    1.72,
+    2.45,
+    -2.4
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "hotel-24h-bounce",
+   "color": 5937802,
+   "intensity": 2,
+   "position": [
+    1.3,
+    -0.12,
+    -1.7
+   ],
+   "visible": true,
+   "distance": 4.5,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "hotel-projecting-blade",
+   "color": 8575421,
+   "intensity": 2.75,
+   "position": [
+    1.72,
+    2.65,
+    -3.85
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "notice-reading-hood",
+   "color": 16765082,
+   "intensity": 2.5,
+   "position": [
+    2.12,
+    2.7,
+    -6.55
+   ],
+   "visible": true,
+   "distance": 4.2,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "cross-alley-work-light",
+   "color": 11063490,
+   "intensity": 3.5999999999999996,
+   "position": [
+    0,
+    3.82,
+    -20
+   ],
+   "visible": true,
+   "distance": 9,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "south-gate-lamp",
+   "color": 16761987,
+   "intensity": 4,
+   "position": [
+    0.3,
+    2.48,
+    2.92
+   ],
+   "visible": true,
+   "distance": 6.5,
+   "decay": 1.8
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "716f1493-488d-415e-92e5-01258c90ac6b",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "6e3675df-ec6e-4913-af44-4c8c135bd5d9",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "7766e70b-af94-4571-a425-3929b87c22d0",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "a180e001-958f-49e5-923f-2ed37992788a",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
+ "uniformArrays": {},
+ "reflectors": [
+  {
+   "w": 12,
+   "d": 60,
+   "x": 0.3,
+   "y": 0,
+   "z": -22,
+   "strength": 0.68,
+   "blur": 1.9,
+   "f0": 0.12,
+   "tint": 10336949,
+   "fade": 40,
+   "zones": 0.75,
+   "smear": 0,
+   "near": 0,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 768,
+   "mask": "alley-2-night.mask0.webp"
+  }
+ ],
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    0.8,
+    0
+   ],
+   "target": [
+    0,
+    0.8,
+    -8
+   ],
+   "fov": 52.3,
+   "shift": [
+    0.008,
+    0.102
+   ]
+  },
+  "views": [
+   {
+    "name": "kiosk",
+    "label": "Kiosk bay",
+    "position": [
+     0.8,
+     1.65,
+     -5.2
+    ],
+    "target": [
+     -2,
+     1.65,
+     -8.4
+    ],
+    "fov": 58
+   },
+   {
+    "name": "posters",
+    "label": "Poster wall",
+    "position": [
+     -0.6,
+     1.4,
+     -4.8
+    ],
+    "target": [
+     2.6,
+     1.4,
+     -7.4
+    ],
+    "fov": 55
+   },
+   {
+    "name": "reverse",
+    "label": "Back south",
+    "position": [
+     0.2,
+     1.6,
+     -14
+    ],
+    "target": [
+     0.2,
+     1.4,
+     3
+    ],
+    "fov": 60
+   },
+   {
+    "name": "high-wide",
+    "label": "Above",
+    "position": [
+     0.3,
+     6,
+     2.4
+    ],
+    "target": [
+     0.3,
+     0.5,
+     -14
+    ],
+    "fov": 60
+   },
+   {
+    "name": "junk",
+    "label": "Junk corner",
+    "position": [
+     -0.2,
+     1.3,
+     0.8
+    ],
+    "target": [
+     1.1,
+     0.45,
+     -2.7
+    ],
+    "fov": 55
+   },
+   {
+    "name": "door-left",
+    "label": "Left door",
+    "position": [
+     0.6,
+     1.5,
+     -2.4
+    ],
+    "target": [
+     -2,
+     1.2,
+     -4.8
+    ],
+    "fov": 50
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -1.8499999999999999,
+   0.25,
+   -45
+  ],
+  "max": [
+   2.4,
+   7,
+   3
+  ]
+ },
+ "env": {
+  "background": 729126,
+  "air": {
+   "color": 10471613,
+   "opacity": 0.16,
+   "count": 180
+  },
+  "ibl": {
+   "top": 1850691,
+   "wall": 1651253,
+   "floor": 529173,
+   "intensity": 0.34,
+   "lights": [
+    {
+     "pos": [
+      -1.5,
+      2.4,
+      -8
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "color": 16758895,
+     "power": 2,
+     "lookAt": [
+      0,
+      0,
+      -8
+     ]
+    },
+    {
+     "pos": [
+      2.25,
+      2.5,
+      -2.4
+     ],
+     "size": [
+      2,
+      0.8
+     ],
+     "color": 8575421,
+     "power": 1.5,
+     "lookAt": [
+      0,
+      0,
+      -3
+     ]
+    },
+    {
+     "pos": [
+      0,
+      4,
+      -20
+     ],
+     "size": [
+      3,
+      2
+     ],
+     "color": 11063490,
+     "power": 0.7,
+     "lookAt": [
+      0,
+      0,
+      -20
+     ]
+    }
+   ]
+  },
+  "fog": {
+   "color": 1059889,
+   "density": 0.012
+  },
+  "post": {
+   "outline": {
+    "color": 662302,
+    "opacity": 0.4,
+    "depthTh": 0.014,
+    "normalTh": 0.26
+   },
+   "ao": {
+    "strength": 0.58,
+    "radius": 0.35
+   },
+   "bloom": {
+    "threshold": 0.72,
+    "strength": 0.42,
+    "weights": [
+     0.5,
+     0.36,
+     0.24,
+     0.14,
+     0.08
+    ]
+   },
+   "fog": {
+    "enabled": true,
+    "color": 1059889,
+    "density": 0.006,
+    "falloff": 0.3,
+    "base": 0,
+    "near": 7,
+    "maxOpacity": 0.26
+   },
+   "paint": {
+    "enabled": true,
+    "strength": 0.26,
+    "radius": 2
+   },
+   "grade": {
+    "exposure": 1.04,
+    "contrast": 1.08,
+    "saturation": 0.96,
+    "lift": [
+     0.003,
+     0.007,
+     0.007
+    ],
+    "gain": [
+     0.97,
+     1.02,
+     1.01
+    ],
+    "vignette": 0.32,
+    "guard": 0.06
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -1.9499999999999997,
+   -45,
+   2.5,
+   3
+  ],
+  "eye": 1.6,
+  "start": {
+   "position": [
+    0.2,
+    0,
+    1.5
+   ],
+   "target": [
+    0.2,
+    1.4,
+    -8
+   ]
+  },
+  "colliders": [
+   [
+    -1.75,
+    -2.8,
+    -0.9500000000000001,
+    -2
+   ],
+   [
+    -2.05,
+    -9.5,
+    -1.3499999999999999,
+    -7.4
+   ],
+   [
+    2.4,
+    -3.6,
+    2.6,
+    -2.1
+   ],
+   [
+    2.1,
+    -12.8,
+    2.6,
+    -5.8
+   ],
+   [
+    2.1,
+    -6,
+    2.6,
+    -5.6
+   ],
+   [
+    1.2500000000000002,
+    -2.75,
+    2.6500000000000004,
+    -1.35
+   ],
+   [
+    1.35,
+    -7.800000000000001,
+    2.35,
+    -7
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "door-street",
+   "kind": "link",
+   "label": "Back through the gate",
+   "object": "spot:door-street",
+   "typed": true,
+   "anchor": [
+    0.2,
+    1.2,
+    1.8
+   ],
+   "built": [
+    0.2,
+    1.2,
+    1.8
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "alley2-toolbox",
+   "kind": "inspect",
+   "label": "Toolbox",
+   "object": "toolbox",
+   "typed": false,
+   "anchor": [
+    -1.313266080473407,
+    0.16549079471230504,
+    -2.4044293516696897
+   ],
+   "built": [
+    -1.313266080473407,
+    0.16549079471230504,
+    -2.4044293516696897
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "alley2-meters",
+   "kind": "note",
+   "label": "Meter box",
+   "object": "meters",
+   "typed": false,
+   "anchor": [
+    2.4039999996647237,
+    1.4468078773934394,
+    -4.549999997019768
+   ],
+   "built": [
+    2.4039999996647237,
+    1.4468078773934394,
+    -4.549999997019768
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "alley2-cart",
+   "kind": "use",
+   "label": "Cart",
+   "object": "cart",
+   "typed": false,
+   "anchor": [
+    -0.8999999999999999,
+    0.8499999886751175,
+    -21
+   ],
+   "built": [
+    -0.8999999999999999,
+    0.8499999886751175,
+    -21
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "alley2-shoe",
+   "kind": "inspect",
+   "label": "Lone shoe",
+   "object": "shoe",
+   "typed": false,
+   "anchor": [
+    2.0311002466132853,
+    0.30419905884598253,
+    -2.36415428418767
+   ],
+   "built": [
+    2.0311002466132853,
+    0.30419905884598253,
+    -2.36415428418767
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "frag-2",
+   "kind": "fragment",
+   "label": "Glowing shard",
+   "object": "spot:frag-2",
+   "typed": true,
+   "anchor": [
+    -1.9,
+    1.1,
+    -14
+   ],
+   "built": [
+    -1.9,
+    1.1,
+    -14
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "door-street": {
+   "object": "spot:door-street",
+   "how": "node",
+   "on": null,
+   "at": [
+    0.2,
+    1.2,
+    1.8
+   ]
+  },
+  "frag-2": {
+   "object": "spot:frag-2",
+   "how": "node",
+   "on": null,
+   "at": [
+    -1.9,
+    1.1,
+    -14
+   ]
+  }
+ },
+ "premerge": {
+  "spot:door-street": [
+   0.2,
+   1.2,
+   1.8
+  ],
+  "spot:frag-2": [
+   -1.9,
+   1.1,
+   -14
+  ],
+  "toolbox": [
+   -1.313266080473407,
+   0.16549079471230504,
+   -2.4044293516696897
+  ],
+  "meters": [
+   2.4039999996647237,
+   1.4468078773934394,
+   -4.549999997019768
+  ],
+  "cart": [
+   -0.8999999999999999,
+   0.8499999886751175,
+   -21
+  ],
+  "shoe": [
+   2.0311002466132853,
+   0.30419905884598253,
+   -2.36415428418767
+  ]
+ },
+ "doorProps": {},
+ "anchorsBefore": {
+  "named": 4,
+  "typed": 2
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 14,
+  "triangles": 12080
+ },
+ "manifestColliders": 0,
+ "manifest": false,
+ "three": "170",
+ "key": "alley-2-night",
+ "hour": 22,
+ "bakedAt": "2026-10-25T01:47:32.388Z",
+ "quantizePosition": 14,
+ "source": {
+  "family": "Alley2 (N) built at runtime by lab/src/scenes",
+  "exportBytes": 61198476,
+  "triangles": 129422,
+  "drawCalls": 525,
+  "textures": 145,
+  "textureMB": 337.5
+ },
+ "lods": {
+  "lod0": {
+   "file": "alley-2-night.glb",
+   "triangles": 112038,
+   "primitives": 428,
+   "materials": 421,
+   "textures": 73,
+   "textureKB": 2495,
+   "bytes": 3834208
+  },
+  "lod1": {
+   "file": "alley-2-night.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 78594,
+   "primitives": 428,
+   "materials": 421,
+   "textures": 73,
+   "textureKB": 789,
+   "bytes": 1998712
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "toolbox",
+   "meters",
+   "shoe",
+   "shoe",
+   "shoe",
+   "shoe",
+   "shoe",
+   "cart",
+   "spot:door-street",
+   "spot:frag-2"
+  ],
+  "exportBytes": 942580
+ },
+ "live": {
+  "file": "alley-2-night.live.json",
+  "bytes": 24634,
+  "objects": [
+   "skyDome",
+   "smokePlume",
+   "smokePlume",
+   "Mesh",
+   "Mesh"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs alley-2 --variant night (dev server running, BASE=...)"
+ ]
+}
