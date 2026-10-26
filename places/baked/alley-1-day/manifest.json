@@ -5,16 +5,16 @@
  "variant": "day",
  "tod": "day",
  "cost": {
-  "triangles": 63960,
-  "drawCalls": 349,
-  "textures": 66,
-  "textureMB": 148.4
+  "triangles": 69646,
+  "drawCalls": 381,
+  "textures": 78,
+  "textureMB": 186.2
  },
  "exported": {
-  "triangles": 48926,
-  "drawCalls": 274,
-  "textures": 53,
-  "textureMB": 139.7
+  "triangles": 54794,
+  "drawCalls": 307,
+  "textures": 65,
+  "textureMB": 177.5
  },
  "lights": [
   {
@@ -83,33 +83,19 @@
    ]
   }
  ],
- "lowDrop": [
-  "oil-puddles"
- ],
+ "lowDrop": [],
  "clocks": [
   {
-   "material": "bdf8118f-19a1-4fa2-945e-0dee6d1579de",
+   "material": "0ff1f87f-4ca4-4b8a-a1ff-5f926f556926",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "38ad80a5-2f8e-41fa-9740-81b1e179ca2f",
+   "material": "ec48e437-6c0a-44a8-9f94-fee6253977e8",
    "uniform": "uTime",
    "a": 1,
    "b": 0
-  },
-  {
-   "material": "c7bac3e5-d594-4de7-8f0f-11658b10e9ec",
-   "uniform": "uTime",
-   "a": 1,
-   "b": 0
-  },
-  {
-   "material": "c7bac3e5-d594-4de7-8f0f-11658b10e9ec",
-   "uniform": "uWT",
-   "a": 0.12,
-   "b": -1.776357e-15
   }
  ],
  "motions": [],
@@ -117,12 +103,7 @@
  "tracksUnfitted": [],
  "hooks": {},
  "patchClocks": {},
- "uniformArrays": {
-  "c7bac3e5-d594-4de7-8f0f-11658b10e9ec": {
-   "uL": "v4",
-   "uLC": "c"
-  }
- },
+ "uniformArrays": {},
  "reflectors": [
   {
    "w": 24,
@@ -130,14 +111,14 @@
    "x": 0.5,
    "y": 0,
    "z": 3.2,
-   "strength": 0.26,
+   "strength": 0.32,
    "blur": 2.4,
    "f0": 0.035,
    "tint": 12898765,
    "fade": 40,
-   "zones": 0,
+   "zones": 1,
    "smear": 0,
-   "near": 0,
+   "near": 2.2,
    "maskRepeat": [
     1,
     1
@@ -271,6 +252,9 @@
  },
  "env": {
   "background": 7969958,
+  "air": {
+   "count": 0
+  },
   "ibl": {
    "top": 8826552,
    "wall": 7506828,
@@ -634,36 +618,36 @@
  "three": "170",
  "key": "alley-1-day",
  "hour": 13,
- "bakedAt": "2026-10-25T00:40:13.460Z",
+ "bakedAt": "2026-10-26T04:30:43.533Z",
  "quantizePosition": 14,
  "source": {
   "family": "Alley1 (day) built at runtime by lab/src/scenes",
-  "exportBytes": 45333348,
-  "triangles": 63960,
-  "drawCalls": 349,
-  "textures": 66,
-  "textureMB": 148.4
+  "exportBytes": 57842704,
+  "triangles": 69646,
+  "drawCalls": 381,
+  "textures": 78,
+  "textureMB": 186.2
  },
  "lods": {
   "lod0": {
    "file": "alley-1-day.glb",
-   "triangles": 53948,
-   "primitives": 285,
-   "materials": 273,
-   "textures": 53,
-   "textureKB": 3620,
-   "bytes": 4324536
+   "triangles": 58916,
+   "primitives": 309,
+   "materials": 297,
+   "textures": 56,
+   "textureKB": 3616,
+   "bytes": 4393952
   },
   "lod1": {
    "file": "alley-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 36677,
-   "primitives": 285,
-   "materials": 273,
-   "textures": 53,
-   "textureKB": 1087,
-   "bytes": 1687852
+   "triangles": 39471,
+   "primitives": 309,
+   "materials": 297,
+   "textures": 56,
+   "textureKB": 1033,
+   "bytes": 1698976
   }
  },
  "parts": {
@@ -676,16 +660,15 @@
    "spot:door-street",
    "spot:frag-3"
   ],
-  "exportBytes": 1306136
+  "exportBytes": 1373708
  },
  "live": {
   "file": "alley-1-day.live.json",
-  "bytes": 75511,
+  "bytes": 19939,
   "objects": [
    "skyDome",
    "smokePlume",
-   "smokePlume",
-   "oil-puddles"
+   "smokePlume"
   ]
  },
  "notes": [

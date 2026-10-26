@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "night",
  "cost": {
-  "triangles": 64018,
-  "drawCalls": 363,
-  "textures": 71,
-  "textureMB": 148.9
+  "triangles": 69698,
+  "drawCalls": 392,
+  "textures": 80,
+  "textureMB": 181
  },
  "exported": {
-  "triangles": 48958,
-  "drawCalls": 275,
-  "textures": 54,
-  "textureMB": 139.8
+  "triangles": 54828,
+  "drawCalls": 309,
+  "textures": 64,
+  "textureMB": 171.9
  },
  "lights": [
   {
@@ -86,11 +86,11 @@
    "type": "PointLight",
    "name": "door-transom",
    "color": 16760944,
-   "intensity": 5.75,
+   "intensity": 6.75,
    "position": [
     4.45,
-    2.25,
-    -0.15
+    2.05,
+    -0.4
    ],
    "visible": true,
    "distance": 6,
@@ -114,7 +114,7 @@
    "type": "PointLight",
    "name": "bar-neon",
    "color": 16736174,
-   "intensity": 4.25,
+   "intensity": 3.75,
    "position": [
     2.72,
     1,
@@ -128,7 +128,7 @@
    "type": "PointLight",
    "name": "holo-cyan",
    "color": 4907208,
-   "intensity": 5,
+   "intensity": 3.5,
    "position": [
     4.7,
     2.95,
@@ -184,14 +184,14 @@
    "type": "PointLight",
    "name": "south-service-lamp",
    "color": 8566980,
-   "intensity": 6.75,
+   "intensity": 8.75,
    "position": [
     0.8,
     2.55,
     5.8500000000000005
    ],
    "visible": true,
-   "distance": 8.5,
+   "distance": 10.5,
    "decay": 2
   },
   {
@@ -272,45 +272,31 @@
    ]
   }
  ],
- "lowDrop": [
-  "oil-puddles"
- ],
+ "lowDrop": [],
  "clocks": [
   {
-   "material": "2e7ef410-bb1f-4c56-8963-417efe94d146",
+   "material": "1c1ce0b8-1c72-4d17-b85f-486fd80e3c68",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "f3705abb-1024-4f9c-a2ce-205f6c4e66bb",
+   "material": "3f823c3b-fa46-4369-9c91-214eef01c263",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "bd4c0da2-879e-4b2e-a6df-f1ebccb04d21",
+   "material": "7cf6241b-ae55-4668-a670-fafec8e30fbf",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "409adb11-b829-45ef-8a31-79bdc11880ea",
+   "material": "eb0dd893-e87f-4981-8c99-9603a360bd92",
    "uniform": "uTime",
    "a": 1,
    "b": 0
-  },
-  {
-   "material": "75cbc23b-abb1-4ce9-8935-b7e829b88025",
-   "uniform": "uTime",
-   "a": 1,
-   "b": 0
-  },
-  {
-   "material": "75cbc23b-abb1-4ce9-8935-b7e829b88025",
-   "uniform": "uWT",
-   "a": 0.12,
-   "b": -1.776357e-15
   }
  ],
  "motions": [],
@@ -318,12 +304,7 @@
  "tracksUnfitted": [],
  "hooks": {},
  "patchClocks": {},
- "uniformArrays": {
-  "75cbc23b-abb1-4ce9-8935-b7e829b88025": {
-   "uL": "v4",
-   "uLC": "c"
-  }
- },
+ "uniformArrays": {},
  "reflectors": [
   {
    "w": 24,
@@ -332,13 +313,13 @@
    "y": 0,
    "z": 3.2,
    "strength": 0.72,
-   "blur": 1.6,
+   "blur": 1.4,
    "f0": 0.05,
    "tint": 11061456,
    "fade": 40,
-   "zones": 0,
-   "smear": 0,
-   "near": 0,
+   "zones": 1,
+   "smear": 0.26,
+   "near": 2.2,
    "maskRepeat": [
     1,
     1
@@ -472,6 +453,11 @@
  },
  "env": {
   "background": 793380,
+  "air": {
+   "color": 10273988,
+   "opacity": 0.14,
+   "count": 160
+  },
   "ibl": {
    "top": 2112841,
    "wall": 1848123,
@@ -836,36 +822,36 @@
  "three": "170",
  "key": "alley-1-night",
  "hour": 22,
- "bakedAt": "2026-10-25T00:38:27.679Z",
+ "bakedAt": "2026-10-26T04:30:53.256Z",
  "quantizePosition": 14,
  "source": {
   "family": "Alley1 (D) built at runtime by lab/src/scenes",
-  "exportBytes": 45407260,
-  "triangles": 64018,
-  "drawCalls": 363,
-  "textures": 71,
-  "textureMB": 148.9
+  "exportBytes": 57133052,
+  "triangles": 69698,
+  "drawCalls": 392,
+  "textures": 80,
+  "textureMB": 181
  },
  "lods": {
   "lod0": {
    "file": "alley-1-night.glb",
-   "triangles": 53988,
-   "primitives": 290,
-   "materials": 279,
-   "textures": 55,
-   "textureKB": 3688,
-   "bytes": 4398832
+   "triangles": 58958,
+   "primitives": 314,
+   "materials": 303,
+   "textures": 59,
+   "textureKB": 3703,
+   "bytes": 4487752
   },
   "lod1": {
    "file": "alley-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 36717,
-   "primitives": 290,
-   "materials": 279,
-   "textures": 55,
-   "textureKB": 1153,
-   "bytes": 1760256
+   "triangles": 39513,
+   "primitives": 314,
+   "materials": 303,
+   "textures": 59,
+   "textureKB": 1118,
+   "bytes": 1791132
   }
  },
  "parts": {
@@ -878,16 +864,12 @@
    "spot:door-street",
    "spot:frag-3"
   ],
-  "exportBytes": 1443696
+  "exportBytes": 1511264
  },
  "live": {
   "file": "alley-1-night.live.json",
-  "bytes": 98076,
+  "bytes": 36799,
   "objects": [
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",
@@ -895,8 +877,7 @@
    "smokePlume",
    "smokePlume",
    "Mesh",
-   "Mesh",
-   "oil-puddles"
+   "Mesh"
   ]
  },
  "notes": [
