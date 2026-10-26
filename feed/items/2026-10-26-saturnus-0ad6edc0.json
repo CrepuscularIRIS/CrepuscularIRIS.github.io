@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-26-saturnus-0ad6edc0",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-10-26T01:21:12Z",
+  "title": "PHP2Shell 仍在野利用：PHP 引擎级双 RCE 波及约 70% 网站，另有 JetBrains 新 IDE 与 Cerebras 万亿参数部署",
+  "summary": "过去 12 小时 HN 与外网最值得补的几件大事：PHP2Shell 双 RCE 仍在被利用、Samsung 电视被挖出 root 与追踪遥测、JetBrains 开源 agentic IDE ThinkRail 上线、Cerebras 演示用 59 片晶圆跑 3T 参数模型，以及几条霸榜 HN 的深度讨论。",
+  "summary_en": "Over the past 12 hours, notable Hacker News and web developments include continued exploitation of the PHP2Shell PHP-engine dual RCE, affecting roughly 70% of websites; discovery of root access and tracking telemetry on Samsung TVs; the launch of JetBrains’ open-source agentic IDE, ThinkRail; Cerebras’s demonstration of a 3-trillion-parameter model across 59 wafers; and several in-depth discussions trending on Hacker News.",
+  "body": "过去 12 小时 HN 与外网最值得补的几件大事：PHP2Shell 双 RCE 仍在被利用、Samsung 电视被挖出 root 与追踪遥测、JetBrains 开源 agentic IDE ThinkRail 上线、Cerebras 演示用 59 片晶圆跑 3T 参数模型，以及几条霸榜 HN 的深度讨论。\n\n安全与隐私\n- PHP2Shell：PHP 引擎级双 RCE 在野利用持续，波及约 70% 网站 — CVE-2026-109618/109619（CVSS v4.0 均 9.2），PHP 10 月 21 日修复，影响 5.4 之后所有未打补丁版本，Magento/WordPress/Drupal/Laravel 等全部波及；Cloudflare 记录到补丁发布前就有攻击，多个荷兰机构一度下线避险，Sansec 称公开 PoC 对默认安装无效但仍有针对性利用，修复版 8.2.35/8.3.36/…\n  https://sansec.io/research/php2shell\n- 2025 款 Samsung 电视被挖出 root shell，附大量遥测 — 研究者逆向固件失败后拆机走 UART/JTAG 拿到新机 root shell，HN 766 分、Twitter 330 万浏览；固件里集成了常开麦克风、自动内容识别、地理位置、网络测绘与定向广告，暴露消费级 IoT 隐私与可修复性双重问题。\n  https://twitter.com/log4j/status/2113014142600953868\n\n产品与平台发布\n- JetBrains 开源发布 ThinkRail：基于 git worktree 的 agentic IDE — JetBrains 首次以开源方式推出独立 IDE，内部跑 pi 编码 agent，每个工作区是独立 git worktree，配 Monaco 编辑器、真实 PTY 终端与 spec graph；支持 macOS/Windows/Linux，HN 179 分、GitHub 一天 1.8k star，属于传统 IDE 厂商正面切入 agent 编程工具链。\n  https://thinkrail.ai\n- Cerebras 公开万亿参数模型部署方案：59 片 WSE-3T 跑 Kimi K3 — 官方工程博客详解如何把约 3T 参数的 Kimi K3（69 层线性注意力 + 24 层稠密）切分到 59 片晶圆上，4bit 量化 + 8bit KV cache，层间只传激活（RDMA 约 2µs/跳），吞吐 1000-2000+ tok/s；模型 Terminal-Bench 2.1 得分 88.3%、BrowseComp 91.2%，HN 352 分，是本周基础设施侧最热的技术长文之一。\n  https://www.cerebras.ai/blog/how-we-deploy-trillion-parameter-frontier-models-on-cerebras\n- Goose 编程语言开源：无堆分配、无 GC、无生命周期标注的系统语言 — 作者称在 16 项基准上比惯用 C++ 快 3.3 倍、比手写优化 C++ 快 1.16 倍、比安全 Rust 快 1.12 倍，且内存占用更低；所有动态值内联在编译器管理的数据栈上，无 allocator、无 GC、无 unsafe，直接登上 HN 首页 564 分。\n  https://aardappel.github.io/goose\n\n服务中断\n- DreamHost 出现活跃故障，迫使大量用户重置密码 — 状态页将事件标为 active incident，File Manager 等组件中断并触发全量密码重置流程，HN 114 分，属于本周少见的托管商级别大范围账号安全操作。\n  https://www.dreamhoststatus.com\n\nHN 霸榜深度讨论\n- Dan Luu：我们应该对所构建的软件更野心一点 — 以 pgrust（用 AI 重写 Postgres）为切口，说明能力提升后正则引擎、ripgrep fork、Rust 编译等过去不可行的工具重写已可行，同时用真实 Postgres bug 的挖掘过程反驳“AI 项目都是 slop”的成见；HN 741 分、690 条评论。\n  https://danluu.com/ambitious\n- Apricitas：四年丢掉 20 万创意行业岗位，多少该算 AI 的账 — 数据面：影视与录音业四年减少超 10 万岗位（占该行业近三分之一）、出版减少 7 万余个岗位，现场娱乐仍在增长，数字创作全线收缩；HN 504 分，是本轮 AI 冲击讨论中最有数据支撑的一篇。\n  https://www.apricitas.io/p/ai-and-the-fall-of-the-creative-class\n- 皮肤科医生实测：10 年前的 CNN 在黑色素瘤诊断上胜过 GPT-6 Astra 与 Claude Fable 5.1 — 200 张活检确诊病变随机测试：微调后的 Inception v3 答对 125 例（62%），GPT-6 Astra 与 Claude Fable 5.1 仅 84、85 例（42%）；模型还能在线试玩。HN 419 分，对“前沿模型替代专科 AI”的叙事是少见的一记反证。\n  https://lynchlab.net/llm-skin-cancer\n- Max Woolf 复盘：OpenAI 与 Anthropic 数月内把 LLM 价格砍最多 80% — 逐条梳理 6 月底以来两家旗舰与低价模型的调价时间线，指出缓存读取成本才是 agent 编码场景 96%-99% 的花销大头（缓存读降价 75% 等于总成本降 70%-75%），解释了本轮价格战的真实动因；HN 126 分、150 条讨论。\n  https://minimaxir.com/2026/10/cheap-llms\n\nSource: https://sansec.io/research/php2shell",
+  "category": "breaking",
+  "source": {
+    "url": "https://sansec.io/research/php2shell",
+    "verified_at": "2026-10-26T01:21:12Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}

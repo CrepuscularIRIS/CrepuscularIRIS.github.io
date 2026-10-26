@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-26-snowdrop-4f63ba38",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-26T01:04:06Z",
+  "title": "Jonathan Barron 等人一篇《A Fix for Softmax and Cross-Entropy》指出主流 softmax / cross-entropy 实现里藏着两个数值 bug：修掉之后 grokking 更快、蒸馏不再漂移",
+  "summary": "Barron 团队揪出 softmax 与交叉熵实现的两个隐藏数值缺陷，修好后 grokking 更快、蒸馏学生不再偏离教师，是今天最值得看的一篇。",
+  "summary_en": "According to Jonathan Barron and colleagues’ paper, “A Fix for Softmax and Cross-Entropy,” mainstream softmax and cross-entropy implementations contain two hidden numerical bugs. The note claims that fixing them enables faster grokking and prevents a distilled student model from drifting away from its teacher. It presents the work as an especially worthwhile paper to read today.",
+  "body": "Barron 团队揪出 softmax 与交叉熵实现的两个隐藏数值缺陷，修好后 grokking 更快、蒸馏学生不再偏离教师，是今天最值得看的一篇。\n\narXiv：训练与推理的硬骨头\n- A Fix for Softmax and Cross-Entropy (Barron, Gnanapragasam, Tschannen) — 标准 softmax / log-softmax / 交叉熵实现里有两个数值 bug：目标 logit 过大时梯度被抹成零（梯度不再和为零），师生 logits 接近时又产生本该为零的梯度。修掉后 grokking 更快、无 weight decay 时不再精度崩塌、蒸馏学生不漂移，记忆后 logit 增长被 weight decay 与 Adam ε 的平衡卡住。\n  https://arxiv.org/abs/2610.31642\n- BeNice! Closing Looping's Inference-Memory Gap via KV-Sharing (Prairie, Ryan, Berg-Kirkpatrick, Fu) — 循环架构（looping）推理时每次递归都生成独立 KV cache，显存线性膨胀。两阶段方法（预训练随机深度 + 后训练广播最终 KV）让 KV 可跨深度共享，低显存长上下文模拟中缓存命中提升最高 31.4%、吞吐 +23.6%、p90 首 token 延迟降低最多 83.6%，且与 MLA、fp8/nvfp4 量化等方案可叠加。\n  https://arxiv.org/abs/2610.31633\n- Direct Pass@k Optimization for Thought Pruning (Salmani, Javanmard, Gupta, Razaviyayn) — 把测试时扩展的\"思维剪枝\"直接优化目标定为 pass@k，而不是手工平衡质量与多样性，天然化解探索-利用权衡；在 8 个开源推理模型上优于既有质量类与多样性类剪枝策略。\n  https://arxiv.org/abs/2610.31667\n- Action Learning for Scientific Simulations (Liaw, Y. Du, Yilun Du) — 提出\"动作学习\"框架 LEAP：从轨迹观测反推随机性\"动作\"，得到路径空间上可微、能捕捉跨时间非可加依赖的目标，可复用于排序、机制操控、受约束优化与采样，在随机物理系统、多体轨道与分子模拟上验证。\n  https://arxiv.org/abs/2610.31585\n\nAgent 与具身智能\n- Questioning Instrumental Convergence in RLVR: Checkpoint Evidence from OLMo-3 — 用 InstrumentalEval 在 OLMo-3-7B-Think 的 13 个 RLVR 中间 checkpoint 上追踪\"工具性趋同\"行为率：SFT 25.0% 升到第 200 步的 46.1%，最终反而降到 11.8%，32B 端点也呈下降——RLVR 并不单调抬升这类行为，与\"RL 必然导致权力寻求\"的说法形成有意思的张力。\n  https://arxiv.org/abs/2610.31624\n- Sensorimotor Alignment: A Platonic Proxy for Embodied Policy Success (S²) — 把柏拉图表示假说推进到机器人：训练无关的离线指标 S² 衡量模型感知表征与物理运动几何的对齐程度，与闭环任务成功率正相关，可在昂贵的闭环评测前先筛掉大部分机器人基础模型和 VLM 骨干。\n  https://arxiv.org/abs/2610.31670\n- When Is a Memory Safe Enough to Act On? Action-Conditioned Memory Verification (AMV-Guard) — 长命体 agent 跨会话记忆里的陈旧信息可能造成不可逆伤害，论文主张\"要不要复核\"取决于动作后果而非记忆本身可靠性；把复核建模为序贯停止问题并用价值信息量选查，ToolSandbox 上验证成本降 33.9% 且保持 100% 安全放行召回。\n  https://arxiv.org/abs/2610.31446\n- Muffin - A Shared Memory Buffer for Asynchronous AI Agents — 多智能体辩论靠同步轮流和全轨迹共享，成本高。异步编排器 + 共享记忆缓冲的 MUFFIN 让中间结果异步交换、私有推理留在本地，20 组设定中 17 组准确率最佳，比多智能体辩论准确率高 19.2 个百分点、token 少用 77.4%。\n  https://arxiv.org/abs/2610.31355\n\nNature\n- Predicting protein electrostatics with protein language models — Nature Communications 最新上线的一篇：把蛋白语言模型用于预测蛋白静电性质，代表 PLM 从结构预测走向更细的物理属性层面，值得跟进后续在药物设计里的落地。\n  https://www.nature.com/articles/s41467-026-78406-y\n\nSource: https://arxiv.org/abs/2610.31642",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.31642",
+    "verified_at": "2026-10-26T01:04:06Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}
