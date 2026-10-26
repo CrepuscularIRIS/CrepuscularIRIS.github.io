@@ -5,16 +5,16 @@
  "variant": "",
  "tod": "day",
  "cost": {
-  "triangles": 40444,
-  "drawCalls": 51,
-  "textures": 49,
-  "textureMB": 131.4
+  "triangles": 59694,
+  "drawCalls": 54,
+  "textures": 57,
+  "textureMB": 155.9
  },
  "exported": {
-  "triangles": 40430,
-  "drawCalls": 44,
-  "textures": 49,
-  "textureMB": 131.4
+  "triangles": 59686,
+  "drawCalls": 47,
+  "textures": 57,
+  "textureMB": 155.9
  },
  "lights": [
   {
@@ -34,10 +34,10 @@
    "type": "PointLight",
    "name": "",
    "color": 16757900,
-   "intensity": 3.2886812410431725,
+   "intensity": 1.643739676796077,
    "position": [
     -1.13,
-    0.38,
+    0.28,
     -4.45
    ],
    "visible": true,
@@ -48,10 +48,10 @@
    "type": "PointLight",
    "name": "",
    "color": 16757900,
-   "intensity": 3.110385565624547,
+   "intensity": 1.5547284239904353,
    "position": [
     1.27,
-    0.38,
+    0.28,
     -4.45
    ],
    "visible": true,
@@ -62,11 +62,11 @@
    "type": "PointLight",
    "name": "",
    "color": 16751232,
-   "intensity": 2.6,
+   "intensity": 1.55,
    "position": [
     0,
-    1.35,
-    -2.4
+    0.95,
+    -3
    ],
    "visible": true,
    "distance": 10,
@@ -88,24 +88,46 @@
    }
   },
   {
-   "type": "PointLight",
-   "name": "",
-   "color": 16741464,
-   "intensity": 1.8,
+   "type": "SpotLight",
+   "name": "room-moon-window",
+   "color": 10271944,
+   "intensity": 90,
    "position": [
-    0,
-    0.8,
-    -3.6
+    0.4239958130958903,
+    2.807939289890409,
+    -4.29819965663835
    ],
    "visible": true,
-   "distance": 6,
-   "decay": 2
+   "distance": 12,
+   "decay": 1.8,
+   "angle": 0.34,
+   "penumbra": 0.85,
+   "target": [
+    0.29780564263322884,
+    0.9781818181818183,
+    1.7400000000000002
+   ],
+   "shadow": {
+    "mapSize": [
+     1024,
+     1024
+    ],
+    "bias": -0.0006,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 0.4,
+     "far": 12,
+     "fov": 38.96113006889598
+    }
+   }
   },
   {
    "type": "DirectionalLight",
    "name": "",
    "color": 16754832,
-   "intensity": 0.25,
+   "intensity": 0.11,
    "position": [
     0,
     3,
@@ -120,64 +142,69 @@
   }
  ],
  "lowDrop": [
-  "groundMist"
+  "Mesh",
+  "Mesh"
  ],
  "clocks": [
   {
-   "material": "7354cb9b-9c35-4356-acfa-3774ebe69267",
+   "material": "14f5699d-312a-45db-a013-236af6864818",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "928f23e9-4f20-45d0-9672-ddbd3a94cd15",
+   "material": "0b17df89-421d-4282-a109-2e76d82dab55",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "8fd03e69-e185-4bdb-b81d-0eaa9863a219",
+   "material": "b8a33de3-96e5-46ce-99f1-160e5e177e91",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "3a5d18d2-586e-4c25-a48e-4eafbf28705d",
+   "material": "a13d61a5-0a0d-4430-a2ee-d5dc5ad8b535",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "bdaf40bb-1016-4c15-8934-e5446d5b3629",
+   "material": "20a56708-9dcd-4e1f-82c4-30c78fb9f939",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "20aef638-39a0-4a40-a126-74f765822f94",
+   "material": "308474f7-783d-4fef-98c2-2da175892a75",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "d26b8daa-5545-435a-8c18-719db9de82eb",
+   "material": "8c0cfc55-b611-4440-8c14-39f29ea132cd",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [],
  "camera": {
   "ref": {
    "position": [
-    0,
+    -0.24,
     1.51,
     0
    ],
    "target": [
-    0,
+    -0.24,
     1.51,
     -5
    ],
@@ -201,7 +228,12 @@
      0.4,
      -4.45
     ],
-    "fov": 46
+    "fov": 46,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "curtain",
@@ -216,7 +248,12 @@
      1.5,
      -4.7
     ],
-    "fov": 58
+    "fov": 58,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "reverse",
@@ -231,7 +268,12 @@
      1.15,
      1.74
     ],
-    "fov": 60
+    "fov": 60,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "cushion",
@@ -246,7 +288,12 @@
      0.1,
      -3.3
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "mural",
@@ -261,7 +308,12 @@
      1.1,
      -4
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "desk",
@@ -276,7 +328,12 @@
      0.35,
      1
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "skylight",
@@ -291,7 +348,12 @@
      2.2,
      -3.3
     ],
-    "fov": 60
+    "fov": 60,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "overhead",
@@ -306,7 +368,12 @@
      0.2,
      -3.8
     ],
-    "fov": 62
+    "fov": 62,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    }
   ]
  },
@@ -325,10 +392,10 @@
  "env": {
   "background": 1705990,
   "ibl": {
-   "top": 13654076,
+   "top": 7218200,
    "wall": 12079150,
    "floor": 12085836,
-   "intensity": 0.5,
+   "intensity": 0.35,
    "lights": [
     {
      "pos": [
@@ -361,9 +428,21 @@
     "strength": 0.5,
     "radius": 0.28
    },
+   "vol": {
+    "enabled": true,
+    "color": 10271944,
+    "strength": 0.18,
+    "density": 0.1,
+    "max": 0.14,
+    "phase": 0.4,
+    "steps": 24,
+    "dist": 7,
+    "top": 2.4,
+    "bottom": 0.05
+   },
    "bloom": {
-    "threshold": 0.7,
-    "strength": 0.55,
+    "threshold": 0.85,
+    "strength": 0.32,
     "weights": [
      0.5,
      0.4,
@@ -382,8 +461,8 @@
     ],
     "gain": [
      1,
-     0.86,
-     0.82
+     0.93,
+     0.9
     ],
     "vignette": 0.5
    },
@@ -393,7 +472,7 @@
     "range": 2.8,
     "near": 1.2,
     "far": 0.7,
-    "maxRadius": 6,
+    "maxRadius": 3.5,
     "tilt": {
      "center": [
       0.5,
@@ -404,7 +483,7 @@
       0.42
      ],
      "soft": 0.3,
-     "strength": 0.4
+     "strength": 0.2
     }
    }
   }
@@ -495,24 +574,6 @@
    "reach": 3.2
   },
   {
-   "id": "room-curtain",
-   "kind": "inspect",
-   "label": "Scarlet curtain",
-   "object": "spot:room-curtain",
-   "typed": true,
-   "anchor": [
-    0.1,
-    1.5,
-    -4.5
-   ],
-   "built": [
-    0.1,
-    1.5,
-    -4.5
-   ],
-   "reach": 5
-  },
-  {
    "id": "room-andon",
    "kind": "inspect",
    "label": "Paper lantern",
@@ -547,60 +608,6 @@
     -3.3
    ],
    "reach": 5
-  },
-  {
-   "id": "room-fusuma-blossom",
-   "kind": "inspect",
-   "label": "Blossom fusuma",
-   "object": "spot:room-fusuma-blossom",
-   "typed": true,
-   "anchor": [
-    -2.4,
-    1.2,
-    -4
-   ],
-   "built": [
-    -2.4,
-    1.2,
-    -4
-   ],
-   "reach": 5
-  },
-  {
-   "id": "room-fusuma-sun",
-   "kind": "inspect",
-   "label": "Sun and wave",
-   "object": "spot:room-fusuma-sun",
-   "typed": true,
-   "anchor": [
-    2.4,
-    1.2,
-    -4
-   ],
-   "built": [
-    2.4,
-    1.2,
-    -4
-   ],
-   "reach": 5
-  },
-  {
-   "id": "room-planks",
-   "kind": "inspect",
-   "label": "Polished mats",
-   "object": "spot:room-planks",
-   "typed": true,
-   "anchor": [
-    0,
-    0.05,
-    -1.8
-   ],
-   "built": [
-    0,
-    0.05,
-    -1.8
-   ],
-   "reach": 5
   }
  ],
  "bind": {
@@ -624,16 +631,6 @@
     1.7
    ]
   },
-  "room-curtain": {
-   "object": "spot:room-curtain",
-   "how": "node",
-   "on": null,
-   "at": [
-    0.1,
-    1.5,
-    -4.5
-   ]
-  },
   "room-andon": {
    "object": "spot:room-andon",
    "how": "node",
@@ -653,36 +650,6 @@
     0.15,
     -3.3
    ]
-  },
-  "room-fusuma-blossom": {
-   "object": "spot:room-fusuma-blossom",
-   "how": "node",
-   "on": null,
-   "at": [
-    -2.4,
-    1.2,
-    -4
-   ]
-  },
-  "room-fusuma-sun": {
-   "object": "spot:room-fusuma-sun",
-   "how": "node",
-   "on": null,
-   "at": [
-    2.4,
-    1.2,
-    -4
-   ]
-  },
-  "room-planks": {
-   "object": "spot:room-planks",
-   "how": "node",
-   "on": null,
-   "at": [
-    0,
-    0.05,
-    -1.8
-   ]
   }
  },
  "premerge": {
@@ -696,11 +663,6 @@
    1,
    1.7
   ],
-  "spot:room-curtain": [
-   0.1,
-   1.5,
-   -4.5
-  ],
   "spot:room-andon": [
    -1.13,
    0.35,
@@ -710,27 +672,12 @@
    0.1,
    0.15,
    -3.3
-  ],
-  "spot:room-fusuma-blossom": [
-   -2.4,
-   1.2,
-   -4
-  ],
-  "spot:room-fusuma-sun": [
-   2.4,
-   1.2,
-   -4
-  ],
-  "spot:room-planks": [
-   0,
-   0.05,
-   -1.8
   ]
  },
  "doorProps": {},
  "anchorsBefore": {
   "named": 0,
-  "typed": 8
+  "typed": 4
  },
  "models": {
   "baked": [],
@@ -746,35 +693,36 @@
  "three": "170",
  "key": "haunted-mansion-room-1",
  "hour": 13,
- "bakedAt": "2026-10-21T12:57:06.386Z",
+ "bakedAt": "2026-10-26T01:04:20.813Z",
+ "quantizePosition": 14,
  "source": {
   "family": "HauntedMansionRoom () built at runtime by lab/src/scenes",
-  "exportBytes": 52492104,
-  "triangles": 40444,
-  "drawCalls": 51,
-  "textures": 49,
-  "textureMB": 131.4
+  "exportBytes": 53040028,
+  "triangles": 59694,
+  "drawCalls": 54,
+  "textures": 57,
+  "textureMB": 155.9
  },
  "lods": {
   "lod0": {
    "file": "haunted-mansion-room-1.glb",
-   "triangles": 40430,
-   "primitives": 38,
-   "materials": 38,
-   "textures": 25,
-   "textureKB": 3077,
-   "bytes": 3523108
+   "triangles": 59686,
+   "primitives": 41,
+   "materials": 41,
+   "textures": 27,
+   "textureKB": 3079,
+   "bytes": 3559872
   },
   "lod1": {
    "file": "haunted-mansion-room-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 21129,
-   "primitives": 38,
-   "materials": 38,
-   "textures": 25,
-   "textureKB": 705,
-   "bytes": 991288
+   "triangles": 30784,
+   "primitives": 41,
+   "materials": 41,
+   "textures": 27,
+   "textureKB": 707,
+   "bytes": 1056604
   }
  },
  "parts": {
@@ -782,25 +730,22 @@
   "names": [
    "spot:writing-desk",
    "spot:room-door",
-   "spot:room-curtain",
    "spot:room-andon",
-   "spot:room-cushion",
-   "spot:room-fusuma-blossom",
-   "spot:room-fusuma-sun",
-   "spot:room-planks"
+   "spot:room-cushion"
   ],
-  "exportBytes": 1172
+  "exportBytes": 668
  },
  "live": {
   "file": "haunted-mansion-room-1.live.json",
-  "bytes": 33797,
+  "bytes": 30605,
   "objects": [
    "motes",
+   "motes",
    "moon-window",
-   "moon-shaft",
    "motes",
    "smokePlume",
-   "groundMist"
+   "Mesh",
+   "Mesh"
   ]
  },
  "notes": [
