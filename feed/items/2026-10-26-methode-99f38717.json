@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-26-methode-99f38717",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-26T03:00:08Z",
+  "title": "Phronix：让 agent 从自身执行中沉淀可复用能力，MCP 工具即记忆库",
+  "summary": "Phronix 用 predictor-validator-corrector 闭环把 agent 执行经验自动蒸馏成\"能力\"，复用任务首次尝试成功率 93-95%，token 成本降到基线的三分之一。",
+  "summary_en": "Phronix is presented as a system that enables agents to automatically distill reusable capabilities from their own execution histories through a predictor-validator-corrector loop, with MCP tools serving as a memory repository. According to the note, first-attempt success rates for reused tasks reach 93–95%, while token costs fall to roughly one-third of baseline. The description appears concise and promotional, without further qualification or supporting detail.",
+  "body": "Phronix 用 predictor-validator-corrector 闭环把 agent 执行经验自动蒸馏成\"能力\"，复用任务首次尝试成功率 93-95%，token 成本降到基线的三分之一。\n\n论文\n- Phronix: The Capability-Centric Learning Paradigm for Agents — MCP 工具 + 技能提出方案、执行结果做验证、观测结果反哺能力库；每个任务自动沉淀 7.6-30.8 项可复用能力，热启动仅耗 0.38-0.40M token，把两个廉价模型的 SWE-bench 解决率从 29%/27% 拉到 91%/87%。\n  https://arxiv.org/abs/2610.31789\n- Omni-Woodpecker：免训练修正全模态大模型幻觉（Hugging Face 当日第 2） — 不在输出层做文章，而是正交分解隐状态、抑制先验并恢复被忽略的证据；以 Qwen2.5-Omni-7B 为骨干在 CMM 上 +12.9、AVHBench 上 +8.6 分，可迁移到 VideoLLaMA2-AV。\n  https://huggingface.co/papers/2610.27103\n- UserArena：面向长程购物 Agent 的真实用户模拟基准（当日第 1） — 11,010 名用户、64,729 条真实会话轨迹、13 类动作，配五级评估并可离线对标生产 A/B；配套 On-Policy Trajectory Distillation 提升模拟器保真度。\n  https://huggingface.co/papers/2610.30932\n- MisconceptDialogue：数学辅导评测的评分标准本身会改变结论 — 同一批对话里，exact-match 打分报 42.1% 修复成功率，人工校准的 LLM-as-judge 报 81.3%，39.2 个百分点的差距超过模型与教学策略本身的影响。\n  https://arxiv.org/abs/2610.31679\n\nGitHub与基建\n- llama.cpp b11888：语法采样加递归深度上限，修掉长 token 被一律拒绝的 bug — 原先 llama_grammar_reject_candidates_for_stack 把 token 码点数当成递归深度，256 字符以上的 token（如 GLM-4.7-Flash 的 512 空格 token）永远被拒；改用显式栈后不受长度限制，GLM-4.7、Qwen3.6、gemma-4 上的 JSON/list/空格语法采样还更快。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11888\n\n系统\n- Redox OS 九月性能优化小结 — 10 月 26 日 08:24（北京时间）发布：改用直接上下文切换绕开调度器的 BTreeMap，IPC 延迟降 24%、小缓冲 I/O 提升约 5%，内核 TLB miss 降 75%。\n  https://www.phoronix.com/news/Redox-OS-September-2026\n- Wayland 新提案 ext-transient-output：为 VNC/远程桌面铺路 — 10 月 25 日 23:05（北京时间）：特权客户端可动态创建独立虚拟输出，配合 ext-image-copy-capture 供远程客户端捕获，wlroots 已有实验实现。\n  https://www.phoronix.com/news/Wayland-ext-transient-output\n\nSource: https://arxiv.org/abs/2610.31789",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.31789",
+    "verified_at": "2026-10-26T03:00:08Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
