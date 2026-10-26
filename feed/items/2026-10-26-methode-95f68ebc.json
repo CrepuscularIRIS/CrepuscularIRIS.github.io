@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-26-methode-95f68ebc",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-26T04:58:39Z",
+  "title": "HyScale：长上下文稀疏注意力训练提速 2.07 倍",
+  "summary": "最热的是 HyScale——把「学得稀疏注意力」的百万 token 训练瓶颈打穿，1M 上下文下比 Megatron-LM 快 2.07 倍。",
+  "summary_en": "The note highlights HyScale, a method for training learned sparse attention models with million-token context lengths. According to the note, HyScale addresses the training bottleneck at this scale and is reported to run 2.07× faster than Megatron-LM under a 1M-token context. The claim is presented as the note’s most discussed result, without additional experimental details or independent confirmation.",
+  "body": "最热的是 HyScale——把「学得稀疏注意力」的百万 token 训练瓶颈打穿，1M 上下文下比 Megatron-LM 快 2.07 倍。\n\n论文\n- HyScale: Scaling Long-Context Training for Learned Sparse Attention — 稀疏注意力的「选择」步骤才是训练瓶颈；HyTopK 免打分表 + 选择回放让 GLM-5.1 在 512 张 H20 上 1M token 训练快 2.07 倍。\n  https://arxiv.org/abs/2610.32057\n- RSIHub: A Composable Framework for Agent-Evolution Methods（字节跳动） — HF Daily 今日第一（19 赞）：把 AHE、Hyperagents、A-Evolve、GEPA 等自进化方法统一到一套可复用算子/评估协议上，最高 pass@1 提升 13.5 个百分点。\n  https://arxiv.org/abs/2610.32253\n- Don't Forget What You Just Learned: Self-Directed Repair Turns Agent Mistakes Into Lasting Lessons — agent 失败后把反思蒸馏成约 0.02% 参数量的 LoRA 并长期入库复用，GAIA/Terminal-Bench 上成功率提升 8.9–17 个百分点。\n  https://arxiv.org/abs/2610.31846\n- SPECMEM: Accelerating Agentic Tool Calling via Live Memory Management — 把已验证的工具调用在线写回、按用户隔离的草稿库，用投机解码降低 agent 延迟：平均接受 token 多 27%，最高 1.74 倍加速。\n  https://arxiv.org/abs/2610.31840\n- Beyond On-Policy vs. Off-Policy: At What Level Should LLM Agent Distillation Follow the Student? — 指出 on/off-policy 是分层问题：学生轨迹 + 教师前缀组合最强，全 on-policy 最差且需混合采样——为 agent 蒸馏给出可操作原则。\n  https://arxiv.org/abs/2610.31918\n- HiSTEVE 1.0: Harnessing Human-Interface VLA Agents for Open-World Games（腾讯） — 分层 VLA + 能力感知 harness，Minecraft 原生键鼠操作下 MineStudio Bench 达 85.0%，能像人类一样从零合成铁镐。\n  https://arxiv.org/abs/2610.31162\n\nGitHub与基建\n- Cline SDK v0.2.0（10-26 11:33 CST） — 会话语义大改：运行中可重连既有 session、模型请求重试从 5 降到 3、修复 Gemini 免费额度 429 断流，并升级到 AI SDK 7。\n  https://github.com/cline/cline/releases/tag/sdk%2Fsdk%2Fv0.2.0\n- vLLM: [ROCm] Octave KV 原生 3-bit KV cache 后端（10-26 12:35 CST） — AMD GPU 上自研 3-bit KV cache 注意力后端（+6193 行，含 CDNA/RDNA3 prefill 与 decode 内核），长上下文显存压力直接下降。\n  https://github.com/vllm-project/vllm/commit/00b6c4c565a8732c131e1f452d4a17803bb0842b\n- vLLM: DeepSeek-V4.1-Flash AgentX lanes 调优预设（10-26 11:43 CST） — 为 DeepSeek-V4.1-Flash 提供按 agent 场景分路的 recipe，针对不同任务形态做定向调优。\n  https://github.com/vllm-project/vllm/commit/bbf3d92190356a3d47685b859f98d72df0e65642\n- SGLang: NVIDIA deepseek-v4.1 BF16 prefill indexer 分数宽度对齐（10-26 12:38 CST） — 针对 V4.1 稀疏注意力 indexer 的精度对齐修复，是当前 DeepSeek-V4 系列在 NVIDIA 卡上跑通的关键一环。\n  https://github.com/sgl-project/sglang/commit/65f19fce48c886e820d231560823611e9a8e6dd9\n\nSource: https://arxiv.org/abs/2610.32057",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.32057",
+    "verified_at": "2026-10-26T04:58:39Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

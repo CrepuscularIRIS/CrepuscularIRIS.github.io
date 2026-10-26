@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-26-snowdrop-b1121fff",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-26T05:01:41Z",
+  "title": "字节开源 RSIHub：把\"智能体自我进化\"做成可复现的公共基建",
+  "summary": "字节跳动的 RSIHub 冲上 Hugging Face 当日榜第二，它把各家 agent 自我进化方法（AHE、Hyperagents、A-Evolve、GEPA）统一到同一套实验基建上；今天另外值得盯的是几篇把\"稀疏化\"和\"记忆化\"真正落到训练与线上系统的论文。",
+  "summary_en": "A draft note reports that ByteDance’s open-source RSIHub reached second place on Hugging Face’s daily chart. It says the project unifies several agent self-evolution approaches—AHE, Hyperagents, A-Evolve, and GEPA—under one experimental infrastructure. The note also flags several papers that purportedly apply sparsification and memory mechanisms to training and production systems, presenting them as worth watching.",
+  "body": "字节跳动的 RSIHub 冲上 Hugging Face 当日榜第二，它把各家 agent 自我进化方法（AHE、Hyperagents、A-Evolve、GEPA）统一到同一套实验基建上；今天另外值得盯的是几篇把\"稀疏化\"和\"记忆化\"真正落到训练与线上系统的论文。\n\nHugging Face 每日热门\n- RSIHub: A Composable Framework for Agent-Evolution Methods（字节跳动） — 今天 HF 榜单第 2、19 赞、186 次收藏。agent 自我进化研究长期各自重复造轮子，RSIHub 把执行、评测、恢复、lineage 做成公共层，方法只写\"进化策略\"；已统一实现 AHE / Hyperagents / A-Evolve / GEPA，最高拿到 13.5 分 pass@1 提升——但论文自己承认\"优化收益不总能迁移到留出任务\"，这是给追热点的人的重要冷水。\n  https://huggingface.co/papers/2610.32253\n- HiSTEVE 1.0: Harnessing Human-Interface VLA Agents for Open-World Games（腾讯） — 16 赞。把长程规划器和单一 VLA 拼成一套 Minecraft 智能体，只用视觉+键鼠原生操作，靠\"策略耦合的完成状态检测器\"判断子任务是否真的做完；MineStudio Bench 85.0%，还能像人一样从零合成铁镐，是 GUI agent 少见的硬控制路线。\n  https://arxiv.org/abs/2610.31162\n- RynnUnify: Towards Unified Embodied Brain（16B） — 13 赞。同一套模型同时做具身理解、长程视觉预测和机器人控制：视频-语言交错推理做\"未观测状态\"的预判，RL 扩展再选择性调用预测；Rynn-VP 比 Cosmos 3 Nano 高 9.75 分，真机任务 46.7% 成功率，是\"统一具身大脑\"路线目前最完整的一次尝试。\n  https://arxiv.org/abs/2610.32965\n\n训练与推理效率\n- HyScale: Scaling Long-Context Training for Learned Sparse Attention — 直击 learned sparse attention（DeepSeek-V3.2 起已进生产）的训练瓶颈：选择分数表物化和重算时重复选择。HyTopK 边算边取精确 top-k，selection replay 复用前向选择结果，1M token 下比 Megatron-LM 快 2.07 倍，也把 DeepSeek-V4-Flash 的 CSA 层加速 2.01 倍——系统层创新往往比模型层…\n  https://arxiv.org/abs/2610.32057\n- LazyFlash: Forward-Dense, Backward-Sparse Attention — 反向传播才是稀疏化的主战场：按注意力输出梯度范数给 query block 排名、跳过无关计算，前向保持完全稠密，所以训完仍是普通 dense 模型、vLLM 零改动直接上线。attention 反向最高快 5.7 倍、端到端训练快 1.7 倍——少见的\"不掉点又能直接部署\"的稀疏方案。\n  https://arxiv.org/abs/2610.31911\n\nAgent 记忆、蒸馏与模拟\n- Don't Forget What You Just Learned: Self-Directed Repair — Agent 犯错后只做上下文反思等于每次白犯。Self-Direction 让 agent 复盘自己的轨迹，把教训蒸馏成约 0.02% 参数量的 LoRA 适配器存进\"教训库\"并自动路由给同类任务；Qwen 系在 GAIA、Claw-Eval、Terminal-Bench 2.1 上成功率提升 8.9~17.0 个点，重复犯错的可靠性接近翻倍。\n  https://arxiv.org/abs/2610.31846\n- Beyond On-Policy vs. Off-Policy: At What Level Should LLM Agent Distillation Follow the Student? — 给 agent 蒸馏做了概念上的拆解：产生交互历史的策略，和生成当前动作 token 前缀的策略，可以不同层级地 on-policy。三个模型、四个交互环境的对照实验显示：学生诱导历史 + 教师生成前缀信号最强，两层都跟学生反而最差；而把纯教师上下文前置、纯 on-policy 上下文延后，又优于静态混合比例。\n  https://arxiv.org/abs/2610.31918\n- S²-MAS: A Society-Scale Multi-Agent Simulation Framework with 500 Million Household Persona Agents — 用 5 亿基于真实调查数据构造的家庭 persona 做社会级经济模拟，421M 的 sharp 模型在消费者金融选择任务上自评超过 GLM-5.3-Flash、DeepSeek-V4.1-Flash 与 GPT-6 系列，并模拟了 1200 万家庭在两组\"购车资金条件\"下的消费、现金与还款路径——宏观经济级 agent 模拟正在变得可用。\n  https://arxiv.org/abs/2610.27746\n\nSource: https://huggingface.co/papers/2610.32253",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2610.32253",
+    "verified_at": "2026-10-26T05:01:41Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}
