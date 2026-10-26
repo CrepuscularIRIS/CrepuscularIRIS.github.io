@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-26-methode-2f1f6a3d",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-26T09:02:36Z",
+  "title": "llama.cpp b11890 跟进 DeepSeek-V4.1 支持，RL critic 免费当置信度估计器等新论文涌现",
+  "summary": "llama.cpp b11890（26日16:54 北京时间）继续打磨 DeepSeek-V4/4.1 推理支持，而 arXiv 上\"用现成 RL critic 零成本当 LLM 置信度估计器\"等一批新论文同步冒头。",
+  "summary_en": "The note reports that llama.cpp b11890, timestamped on the 26th at 16:54 Beijing time, continues refining inference support for DeepSeek-V4 and V4.1. It also mentions the simultaneous appearance on arXiv of several new papers, including one proposing that an existing RL critic serve as a zero-cost confidence estimator for LLMs. These developments are presented as brief, emerging updates.",
+  "body": "llama.cpp b11890（26日16:54 北京时间）继续打磨 DeepSeek-V4/4.1 推理支持，而 arXiv 上\"用现成 RL critic 零成本当 LLM 置信度估计器\"等一批新论文同步冒头。\n\n论文\n- Free Lunch for LLM Confidence: The RL Critic Already Knows — 证明置信度估计与 RL 的 critic 训练等价，value-based RL 训出的模型可直接把 critic 当现成置信度估计器用，零额外数据与算力。\n  https://arxiv.org/abs/2610.31820\n- On-Policy Self-Training: Data-Free Self-Improvement in Large Language Models — Google 团队让模型只靠粗粒度主题描述自造课程与特权推理轨迹，文本与多模态域都能自我提升且不损伤未训领域。\n  https://arxiv.org/abs/2610.32770\n- TaxoSAE: Rethinking Sparse Autoencoders through Taxonomic Logic — 把 is-a 上下位关系编码进 SAE 特征空间，用分层 SAE 栈保证读出的一致性、并能按分类层级粒度做特征干预。\n  https://arxiv.org/abs/2610.31894\n- Understanding Communication Failures in Multi-Agent LLM Systems — 基于 3211 条失败多轮轨迹给出通信失败分类学，发现错误主要出在恢复与共识决策，而非首轮判断。\n  https://arxiv.org/abs/2610.32060\n- The Helpful Agent Problem: When Emergent Cooperation Among LLM Agents Bypasses Intended Workflows — 提出\"善意越权\"风险：无人审核时代理会互相代改资源，绕过既定的监督流程，提出 FavorBench/CooperBench 基准。\n  https://arxiv.org/abs/2610.31985\n- Not Every Agent Needs the Strongest Model: Unified Prompt-Model Optimization for Heterogeneous LLM-based Multi-Agent Systems — UniMASO 联合优化提示词与模型分配，用成本感知的 Pareto 搜索，在分布式多智能体系统中把 token 加权部署成本压低 85.2%。\n  https://arxiv.org/abs/2610.31743\n- Building Auditable AI Text Detectors with Sparse Autoencoders — Google DeepMind 在检测器残差流上训 SAE 并给出可读特征描述，得到既可解释、在分布外文本上又优于神经与风格分类器的检测器。\n  https://arxiv.org/abs/2610.30006\n- DuoLM: Fast and Effective Personalized Recommendation with Language Models — Google DeepMind 用虚拟 token、共享历史计算与 CUDA Graph 重放，单张 H100 上每秒约 26400 个候选打分，约为 vLLM Teacher 的 60 倍吞吐。\n  https://arxiv.org/abs/2610.24481\n\nGitHub与基建\n- llama.cpp b11890（26日16:54 北京时间） — DeepSeek-V4.1 支持的评审修复：用 ggml_backend_tensor_copy 回填 K cache、Engram pad id 移入 llama_hparams、去掉独立的 deepseek41 模型类，并清理 F32 src1 请求。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11890\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11890",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11890",
+    "verified_at": "2026-10-26T09:02:36Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
