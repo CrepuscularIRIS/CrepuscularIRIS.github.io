@@ -5,16 +5,16 @@
  "variant": "",
  "tod": "day",
  "cost": {
-  "triangles": 28916,
-  "drawCalls": 125,
-  "textures": 31,
-  "textureMB": 31.1
+  "triangles": 32056,
+  "drawCalls": 136,
+  "textures": 33,
+  "textureMB": 31.9
  },
  "exported": {
-  "triangles": 27816,
-  "drawCalls": 103,
-  "textures": 27,
-  "textureMB": 28.6
+  "triangles": 30962,
+  "drawCalls": 114,
+  "textures": 28,
+  "textureMB": 28.9
  },
  "lights": [
   {
@@ -84,7 +84,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16748592,
-   "intensity": 1.8199999999999998,
+   "intensity": 1.3,
    "position": [
     -1.55,
     1.45,
@@ -98,7 +98,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16748592,
-   "intensity": 1.8199999999999998,
+   "intensity": 1.3,
    "position": [
     1.5,
     1.45,
@@ -112,56 +112,56 @@
    "type": "PointLight",
    "name": "",
    "color": 16763040,
-   "intensity": 4.16,
+   "intensity": 4.784,
    "position": [
     -5,
-    2.7,
+    2.45,
     3.4
    ],
    "visible": true,
-   "distance": 5.5,
+   "distance": 4.8,
    "decay": 2
   },
   {
    "type": "PointLight",
    "name": "",
    "color": 16763040,
-   "intensity": 4.16,
+   "intensity": 3.3280000000000003,
    "position": [
     -2.5,
-    2.7,
+    2.45,
     3.4
    ],
    "visible": true,
-   "distance": 5.5,
+   "distance": 4.8,
    "decay": 2
   },
   {
    "type": "PointLight",
    "name": "",
    "color": 16763040,
-   "intensity": 4.16,
+   "intensity": 3.3280000000000003,
    "position": [
     2.5,
-    2.7,
+    2.45,
     3.4
    ],
    "visible": true,
-   "distance": 5.5,
+   "distance": 4.8,
    "decay": 2
   },
   {
    "type": "PointLight",
    "name": "",
    "color": 16763040,
-   "intensity": 4.16,
+   "intensity": 4.784,
    "position": [
     5,
-    2.7,
+    2.45,
     3.4
    ],
    "visible": true,
-   "distance": 5.5,
+   "distance": 4.8,
    "decay": 2
   },
   {
@@ -230,49 +230,53 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "c04fb4f4-c5c3-40c0-9020-f26aa2d7a909",
+   "material": "1e6eae8b-14ec-4b1d-a6c7-ac5ee67df776",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "4f9b2b35-86ef-44c7-aa5b-cc5aca1768d9",
+   "material": "8d99cb0f-8a99-4ef5-b996-bb22c8410bef",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "715abce8-b0b3-4a61-aaa1-cf410c5aff88",
+   "material": "b9320b59-af48-41c3-98a2-64052f47dfd9",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "589ceb99-bd76-4830-9d92-3acb4fa415fe",
+   "material": "19f8f556-0c22-4c5e-9829-1a941e815b50",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "b010c538-f6cc-4b20-b820-b94d49f689b6",
+   "material": "9f722e8f-82e8-43be-abe3-fa5e12b07b5e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "87e3f5b9-be94-461b-bee2-2405aecfc548",
+   "material": "ef475437-ffc1-453d-9150-56142a4067cf",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "86d61574-2dd5-4b02-97b6-8952decac0e8",
+   "material": "fd2c40a8-dea7-4daf-a4cc-078a006050cb",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [
   {
@@ -281,17 +285,20 @@
    "x": 0,
    "y": 0,
    "z": 3.1,
-   "strength": 0.18,
-   "blur": 2,
-   "f0": 0.05,
-   "tint": 16758936,
+   "strength": 0.14,
+   "blur": 3.4,
+   "f0": 0.03,
+   "tint": 14203036,
    "fade": 40,
+   "zones": 0.35,
+   "smear": 0,
+   "near": 0,
    "maskRepeat": [
     1,
     1
    ],
    "size": 768,
-   "mask": null
+   "mask": "ktv-room-1.mask0.webp"
   }
  ],
  "camera": {
@@ -306,10 +313,10 @@
     1.22,
     0
    ],
-   "fov": 43.6,
+   "fov": 52,
    "shift": [
     0.0026,
-    -0.0296
+    0.11
    ]
   },
   "views": [
@@ -386,7 +393,12 @@
      1.1,
      6.2
     ],
-    "fov": 60
+    "fov": 60,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "sign",
@@ -675,60 +687,6 @@
    "reach": 5
   },
   {
-   "id": "ktv-sign",
-   "kind": "inspect",
-   "label": "KARAOKE sign",
-   "object": "spot:ktv-sign",
-   "typed": true,
-   "anchor": [
-    0,
-    2.6,
-    0.1
-   ],
-   "built": [
-    0,
-    2.6,
-    0.1
-   ],
-   "reach": 5
-  },
-  {
-   "id": "ktv-art-left",
-   "kind": "inspect",
-   "label": "Left artwork",
-   "object": "spot:ktv-art-left",
-   "typed": true,
-   "anchor": [
-    -1.55,
-    1.45,
-    0.68
-   ],
-   "built": [
-    -1.55,
-    1.45,
-    0.68
-   ],
-   "reach": 5
-  },
-  {
-   "id": "ktv-art-right",
-   "kind": "inspect",
-   "label": "Right artwork",
-   "object": "spot:ktv-art-right",
-   "typed": true,
-   "anchor": [
-    1.5,
-    1.45,
-    0.68
-   ],
-   "built": [
-    1.5,
-    1.45,
-    0.68
-   ],
-   "reach": 5
-  },
-  {
    "id": "ktv-door-103",
    "kind": "inspect",
    "label": "Room 103",
@@ -871,39 +829,6 @@
    ],
    "triangles": 128
   },
-  "ktv-sign": {
-   "object": "spot:ktv-sign",
-   "how": "carved",
-   "on": "hall",
-   "at": [
-    0,
-    2.6,
-    0.1
-   ],
-   "triangles": 2
-  },
-  "ktv-art-left": {
-   "object": "spot:ktv-art-left",
-   "how": "carved",
-   "on": "hall",
-   "at": [
-    -1.55,
-    1.45,
-    0.68
-   ],
-   "triangles": 2
-  },
-  "ktv-art-right": {
-   "object": "spot:ktv-art-right",
-   "how": "carved",
-   "on": "hall",
-   "at": [
-    1.5,
-    1.45,
-    0.68
-   ],
-   "triangles": 2
-  },
   "ktv-door-103": {
    "object": "spot:ktv-door-103",
    "how": "carved",
@@ -977,7 +902,7 @@
  },
  "anchorsBefore": {
   "named": 5,
-  "typed": 7
+  "typed": 4
  },
  "models": {
   "baked": [],
@@ -1001,35 +926,36 @@
  "three": "170",
  "key": "ktv-room-1",
  "hour": 13,
- "bakedAt": "2026-10-21T12:57:44.212Z",
+ "bakedAt": "2026-10-26T10:54:08.938Z",
+ "quantizePosition": 14,
  "source": {
   "family": "KTV () built at runtime by lab/src/scenes",
-  "exportBytes": 6815668,
-  "triangles": 28916,
-  "drawCalls": 125,
-  "textures": 31,
-  "textureMB": 31.1
+  "exportBytes": 7351200,
+  "triangles": 32056,
+  "drawCalls": 136,
+  "textures": 33,
+  "textureMB": 31.9
  },
  "lods": {
   "lod0": {
    "file": "ktv-room-1.glb",
-   "triangles": 19838,
-   "primitives": 102,
-   "materials": 90,
-   "textures": 24,
-   "textureKB": 486,
-   "bytes": 802256
+   "triangles": 22978,
+   "primitives": 113,
+   "materials": 101,
+   "textures": 25,
+   "textureKB": 470,
+   "bytes": 817280
   },
   "lod1": {
    "file": "ktv-room-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 11800,
-   "primitives": 102,
-   "materials": 90,
-   "textures": 24,
-   "textureKB": 196,
-   "bytes": 453684
+   "triangles": 13394,
+   "primitives": 113,
+   "materials": 101,
+   "textures": 25,
+   "textureKB": 172,
+   "bytes": 450964
   }
  },
  "parts": {
@@ -1043,22 +969,23 @@
    "spot:song-book",
    "spot:room-board",
    "spot:ktv-porthole",
-   "spot:ktv-sign",
-   "spot:ktv-art-left",
-   "spot:ktv-art-right",
    "spot:ktv-door-103"
   ],
-  "exportBytes": 739828
+  "exportBytes": 421592
  },
  "live": {
   "file": "ktv-room-1.live.json",
-  "bytes": 33347,
+  "bytes": 32785,
   "objects": [
    "Mesh",
    "Mesh",
-   "groundMist",
-   "groundMist",
-   "groundMist"
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh"
   ]
  },
  "notes": [
