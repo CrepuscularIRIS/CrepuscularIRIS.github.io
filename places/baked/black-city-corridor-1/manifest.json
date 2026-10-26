@@ -3,18 +3,18 @@
  "place": "black-city-corridor-1",
  "family": "BlackCityCorridor",
  "variant": "N",
- "tod": "night",
+ "tod": "day",
  "cost": {
-  "triangles": 63708,
-  "drawCalls": 384,
-  "textures": 44,
-  "textureMB": 11.9
+  "triangles": 71816,
+  "drawCalls": 426,
+  "textures": 49,
+  "textureMB": 13.9
  },
  "exported": {
-  "triangles": 52372,
-  "drawCalls": 257,
-  "textures": 28,
-  "textureMB": 5.9
+  "triangles": 59128,
+  "drawCalls": 265,
+  "textures": 31,
+  "textureMB": 7.9
  },
  "lights": [
   {
@@ -84,6 +84,20 @@
    ],
    "visible": true,
    "distance": 7.5,
+   "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 11131090,
+   "intensity": 1.26,
+   "position": [
+    0.21,
+    2.46,
+    19.1
+   ],
+   "visible": true,
+   "distance": 4.8,
    "decay": 1.8
   },
   {
@@ -216,37 +230,49 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "7f7452d6-08e2-43ce-bb7a-44320accc059",
+   "material": "f7dc69e3-3976-46cb-887c-58644283b5b3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "ae9903e5-b74a-4296-8660-ea8bea52ff90",
+   "material": "fb4e2a94-2489-4cfe-a894-e8f05f7ac97f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "246f879b-be7f-4d80-8f98-e55110039432",
+   "material": "86554d03-d852-44dc-80ce-491e2b7a038d",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "71e40121-4f31-48ba-bc54-bff1a62d218f",
+   "material": "336e1dfa-425c-4bd2-9a7f-8ff261f7c4e3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "72b36514-0027-4341-b13a-98f1bc354e31",
+   "material": "5b6d8f69-98f2-470e-b3a5-9c62171cbd07",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "1f1271e9-6635-487a-9592-45847932a63e",
+   "material": "7b75fa42-3284-4de2-b0f3-5e6d0e51e9a1",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "ea9527b4-4f39-4a23-88a4-18656b86bd69",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "c8f75efe-9afd-47b6-9fac-e55ddaee75d5",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -297,16 +323,16 @@
     "name": "board",
     "label": "Display window",
     "position": [
-     0,
-     1.5,
-     17.3
-    ],
-    "target": [
-     1.74,
-     1.35,
+     -0.72,
+     1.42,
      20.75
     ],
-    "fov": 50,
+    "target": [
+     1.72,
+     1.38,
+     20.75
+    ],
+    "fov": 68,
     "post": {
      "dof": {
       "enabled": false
@@ -339,14 +365,19 @@
     "position": [
      -0.5,
      1.4,
-     16.2
+     17.3
     ],
     "target": [
-     -3.4,
-     1.05,
-     11.4
+     -2.45,
+     1.5,
+     9.95
     ],
-    "fov": 62
+    "fov": 46,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "end-door",
@@ -402,16 +433,21 @@
     "name": "ceiling",
     "label": "Service channel",
     "position": [
-     0.8,
-     1.2,
-     12
+     -0.15,
+     1.45,
+     5.4
     ],
     "target": [
-     -0.4,
-     2.8,
-     8
+     -0.42,
+     2.65,
+     3.75
     ],
-    "fov": 60
+    "fov": 60,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    }
   ]
  },
@@ -733,12 +769,12 @@
    "anchor": [
     0.5250000044703482,
     1.2850000089406965,
-    0.7499999940395355
+    0.6000000000000001
    ],
    "built": [
     0.5250000044703482,
     1.2850000089406965,
-    0.7499999940395355
+    0.6000000000000001
    ],
    "reach": 3.2
   },
@@ -749,14 +785,14 @@
    "object": "floor-map",
    "typed": false,
    "anchor": [
-    -0.9939999998323619,
+    -0.9489999998323619,
     1.5,
-    22.4
+    23.1
    ],
    "built": [
-    -0.9939999998323619,
+    -0.9489999998323619,
     1.5,
-    22.4
+    23.1
    ],
    "reach": 3.2
   },
@@ -866,12 +902,12 @@
   "endDoor": [
    0.5250000044703482,
    1.2850000089406965,
-   0.7499999940395355
+   0.6000000000000001
   ],
   "floor-map": [
-   -0.9939999998323619,
+   -0.9489999998323619,
    1.5,
-   22.4
+   23.1
   ],
   "wet-floor-sign": [
    0.7440814547793052,
@@ -899,12 +935,12 @@
   "standIns": []
  },
  "dressStats": {
-  "props": 9,
+  "props": 10,
   "instanced": 5,
   "signs": 7,
   "lights": 0,
-  "retextured": 12,
-  "triangles": 14850,
+  "retextured": 14,
+  "triangles": 19826,
   "failed": 0
  },
  "detailStats": {
@@ -915,37 +951,37 @@
  "manifest": true,
  "three": "170",
  "key": "black-city-corridor-1",
- "hour": 22,
- "bakedAt": "2026-10-25T04:16:25.313Z",
+ "hour": 13,
+ "bakedAt": "2026-10-26T14:28:39.256Z",
  "quantizePosition": 14,
  "source": {
   "family": "BlackCityCorridor (N) built at runtime by lab/src/scenes",
-  "exportBytes": 2152760,
-  "triangles": 63708,
-  "drawCalls": 384,
-  "textures": 44,
-  "textureMB": 11.9
+  "exportBytes": 2711096,
+  "triangles": 71816,
+  "drawCalls": 426,
+  "textures": 49,
+  "textureMB": 13.9
  },
  "lods": {
   "lod0": {
    "file": "black-city-corridor-1.glb",
-   "triangles": 47460,
-   "primitives": 269,
-   "materials": 245,
-   "textures": 42,
-   "textureKB": 171,
-   "bytes": 772352
+   "triangles": 55514,
+   "primitives": 302,
+   "materials": 272,
+   "textures": 47,
+   "textureKB": 222,
+   "bytes": 944844
   },
   "lod1": {
    "file": "black-city-corridor-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 34907,
-   "primitives": 269,
-   "materials": 245,
-   "textures": 42,
-   "textureKB": 149,
-   "bytes": 720136
+   "triangles": 42683,
+   "primitives": 302,
+   "materials": 272,
+   "textures": 47,
+   "textureKB": 186,
+   "bytes": 875896
   }
  },
  "parts": {
@@ -975,12 +1011,14 @@
    "door15.74",
    "door9.55"
   ],
-  "exportBytes": 1267584
+  "exportBytes": 1363604
  },
  "live": {
   "file": "black-city-corridor-1.live.json",
-  "bytes": 51173,
+  "bytes": 55287,
   "objects": [
+   "Mesh",
+   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",
