@@ -5,14 +5,14 @@
  "variant": "N",
  "tod": "day",
  "cost": {
-  "triangles": 38382,
-  "drawCalls": 138,
-  "textures": 34,
-  "textureMB": 67.1
+  "triangles": 42928,
+  "drawCalls": 143,
+  "textures": 36,
+  "textureMB": 67.2
  },
  "exported": {
-  "triangles": 35384,
-  "drawCalls": 123,
+  "triangles": 39926,
+  "drawCalls": 126,
   "textures": 31,
   "textureMB": 66.1
  },
@@ -29,6 +29,20 @@
    ],
    "visible": true,
    "distance": 3,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-wardrobe-plinth",
+   "color": 16763024,
+   "intensity": 0.26,
+   "position": [
+    1.2,
+    0.14,
+    6.9
+   ],
+   "visible": true,
+   "distance": 1.6,
    "decay": 2
   },
   {
@@ -83,11 +97,11 @@
    "type": "PointLight",
    "name": "light-pool-01",
    "color": 16762250,
-   "intensity": 0.85,
+   "intensity": 0.55,
    "position": [
     -1.17,
-    0.3,
-    0.26
+    0.42,
+    0.22
    ],
    "visible": true,
    "distance": 2.6,
@@ -97,11 +111,11 @@
    "type": "PointLight",
    "name": "light-pool-02",
    "color": 16762250,
-   "intensity": 0.75,
+   "intensity": 0.5,
    "position": [
     1.17,
-    0.3,
-    0.26
+    0.42,
+    0.22
    ],
    "visible": true,
    "distance": 2.6,
@@ -189,51 +203,65 @@
    "type": "PointLight",
    "name": "light-pool-07",
    "color": 16763024,
-   "intensity": 0.28,
+   "intensity": 0.5,
    "position": [
     0.2,
     2.5,
     3.6
    ],
    "visible": true,
-   "distance": 2.6,
+   "distance": 2.8,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "light-pool-08",
+   "color": 16765604,
+   "intensity": 0.6,
+   "position": [
+    1.2,
+    2.5,
+    6.72
+   ],
+   "visible": true,
+   "distance": 3,
    "decay": 2
   }
  ],
  "lowDrop": [],
  "clocks": [
   {
-   "material": "31441d5c-7304-4930-9443-d6f914b33b93",
+   "material": "48ec04bb-f06d-4c24-b883-cd05969bbbd8",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "31441d5c-7304-4930-9443-d6f914b33b93",
+   "material": "48ec04bb-f06d-4c24-b883-cd05969bbbd8",
    "uniform": "uWT",
    "a": 0.3,
    "b": 0
   },
   {
-   "material": "522b0225-8156-45c1-9003-ea7174d1fe72",
+   "material": "5b67e444-6c25-4b5a-ae83-03c4e74ae142",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "3561d4d5-279a-4ec6-aeb1-80cdccc0360b",
+   "material": "0b312b72-aaf1-4fb8-8f16-ee9087a789c4",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "8121eb9a-eb3d-4314-a656-067b8eca6d70",
+   "material": "a799b845-44eb-4c9f-bee2-994581408c7a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "fe36e7aa-6339-4e53-a124-9126c2b79d01",
+   "material": "ff03f1af-0d49-422c-bf7b-ae7bdec133b8",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -245,7 +273,7 @@
  "hooks": {},
  "patchClocks": {},
  "uniformArrays": {
-  "31441d5c-7304-4930-9443-d6f914b33b93": {
+  "48ec04bb-f06d-4c24-b883-cd05969bbbd8": {
    "uL": "v4",
    "uLC": "c"
   }
@@ -775,36 +803,36 @@
  "three": "170",
  "key": "goodboat-room-1",
  "hour": 13,
- "bakedAt": "2026-10-25T03:20:28.493Z",
+ "bakedAt": "2026-10-26T14:52:29.525Z",
  "quantizePosition": 14,
  "source": {
   "family": "GoodboatRoom (N) built at runtime by lab/src/scenes",
-  "exportBytes": 18199020,
-  "triangles": 38382,
-  "drawCalls": 138,
-  "textures": 34,
-  "textureMB": 67.1
+  "exportBytes": 18532872,
+  "triangles": 42928,
+  "drawCalls": 143,
+  "textures": 36,
+  "textureMB": 67.2
  },
  "lods": {
   "lod0": {
    "file": "goodboat-room-1.glb",
-   "triangles": 35688,
-   "primitives": 114,
-   "materials": 114,
+   "triangles": 40230,
+   "primitives": 115,
+   "materials": 115,
    "textures": 24,
-   "textureKB": 992,
-   "bytes": 1426036
+   "textureKB": 991,
+   "bytes": 1446260
   },
   "lod1": {
    "file": "goodboat-room-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 20845,
-   "primitives": 114,
-   "materials": 114,
+   "triangles": 23457,
+   "primitives": 115,
+   "materials": 115,
    "textures": 24,
-   "textureKB": 298,
-   "bytes": 627268
+   "textureKB": 297,
+   "bytes": 648460
   }
  },
  "parts": {
@@ -820,12 +848,14 @@
  },
  "live": {
   "file": "goodboat-room-1.live.json",
-  "bytes": 50671,
+  "bytes": 61838,
   "objects": [
+   "Mesh",
    "Mesh",
    "skyDome",
    "water",
    "smokePlume",
+   "Mesh",
    "Mesh",
    "Mesh",
    "buoy-flash",
