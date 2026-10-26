@@ -5,18 +5,32 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 33830,
-  "drawCalls": 300,
-  "textures": 48,
-  "textureMB": 100.4
+  "triangles": 45279,
+  "drawCalls": 347,
+  "textures": 66,
+  "textureMB": 104.1
  },
  "exported": {
-  "triangles": 26472,
-  "drawCalls": 228,
-  "textures": 41,
-  "textureMB": 76.3
+  "triangles": 39165,
+  "drawCalls": 271,
+  "textures": 56,
+  "textureMB": 79.2
  },
  "lights": [
+  {
+   "type": "PointLight",
+   "name": "shift-log-lamp-light",
+   "color": 16763024,
+   "intensity": 1.2,
+   "position": [
+    -2.2,
+    1.78,
+    -4.9799999999999995
+   ],
+   "visible": true,
+   "distance": 1.6,
+   "decay": 2
+  },
   {
    "type": "PointLight",
    "name": "",
@@ -258,25 +272,29 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "f617657b-5b7e-45b9-8019-9e3982a6e04d",
+   "material": "18e5b679-cf3e-4b1a-9c72-cfd4862ece51",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "5d7e96e7-8cec-47c5-ad09-122fc012e3c3",
+   "material": "bdc42395-799a-4090-a70b-3bdc65580d87",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "993d4037-b0ba-4ab6-acb2-f543c8b78fc4",
+   "material": "1991ce5d-e1bd-4b46-8c11-19de50185ea6",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [
   {
@@ -290,6 +308,9 @@
    "f0": 0.06,
    "tint": 13623551,
    "fade": 40,
+   "zones": 0,
+   "smear": 0,
+   "near": 0,
    "maskRepeat": [
     1,
     1
@@ -330,7 +351,12 @@
      1.2,
      1.9
     ],
-    "fov": 62
+    "fov": 62,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "door",
@@ -345,7 +371,12 @@
      1.2,
      2
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "window",
@@ -360,7 +391,19 @@
      1.3,
      -4.3
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "bloom": {
+      "threshold": 0.85,
+      "strength": 0.4
+     },
+     "rays": {
+      "enabled": false
+     },
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "bench",
@@ -375,7 +418,12 @@
      0.8,
      -5.1
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "locker",
@@ -390,7 +438,19 @@
      0.8,
      -5
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "bloom": {
+      "threshold": 0.85,
+      "strength": 0.4
+     },
+     "rays": {
+      "enabled": false
+     },
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "wide",
@@ -405,7 +465,12 @@
      0.5,
      -3.5
     ],
-    "fov": 64
+    "fov": 64,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "shelves",
@@ -420,7 +485,12 @@
      0.9,
      -2.2
     ],
-    "fov": 58
+    "fov": 58,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "workbench",
@@ -435,7 +505,12 @@
      0.9,
      -0.3
     ],
-    "fov": 58
+    "fov": 58,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    }
   ]
  },
@@ -807,24 +882,6 @@
    "reach": 5
   },
   {
-   "id": "lroom-console",
-   "kind": "inspect",
-   "label": "Bench console",
-   "object": "console",
-   "typed": false,
-   "anchor": [
-    -0.48,
-    0.44999999783933164,
-    -4.74
-   ],
-   "built": [
-    -0.48,
-    0.44999999783933164,
-    -4.74
-   ],
-   "reach": 5
-  },
-  {
    "id": "lroom-workbench",
    "kind": "inspect",
    "label": "Workbench",
@@ -832,31 +889,13 @@
    "typed": false,
    "anchor": [
     -2.725,
-    0.5289992266893386,
+    0.6308444261617371,
     0
    ],
    "built": [
     -2.725,
-    0.5289992266893386,
+    0.6308444261617371,
     0
-   ],
-   "reach": 5
-  },
-  {
-   "id": "lroom-window",
-   "kind": "inspect",
-   "label": "Window",
-   "object": "window",
-   "typed": false,
-   "anchor": [
-    -3.1799999997764825,
-    1.389999999888241,
-    -4.3399999884516
-   ],
-   "built": [
-    -3.1799999997764825,
-    1.389999999888241,
-    -4.3399999884516
    ],
    "reach": 5
   },
@@ -891,20 +930,10 @@
    0.9425000002235175,
    -4.777499999999999
   ],
-  "console": [
-   -0.48,
-   0.44999999783933164,
-   -4.74
-  ],
   "workbench": [
    -2.725,
-   0.5289992266893386,
+   0.6308444261617371,
    0
-  ],
-  "window": [
-   -3.1799999997764825,
-   1.389999999888241,
-   -4.3399999884516
   ],
   "door": [
    2.075,
@@ -914,14 +943,22 @@
  },
  "doorProps": {},
  "anchorsBefore": {
-  "named": 6,
+  "named": 4,
   "typed": 0
  },
  "models": {
   "baked": [],
   "standIns": []
  },
- "dressStats": null,
+ "dressStats": {
+  "props": 6,
+  "instanced": 0,
+  "signs": 0,
+  "lights": 0,
+  "retextured": 0,
+  "triangles": 12727,
+  "failed": 0
+ },
  "detailStats": {
   "meshes": 0,
   "triangles": 0
@@ -931,55 +968,56 @@
  "three": "170",
  "key": "landfill-room-1",
  "hour": 13,
- "bakedAt": "2026-10-21T14:53:02.594Z",
+ "bakedAt": "2026-10-26T12:48:51.314Z",
  "quantizePosition": 14,
  "source": {
   "family": "LandfillRoom (D) built at runtime by lab/src/scenes",
-  "exportBytes": 29353264,
-  "triangles": 33830,
-  "drawCalls": 300,
-  "textures": 48,
-  "textureMB": 100.4
+  "exportBytes": 30255832,
+  "triangles": 45279,
+  "drawCalls": 347,
+  "textures": 66,
+  "textureMB": 104.1
  },
  "lods": {
   "lod0": {
    "file": "landfill-room-1.glb",
-   "triangles": 28874,
-   "primitives": 217,
-   "materials": 211,
-   "textures": 45,
-   "textureKB": 4067,
-   "bytes": 4571080
+   "triangles": 40767,
+   "primitives": 253,
+   "materials": 248,
+   "textures": 62,
+   "textureKB": 4140,
+   "bytes": 4870896
   },
   "lod1": {
    "file": "landfill-room-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 21912,
-   "primitives": 217,
-   "materials": 211,
-   "textures": 45,
-   "textureKB": 1059,
-   "bytes": 1476208
+   "triangles": 31698,
+   "primitives": 253,
+   "materials": 248,
+   "textures": 62,
+   "textureKB": 1129,
+   "bytes": 1757236
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
    "door",
-   "window",
    "notice-screen",
    "red-cabinet",
-   "console",
    "workbench"
   ],
-  "exportBytes": 8945564
+  "exportBytes": 8832800
  },
  "live": {
   "file": "landfill-room-1.live.json",
-  "bytes": 26109,
+  "bytes": 31433,
   "objects": [
-   "outside",
+   "Mesh",
+   "Mesh",
+   "skyDome",
+   "smokePlume",
    "motes"
   ]
  },
