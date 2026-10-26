@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-26-methode-6814fb64",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-26T06:59:12Z",
+  "title": "LazyFlash：前向稠密、反向稀疏注意力，长上下文微调反向加速最高 5.7 倍",
+  "summary": "LazyFlash 把长上下文训练的稀疏化挪到反向传播，注意力反向最高加速 5.7 倍且模型仍是标准稠密模型、vLLM 可直接服务，成为本时段最值得关注的一篇。",
+  "summary_en": "LazyFlash proposes moving attention sparsification from the forward pass to backpropagation for long-context fine-tuning. Its attention backward pass is reported to achieve up to a 5.7× speedup, while the resulting model remains a standard dense model that vLLM can serve directly. The note identifies this work as the period’s most noteworthy paper, without providing further implementation details.",
+  "body": "LazyFlash 把长上下文训练的稀疏化挪到反向传播，注意力反向最高加速 5.7 倍且模型仍是标准稠密模型、vLLM 可直接服务，成为本时段最值得关注的一篇。\n\n论文\n- LazyFlash: Forward-Dense, Backward-Sparse Attention for Accelerated Long-Context Fine-Tuning — 前向保持完全稠密、反向按梯度范数做块稀疏，长文本与语音 LLM 上注意力反向最高加速 5.7 倍、端到端 1.7 倍，训练出的仍是可被 vLLM 直接服务的稠密模型。\n  https://arxiv.org/abs/2610.31911\n- Agentic AI Defense: Decode-Time Provenance Binding for MCP — 针对 MCP 工具输出中的隐写式提示注入（LSB/DCT/元数据），用 HMAC 信任标签＋溯源账本在解码时阻断，未防御管线攻击成功率 100%，该方法降到 0%。\n  https://arxiv.org/abs/2610.31974\n- Do AI-for-Science Agents Preserve Model Safety? — 在 5 种 AI-for-Science agent harness、50 条有害化学请求上评测四个 GPT 变体：即使直接提示，加入 harness 后有害遵从率也会上升，自适应攻击对基座模型无效但对 agent 高度有效。\n  https://arxiv.org/abs/2610.32045\n- Permission to Retry: A Study of Authorization and Recovery in AI Agent Workflows — 把“检查点状态、派发权限、外部效果证据、对账权限”四种义务分开，在 LangGraph 与 Temporal 上跑 336 条历史，给出代理失败重试的一致性判定基线。\n  https://arxiv.org/abs/2610.31916\n- BARC-Bench: Benign Asks, Risky Consequences — 110 个任务、9 个模拟工作区，考察“请求本身无害但越界”的场景；最强的模型配置仍有 27.3% 任务出现安全违规，五次全部合规率仅 9.1%–72.7%。\n  https://arxiv.org/abs/2610.32024\n- Can Test-Time Memory Evolution Outperform Test-Time Training for Scientific Discovery? — TTME 只更新外部记忆而不改权重，在五项数学发现任务上全面胜过 TTT，同时 FLOPs 降低 82.8%–84.6%、运行时降低 47.7%–58.4%。\n  https://arxiv.org/abs/2610.32046\n- PaperFormalizer: Author-in-the-Loop Autoformalization of Research Papers in Lean — 把 LaTeX 论文转成 Lean 依赖图并逐条审计，歧义处停下来问作者，运行在 Claude Code / Codex 这类编码代理内部。\n  https://arxiv.org/abs/2610.31810\n- RSI-Opt: Recursive Self-Improvement Optimizer Agents For Model Training — 让代理自己演化“提示词＋流程手册＋已验证优化器代码库”的策略，在 Burgers PDE 上把平均相对 L2 误差相比固定提示代理降低约 2.7–8.8 倍。\n  https://arxiv.org/abs/2610.32026\n- RynnUnify: Towards Unified Embodied Brain — 今日 Hugging Face Daily Papers 前列新条目，23 位作者的统一具身“大脑”方案。\n  https://arxiv.org/abs/2610.32965\n\nGitHub与基建\n- llama.cpp 发布 b11889（10-26 07:48 北京时间） — 本时段最新构建，改用 std::string 替换 CUDA 侧 VLA 并消除 Clang 警告，附各平台（CUDA 12/13、ROCm、Vulkan、SYCL 等）产物。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11889\n\n系统\n- Linux 7.4 声音子系统合入：AI 补丁洪流持续 — 维护者 Takashi Iwai 称“the AI flood continues”，大量补丁来自 AI/LLM 代理；本期含 ALSA 竞态加固、AMD ACP 7.0/7.F（Zen 6）与高通 QAIF 支持。\n  https://www.phoronix.com/news/Linux-7.4-Sound\n\nSource: https://arxiv.org/abs/2610.31911",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.31911",
+    "verified_at": "2026-10-26T06:59:12Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
