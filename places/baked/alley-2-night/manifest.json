@@ -5,22 +5,22 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 129422,
-  "drawCalls": 525,
-  "textures": 145,
-  "textureMB": 337.5
+  "triangles": 133826,
+  "drawCalls": 531,
+  "textures": 147,
+  "textureMB": 342.6
  },
  "exported": {
-  "triangles": 117570,
-  "drawCalls": 449,
-  "textures": 134,
-  "textureMB": 334
+  "triangles": 122752,
+  "drawCalls": 455,
+  "textures": 136,
+  "textureMB": 339.1
  },
  "lights": [
   {
    "type": "HemisphereLight",
    "name": "",
-   "color": 6459281,
+   "color": 5795976,
    "intensity": 0.42,
    "position": [
     0,
@@ -28,12 +28,12 @@
     0
    ],
    "visible": true,
-   "groundColor": 1055774
+   "groundColor": 1054752
   },
   {
    "type": "DirectionalLight",
    "name": "",
-   "color": 9091000,
+   "color": 8231084,
    "intensity": 0.85,
    "position": [
     8,
@@ -68,7 +68,7 @@
   {
    "type": "DirectionalLight",
    "name": "",
-   "color": 5799810,
+   "color": 5400698,
    "intensity": 0.3,
    "position": [
     -4,
@@ -198,25 +198,25 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "716f1493-488d-415e-92e5-01258c90ac6b",
+   "material": "a11ccf79-204d-4475-ad58-598edf9d54a9",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "6e3675df-ec6e-4913-af44-4c8c135bd5d9",
+   "material": "657e5777-784f-4e2a-927f-d7ee13622500",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "7766e70b-af94-4571-a425-3929b87c22d0",
+   "material": "c61de2f7-30e6-496b-aea7-9697bfe0c3c4",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "a180e001-958f-49e5-923f-2ed37992788a",
+   "material": "755256e0-fe2d-4469-bad5-eecc254ed063",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -235,13 +235,13 @@
    "x": 0.3,
    "y": 0,
    "z": -22,
-   "strength": 0.68,
-   "blur": 1.9,
+   "strength": 0.72,
+   "blur": 1.5,
    "f0": 0.12,
-   "tint": 10336949,
+   "tint": 12897480,
    "fade": 40,
-   "zones": 0.75,
-   "smear": 0,
+   "zones": 1,
+   "smear": 0.26,
    "near": 0,
    "maskRepeat": [
     1,
@@ -375,16 +375,16 @@
   ]
  },
  "env": {
-  "background": 729126,
+  "background": 726564,
   "air": {
-   "color": 10471613,
+   "color": 10136508,
    "opacity": 0.16,
    "count": 180
   },
   "ibl": {
-   "top": 1850691,
-   "wall": 1651253,
-   "floor": 529173,
+   "top": 1847363,
+   "wall": 1714488,
+   "floor": 528152,
    "intensity": 0.34,
    "lights": [
     {
@@ -444,12 +444,12 @@
    ]
   },
   "fog": {
-   "color": 1059889,
+   "color": 1121838,
    "density": 0.012
   },
   "post": {
    "outline": {
-    "color": 662302,
+    "color": 660511,
     "opacity": 0.4,
     "depthTh": 0.014,
     "normalTh": 0.26
@@ -471,7 +471,7 @@
    },
    "fog": {
     "enabled": true,
-    "color": 1059889,
+    "color": 1121838,
     "density": 0.006,
     "falloff": 0.3,
     "base": 0,
@@ -489,13 +489,13 @@
     "saturation": 0.96,
     "lift": [
      0.003,
-     0.007,
-     0.007
+     0.005,
+     0.008
     ],
     "gain": [
-     0.97,
-     1.02,
-     1.01
+     1.03,
+     1,
+     0.95
     ],
     "vignette": 0.32,
     "guard": 0.06
@@ -751,36 +751,36 @@
  "three": "170",
  "key": "alley-2-night",
  "hour": 22,
- "bakedAt": "2026-10-25T01:47:32.388Z",
+ "bakedAt": "2026-10-26T05:46:27.590Z",
  "quantizePosition": 14,
  "source": {
   "family": "Alley2 (N) built at runtime by lab/src/scenes",
-  "exportBytes": 61198476,
-  "triangles": 129422,
-  "drawCalls": 525,
-  "textures": 145,
-  "textureMB": 337.5
+  "exportBytes": 62498340,
+  "triangles": 133826,
+  "drawCalls": 531,
+  "textures": 147,
+  "textureMB": 342.6
  },
  "lods": {
   "lod0": {
    "file": "alley-2-night.glb",
-   "triangles": 112038,
-   "primitives": 428,
-   "materials": 421,
-   "textures": 73,
-   "textureKB": 2495,
-   "bytes": 3834208
+   "triangles": 119124,
+   "primitives": 429,
+   "materials": 425,
+   "textures": 75,
+   "textureKB": 2625,
+   "bytes": 4020468
   },
   "lod1": {
    "file": "alley-2-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 78594,
-   "primitives": 428,
-   "materials": 421,
-   "textures": 73,
-   "textureKB": 789,
-   "bytes": 1998712
+   "triangles": 82023,
+   "primitives": 429,
+   "materials": 425,
+   "textures": 75,
+   "textureKB": 840,
+   "bytes": 2072380
   }
  },
  "parts": {
@@ -801,7 +801,7 @@
  },
  "live": {
   "file": "alley-2-night.live.json",
-  "bytes": 24634,
+  "bytes": 24346,
   "objects": [
    "skyDome",
    "smokePlume",
