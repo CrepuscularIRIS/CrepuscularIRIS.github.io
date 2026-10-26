@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 121970,
-  "drawCalls": 100,
-  "textures": 27,
-  "textureMB": 59.3
+  "triangles": 118822,
+  "drawCalls": 116,
+  "textures": 37,
+  "textureMB": 64.2
  },
  "exported": {
-  "triangles": 118614,
-  "drawCalls": 76,
-  "textures": 15,
-  "textureMB": 48.7
+  "triangles": 116124,
+  "drawCalls": 103,
+  "textures": 34,
+  "textureMB": 62.3
  },
  "lights": [
   {
@@ -254,37 +254,41 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "99313d40-aa15-4306-a73e-619b53a6fb68",
+   "material": "35a2b5ad-ecc8-4689-91fe-cbe8e8260d49",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "be3d5c86-c9ea-4b67-8095-15c4eaa285ff",
+   "material": "1f089664-58ac-4c6a-a646-7f1553f38c97",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "617bf05b-6a16-4750-9a72-cda12e27a957",
+   "material": "0495b500-31d8-451c-b375-2b9bab1c7067",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "7bbd9a21-8e62-4153-a5d2-c4ef17a01633",
+   "material": "962f2905-bb8e-4e6d-88f6-d58f9c1adc87",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "0def8a92-92f6-4f8c-8097-9d844a758fb5",
+   "material": "d245e45f-da85-49c0-8f7a-a2750ba311e4",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [],
  "camera": {
@@ -323,18 +327,18 @@
    },
    {
     "name": "desk",
-    "label": "Near desk",
+    "label": "Case log",
     "position": [
-     2.2,
-     1.45,
-     8.2
+     0.95,
+     1.38,
+     5.55
     ],
     "target": [
      0.7,
-     0.9,
-     6.5
+     1.16,
+     6.9
     ],
-    "fov": 48
+    "fov": 42
    },
    {
     "name": "windows",
@@ -342,14 +346,14 @@
     "position": [
      1.5,
      1.5,
-     2.6
+     0.4
     ],
     "target": [
      1.6,
-     1.6,
+     1.55,
      -5.6
     ],
-    "fov": 60
+    "fov": 55
    },
    {
     "name": "partition",
@@ -370,31 +374,31 @@
     "name": "dawn",
     "label": "Dawn window",
     "position": [
-     2,
-     1.5,
-     1.6
+     2.6,
+     1.55,
+     -2.4
     ],
     "target": [
-     2.2,
-     1.8,
-     -8
+     2,
+     1.7,
+     -12
     ],
-    "fov": 70
+    "fov": 60
    },
    {
     "name": "street",
     "label": "Street dawn",
     "position": [
-     2,
+     1,
      1.5,
-     -0.6
+     -4.6
     ],
     "target": [
-     2,
-     2.6,
+     1.6,
+     4.5,
      -40
     ],
-    "fov": 62
+    "fov": 52
    },
    {
     "name": "reverse",
@@ -533,22 +537,22 @@
     "falloff": 0.5,
     "base": 0,
     "near": 4,
-    "maxOpacity": 0.2
+    "maxOpacity": 0.14
    },
    "grade": {
-    "exposure": 1.08,
+    "exposure": 1.3,
     "saturation": 0.9,
     "lift": [
      0,
-     0.02,
-     0.025
+     0.008,
+     0.012
     ],
     "gain": [
      0.9,
      1,
      1
     ],
-    "vignette": 0.36
+    "vignette": 0.3
    },
    "dof": {
     "enabled": true,
@@ -670,6 +674,12 @@
     -4.00529855736087,
     4.4413920358434815,
     -3.1947014426391305
+   ],
+   [
+    -1.5927838557237304,
+    -0.6659494997596109,
+    -0.4072161442762695,
+    0.2659494997596109
    ],
    [
     -3.9,
@@ -832,28 +842,10 @@
    "reach": 5
   },
   {
-   "id": "po-exit",
+   "id": "po-evidence",
    "kind": "inspect",
-   "label": "Exit sign",
-   "object": "spot:po-exit",
-   "typed": true,
-   "anchor": [
-    -2.1,
-    2.25,
-    3.36
-   ],
-   "built": [
-    -2.1,
-    2.25,
-    3.36
-   ],
-   "reach": 5
-  },
-  {
-   "id": "po-cabinet",
-   "kind": "inspect",
-   "label": "Blue filing cabinet",
-   "object": "spot:po-cabinet",
+   "label": "Evidence drawer",
+   "object": "spot:po-evidence",
    "typed": true,
    "anchor": [
     -3.55,
@@ -865,61 +857,7 @@
     0.5,
     4.4
    ],
-   "reach": 5
-  },
-  {
-   "id": "po-copier",
-   "kind": "inspect",
-   "label": "Copier",
-   "object": "spot:po-copier",
-   "typed": true,
-   "anchor": [
-    4.3,
-    1,
-    5
-   ],
-   "built": [
-    4.3,
-    1,
-    5
-   ],
-   "reach": 5
-  },
-  {
-   "id": "po-plant",
-   "kind": "inspect",
-   "label": "Office plant",
-   "object": "spot:po-plant",
-   "typed": true,
-   "anchor": [
-    4.6,
-    0.7,
-    0.4
-   ],
-   "built": [
-    4.6,
-    0.7,
-    0.4
-   ],
-   "reach": 5
-  },
-  {
-   "id": "po-glass",
-   "kind": "inspect",
-   "label": "Interview room",
-   "object": "spot:po-glass",
-   "typed": true,
-   "anchor": [
-    -4.3,
-    1.2,
-    1
-   ],
-   "built": [
-    -4.3,
-    1.2,
-    1
-   ],
-   "reach": 5
+   "reach": 3.2
   }
  ],
  "bind": {
@@ -953,54 +891,14 @@
     6.9
    ]
   },
-  "po-exit": {
-   "object": "spot:po-exit",
-   "how": "mesh",
-   "on": "room < PoliceOffice",
-   "at": [
-    -2.1,
-    2.25,
-    3.36
-   ]
-  },
-  "po-cabinet": {
-   "object": "spot:po-cabinet",
+  "po-evidence": {
+   "object": "spot:po-evidence",
    "how": "mesh",
    "on": "furniture < PoliceOffice",
    "at": [
     -3.55,
     0.5,
     4.4
-   ]
-  },
-  "po-copier": {
-   "object": "spot:po-copier",
-   "how": "mesh",
-   "on": "furniture < PoliceOffice",
-   "at": [
-    4.3,
-    1,
-    5
-   ]
-  },
-  "po-plant": {
-   "object": "spot:po-plant",
-   "how": "node",
-   "on": null,
-   "at": [
-    4.6,
-    0.7,
-    0.4
-   ]
-  },
-  "po-glass": {
-   "object": "spot:po-glass",
-   "how": "node",
-   "on": null,
-   "at": [
-    -4.3,
-    1.2,
-    1
    ]
   }
  },
@@ -1009,16 +907,6 @@
    0.1,
    1.1,
    10.9
-  ],
-  "spot:po-plant": [
-   4.6,
-   0.7,
-   0.4
-  ],
-  "spot:po-glass": [
-   -4.3,
-   1.2,
-   1
   ],
   "monitor": [
    0.7,
@@ -1031,9 +919,10 @@
    -0.2
   ]
  },
+ "doorProps": {},
  "anchorsBefore": {
   "named": 2,
-  "typed": 8
+  "typed": 4
  },
  "models": {
   "baked": [],
@@ -1045,63 +934,61 @@
   "triangles": 0
  },
  "manifestColliders": 0,
- "manifest": false,
+ "manifest": true,
  "three": "170",
  "key": "police-office-1",
  "hour": 13,
- "bakedAt": "2026-10-21T07:20:33.794Z",
+ "bakedAt": "2026-10-26T10:37:38.221Z",
+ "quantizePosition": 14,
  "source": {
   "family": "PoliceOffice (D) built at runtime by lab/src/scenes",
-  "exportBytes": 16697296,
-  "triangles": 121970,
-  "drawCalls": 100,
-  "textures": 27,
-  "textureMB": 59.3
+  "exportBytes": 18104624,
+  "triangles": 118822,
+  "drawCalls": 116,
+  "textures": 37,
+  "textureMB": 64.2
  },
  "lods": {
   "lod0": {
    "file": "police-office-1.glb",
-   "triangles": 97534,
-   "primitives": 74,
-   "materials": 74,
-   "textures": 14,
-   "textureKB": 1238,
-   "bytes": 2222624
+   "triangles": 94742,
+   "primitives": 99,
+   "materials": 99,
+   "textures": 30,
+   "textureKB": 1407,
+   "bytes": 2406112
   },
   "lod1": {
    "file": "police-office-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 52065,
-   "primitives": 74,
-   "materials": 74,
-   "textures": 14,
-   "textureKB": 274,
-   "bytes": 896092
+   "triangles": 50716,
+   "primitives": 99,
+   "materials": 99,
+   "textures": 30,
+   "textureKB": 384,
+   "bytes": 1030304
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
-   "spot:po-exit",
    "monitor",
    "board",
    "spot:po-monitor",
-   "spot:po-cabinet",
+   "spot:po-evidence",
    "spot:records-shelf",
-   "spot:po-copier",
-   "spot:front-door",
-   "spot:po-plant",
-   "spot:po-glass"
+   "spot:front-door"
   ],
-  "exportBytes": 90240
+  "exportBytes": 118760
  },
  "live": {
   "file": "police-office-1.live.json",
-  "bytes": 1478786,
+  "bytes": 48534,
   "objects": [
    "Mesh",
-   "dawnView",
+   "skyDome",
+   "groundMist",
    "motes",
    "Mesh",
    "Mesh",
