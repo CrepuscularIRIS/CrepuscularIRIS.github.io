@@ -5,22 +5,22 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 50158,
-  "drawCalls": 194,
-  "textures": 30,
-  "textureMB": 96.9
+  "triangles": 63083,
+  "drawCalls": 198,
+  "textures": 35,
+  "textureMB": 98.4
  },
  "exported": {
-  "triangles": 48872,
-  "drawCalls": 145,
-  "textures": 27,
-  "textureMB": 94.7
+  "triangles": 61797,
+  "drawCalls": 149,
+  "textures": 32,
+  "textureMB": 96.2
  },
  "lights": [
   {
    "type": "HemisphereLight",
    "name": "",
-   "color": 10261656,
+   "color": 10132120,
    "intensity": 0.3,
    "position": [
     0,
@@ -28,7 +28,7 @@
     0
    ],
    "visible": true,
-   "groundColor": 3880764
+   "groundColor": 3815992
   },
   {
    "type": "DirectionalLight",
@@ -71,7 +71,7 @@
    "color": 16771544,
    "intensity": 2.9700000000000006,
    "position": [
-    -1.7,
+    -1.63,
     2.54,
     1.65
    ],
@@ -87,7 +87,7 @@
    "position": [
     -1.7,
     2.54,
-    4.05
+    4.12
    ],
    "visible": true,
    "distance": 5.2,
@@ -101,7 +101,7 @@
    "position": [
     -1.7,
     2.54,
-    6.45
+    6.55
    ],
    "visible": true,
    "distance": 5.2,
@@ -113,7 +113,7 @@
    "color": 16771544,
    "intensity": 2.9700000000000006,
    "position": [
-    1.6,
+    1.68,
     2.54,
     1.65
    ],
@@ -125,11 +125,11 @@
    "type": "PointLight",
    "name": "",
    "color": 16771544,
-   "intensity": 2.9700000000000006,
+   "intensity": 3.5200000000000005,
    "position": [
-    1.6,
-    2.54,
-    4.05
+    1.68,
+    2.92,
+    4.12
    ],
    "visible": true,
    "distance": 5.2,
@@ -141,9 +141,9 @@
    "color": 16771544,
    "intensity": 2.9700000000000006,
    "position": [
-    1.6,
+    1.68,
     2.54,
-    6.45
+    6.55
    ],
    "visible": true,
    "distance": 5.2,
@@ -152,7 +152,7 @@
   {
    "type": "DirectionalLight",
    "name": "",
-   "color": 9078432,
+   "color": 9081504,
    "intensity": 0.25,
    "position": [
     -2,
@@ -169,11 +169,11 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16769752,
-   "intensity": 4.4,
+   "color": 16771804,
+   "intensity": 1.7600000000000002,
    "position": [
     0.15,
-    1.8,
+    2.3,
     1.5
    ],
    "visible": true,
@@ -183,7 +183,7 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16182514,
+   "color": 15922418,
    "intensity": 0.66,
    "position": [
     -1.9000000000000001,
@@ -191,17 +191,17 @@
     3.3
    ],
    "visible": true,
-   "distance": 4.5,
+   "distance": 2.6,
    "decay": 2
   },
   {
    "type": "PointLight",
    "name": "",
    "color": 16770264,
-   "intensity": 4.4,
+   "intensity": 3.74,
    "position": [
     2.2,
-    2.4,
+    2.75,
     2.6
    ],
    "visible": true,
@@ -212,25 +212,29 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "cdb49b11-bf56-4b8d-a6dc-56212bb0acf3",
+   "material": "e402191d-0c14-4b0c-9a99-c75c8de93f51",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "a773c307-e3f1-4f44-8e0f-73115fb4edfd",
+   "material": "7d6fc02e-4fcf-4c5d-a6fe-3aed28813a08",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "38f6af10-c25a-481c-b17b-bcf87d134f79",
+   "material": "be7e0d9e-b967-41c3-8863-c2c64d01e717",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [
   {
@@ -239,11 +243,14 @@
    "x": -0.51,
    "y": 0.74,
    "z": 5.9,
-   "strength": 1.1,
-   "blur": 0.8,
-   "f0": 0.2,
-   "tint": 16051448,
+   "strength": 0.9,
+   "blur": 1.15,
+   "f0": 0.14,
+   "tint": 15921904,
    "fade": 12,
+   "zones": 0,
+   "smear": 0,
+   "near": 0,
    "maskRepeat": [
     1,
     1
@@ -260,8 +267,11 @@
    "strength": 0.34,
    "blur": 1.6,
    "f0": 0.06,
-   "tint": 15788276,
+   "tint": 15790316,
    "fade": 40,
+   "zones": 0,
+   "smear": 0,
+   "near": 0,
    "maskRepeat": [
     1,
     1
@@ -317,7 +327,14 @@
      0.6,
      4.3
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "dof": {
+      "focus": 2.2,
+      "range": 1.8,
+      "maxRadius": 3
+     }
+    }
    },
    {
     "name": "credenza",
@@ -332,7 +349,14 @@
      0.8,
      0.3
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "dof": {
+      "focus": 2.1,
+      "range": 1.6,
+      "maxRadius": 3
+     }
+    }
    },
    {
     "name": "board",
@@ -347,7 +371,12 @@
      1.5,
      3.1
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "reverse",
@@ -368,16 +397,23 @@
     "name": "chair",
     "label": "Chair",
     "position": [
-     1.15,
-     1,
-     6.1
+     1.3,
+     1.25,
+     7.9
     ],
     "target": [
-     0.35,
-     0.65,
-     5.7
+     -0.6,
+     0.75,
+     4.8
     ],
-    "fov": 45
+    "fov": 50,
+    "post": {
+     "dof": {
+      "focus": 2.4,
+      "range": 2,
+      "maxRadius": 3
+     }
+    }
    },
    {
     "name": "ceiling",
@@ -392,7 +428,12 @@
      3,
      2.6
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    }
   ]
  },
@@ -409,47 +450,119 @@
   ]
  },
  "env": {
-  "background": 1315352,
+  "background": 1250326,
   "ibl": {
-   "top": 3814974,
-   "wall": 8024704,
-   "floor": 3814972,
+   "top": 3684668,
+   "wall": 8027004,
+   "floor": 3815992,
    "intensity": 0.55,
    "lights": [
     {
      "pos": [
-      -1.7,
+      -1.63,
       3,
-      4
+      1.65
      ],
      "size": [
-      0.8,
-      4.5
+      0.64,
+      2
      ],
      "color": 16773350,
-     "power": 5,
+     "power": 2.2,
      "lookAt": [
-      -1.7,
+      -1.63,
       0,
-      4
+      1.65
      ]
     },
     {
      "pos": [
-      1.7,
+      -1.7,
       3,
-      4
+      4.12
      ],
      "size": [
-      0.8,
-      4.5
+      0.74,
+      2
      ],
      "color": 16773350,
-     "power": 5,
+     "power": 2.2,
      "lookAt": [
-      1.7,
+      -1.7,
       0,
-      4
+      4.12
+     ]
+    },
+    {
+     "pos": [
+      -1.7,
+      3,
+      6.55
+     ],
+     "size": [
+      0.74,
+      2
+     ],
+     "color": 16773350,
+     "power": 2.2,
+     "lookAt": [
+      -1.7,
+      0,
+      6.55
+     ]
+    },
+    {
+     "pos": [
+      1.68,
+      3,
+      1.65
+     ],
+     "size": [
+      0.58,
+      2
+     ],
+     "color": 16773350,
+     "power": 2.2,
+     "lookAt": [
+      1.68,
+      0,
+      1.65
+     ]
+    },
+    {
+     "pos": [
+      1.68,
+      3,
+      4.12
+     ],
+     "size": [
+      0.68,
+      2
+     ],
+     "color": 16773350,
+     "power": 2.2,
+     "lookAt": [
+      1.68,
+      0,
+      4.12
+     ]
+    },
+    {
+     "pos": [
+      1.68,
+      3,
+      6.55
+     ],
+     "size": [
+      0.68,
+      2
+     ],
+     "color": 16773350,
+     "power": 2.2,
+     "lookAt": [
+      1.68,
+      0,
+      6.55
      ]
     },
     {
@@ -462,7 +575,7 @@
       2.6,
       1.4
      ],
-     "color": 16051446,
+     "color": 15922418,
      "power": 1.5,
      "lookAt": [
       2,
@@ -474,7 +587,7 @@
   },
   "post": {
    "outline": {
-    "color": 1446940,
+    "color": 1447706,
     "opacity": 0.55,
     "depthTh": 0.012,
     "normalTh": 0.28
@@ -496,25 +609,25 @@
    },
    "fog": {
     "enabled": true,
-    "color": 5919840,
-    "density": 0.012,
+    "color": 5658716,
+    "density": 0.007,
     "falloff": 0.3,
     "base": 0,
     "near": 3,
-    "maxOpacity": 0.25
+    "maxOpacity": 0.12
    },
    "grade": {
     "exposure": 0.92,
     "saturation": 0.9,
     "lift": [
-     0.02,
-     0.012,
-     0.02
+     0.016,
+     0.016,
+     0.018
     ],
     "gain": [
-     1.02,
-     0.97,
-     1
+     1,
+     1,
+     1.01
     ],
     "vignette": 0.34
    },
@@ -814,45 +927,54 @@
   "baked": [],
   "standIns": []
  },
- "dressStats": null,
+ "dressStats": {
+  "props": 4,
+  "instanced": 2,
+  "signs": 0,
+  "lights": 0,
+  "retextured": 0,
+  "triangles": 14479,
+  "failed": 0
+ },
  "detailStats": {
-  "meshes": 26,
-  "triangles": 9258
+  "meshes": 25,
+  "triangles": 8718
  },
  "manifestColliders": 0,
  "manifest": false,
  "three": "170",
  "key": "company-meetingroom",
  "hour": 13,
- "bakedAt": "2026-10-21T13:01:20.940Z",
+ "bakedAt": "2026-10-26T00:43:59.666Z",
+ "quantizePosition": 14,
  "source": {
   "family": "CompanyMeetingroom (D) built at runtime by lab/src/scenes",
-  "exportBytes": 25920356,
-  "triangles": 50158,
-  "drawCalls": 194,
-  "textures": 30,
-  "textureMB": 96.9
+  "exportBytes": 26158244,
+  "triangles": 63083,
+  "drawCalls": 198,
+  "textures": 35,
+  "textureMB": 98.4
  },
  "lods": {
   "lod0": {
    "file": "company-meetingroom.glb",
-   "triangles": 30274,
-   "primitives": 118,
-   "materials": 117,
-   "textures": 11,
-   "textureKB": 960,
-   "bytes": 1352000
+   "triangles": 34869,
+   "primitives": 121,
+   "materials": 118,
+   "textures": 16,
+   "textureKB": 997,
+   "bytes": 1464716
   },
   "lod1": {
    "file": "company-meetingroom.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 16600,
-   "primitives": 118,
-   "materials": 117,
-   "textures": 11,
-   "textureKB": 243,
-   "bytes": 554912
+   "triangles": 20361,
+   "primitives": 121,
+   "materials": 118,
+   "textures": 16,
+   "textureKB": 269,
+   "bytes": 641688
   }
  },
  "parts": {
@@ -866,11 +988,11 @@
    "spot:meet-audit-card",
    "spot:frag-10"
   ],
-  "exportBytes": 130076
+  "exportBytes": 193556
  },
  "live": {
   "file": "company-meetingroom.live.json",
-  "bytes": 49022,
+  "bytes": 45132,
   "objects": [
    "Mesh",
    "Mesh",
@@ -889,7 +1011,8 @@
    "Mesh",
    "Mesh",
    "motes",
-   "groundMist",
+   "Mesh",
+   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",
