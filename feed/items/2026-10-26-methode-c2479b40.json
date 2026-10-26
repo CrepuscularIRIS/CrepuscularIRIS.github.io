@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-26-methode-c2479b40",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-26T11:05:37Z",
+  "title": "102 页视频世界模型综述登顶 HF Daily Papers",
+  "summary": "牛津团队 102 页《视频世界模型》综述登顶今日 HF Daily Papers（39 赞），把视频理解与生成统一到「读/写/共享/交互」四种世界建模操作上。",
+  "summary_en": "An Oxford team’s 102-page survey titled “Video World Models” has topped today’s HF Daily Papers, receiving 39 likes. The review proposes a unified framework for video understanding and generation, organizing them around four world-modeling operations: reading, writing, sharing, and interaction. The note reports this as an achieved ranking and gives no indication of uncertainty, draft status, or automatic generation.",
+  "body": "牛津团队 102 页《视频世界模型》综述登顶今日 HF Daily Papers（39 赞），把视频理解与生成统一到「读/写/共享/交互」四种世界建模操作上。\n\n论文\n- Reading, Writing, Sharing, and Interacting with the World through Video — 牛津团队 102 页综述，用「世界建模」统一视频理解与生成：读（推断世界属性）/写（合成视频）/共享（理解与生成同机制）/交互（动作下预测并更新状态），并指出评测重心正从片段级感知转向持久状态与因果有效性。今日 HF Daily Papers 榜首（39 赞）。\n  https://arxiv.org/abs/2610.31668\n- TWIG: Every Weight Is a Path of Shared Discrete Decisions — 把网络每个权重表示成一串共享的离散决策（符号、2 的幂移位、零门控、共享表索引），使剪枝/量化/低秩/码本统一为一个对象的编辑；在 LLM 五个权重矩阵上比 GPTQ 少 9–15% 加法器（强离群矩阵少 20–55%）。\n  https://arxiv.org/abs/2610.31931\n- Dual Exam: Controlled Evaluation of Multimodal Agents and World Models — 83 人团队把「智能体」与「世界模型」分开考：Agent 轨 1088 题、WM 轨 400 例；GPT 6 Astra 以 31.3 领跑 Agent Index，而耦合试点 150 例零成功——直指两者互锁评测的空白。\n  https://arxiv.org/abs/2610.31066\n- TACS-RF: Tool-driven Agentic Circuit Synthesis of RF and mmWave Modules — Claude Opus 4.8 直接驱动 Virtuoso/Spectre、Calbre、EMX、HFSS 完成 240–251 GHz 亚太赫兹发射机的半自主设计，含 VCO、倍频器、差分天线等，向「text-to-ASIC」迈进。\n  https://arxiv.org/abs/2610.31882\n\nGitHub 与基建\n- Cline v4.1.26 — 10 月 26 日 17:06（北京时间）发布：新增 Cloud tasks（本地/云端模型切换、沙箱进度卡），新增 CommandCode、Reflection、Liquid Inference、Munito AI 供应商，GPT-6 系列在 OpenAI/Azure 兼容端点修复可用。\n  https://github.com/cline/cline/releases/tag/v4.1.26\n- llama.cpp b11895–b11898 — 北京时间 17:57–19:00 一小时内连发四个构建：b11896 修 WebGPU memset 竞态，b11897 重构 test-llama-archs 并把 llama_arch_* 包装进 llama-ext.h 暂存头，b11898 修 ARM 架构未使用变量。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11897\n\n系统\n- EXT4 合入可选 buffered iomap，大写入显著提速 — 10 月 26 日 17:53（北京时间）报道：Linux 7.4 合并华为 Zhang Yi 主导的 EXT4 buffered iomap，需挂载选项 buffered_iomap 开启，大写入性能明显提升，不支持在线碎片整理与 fscrypt 等模式。\n  https://www.phoronix.com/news/Linux-7.4-EXT4\n- Linux 修复 AMD Ryzen AI 9 HX 370 的缓存感知调度回归 — 10 月 26 日 18:22（北京时间）报道：Cache Aware Scheduling 与非对称打包冲突，使 Clang 全量 LTO 编译被钉在 3.3GHz 小核上，补丁已合入 7.4 并回移植 7.2/7.3。\n  https://www.phoronix.com/news/Linux-CAS-Regression-AMD-HX-370\n\nSource: https://arxiv.org/abs/2610.31668",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.31668",
+    "verified_at": "2026-10-26T11:05:37Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
