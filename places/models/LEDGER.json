@@ -982,14 +982,12 @@
   },
   "dress/ktv/sofa": {
     "bundle": "ktv",
-    "format": "kit-zip",
-    "download": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip",
-    "entry": "Models/GLTF format/loungeSofa",
-    "source": "https://kenney.nl/assets/furniture-kit",
+    "format": "polyhaven",
+    "download": "sofa_02",
+    "source": "https://polyhaven.com/a/sofa_02",
     "licence": "CC0 1.0",
-    "attribution": "Kenney (kenney.nl)",
-    "sha256": "e67652d0932cee41683f74711c03d3e192a2af9979ef8e6b237711f5482d46b0",
-    "tris": 128
+    "attribution": "Poly Haven (polyhaven.com)",
+    "tris": 2728
   },
   "dress/ktv/coffeeTable": {
     "bundle": "ktv",
@@ -1015,14 +1013,13 @@
   },
   "dress/ktv/plant": {
     "bundle": "ktv",
-    "format": "kit-zip",
-    "download": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip",
-    "entry": "Models/GLTF format/pottedPlant",
-    "source": "https://kenney.nl/assets/furniture-kit",
+    "format": "polyhaven",
+    "download": "potted_plant_04",
+    "source": "https://polyhaven.com/a/potted_plant_04",
     "licence": "CC0 1.0",
-    "attribution": "Kenney (kenney.nl)",
-    "sha256": "e67652d0932cee41683f74711c03d3e192a2af9979ef8e6b237711f5482d46b0",
-    "tris": 60
+    "attribution": "Poly Haven (polyhaven.com)",
+    "tris": 4710,
+    "simplified": 0.5
   },
   "dress/ktv/fridge": {
     "bundle": "ktv",
@@ -1871,6 +1868,97 @@
     "licence": "CC0 1.0",
     "attribution": "Poly Haven (polyhaven.com)",
     "tris": 2910,
+    "simplified": 0.25
+  },
+  "dress/shrine/cliffA": {
+    "bundle": "shrine",
+    "format": "island-rock-kit",
+    "source": "https://github.com/StarKnightt/island (3e9dfe7) public/assets/rocks",
+    "licence": "MIT (Copyright 2026 Prasenjit); scans CC0 1.0",
+    "attribution": "island rock kit; cliff scans Poly Haven (Dario Barresi, Rob Tuytel, Rico Cilliers), stack textures Poly Haven (Rob Tuytel, Amal Kumar)",
+    "download": "cliff_a_lod1",
+    "tris": 5800
+  },
+  "dress/shrine/cliffG": {
+    "bundle": "shrine",
+    "format": "island-rock-kit",
+    "source": "https://github.com/StarKnightt/island (3e9dfe7) public/assets/rocks",
+    "licence": "MIT (Copyright 2026 Prasenjit); scans CC0 1.0",
+    "attribution": "island rock kit; cliff scans Poly Haven (Dario Barresi, Rob Tuytel, Rico Cilliers), stack textures Poly Haven (Rob Tuytel, Amal Kumar)",
+    "download": "cliff_g_lod1",
+    "tris": 5799
+  },
+  "dress/shrine/cliffF": {
+    "bundle": "shrine",
+    "format": "island-rock-kit",
+    "source": "https://github.com/StarKnightt/island (3e9dfe7) public/assets/rocks",
+    "licence": "MIT (Copyright 2026 Prasenjit); scans CC0 1.0",
+    "attribution": "island rock kit; cliff scans Poly Haven (Dario Barresi, Rob Tuytel, Rico Cilliers), stack textures Poly Haven (Rob Tuytel, Amal Kumar)",
+    "download": "cliff_f_lod1",
+    "tris": 5799
+  },
+  "dress/shrine/stackB": {
+    "bundle": "shrine",
+    "format": "island-rock-kit",
+    "source": "https://github.com/StarKnightt/island (3e9dfe7) public/assets/rocks",
+    "licence": "MIT (Copyright 2026 Prasenjit); scans CC0 1.0",
+    "attribution": "island rock kit; cliff scans Poly Haven (Dario Barresi, Rob Tuytel, Rico Cilliers), stack textures Poly Haven (Rob Tuytel, Amal Kumar)",
+    "download": "stack_b_lod1",
+    "tris": 4900
+  },
+  "dress/shrine/stackC": {
+    "bundle": "shrine",
+    "format": "island-rock-kit",
+    "source": "https://github.com/StarKnightt/island (3e9dfe7) public/assets/rocks",
+    "licence": "MIT (Copyright 2026 Prasenjit); scans CC0 1.0",
+    "attribution": "island rock kit; cliff scans Poly Haven (Dario Barresi, Rob Tuytel, Rico Cilliers), stack textures Poly Haven (Rob Tuytel, Amal Kumar)",
+    "download": "stack_c_lod2",
+    "tris": 980
+  },
+  "dress/shrine/mountains": {
+    "bundle": "shrine",
+    "format": "generated",
+    "source": "https://github.com/ZyFou/ProceduralTerrains (a69b3c5) noiseTypes ridged+terrace, erosionSim, cpuNoise",
+    "licence": "MIT (Copyright 2026 ZyFou)",
+    "attribution": "generated offline by scripts/dress/shrine-geo.mjs with ProceduralTerrains code",
+    "download": "seeds 11 / 23",
+    "tris": 34560
+  },
+  "dress/shrine/cloudRing": {
+    "bundle": "shrine",
+    "format": "generated",
+    "source": "https://github.com/ZyFou/ProceduralTerrains (a69b3c5) noiseTypes ridged+terrace, erosionSim, cpuNoise",
+    "licence": "MIT (Copyright 2026 ZyFou)",
+    "attribution": "generated offline by scripts/dress/shrine-geo.mjs with ProceduralTerrains code",
+    "download": "billow ring",
+    "tris": 288
+  },
+  "dress/shrine/cloudTops": {
+    "bundle": "shrine",
+    "format": "generated",
+    "source": "https://github.com/ZyFou/ProceduralTerrains (a69b3c5) noiseTypes ridged+terrace, erosionSim, cpuNoise",
+    "licence": "MIT (Copyright 2026 ZyFou)",
+    "attribution": "generated offline by scripts/dress/shrine-geo.mjs with ProceduralTerrains code",
+    "download": "billow sea surface",
+    "tris": 11520
+  },
+  "dress/shrine/cloudBank": {
+    "bundle": "shrine",
+    "format": "generated",
+    "source": "https://github.com/ZyFou/ProceduralTerrains (a69b3c5) noiseTypes ridged+terrace, erosionSim, cpuNoise",
+    "licence": "MIT (Copyright 2026 ZyFou)",
+    "attribution": "generated offline by scripts/dress/shrine-geo.mjs with ProceduralTerrains code",
+    "download": "far cloud bank",
+    "tris": 192
+  },
+  "dress/restaurant/teaSet": {
+    "bundle": "restaurant",
+    "format": "polyhaven",
+    "download": "tea_set_01",
+    "source": "https://polyhaven.com/a/tea_set_01",
+    "licence": "CC0 1.0",
+    "attribution": "Poly Haven (polyhaven.com)",
+    "tris": 10072,
     "simplified": 0.25
   }
 }

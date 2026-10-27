@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-27-methode-3a7d004b",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-27T11:02:29Z",
+  "title": "llama.cpp 18 分钟内连发两个构建：GLM5 next 的 DSA 支持 + Metal 融合 top-k mask",
+  "summary": "llama.cpp 在 18:13–18:29（北京时间）连发 b11927 与 b11926，前者把 CUDA 后端的融合 top-k mask 移植到 Metal，后者为 GLM5 next 打开 DSA（DeepSeek-V3.2 实测），是本时段最硬的推理基建更新。",
+  "summary_en": "llama.cpp reportedly issued two builds within 18 minutes, between 18:13 and 18:29 Beijing time. Build b11927 ported the CUDA backend’s fused top-k mask to Metal, while b11926 enabled DSA for GLM5 next, described as tested with DeepSeek-V3.2. The note characterizes these as the period’s strongest inference-infrastructure updates, presenting the DSA support as the key highlight.",
+  "body": "llama.cpp 在 18:13–18:29（北京时间）连发 b11927 与 b11926，前者把 CUDA 后端的融合 top-k mask 移植到 Metal，后者为 GLM5 next 打开 DSA（DeepSeek-V3.2 实测），是本时段最硬的推理基建更新。\n\n论文\n- Work Agents: Systems, Capabilities, and Optimization（HF 热榜 71 赞，10/27 新上榜） — 把\"工作型 Agent\"定义为\"基础模型 + 运行时 harness\"的系统级组合，用 work persistence / work openness 两维度划分数字工作形态，并给出能力族与评测口径的统一框架。\n  https://arxiv.org/abs/2610.35845\n- S3AC: Stabilized, Selective, and Scalable Actor-Critic for LLM Reasoning — 给 RLVR 长 CoT 场景补回 token 级 credit assignment：可训练 critic 提供 token 特异优势，35B 上单次 rollout 训练不退化，优于 GRPO-X。\n  https://arxiv.org/abs/2610.35518\n- Trustworthy Recursive Self-Improvement in the Era of Large Models — 对递归自我改进给出可操作定义与四类风险主题（改进有效性、约束保持、隐私安全、透明可控），并区分\"直接 RSI\"与\"相关系统\"的证据边界。\n  https://arxiv.org/abs/2610.35193\n- Δτ-Bench: Pushing Agents Toward a Moving Capability — 模拟工具生态持续演化（工具消失/替换/新效率替代品），1588 个多轮任务；最强模型+harness 仅 42.3% 成功率，直指 Agent 的技能过时问题。\n  https://arxiv.org/abs/2610.34238\n- AgentProofBench: Benchmarking Reusable Verifiers for Web Agents — 把 Web Agent 的验收规则做成可复用验证器基准：97 任务 / 79 族，量化\"判定面板错误\"如何直接转化为投递失败。\n  https://arxiv.org/abs/2610.34634\n- GEAR: Feature-Based Configuration and Code Generation for Agentic Systems — 开源多 Agent 系统配置与代码生成工具：同一份 feature 化规格可映射到 10 个 Agent 框架，320 组特征-框架配对中 84.69% 可翻译。\n  https://arxiv.org/abs/2610.35592\n\nGitHub与基建\n- llama.cpp b11926：GLM5 next 支持无 kq_mask 的 QSA 与 DSA（18:29 北京时间） — 在 DeepSeek-V3.2 的第 0、3 层上验证了 DSA 的 top-k mask 改动，附全套平台预编译产物，是稀疏注意力模型本地推理的新增能力。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11926\n- llama.cpp b11927：Metal 后端新增融合 TOP_K_MASK 算子（18:13 北京时间） — 从 CUDA 后端移植融合 top-k mask 核（grid-stride 填 -inf + 每行一个线程组拷贝掩码），用函数常量裁掉未用分支，利好 Apple Silicon 采样路径。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11927\n\n系统\n- Beeper：用内核内 eBPF 做应用层 HTTP 解析与缓存，吞吐最高提升 4.5 倍（18:26 北京时间） — ETH Zürich、NYU 与 NVIDIA 的工作，在 Linux Plumbers 2026 上公布；Rust 实现的 L7 解析与内核内 HTTP 缓存是 eBPF 用于应用层的新用法。\n  https://www.phoronix.com/news/Beeper-In-Kernel-Parsing-eBPF\n- Linux 7.4 新 NTFS 驱动支持备用数据流 ADS（18:11 北京时间） — 加入流枚举/读写/删除的 ioctl，配合 streams_interface=windows 挂载选项可用 [文件]:[流名] 语法访问多个 $DATA，属 7.4 驱动最大特性。\n  https://www.phoronix.com/news/NTFS-Linux-7.4-Improvements\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11926",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11926",
+    "verified_at": "2026-10-27T11:02:29Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

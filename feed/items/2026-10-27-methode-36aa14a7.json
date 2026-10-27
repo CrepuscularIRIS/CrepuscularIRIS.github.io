@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-27-methode-36aa14a7",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-27T08:58:48Z",
+  "title": "DynaFlow：让主 Agent 自己生成可执行的多智能体编排程序",
+  "summary": "NUS 团队的 DynaFlow 把「自由形式工作流生成」塞进主 Agent 的动作空间，同一 Qwen3.5-27B 骨干下比最强基线高 10.90 个百分点，是本轮 Hugging Face Daily Papers 上升最快的新论文。",
+  "summary_en": "The NUS team’s DynaFlow embeds free-form workflow generation directly into a main agent’s action space, enabling the agent to create executable multi-agent orchestration programs. Using the same Qwen3.5-27B backbone, it reportedly exceeds the strongest baseline by 10.90 percentage points. The note calls it the fastest-rising new paper in the latest Hugging Face Daily Papers round.",
+  "body": "NUS 团队的 DynaFlow 把「自由形式工作流生成」塞进主 Agent 的动作空间，同一 Qwen3.5-27B 骨干下比最强基线高 10.90 个百分点，是本轮 Hugging Face Daily Papers 上升最快的新论文。\n\n论文\n- DynaFlow：学习自由形式的多智能体编排 — 把工作流合成并入主 Agent 动作空间，子 Agent 固定不变；六个基准上 Forced 模式总准确率 88.08%，同骨干下超最强基线 10.90 个百分点。\n  https://arxiv.org/abs/2610.34467\n- StreamVibe：面向演变用户意图的主动式视频 Agent — Google 出品，HF Daily Papers 热度 152；4.1K 评测 + 85K 训练样本覆盖显式/隐式/动态意图，答案质量较基线提升 10.7%。\n  https://arxiv.org/abs/2610.34662\n- AOS-Bench：LLM Agent 能管理动态工作负载吗 — 把 coding agent 当作「工作负载管理器」评测，共享 CPU/内存下重负载时所有系统掉 13–23 分，串行派发会让 73% 任务无人认领。\n  https://arxiv.org/abs/2610.33178\n- AdaPRA：面向数据科学的自适应评分表过程奖励 Agent — 用评分表引导的过程监督审计轨迹并自适应调整，80B Qwen 在 DSPredict-Easy 上提升 24.5 个百分位，优于 DataPRM。\n  https://arxiv.org/abs/2610.33245\n- Propensities Please：用合成文档微调暴露对齐伪装模型 — 不依赖 CoT 可监控性或机制干预，而是通过合成文档微调诱导模型暴露隐藏倾向；作者同时指出该方法会损伤推理能力并给出 on-policy 蒸馏缓解方案。\n  https://arxiv.org/abs/2610.33180\n- Eat Your Precision：精度目标缓解评分表 RL 中的奖励黑客 — CMU 的 FORK 奖励同时优化召回与「必要且正确」的精度，RubricHub-Medical 上对基座胜率从 10.6% 提到 68.0%。\n  https://arxiv.org/abs/2610.33512\n- Muon 何时以及如何起预条件作用？结构化梯度噪声的角色 — 理论上说明各向同性噪声下 Muon 等价于缩放学习率，真正增益来自小批量采样产生的结构化噪声，可把任务频率依赖从线性降到平方根。\n  https://arxiv.org/abs/2610.31728\n- Qwen-Image-PE：为文生图学习视觉设计的提示增强模型 — 两阶段训练（反向蒸馏 + 组级设计奖励），9B 版本超越全部被测 PE 基线，397B 在 Qwen-Image-Bench 上较原始请求高 7.81 分，并开放 9B 权重。\n  https://arxiv.org/abs/2610.33472\n\nGitHub与基建\n- llama.cpp b11923：ggml scale 支持非连续视图 — 北京时间 16:53 发布，放宽 SCALE 的连续性要求并同步更新 CPU/Metal/CUDA/SYCL 内核，减少视图场景下的错误结果。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11923\n- llama.cpp 两小时内连发 5 个构建标签 — b11919–b11925 集中在 15:46–16:24（北京时间）打出；最新的 b11925 把 ROCm 发行版构建切到 ccache depend 模式，缩短 CI 编译时间。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11925\n\nSource: https://arxiv.org/abs/2610.34467",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.34467",
+    "verified_at": "2026-10-27T08:58:48Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

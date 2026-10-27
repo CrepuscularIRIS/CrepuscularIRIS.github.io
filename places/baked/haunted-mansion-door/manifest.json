@@ -5,16 +5,16 @@
  "variant": "",
  "tod": "day",
  "cost": {
-  "triangles": 4232,
-  "drawCalls": 48,
-  "textures": 59,
-  "textureMB": 145.3
+  "triangles": 46000,
+  "drawCalls": 72,
+  "textures": 63,
+  "textureMB": 146.6
  },
  "exported": {
-  "triangles": 4178,
-  "drawCalls": 40,
-  "textures": 59,
-  "textureMB": 145.3
+  "triangles": 45906,
+  "drawCalls": 63,
+  "textures": 62,
+  "textureMB": 145.6
  },
  "lights": [
   {
@@ -34,7 +34,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16738864,
-   "intensity": 0.5859044097879454,
+   "intensity": 0.5862864771535425,
    "position": [
     -0.45,
     0.25,
@@ -48,7 +48,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16738864,
-   "intensity": 0.5929044097879455,
+   "intensity": 0.5932864771535425,
    "position": [
     0.45,
     0.25,
@@ -62,7 +62,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16747088,
-   "intensity": 1.387796668438801,
+   "intensity": 1.3879374010430399,
    "position": [
     0.35,
     0.5,
@@ -133,54 +133,61 @@
   }
  ],
  "lowDrop": [
+  "moon-window-trees",
   "Mesh",
   "Mesh"
  ],
  "clocks": [
   {
-   "material": "3bf31e8f-6084-42ee-b59b-fbbc423a4da0",
+   "material": "eb318b17-c995-45b6-92e1-fe99d98b51e6",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "e6ccf09d-2793-48e9-9d96-34c7dfa0b6c1",
+   "material": "7627cb26-c49d-43f8-aa7b-a10c99a21c0e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "5ce1ebb7-7593-4cdd-b4f4-147bcb9c4eda",
+   "material": "fda8da67-96f2-45f7-9fb5-c50ea1adf86a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "eb10f9d8-1eb1-43f9-858f-96961bd09d2c",
+   "material": "89a06ac6-930e-4f86-98d1-7585293961c3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "2fce7979-16e2-4363-ad75-6712fd81e9a5",
+   "material": "e5f606ac-4a91-49b7-bb4f-e38882446437",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "2dec58ec-c530-4335-b108-ef1f809fef47",
+   "material": "c726e2fb-6ecb-4ae8-9fa8-9f5838dc4f28",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "e927bfb2-d980-4411-ad0e-6c9200ca801b",
+   "material": "8b3f42e1-4f04-4e7b-9fab-f7e43401e180",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "ad037326-2a9b-4953-827c-22d604224fe1",
+   "material": "1a52d52f-a63c-46cc-b0d6-d98f4b9fd870",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "bc297455-0c6f-4f30-be2e-75f92e117f0d",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -346,6 +353,26 @@
      -3.91
     ],
     "fov": 58
+   },
+   {
+    "name": "moon-gate",
+    "label": "Moon gate",
+    "position": [
+     1.5,
+     0.98,
+     -3.69
+    ],
+    "target": [
+     -1.93,
+     1.18,
+     -3.87
+    ],
+    "fov": 48,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "far-table",
@@ -638,7 +665,15 @@
   "baked": [],
   "standIns": []
  },
- "dressStats": null,
+ "dressStats": {
+  "props": 2,
+  "instanced": 0,
+  "signs": 0,
+  "lights": 0,
+  "retextured": 0,
+  "triangles": 34752,
+  "failed": 0
+ },
  "detailStats": {
   "meshes": 0,
   "triangles": 0
@@ -647,37 +682,37 @@
  "manifest": true,
  "three": "170",
  "key": "haunted-mansion-door",
- "hour": 13,
- "bakedAt": "2026-10-25T23:20:55.425Z",
+ "hour": 22,
+ "bakedAt": "2026-10-27T09:16:42.095Z",
  "quantizePosition": 14,
  "source": {
   "family": "HauntedMansionDoor () built at runtime by lab/src/scenes",
-  "exportBytes": 45914892,
-  "triangles": 4232,
-  "drawCalls": 48,
-  "textures": 59,
-  "textureMB": 145.3
+  "exportBytes": 46453796,
+  "triangles": 46000,
+  "drawCalls": 72,
+  "textures": 63,
+  "textureMB": 146.6
  },
  "lods": {
   "lod0": {
    "file": "haunted-mansion-door.glb",
-   "triangles": 4178,
-   "primitives": 37,
-   "materials": 37,
-   "textures": 28,
-   "textureKB": 3044,
-   "bytes": 3274464
+   "triangles": 41406,
+   "primitives": 53,
+   "materials": 52,
+   "textures": 31,
+   "textureKB": 3052,
+   "bytes": 3480100
   },
   "lod1": {
    "file": "haunted-mansion-door.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 4178,
-   "primitives": 37,
-   "materials": 37,
-   "textures": 28,
-   "textureKB": 715,
-   "bytes": 889296
+   "triangles": 23087,
+   "primitives": 53,
+   "materials": 52,
+   "textures": 31,
+   "textureKB": 722,
+   "bytes": 1023588
   }
  },
  "parts": {
@@ -692,11 +727,12 @@
  },
  "live": {
   "file": "haunted-mansion-door.live.json",
-  "bytes": 47459,
+  "bytes": 82380,
   "objects": [
    "motes",
    "moon-window",
    "moon-window",
+   "moon-window-trees",
    "moon-shaft",
    "smokePlume",
    "motes",

@@ -5,16 +5,16 @@
  "variant": "door",
  "tod": "day",
  "cost": {
-  "triangles": 7120,
-  "drawCalls": 156,
-  "textures": 23,
-  "textureMB": 41.4
+  "triangles": 10464,
+  "drawCalls": 143,
+  "textures": 26,
+  "textureMB": 41.6
  },
  "exported": {
-  "triangles": 4208,
-  "drawCalls": 113,
-  "textures": 18,
-  "textureMB": 40.4
+  "triangles": 7552,
+  "drawCalls": 100,
+  "textures": 21,
+  "textureMB": 40.6
  },
  "lights": [
   {
@@ -363,7 +363,7 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "3817e7a0-5760-44b8-84db-3ff3b59a5c26",
+   "material": "773c24c1-893f-458b-9925-087605e03f29",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -798,7 +798,16 @@
   "baked": [],
   "standIns": []
  },
- "dressStats": null,
+ "dressStats": {
+  "props": 1,
+  "instanced": 0,
+  "signs": 0,
+  "lights": 0,
+  "retextured": 0,
+  "triangles": 3568,
+  "failed": 0,
+  "hidden": 17
+ },
  "detailStats": {
   "meshes": 0,
   "triangles": 0
@@ -808,36 +817,36 @@
  "three": "170",
  "key": "door-305",
  "hour": 16,
- "bakedAt": "2026-10-27T03:15:39.355Z",
+ "bakedAt": "2026-10-27T10:23:15.590Z",
  "quantizePosition": 14,
  "source": {
   "family": "Building305 (door) built at runtime by lab/src/scenes",
-  "exportBytes": 12318324,
-  "triangles": 7120,
-  "drawCalls": 156,
-  "textures": 23,
-  "textureMB": 41.4
+  "exportBytes": 12461652,
+  "triangles": 10464,
+  "drawCalls": 143,
+  "textures": 26,
+  "textureMB": 41.6
  },
  "lods": {
   "lod0": {
    "file": "door-305.glb",
-   "triangles": 3630,
-   "primitives": 109,
-   "materials": 107,
-   "textures": 20,
-   "textureKB": 840,
-   "bytes": 1002604
+   "triangles": 6974,
+   "primitives": 102,
+   "materials": 100,
+   "textures": 23,
+   "textureKB": 850,
+   "bytes": 1041116
   },
   "lod1": {
    "file": "door-305.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 2762,
-   "primitives": 109,
-   "materials": 107,
-   "textures": 20,
-   "textureKB": 224,
-   "bytes": 371476
+   "triangles": 5609,
+   "primitives": 102,
+   "materials": 100,
+   "textures": 23,
+   "textureKB": 233,
+   "bytes": 406388
   }
  },
  "parts": {
@@ -850,7 +859,7 @@
  },
  "live": {
   "file": "door-305.live.json",
-  "bytes": 26229,
+  "bytes": 117737,
   "objects": [
    "skyDome",
    "Mesh",

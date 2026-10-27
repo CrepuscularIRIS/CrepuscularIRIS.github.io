@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 685750,
-  "drawCalls": 621,
-  "textures": 117,
-  "textureMB": 134.1
+  "triangles": 828466,
+  "drawCalls": 685,
+  "textures": 124,
+  "textureMB": 152.2
  },
  "exported": {
-  "triangles": 684926,
-  "drawCalls": 615,
-  "textures": 117,
-  "textureMB": 134.1
+  "triangles": 834304,
+  "drawCalls": 670,
+  "textures": 124,
+  "textureMB": 152.2
  },
  "lights": [
   {
@@ -86,41 +86,99 @@
  "lowDrop": [
   "Mesh",
   "Mesh",
+  "Mesh",
+  "Mesh",
+  "Mesh",
+  "Mesh",
   "Mesh"
  ],
  "clocks": [
   {
-   "material": "0a6fb97c-ee24-4999-b1b1-9548486d662a",
+   "material": "caef3657-1017-4005-aaad-2ad09c31d162",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "8e20a7f0-dae0-4631-87d2-19d9e7832e0c",
+   "material": "bb8aee92-c27b-49ff-b1f4-8a09b6fcca0c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "8e20a7f0-dae0-4631-87d2-19d9e7832e0c",
+   "material": "bb8aee92-c27b-49ff-b1f4-8a09b6fcca0c",
    "uniform": "uWT",
    "a": 0.3,
    "b": 0
   },
   {
-   "material": "067b5c30-3cf0-48fe-a5b3-3c4f68932974",
+   "material": "bb331f75-1e04-48ad-8863-d516e568339b",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "187d3d80-defd-4e11-aa6d-d1dd17bb84db",
+   "material": "41f0ba58-33bb-4b09-9e69-ec8f517d8b0c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "3bef017c-262d-435c-8261-5a42b77f2a51",
+   "material": "6dd9e4f4-0e1e-4bf9-bda6-664bdadb7baa",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "8e97d106-ebbe-4776-8ed9-1a974bc5399a",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "a8070085-45a7-4c4c-8c12-229a4c7b26e7",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "c11b2afa-f33a-424d-aeab-1e762b492ca2",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "7c89af89-14ff-46c2-9d47-d4034968fbb5",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "ed299cac-108d-4af4-9ac8-9c62b61be8e5",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "4d0676e6-af8d-4e47-a559-263c3996349d",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "311ed307-21cc-4ea9-b6e5-717827686fc0",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "f4e3800a-d398-452a-902a-521a52571776",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "6aeb8055-c141-43cb-8664-2949369e089a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -132,7 +190,7 @@
  "hooks": {},
  "patchClocks": {},
  "uniformArrays": {
-  "8e20a7f0-dae0-4631-87d2-19d9e7832e0c": {
+  "bb8aee92-c27b-49ff-b1f4-8a09b6fcca0c": {
    "uL": "v4",
    "uLC": "c"
   }
@@ -319,6 +377,21 @@
      -1,
      1.2,
      4
+    ],
+    "fov": 60
+   },
+   {
+    "name": "cloud-terrace",
+    "label": "Cloud terrace",
+    "position": [
+     6,
+     3.9,
+     -31.4
+    ],
+    "target": [
+     3,
+     -5,
+     -64
     ],
     "fov": 60
    }
@@ -737,46 +810,54 @@
   "baked": [],
   "standIns": []
  },
- "dressStats": null,
+ "dressStats": {
+  "props": 14,
+  "instanced": 0,
+  "signs": 0,
+  "lights": 0,
+  "retextured": 0,
+  "triangles": 97934,
+  "failed": 0
+ },
  "detailStats": {
   "meshes": 4,
-  "triangles": 102782
+  "triangles": 126582
  },
  "manifestColliders": 0,
  "manifest": true,
  "three": "170",
  "key": "shrine-1-day",
  "hour": 13,
- "bakedAt": "2026-10-25T19:44:02.992Z",
+ "bakedAt": "2026-10-27T07:20:07.056Z",
  "quantizePosition": 14,
  "source": {
   "family": "Shrine (D) built at runtime by lab/src/scenes",
-  "exportBytes": 62527860,
-  "triangles": 685750,
-  "drawCalls": 621,
-  "textures": 117,
-  "textureMB": 134.1
+  "exportBytes": 76482468,
+  "triangles": 828466,
+  "drawCalls": 685,
+  "textures": 124,
+  "textureMB": 152.2
  },
  "lods": {
   "lod0": {
    "file": "shrine-1-day.glb",
-   "triangles": 572942,
-   "primitives": 168,
-   "materials": 168,
-   "textures": 84,
-   "textureKB": 3126,
-   "bytes": 12246720
+   "triangles": 722320,
+   "primitives": 185,
+   "materials": 184,
+   "textures": 91,
+   "textureKB": 3902,
+   "bytes": 14696796
   },
   "lod1": {
    "file": "shrine-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 288984,
-   "primitives": 168,
-   "materials": 168,
-   "textures": 84,
-   "textureKB": 1374,
-   "bytes": 7633540
+   "triangles": 367983,
+   "primitives": 185,
+   "materials": 184,
+   "textures": 91,
+   "textureKB": 1637,
+   "bytes": 8917048
   }
  },
  "parts": {
@@ -793,10 +874,19 @@
  },
  "live": {
   "file": "shrine-1-day.live.json",
-  "bytes": 425997,
+  "bytes": 458070,
   "objects": [
    "smokePlume",
    "basin-water",
+   "smokePlume",
+   "smokePlume",
+   "smokePlume",
+   "smokePlume",
+   "smokePlume",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",

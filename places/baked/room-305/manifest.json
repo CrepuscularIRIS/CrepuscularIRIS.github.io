@@ -5,16 +5,16 @@
  "variant": "hall",
  "tod": "day",
  "cost": {
-  "triangles": 7142,
-  "drawCalls": 155,
-  "textures": 22,
-  "textureMB": 41.9
+  "triangles": 10486,
+  "drawCalls": 142,
+  "textures": 25,
+  "textureMB": 42.1
  },
  "exported": {
-  "triangles": 4194,
-  "drawCalls": 109,
-  "textures": 16,
-  "textureMB": 40.7
+  "triangles": 7538,
+  "drawCalls": 96,
+  "textures": 19,
+  "textureMB": 40.9
  },
  "lights": [
   {
@@ -348,7 +348,7 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "48bb1157-1ebd-4d9f-80e3-66e4a672a1b4",
+   "material": "aa45fe2f-b3a6-40cf-b975-908934d65b54",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -776,7 +776,16 @@
   "baked": [],
   "standIns": []
  },
- "dressStats": null,
+ "dressStats": {
+  "props": 1,
+  "instanced": 0,
+  "signs": 0,
+  "lights": 0,
+  "retextured": 0,
+  "triangles": 3568,
+  "failed": 0,
+  "hidden": 17
+ },
  "detailStats": {
   "meshes": 0,
   "triangles": 0
@@ -786,36 +795,36 @@
  "three": "170",
  "key": "room-305",
  "hour": 10,
- "bakedAt": "2026-10-27T03:15:56.436Z",
+ "bakedAt": "2026-10-27T10:23:37.433Z",
  "quantizePosition": 14,
  "source": {
   "family": "Building305 (hall) built at runtime by lab/src/scenes",
-  "exportBytes": 12333696,
-  "triangles": 7142,
-  "drawCalls": 155,
-  "textures": 22,
-  "textureMB": 41.9
+  "exportBytes": 12477028,
+  "triangles": 10486,
+  "drawCalls": 142,
+  "textures": 25,
+  "textureMB": 42.1
  },
  "lods": {
   "lod0": {
    "file": "room-305.glb",
-   "triangles": 3652,
-   "primitives": 109,
-   "materials": 106,
-   "textures": 19,
-   "textureKB": 840,
-   "bytes": 1001524
+   "triangles": 6996,
+   "primitives": 102,
+   "materials": 99,
+   "textures": 22,
+   "textureKB": 850,
+   "bytes": 1040036
   },
   "lod1": {
    "file": "room-305.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 2773,
-   "primitives": 109,
-   "materials": 106,
-   "textures": 19,
-   "textureKB": 222,
-   "bytes": 367948
+   "triangles": 5620,
+   "primitives": 102,
+   "materials": 99,
+   "textures": 22,
+   "textureKB": 231,
+   "bytes": 402860
   }
  },
  "parts": {
@@ -830,7 +839,7 @@
  },
  "live": {
   "file": "room-305.live.json",
-  "bytes": 24213,
+  "bytes": 115721,
   "objects": [
    "skyDome",
    "Mesh",

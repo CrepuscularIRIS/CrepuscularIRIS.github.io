@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 12592,
-  "drawCalls": 234,
-  "textures": 28,
-  "textureMB": 60.1
+  "triangles": 17446,
+  "drawCalls": 232,
+  "textures": 36,
+  "textureMB": 61.2
  },
  "exported": {
-  "triangles": 8868,
-  "drawCalls": 118,
-  "textures": 25,
-  "textureMB": 59.6
+  "triangles": 13938,
+  "drawCalls": 113,
+  "textures": 33,
+  "textureMB": 60.7
  },
  "lights": [
   {
@@ -368,7 +368,7 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "c32f265c-8c01-4987-89cc-9419fafd7238",
+   "material": "b4ac951a-bf8f-402e-a17a-6475b0f83567",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -892,7 +892,16 @@
   "baked": [],
   "standIns": []
  },
- "dressStats": null,
+ "dressStats": {
+  "props": 3,
+  "instanced": 0,
+  "signs": 1,
+  "lights": 0,
+  "retextured": 0,
+  "triangles": 5260,
+  "failed": 0,
+  "hidden": 16
+ },
  "detailStats": {
   "meshes": 0,
   "triangles": 0
@@ -902,36 +911,36 @@
  "three": "170",
  "key": "self-residence-corridor-1-day",
  "hour": 13,
- "bakedAt": "2026-10-25T00:02:42.999Z",
+ "bakedAt": "2026-10-27T09:39:25.695Z",
  "quantizePosition": 14,
  "source": {
   "family": "ApartmentCorridor (D) built at runtime by lab/src/scenes",
-  "exportBytes": 16779012,
-  "triangles": 12592,
-  "drawCalls": 234,
-  "textures": 28,
-  "textureMB": 60.1
+  "exportBytes": 17157896,
+  "triangles": 17446,
+  "drawCalls": 232,
+  "textures": 36,
+  "textureMB": 61.2
  },
  "lods": {
   "lod0": {
    "file": "self-residence-corridor-1-day.glb",
-   "triangles": 4232,
-   "primitives": 122,
-   "materials": 102,
-   "textures": 20,
-   "textureKB": 1314,
-   "bytes": 1546684
+   "triangles": 9074,
+   "primitives": 116,
+   "materials": 96,
+   "textures": 28,
+   "textureKB": 1347,
+   "bytes": 1629728
   },
   "lod1": {
    "file": "self-residence-corridor-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 3273,
-   "primitives": 122,
-   "materials": 102,
-   "textures": 20,
-   "textureKB": 339,
-   "bytes": 548812
+   "triangles": 7488,
+   "primitives": 116,
+   "materials": 96,
+   "textures": 28,
+   "textureKB": 372,
+   "bytes": 625844
   }
  },
  "parts": {
@@ -943,13 +952,19 @@
    "parcel",
    "mailboxes"
   ],
-  "exportBytes": 97760
+  "exportBytes": 74464
  },
  "live": {
   "file": "self-residence-corridor-1-day.live.json",
-  "bytes": 85424,
+  "bytes": 185885,
   "objects": [
    "skyDome",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",
