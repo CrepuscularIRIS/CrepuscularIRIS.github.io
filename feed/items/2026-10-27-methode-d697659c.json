@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-27-methode-d697659c",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-27T03:00:33Z",
+  "title": "transformers v5.21.0 发布：新增 MiniCPM-OCR、Flint MoE、UltraVBert",
+  "summary": "transformers v5.21.0 于今日 02:21（北京时间）发布，一次性加入 MiniCPM-OCR、Flint MoE、UltraVBert 三款新模型，是本轮最值得关注的基建更新。",
+  "summary_en": "The note reports that Transformers v5.21.0 was released today at 02:21 Beijing time. The release adds three new models in one update: MiniCPM-OCR, Flint MoE, and UltraVBert. It describes this batch as the most notable infrastructure update of the current round, presenting the release as a major expansion of the project’s model support.",
+  "body": "transformers v5.21.0 于今日 02:21（北京时间）发布，一次性加入 MiniCPM-OCR、Flint MoE、UltraVBert 三款新模型，是本轮最值得关注的基建更新。\n\n论文\n- WorldCast: World-Consistent Character Video Generation with Large-Angle Camera Control — 今日 Hugging Face Daily Papers 榜首（27 赞）：用点云反投影 + 几何对齐记忆注意力，在大角度运镜下保持角色几何、外观与身份一致性，并配套 CLACT 数据集与基准。\n  https://arxiv.org/abs/2610.33135\n- Trajectory2Gym: Decision-Grounded Compositional Interaction Synthesis for Tool-Use Agents — 指出\"成功轨迹≠有用监督\"，构造可执行的合成交互来训练工具调用智能体，在 Qwen3 五个规模上把 Tau1/Tau2/BFCL 均分提升 16.9–29.8 个百分点。\n  https://arxiv.org/abs/2610.33568\n- Trial by Trace: Benchmarking AI Agent Harnesses for Reliability and Failure Attribution — 首次把评测对象从模型转向\"harness 本身\"：95 个机制导向任务、4 个 harness×9 模型共 3420 次运行，宏平均分 59.8%–72.0%，并能做失败归因。\n  https://arxiv.org/abs/2610.32285\n- Continual Learning Exam: Benchmarking Long-Horizon RSI and Experiential Learning in LLM Agents — 50+ 专家构建 120 任务×5 级阶梯共 600 级、覆盖 89 个职业角色；最佳系统仅通关 47.7% 层级，反馈+重做中位仅提升 5.3 个百分点。\n  https://arxiv.org/abs/2610.33956\n- InteractiveWorld: A Verifiable Human-Centric Environment for Interactive MLLM Assistants — 首个\"人-机闭环\"可验证环境与 120 任务动态基准，用于评测可穿戴场景下的 MLLM 助手；最强模型在长程指引/规划上仅 20%/25%。\n  https://arxiv.org/abs/2610.33966\n- J-Comm: Jacobian-Guided Latent Communication between LLM Agents — 用 H+J（隐状态+Jacobian）通道让不同宽度模型（Qwen3-8B→4B）直接传隐式推理，文本 token 减少 19.2%–74.8% 且七项基准均领先。\n  https://arxiv.org/abs/2610.32871\n- Markets of Minds: A 51-Billion-State Economy of Intelligence — 把\"专家推理分配\"建模为共享预算下的机会成本问题，在 512 亿状态空间上做分配清算，30% 配额下人格遵循度 85.42% vs 随机 73.86%。\n  https://arxiv.org/abs/2610.32190\n- Knowing Whom to Trust is not Enough: The Trust–Agreement Gap — 重复多方 LLM 谈判实验显示\"信任-达成\"落差：准确识别对手并不自动带来更好协议，只有显式把信任用于决策才能提升最高 23 个百分点的达成率。\n  https://arxiv.org/abs/2610.31971\n\nGitHub与基建\n- transformers v5.21.0 — 今日 02:21（北京时间）发布，新增 MiniCPM-OCR 文档理解模型、递归式 MoE 模型 Flint（混合注意力+注意力汇，256 选 6 路由）、UltraVBert 视觉文档检索模型。\n  https://github.com/huggingface/transformers/releases/tag/v5.21\n- ollama v0.40.12-rc0 — 今日 08:07（北京时间）放出 rc：MLX/MLX-C 版本升级并为 gemma/flint/laguna 提速，MLX 侧加入 DFlash2 支持，llama.cpp 依赖升到 b11901。\n  https://github.com/ollama/ollama/releases/tag/v0.40.12-rc0\n- langgraph 1.2.18 — 今日 04:04（北京时间）发布：DeltaChannel 默认每 100 次更新打一次完整快照（长线程读取更快），并修复中断/递归上限后末次 checkpoint 不流式输出、error_handler 恢复路径等问题。\n  https://github.com/langchain-ai/langgraph/releases/tag/1.2.18\n\n系统\n- Linux 7.4 初步支持 Apple M4 / A18 Pro，Tensor G5 与 Steam Frame VR 落地主线 — 今日 08:52（北京时间）报道：Linux 7.4 合入大批 SoC 补丁，Apple M4/A18 Pro（MacBook Neo）初步可启动，Pixel 10 的 Tensor G5 主线化，并新增 Steam Frame VR 头显支持与高通 Oryon 核心 Hawi/Nord。\n  https://www.phoronix.com/news/Linux-7.4-SoCs\n\nSource: https://github.com/huggingface/transformers/releases/tag/v5.21",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/huggingface/transformers/releases/tag/v5.21",
+    "verified_at": "2026-10-27T03:00:33Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

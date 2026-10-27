@@ -5,23 +5,37 @@
  "variant": "door",
  "tod": "day",
  "cost": {
-  "triangles": 6976,
-  "drawCalls": 152,
+  "triangles": 7120,
+  "drawCalls": 156,
   "textures": 23,
   "textureMB": 41.4
  },
  "exported": {
-  "triangles": 4076,
-  "drawCalls": 108,
+  "triangles": 4208,
+  "drawCalls": 113,
   "textures": 18,
   "textureMB": 40.4
  },
  "lights": [
   {
+   "type": "PointLight",
+   "name": "number-plate-lamp-light",
+   "color": 16766624,
+   "intensity": 0.02,
+   "position": [
+    0.08,
+    1.6549999999999998,
+    -1.02
+   ],
+   "visible": true,
+   "distance": 0.9,
+   "decay": 2
+  },
+  {
    "type": "SpotLight",
    "name": "",
    "color": 16758896,
-   "intensity": 420,
+   "intensity": 5,
    "position": [
     1.2,
     1.55,
@@ -29,9 +43,9 @@
    ],
    "visible": true,
    "distance": 16,
-   "decay": 1.3,
+   "decay": 0.3,
    "angle": 0.2,
-   "penumbra": 0.75,
+   "penumbra": 0.85,
    "target": [
     1,
     0,
@@ -69,6 +83,23 @@
   {
    "type": "DirectionalLight",
    "name": "",
+   "color": 15128266,
+   "intensity": 1.1,
+   "position": [
+    1.5,
+    -4,
+    -1
+   ],
+   "visible": true,
+   "target": [
+    1.5,
+    0,
+    -1.4
+   ]
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
    "color": 15921396,
    "intensity": 0.35,
    "position": [
@@ -84,130 +115,235 @@
    ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "",
    "color": 16052458,
-   "intensity": 3.3000000000000003,
+   "intensity": 3.8,
    "position": [
-    1.7,
-    2,
-    -8.3
+    1.75,
+    2.23,
+    -8.899999999999999
    ],
    "visible": true,
-   "distance": 5,
-   "decay": 2
+   "distance": 4,
+   "decay": 2,
+   "angle": 1.5,
+   "penumbra": 0.35,
+   "target": [
+    1.75,
+    0,
+    -8.899999999999999
+   ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "",
    "color": 16052458,
-   "intensity": 3.3000000000000003,
+   "intensity": 3.8,
    "position": [
-    1.7,
-    2,
-    -5.9
+    1.75,
+    2.23,
+    -6.5
    ],
    "visible": true,
-   "distance": 5,
-   "decay": 2
+   "distance": 4,
+   "decay": 2,
+   "angle": 1.5,
+   "penumbra": 0.35,
+   "target": [
+    1.75,
+    0,
+    -6.5
+   ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "",
    "color": 16052458,
-   "intensity": 3.3000000000000003,
+   "intensity": 3.8,
    "position": [
-    1.7,
-    2,
-    -3.5
+    1.75,
+    2.23,
+    -4.1000000000000005
    ],
    "visible": true,
-   "distance": 5,
-   "decay": 2
+   "distance": 4,
+   "decay": 2,
+   "angle": 1.5,
+   "penumbra": 0.35,
+   "target": [
+    1.75,
+    0,
+    -4.1000000000000005
+   ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "",
    "color": 16052458,
-   "intensity": 3.3000000000000003,
+   "intensity": 3.8,
    "position": [
-    1.7,
-    2,
-    -1.1
+    1.75,
+    2.23,
+    -1.7
    ],
    "visible": true,
-   "distance": 5,
-   "decay": 2
+   "distance": 4,
+   "decay": 2,
+   "angle": 1.5,
+   "penumbra": 0.35,
+   "target": [
+    1.75,
+    0,
+    -1.7
+   ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "",
    "color": 16052458,
-   "intensity": 3.3000000000000003,
+   "intensity": 3.8,
    "position": [
-    1.7,
-    2,
-    1.3
+    1.75,
+    2.23,
+    0.7
    ],
    "visible": true,
-   "distance": 5,
-   "decay": 2
+   "distance": 4,
+   "decay": 2,
+   "angle": 1.5,
+   "penumbra": 0.35,
+   "target": [
+    1.75,
+    0,
+    0.7
+   ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "",
    "color": 16052458,
-   "intensity": 2.7,
+   "intensity": 3.8,
+   "position": [
+    1.75,
+    2.23,
+    3.0999999999999996
+   ],
+   "visible": true,
+   "distance": 4,
+   "decay": 2,
+   "angle": 1.5,
+   "penumbra": 0.35,
+   "target": [
+    1.75,
+    0,
+    3.0999999999999996
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "",
+   "color": 16052458,
+   "intensity": 3.2,
    "position": [
     0.5,
-    2.2,
+    2.6700000000000004,
     5.2
    ],
    "visible": true,
    "distance": 5,
-   "decay": 2
+   "decay": 2,
+   "angle": 1.5,
+   "penumbra": 0.35,
+   "target": [
+    0.5,
+    0,
+    5.2
+   ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "",
    "color": 16052458,
-   "intensity": 2.7,
+   "intensity": 3.2,
    "position": [
     3.5,
-    2.2,
+    2.6700000000000004,
     5.2
    ],
    "visible": true,
    "distance": 5,
-   "decay": 2
+   "decay": 2,
+   "angle": 1.5,
+   "penumbra": 0.35,
+   "target": [
+    3.5,
+    0,
+    5.2
+   ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "",
    "color": 16052458,
-   "intensity": 2.7,
+   "intensity": 3.2,
    "position": [
     0.5,
-    2.2,
+    2.6700000000000004,
     6.6
    ],
    "visible": true,
    "distance": 5,
-   "decay": 2
+   "decay": 2,
+   "angle": 1.5,
+   "penumbra": 0.35,
+   "target": [
+    0.5,
+    0,
+    6.6
+   ]
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "",
    "color": 16052458,
-   "intensity": 2.7,
+   "intensity": 3.2,
    "position": [
     3.5,
-    2.2,
+    2.6700000000000004,
     6.6
    ],
    "visible": true,
    "distance": 5,
-   "decay": 2
+   "decay": 2,
+   "angle": 1.5,
+   "penumbra": 0.35,
+   "target": [
+    3.5,
+    0,
+    6.6
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "",
+   "color": 16756848,
+   "intensity": 16,
+   "position": [
+    2.3,
+    1.15,
+    -3
+   ],
+   "visible": true,
+   "distance": 6,
+   "decay": 2,
+   "angle": 0.32,
+   "penumbra": 0.5,
+   "target": [
+    0,
+    1.2,
+    -0.55
+   ]
   },
   {
    "type": "PointLight",
@@ -227,13 +363,17 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "d3c2b1e1-ae0b-4094-b51d-c1286b5cf16b",
+   "material": "3817e7a0-5760-44b8-84db-3ff3b59a5c26",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [
   {
@@ -242,11 +382,14 @@
    "x": 2.1,
    "y": 0,
    "z": -1.65,
-   "strength": 0.2,
+   "strength": 0.09,
    "blur": 2.4,
    "f0": 0.05,
    "tint": 15262944,
    "fade": 40,
+   "zones": 0,
+   "smear": 0,
+   "near": 0,
    "maskRepeat": [
     1,
     1
@@ -264,7 +407,7 @@
    ],
    "target": [
     0,
-    1.235,
+    1.29,
     -0.5
    ],
    "fov": 45
@@ -274,16 +417,21 @@
     "name": "hallway",
     "label": "Hallway",
     "position": [
-     3.1,
+     2.5,
      1.2,
      5.3
     ],
     "target": [
-     0.8,
+     0.35,
      1.1,
      -1
     ],
-    "fov": 45
+    "fov": 42,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "corridor",
@@ -298,7 +446,12 @@
      1.3,
      -9
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "lobby",
@@ -313,7 +466,12 @@
      1.2,
      6.5
     ],
-    "fov": 60
+    "fov": 60,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "handle",
@@ -328,22 +486,32 @@
      0.95,
      -0.12
     ],
-    "fov": 40
+    "fov": 40,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "plate",
     "label": "Plate",
     "position": [
      0.9,
-     1.7,
+     1.6,
      -0.6
     ],
     "target": [
      0,
-     1.7,
+     1.6,
      -1
     ],
-    "fov": 40
+    "fov": 40,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    }
   ]
  },
@@ -445,19 +613,19 @@
    },
    "dof": {
     "enabled": true,
-    "focus": 1.4,
+    "focus": 1.3,
     "range": 0.6,
     "near": 1,
     "far": 1,
     "maxRadius": 6,
     "tilt": {
      "center": [
-      0.5,
-      0.45
+      0.55,
+      0.5
      ],
      "radius": [
-      0.3,
-      0.45
+      0.37,
+      0.5
      ],
      "soft": 0.3,
      "strength": 8
@@ -521,12 +689,12 @@
    "object": "notice",
    "typed": false,
    "anchor": [
-    0.006,
+    0.0075,
     1.74,
     0.31
    ],
    "built": [
-    0.006,
+    0.0075,
     1.74,
     0.31
    ],
@@ -541,12 +709,12 @@
    "anchor": [
     -1.3183565108850597,
     1.1537500132620335,
-    0.8000000000000003
+    2.659658815565646
    ],
    "built": [
     -1.3183565108850597,
     1.1537500132620335,
-    0.8000000000000003
+    2.659658815565646
    ],
    "reach": 3.2
   },
@@ -557,70 +725,16 @@
    "object": "door305",
    "typed": false,
    "anchor": [
-    -0.079,
+    -0.04000000067055226,
     1.0550000000000002,
-    -4.0225
+    -4.0249999997019765
    ],
    "built": [
-    -0.079,
+    -0.04000000067055226,
     1.0550000000000002,
-    -4.0225
+    -4.0249999997019765
    ],
    "reach": 5
-  },
-  {
-   "id": "door305-plate",
-   "kind": "inspect",
-   "label": "Plate 305",
-   "object": "spot:door305-plate",
-   "typed": true,
-   "anchor": [
-    0.05,
-    1.69,
-    -1.02
-   ],
-   "built": [
-    0.05,
-    1.69,
-    -1.02
-   ],
-   "reach": 5
-  },
-  {
-   "id": "door305-handle",
-   "kind": "inspect",
-   "label": "Lever handle",
-   "object": "spot:door305-handle",
-   "typed": true,
-   "anchor": [
-    -0.05,
-    0.95,
-    -0.35
-   ],
-   "built": [
-    -0.05,
-    0.95,
-    -0.35
-   ],
-   "reach": 5
-  },
-  {
-   "id": "lift-call",
-   "kind": "use",
-   "label": "Lift button",
-   "object": "liftcall",
-   "typed": false,
-   "anchor": [
-    2.62,
-    1.1,
-    7.3574999999869615
-   ],
-   "built": [
-    2.62,
-    1.1,
-    7.3574999999869615
-   ],
-   "reach": 3.2
   },
   {
    "id": "lift-floor",
@@ -641,43 +755,17 @@
    "reach": 4
   }
  ],
- "bind": {
-  "door305-plate": {
-   "object": "spot:door305-plate",
-   "how": "mesh",
-   "on": "r7 < Building305",
-   "at": [
-    0.05,
-    1.69,
-    -1.02
-   ]
-  },
-  "door305-handle": {
-   "object": "spot:door305-handle",
-   "how": "mesh",
-   "on": "r7 < Building305",
-   "at": [
-    -0.05,
-    0.95,
-    -0.35
-   ]
-  }
- },
+ "bind": {},
  "premerge": {
   "notice": [
-   0.006,
+   0.0075,
    1.74,
    0.31
   ],
   "door305": [
-   -0.079,
+   -0.04000000067055226,
    1.0550000000000002,
-   -4.0225
-  ],
-  "liftcall": [
-   2.62,
-   1.1,
-   7.3574999999869615
+   -4.0249999997019765
   ],
   "lift": [
    1.75,
@@ -690,7 +778,7 @@
    "p": [
     -1.37,
     0,
-    0.8
+    2.6597
    ],
    "q": [
     0,
@@ -703,8 +791,8 @@
   }
  },
  "anchorsBefore": {
-  "named": 4,
-  "typed": 2
+  "named": 3,
+  "typed": 0
  },
  "models": {
   "baked": [],
@@ -719,52 +807,50 @@
  "manifest": true,
  "three": "170",
  "key": "door-305",
- "hour": 13,
- "bakedAt": "2026-10-21T13:01:32.311Z",
+ "hour": 16,
+ "bakedAt": "2026-10-27T03:15:39.355Z",
+ "quantizePosition": 14,
  "source": {
   "family": "Building305 (door) built at runtime by lab/src/scenes",
-  "exportBytes": 12312316,
-  "triangles": 6976,
-  "drawCalls": 152,
+  "exportBytes": 12318324,
+  "triangles": 7120,
+  "drawCalls": 156,
   "textures": 23,
   "textureMB": 41.4
  },
  "lods": {
   "lod0": {
    "file": "door-305.glb",
-   "triangles": 3510,
-   "primitives": 107,
-   "materials": 105,
+   "triangles": 3630,
+   "primitives": 109,
+   "materials": 107,
    "textures": 20,
-   "textureKB": 835,
-   "bytes": 993684
+   "textureKB": 840,
+   "bytes": 1002604
   },
   "lod1": {
    "file": "door-305.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 2642,
-   "primitives": 107,
-   "materials": 105,
+   "triangles": 2762,
+   "primitives": 109,
+   "materials": 107,
    "textures": 20,
-   "textureKB": 218,
-   "bytes": 362556
+   "textureKB": 224,
+   "bytes": 371476
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
    "door305",
-   "lift",
-   "liftcall",
-   "spot:door305-handle",
-   "spot:door305-plate"
+   "lift"
   ],
-  "exportBytes": 194952
+  "exportBytes": 192420
  },
  "live": {
   "file": "door-305.live.json",
-  "bytes": 25989,
+  "bytes": 26229,
   "objects": [
    "skyDome",
    "Mesh",

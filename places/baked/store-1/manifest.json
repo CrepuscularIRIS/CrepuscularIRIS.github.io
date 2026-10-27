@@ -5,16 +5,16 @@
  "variant": "",
  "tod": "day",
  "cost": {
-  "triangles": 224536,
-  "drawCalls": 311,
-  "textures": 165,
-  "textureMB": 349.2
+  "triangles": 225677,
+  "drawCalls": 318,
+  "textures": 190,
+  "textureMB": 374.2
  },
  "exported": {
-  "triangles": 221574,
-  "drawCalls": 288,
-  "textures": 164,
-  "textureMB": 349.1
+  "triangles": 222713,
+  "drawCalls": 294,
+  "textures": 189,
+  "textureMB": 374.2
  },
  "lights": [
   {
@@ -34,7 +34,7 @@
    "type": "DirectionalLight",
    "name": "",
    "color": 16773324,
-   "intensity": 1.6,
+   "intensity": 1.1,
    "position": [
     0.3,
     6.5,
@@ -224,7 +224,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16770232,
-   "intensity": 5.2,
+   "intensity": 3.4,
    "position": [
     -1.9,
     1.7,
@@ -252,7 +252,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16770232,
-   "intensity": 5.2,
+   "intensity": 3.4,
    "position": [
     1.9,
     1.7,
@@ -300,43 +300,47 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "b08b85b9-d9d7-4b78-bd6a-859769738f53",
+   "material": "e145c10d-8851-4e2c-9c4f-3e0ef802791d",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "3f8d15eb-1b06-4069-83ae-4a1f37ddc7e7",
+   "material": "8b8125e8-976b-4cd4-8980-c2bb18f48ff2",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "2f22da99-89d7-4899-9ef4-6517b94ef1c6",
+   "material": "201a3880-f89f-4517-be1e-1b67368ae154",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "b8650014-27f5-432f-9955-c13e1a7abbfb",
+   "material": "8ee58046-b332-49c3-804c-0433ffbbbdbd",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "ba693a56-17f4-465d-b172-aa62d3026c11",
+   "material": "b45531f8-695a-44bd-be5c-8a706283035d",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "51515848-5627-4de3-b7e0-4c2cbac89c24",
+   "material": "3d7033b0-0ce4-4175-8396-e9a1ed46382a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [],
  "camera": {
@@ -371,7 +375,16 @@
      1,
      0.5
     ],
-    "fov": 62
+    "fov": 62,
+    "post": {
+     "dof": {
+      "focus": 4.2,
+      "range": 3.5,
+      "tilt": {
+       "strength": 2
+      }
+     }
+    }
    },
    {
     "name": "etagere",
@@ -383,55 +396,91 @@
     ],
     "target": [
      0,
-     1.4,
+     1.47,
      1
     ],
-    "fov": 50
+    "fov": 52,
+    "post": {
+     "dof": {
+      "focus": 1.65,
+      "range": 0.8,
+      "near": 0.6,
+      "far": 0.45,
+      "tilt": {
+       "strength": 0.6
+      }
+     }
+    }
    },
    {
     "name": "window",
     "label": "Side window",
     "position": [
-     0.8,
+     -1.5,
      1.6,
-     3.6
+     2.1
     ],
     "target": [
-     -3.5,
-     1.7,
+     -3.6,
+     1.8,
      -1
     ],
-    "fov": 55
+    "fov": 52,
+    "post": {
+     "dof": {
+      "focus": 3.4,
+      "range": 2.5,
+      "tilt": {
+       "strength": 1.5
+      }
+     }
+    }
    },
    {
     "name": "backroom",
     "label": "Back room",
     "position": [
-     1.6,
-     1.5,
-     3
+     1.55,
+     1.55,
+     2.6
     ],
     "target": [
-     1,
-     1.2,
-     -2
+     1.9,
+     1.35,
+     -6
     ],
-    "fov": 55
+    "fov": 50,
+    "post": {
+     "dof": {
+      "focus": 7.5,
+      "range": 5,
+      "near": 0.6,
+      "far": 0.3,
+      "tilt": {
+       "strength": 0
+      }
+     }
+    }
    },
    {
     "name": "street",
     "label": "Out the front",
     "position": [
-     0.2,
-     1.5,
-     5.6
+     0.3,
+     1.4,
+     7.22
     ],
     "target": [
-     1.4,
-     2.2,
-     14
+     -5.36,
+     0.13,
+     12.88
     ],
-    "fov": 62
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "reverse",
@@ -446,7 +495,16 @@
      1.1,
      7
     ],
-    "fov": 62
+    "fov": 62,
+    "post": {
+     "dof": {
+      "focus": 4.2,
+      "range": 3.5,
+      "tilt": {
+       "strength": 2
+      }
+     }
+    }
    }
   ]
  },
@@ -538,8 +596,8 @@
     "radius": 0.3
    },
    "bloom": {
-    "threshold": 0.8,
-    "strength": 0.6,
+    "threshold": 0.9,
+    "strength": 0.32,
     "weights": [
      0.35,
      0.35,
@@ -878,45 +936,54 @@
   "baked": [],
   "standIns": []
  },
- "dressStats": null,
+ "dressStats": {
+  "props": 6,
+  "instanced": 0,
+  "signs": 0,
+  "lights": 0,
+  "retextured": 0,
+  "triangles": 24173,
+  "failed": 0
+ },
  "detailStats": {
-  "meshes": 22,
-  "triangles": 4498
+  "meshes": 17,
+  "triangles": 3462
  },
  "manifestColliders": 0,
  "manifest": false,
  "three": "170",
  "key": "store-1",
  "hour": 13,
- "bakedAt": "2026-10-21T07:33:15.151Z",
+ "bakedAt": "2026-10-27T02:50:03.919Z",
+ "quantizePosition": 14,
  "source": {
   "family": "Store () built at runtime by lab/src/scenes",
-  "exportBytes": 53671444,
-  "triangles": 224536,
-  "drawCalls": 311,
-  "textures": 165,
-  "textureMB": 349.2
+  "exportBytes": 58988136,
+  "triangles": 225677,
+  "drawCalls": 318,
+  "textures": 190,
+  "textureMB": 374.2
  },
  "lods": {
   "lod0": {
    "file": "store-1.glb",
-   "triangles": 88710,
-   "primitives": 232,
-   "materials": 208,
-   "textures": 101,
-   "textureKB": 2269,
-   "bytes": 4118292
+   "triangles": 119145,
+   "primitives": 239,
+   "materials": 215,
+   "textures": 120,
+   "textureKB": 2580,
+   "bytes": 4697292
   },
   "lod1": {
    "file": "store-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 50570,
-   "primitives": 232,
-   "materials": 208,
-   "textures": 101,
-   "textureKB": 756,
-   "bytes": 2261324
+   "triangles": 68396,
+   "primitives": 239,
+   "materials": 215,
+   "textures": 120,
+   "textureKB": 856,
+   "bytes": 2504344
   }
  },
  "parts": {
@@ -934,8 +1001,9 @@
  },
  "live": {
   "file": "store-1.live.json",
-  "bytes": 54320,
+  "bytes": 57988,
   "objects": [
+   "Mesh",
    "Mesh",
    "Mesh",
    "skyDome",

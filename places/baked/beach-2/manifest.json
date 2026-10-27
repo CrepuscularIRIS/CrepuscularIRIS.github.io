@@ -5,13 +5,13 @@
  "variant": "D2",
  "tod": "day",
  "cost": {
-  "triangles": 271323,
+  "triangles": 271131,
   "drawCalls": 134,
   "textures": 47,
   "textureMB": 50.8
  },
  "exported": {
-  "triangles": 185027,
+  "triangles": 184835,
   "drawCalls": 107,
   "textures": 39,
   "textureMB": 44.3
@@ -23,9 +23,9 @@
    "color": 16772304,
    "intensity": 4.6,
    "position": [
-    17.338386689236355,
-    24.40419858454801,
-    -57.28802873676771
+    18.846902562957865,
+    10.418890660015819,
+    -61.28881777489165
    ],
    "visible": true,
    "target": [
@@ -92,9 +92,9 @@
    "object": "Mesh",
    "data": {
     "sunDir": [
-     0.322306444820606,
-     0.40673664307580026,
-     -0.8548004789461287
+     0.3474483760492978,
+     0.17364817766693036,
+     -0.9214802962481944
     ]
    }
   }
@@ -297,6 +297,26 @@
      12
     ],
     "fov": 62
+   },
+   {
+    "name": "picnic",
+    "label": "Picnic table",
+    "position": [
+     -5.2,
+     1.6,
+     -31
+    ],
+    "target": [
+     -10.1,
+     0.7,
+     -35.4
+    ],
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    }
   ]
  },
@@ -357,8 +377,8 @@
     "radius": 0.4
    },
    "bloom": {
-    "threshold": 0.8,
-    "strength": 0.8,
+    "threshold": 1,
+    "strength": 0.4,
     "weights": [
      0.5,
      0.4,
@@ -369,12 +389,12 @@
    },
    "paint": {
     "enabled": true,
-    "strength": 0.3,
+    "strength": 0.22,
     "radius": 2
    },
    "grade": {
-    "exposure": 1.05,
-    "saturation": 1.1,
+    "exposure": 1,
+    "saturation": 1,
     "lift": [
      0.03,
      0.03,
@@ -393,7 +413,7 @@
     "range": 40,
     "near": 1.2,
     "far": 0.2,
-    "maxRadius": 8,
+    "maxRadius": 6,
     "tilt": {
      "center": [
       0.55,
@@ -404,7 +424,7 @@
       0.38
      ],
      "soft": 0.35,
-     "strength": 4
+     "strength": 3
     }
    }
   }
@@ -943,12 +963,12 @@
  "three": "170",
  "key": "beach-2",
  "hour": 13,
- "bakedAt": "2026-10-24T09:20:52.426Z",
+ "bakedAt": "2026-10-27T03:13:48.687Z",
  "quantizePosition": 14,
  "source": {
   "family": "Beach (D2) built at runtime by lab/src/scenes",
-  "exportBytes": 17305984,
-  "triangles": 271323,
+  "exportBytes": 16837404,
+  "triangles": 271131,
   "drawCalls": 134,
   "textures": 47,
   "textureMB": 50.8
@@ -956,23 +976,23 @@
  "lods": {
   "lod0": {
    "file": "beach-2.glb",
-   "triangles": 168177,
+   "triangles": 167985,
    "primitives": 65,
    "materials": 60,
    "textures": 42,
-   "textureKB": 1625,
-   "bytes": 3534848
+   "textureKB": 1527,
+   "bytes": 3425020
   },
   "lod1": {
    "file": "beach-2.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 94718,
+   "triangles": 94624,
    "primitives": 65,
    "materials": 60,
    "textures": 42,
-   "textureKB": 1031,
-   "bytes": 2290748
+   "textureKB": 981,
+   "bytes": 2239420
   }
  },
  "parts": {
@@ -990,7 +1010,7 @@
    "hook:sea",
    "hook:sky"
   ],
-  "exportBytes": 417204
+  "exportBytes": 417208
  },
  "live": null,
  "notes": [

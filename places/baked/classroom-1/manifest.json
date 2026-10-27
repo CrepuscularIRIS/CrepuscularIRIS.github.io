@@ -5,22 +5,22 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 54982,
+  "triangles": 59012,
   "drawCalls": 124,
-  "textures": 26,
-  "textureMB": 66.9
+  "textures": 24,
+  "textureMB": 64.4
  },
  "exported": {
-  "triangles": 51026,
-  "drawCalls": 114,
-  "textures": 24,
-  "textureMB": 65.7
+  "triangles": 55058,
+  "drawCalls": 115,
+  "textures": 23,
+  "textureMB": 64.4
  },
  "lights": [
   {
    "type": "HemisphereLight",
    "name": "",
-   "color": 16763048,
+   "color": 12372172,
    "intensity": 0.34,
    "position": [
     0,
@@ -28,7 +28,7 @@
     0
    ],
    "visible": true,
-   "groundColor": 9062970
+   "groundColor": 6705996
   },
   {
    "type": "DirectionalLight",
@@ -68,60 +68,11 @@
   {
    "type": "DirectionalLight",
    "name": "",
-   "color": 16752736,
-   "intensity": 3.4,
-   "position": [
-    -4.9,
-    2.7,
-    2.3
-   ],
-   "visible": true,
-   "target": [
-    3.6,
-    0,
-    4.5
-   ],
-   "shadow": {
-    "mapSize": [
-     2048,
-     2048
-    ],
-    "bias": -0.0004,
-    "normalBias": 0.025,
-    "radius": 2,
-    "autoUpdate": true,
-    "camera": {
-     "near": 1,
-     "far": 22,
-     "left": -8,
-     "right": 8,
-     "top": 8,
-     "bottom": -8
-    }
-   }
-  },
-  {
-   "type": "PointLight",
-   "name": "",
-   "color": 16751216,
-   "intensity": 0,
-   "position": [
-    3,
-    2.3,
-    5
-   ],
-   "visible": true,
-   "distance": 9,
-   "decay": 1.6
-  },
-  {
-   "type": "DirectionalLight",
-   "name": "",
-   "color": 15247544,
-   "intensity": 0.35,
+   "color": 11057860,
+   "intensity": 0.45,
    "position": [
     8,
-    3,
+    20,
     12
    ],
    "visible": true,
@@ -135,13 +86,13 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "9a3042f0-108e-4624-9b8b-551fb4706af3",
+   "material": "3f877784-d17b-4961-aa94-5b7da32d6444",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "f9212395-c004-4885-a448-0feda037da07",
+   "material": "d6aee920-53da-47b6-902d-2d29f5424724",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -252,16 +203,16 @@
     "name": "desk",
     "label": "Desk",
     "position": [
-     5.2,
-     1.15,
-     6.9
+     6.2,
+     1.1,
+     7
     ],
     "target": [
-     6.3,
-     0.6,
-     5.9
+     4.6,
+     0.7,
+     5.4
     ],
-    "fov": 45
+    "fov": 55
    },
    {
     "name": "chairs",
@@ -333,12 +284,12 @@
    },
    "vol": {
     "enabled": true,
-    "density": 0.4,
-    "max": 0.75,
+    "density": 0.2,
+    "max": 0.45,
     "phase": 0.7,
     "steps": 24,
     "dist": 20,
-    "floor": 0.5
+    "floor": 0.6
    },
    "bloom": {
     "threshold": 0.78,
@@ -616,14 +567,14 @@
    "object": "spot:door-street",
    "typed": true,
    "anchor": [
-    4.6,
+    7.17,
     1.2,
-    8.6
+    7.8
    ],
    "built": [
-    4.6,
+    7.17,
     1.2,
-    8.6
+    7.8
    ],
    "reach": 3.2
   },
@@ -724,15 +675,15 @@
    "how": "node",
    "on": null,
    "at": [
-    4.6,
+    7.17,
     1.2,
-    8.6
+    7.8
    ]
   },
   "class-board": {
    "object": "spot:class-board",
-   "how": "mesh",
-   "on": "delivery-details",
+   "how": "node",
+   "on": null,
    "at": [
     2.5,
     1.5,
@@ -772,9 +723,14 @@
  },
  "premerge": {
   "spot:door-street": [
-   4.6,
+   7.17,
    1.2,
-   8.6
+   7.8
+  ],
+  "spot:class-board": [
+   2.5,
+   1.5,
+   0.3
   ],
   "spot:frag-6": [
    5.2,
@@ -803,44 +759,44 @@
  },
  "dressStats": null,
  "detailStats": {
-  "meshes": 12,
-  "triangles": 2062
+  "meshes": 11,
+  "triangles": 2060
  },
  "manifestColliders": 0,
  "manifest": true,
  "three": "170",
  "key": "classroom-1",
  "hour": 13,
- "bakedAt": "2026-10-24T10:41:22.439Z",
+ "bakedAt": "2026-10-27T02:20:15.454Z",
  "quantizePosition": 14,
  "source": {
   "family": "Classroom (D) built at runtime by lab/src/scenes",
-  "exportBytes": 14842080,
-  "triangles": 54982,
+  "exportBytes": 14688152,
+  "triangles": 59012,
   "drawCalls": 124,
-  "textures": 26,
-  "textureMB": 66.9
+  "textures": 24,
+  "textureMB": 64.4
  },
  "lods": {
   "lod0": {
    "file": "classroom-1.glb",
-   "triangles": 15288,
-   "primitives": 88,
-   "materials": 82,
-   "textures": 21,
-   "textureKB": 856,
-   "bytes": 1117960
+   "triangles": 15586,
+   "primitives": 87,
+   "materials": 81,
+   "textures": 19,
+   "textureKB": 814,
+   "bytes": 1074880
   },
   "lod1": {
    "file": "classroom-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 9570,
-   "primitives": 88,
-   "materials": 82,
-   "textures": 21,
-   "textureKB": 230,
-   "bytes": 457420
+   "triangles": 9718,
+   "primitives": 87,
+   "materials": 81,
+   "textures": 19,
+   "textureKB": 202,
+   "bytes": 430612
   }
  },
  "parts": {
@@ -848,16 +804,16 @@
   "names": [
    "spot:class-window",
    "lockerDetail",
-   "spot:class-board",
    "spot:door-street",
+   "spot:class-board",
    "spot:frag-6",
    "spot:snow-desk"
   ],
-  "exportBytes": 196212
+  "exportBytes": 171756
  },
  "live": {
   "file": "classroom-1.live.json",
-  "bytes": 30822,
+  "bytes": 30699,
   "objects": [
    "Mesh",
    "Mesh",

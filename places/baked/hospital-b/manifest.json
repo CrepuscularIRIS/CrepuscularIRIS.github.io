@@ -5,36 +5,36 @@
  "variant": "",
  "tod": "day",
  "cost": {
-  "triangles": 42732,
-  "drawCalls": 258,
-  "textures": 35,
-  "textureMB": 71.8
+  "triangles": 40194,
+  "drawCalls": 241,
+  "textures": 39,
+  "textureMB": 63.6
  },
  "exported": {
-  "triangles": 8952,
-  "drawCalls": 120,
-  "textures": 18,
-  "textureMB": 49.7
+  "triangles": 23112,
+  "drawCalls": 184,
+  "textures": 36,
+  "textureMB": 59.8
  },
  "lights": [
   {
    "type": "HemisphereLight",
    "name": "",
-   "color": 14206144,
-   "intensity": 0.3,
+   "color": 14211284,
+   "intensity": 0.22,
    "position": [
     0,
     1,
     0
    ],
    "visible": true,
-   "groundColor": 3813416
+   "groundColor": 5919816
   },
   {
    "type": "SpotLight",
    "name": "",
-   "color": 16774388,
-   "intensity": 60,
+   "color": 16774380,
+   "intensity": 42,
    "position": [
     5.175000000000001,
     2.5500000000000003,
@@ -52,8 +52,8 @@
    ],
    "shadow": {
     "mapSize": [
-     2048,
-     2048
+     1024,
+     1024
     ],
     "bias": -0.0004,
     "normalBias": 0.025,
@@ -69,68 +69,68 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 16183030,
-   "intensity": 4.800000000000001,
+   "color": 16183530,
+   "intensity": 3,
    "position": [
     5.175000000000001,
     2,
     0.8
    ],
    "visible": true,
-   "distance": 6,
-   "decay": 1.6
+   "distance": 5,
+   "decay": 1.8
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 10129663,
-   "intensity": 5.4,
+   "color": 10135736,
+   "intensity": 2.7,
    "position": [
     2.1,
     1.4,
     0.45
    ],
    "visible": true,
-   "distance": 3.8,
+   "distance": 2.6,
    "decay": 1.8
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 10129663,
-   "intensity": 3.5999999999999996,
+   "color": 10135736,
+   "intensity": 1.7999999999999998,
    "position": [
     1.1,
     1.6,
     0.45
    ],
    "visible": true,
-   "distance": 3.8,
+   "distance": 2.6,
    "decay": 1.8
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 16767168,
-   "intensity": 6.6000000000000005,
+   "color": 16767156,
+   "intensity": 2.2800000000000002,
    "position": [
     6.28,
     1.55,
     0.7
    ],
    "visible": true,
-   "distance": 3,
+   "distance": 3.2,
    "decay": 1.8
   },
   {
    "type": "PointLight",
    "name": "",
-   "color": 10522879,
-   "intensity": 5.4,
+   "color": 10528952,
+   "intensity": 2.0999999999999996,
    "position": [
-    6.1,
+    6.35,
     1.5,
-    4.9
+    6.08
    ],
    "visible": true,
    "distance": 2.8,
@@ -139,22 +139,36 @@
   {
    "type": "PointLight",
    "name": "",
-   "color": 15261936,
-   "intensity": 4.199999999999999,
+   "color": 15262940,
+   "intensity": 2.7,
    "position": [
     1.4,
     2.1,
     2.1
    ],
    "visible": true,
-   "distance": 3.6,
+   "distance": 3.2,
    "decay": 1.8
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 14208188,
+   "intensity": 3,
+   "position": [
+    2.7,
+    1.3,
+    4.5
+   ],
+   "visible": true,
+   "distance": 3,
+   "decay": 2
   },
   {
    "type": "DirectionalLight",
    "name": "",
-   "color": 14732488,
-   "intensity": 0.15,
+   "color": 14735564,
+   "intensity": 0.38,
    "position": [
     8,
     3,
@@ -171,25 +185,29 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "cc1357bc-f533-4943-a614-ab2060cfd0df",
+   "material": "f7d3a000-c81f-4763-a182-045f3515b7d6",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "4472425a-a3f9-41a8-8b48-2b2cf83ca419",
+   "material": "b198563f-afc0-4047-9b23-aba1c4906dc2",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "2e4857be-fefb-4697-b325-540fdd41c176",
+   "material": "848aaaee-943d-4c2c-9ed2-6f7d784af386",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   }
  ],
  "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
  "uniformArrays": {},
  "reflectors": [],
  "camera": {
@@ -215,16 +233,36 @@
     "name": "wide",
     "label": "Wide",
     "position": [
-     8,
-     2.2,
+     7.9,
+     1.85,
+     3.9
+    ],
+    "target": [
+     3.1,
+     0.95,
+     1.55
+    ],
+    "fov": 58
+   },
+   {
+    "name": "tv",
+    "label": "Bedside screen",
+    "position": [
+     7.6,
+     1.52,
      7
     ],
     "target": [
-     3,
-     0.8,
-     1
+     6.03,
+     1.52,
+     5.83
     ],
-    "fov": 64
+    "fov": 38,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "bed",
@@ -239,7 +277,12 @@
      0.7,
      2.6
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "chair",
@@ -254,7 +297,12 @@
      0.75,
      3.6
     ],
-    "fov": 50
+    "fov": 50,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "window",
@@ -299,7 +347,32 @@
      1.1,
      0.35
     ],
-    "fov": 55
+    "fov": 55,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "chart",
+    "label": "Reference chart",
+    "position": [
+     1.9,
+     1.35,
+     1.97
+    ],
+    "target": [
+     0,
+     1.25,
+     1.97
+    ],
+    "fov": 45,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    }
   ]
  },
@@ -316,11 +389,11 @@
   ]
  },
  "env": {
-  "background": 3813944,
+  "background": 3421240,
   "ibl": {
    "top": 6971480,
    "wall": 6972508,
-   "floor": 3155998,
+   "floor": 11838592,
    "intensity": 0.3,
    "lights": [
     {
@@ -333,8 +406,8 @@
       2.6,
       1.6
      ],
-     "color": 16773366,
-     "power": 6,
+     "color": 16773352,
+     "power": 3.5,
      "lookAt": [
       5.2,
       0,
@@ -351,8 +424,8 @@
       3,
       1.6
      ],
-     "color": 10129663,
-     "power": 2.5,
+     "color": 10528952,
+     "power": 1.2,
      "lookAt": [
       3.7,
       1.4,
@@ -369,7 +442,7 @@
       1.5,
       1.4
      ],
-     "color": 13156568,
+     "color": 13157568,
      "power": 0.8,
      "lookAt": [
       6,
@@ -391,8 +464,8 @@
     "radius": 0.3
    },
    "bloom": {
-    "threshold": 0.8,
-    "strength": 0.5,
+    "threshold": 0.9,
+    "strength": 0.32,
     "weights": [
      0.45,
      0.35,
@@ -402,18 +475,20 @@
     ]
    },
    "grade": {
-    "exposure": 0.82,
-    "saturation": 0.92,
+    "exposure": 1.08,
+    "saturation": 0.9,
     "lift": [
-     0.02,
-     0.015,
-     0.01
+     0,
+     0.002,
+     0.005
     ],
     "gain": [
-     1.04,
-     0.98,
-     0.94
+     1,
+     1,
+     0.98
     ],
+    "gamma": 1.1,
+    "contrast": 1.08,
     "vignette": 0.3
    },
    "dof": {
@@ -422,7 +497,7 @@
     "range": 3,
     "near": 1.2,
     "far": 0.4,
-    "maxRadius": 10,
+    "maxRadius": 4,
     "tilt": {
      "center": [
       0.55,
@@ -433,7 +508,7 @@
       0.42
      ],
      "soft": 0.3,
-     "strength": 6
+     "strength": 3
     }
    }
   }
@@ -533,96 +608,6 @@
     3.3630015134811404
    ],
    "reach": 5
-  },
-  {
-   "id": "ward-recliner",
-   "kind": "inspect",
-   "label": "Navy recliner",
-   "object": "recliner",
-   "typed": false,
-   "anchor": [
-    3.530714509198176,
-    0.9344524925777438,
-    3.3958274677150753
-   ],
-   "built": [
-    3.530714509198176,
-    0.9344524925777438,
-    3.3958274677150753
-   ],
-   "reach": 5
-  },
-  {
-   "id": "ward-lamp",
-   "kind": "inspect",
-   "label": "Floor lamp",
-   "object": "lamp",
-   "typed": false,
-   "anchor": [
-    6.28,
-    0.9099999983794986,
-    0.4
-   ],
-   "built": [
-    6.28,
-    0.9099999983794986,
-    0.4
-   ],
-   "reach": 5
-  },
-  {
-   "id": "ward-cart",
-   "kind": "inspect",
-   "label": "Drawer cart",
-   "object": "cart",
-   "typed": false,
-   "anchor": [
-    -0.18250000149011616,
-    0.4606117969751358,
-    0.3
-   ],
-   "built": [
-    -0.18250000149011616,
-    0.4606117969751358,
-    0.3
-   ],
-   "reach": 5
-  },
-  {
-   "id": "ward-curtains",
-   "kind": "inspect",
-   "label": "Drawn drapes",
-   "object": "spot:ward-curtains",
-   "typed": true,
-   "anchor": [
-    4,
-    1.4,
-    -0.9
-   ],
-   "built": [
-    4,
-    1.4,
-    -0.9
-   ],
-   "reach": 5
-  },
-  {
-   "id": "ward-magazine",
-   "kind": "inspect",
-   "label": "Magazine",
-   "object": "spot:ward-magazine",
-   "typed": true,
-   "anchor": [
-    3.9,
-    0.05,
-    4.05
-   ],
-   "built": [
-    3.9,
-    0.05,
-    4.05
-   ],
-   "reach": 5
   }
  ],
  "bind": {
@@ -645,26 +630,6 @@
     1.1,
     7.35
    ]
-  },
-  "ward-curtains": {
-   "object": "spot:ward-curtains",
-   "how": "mesh",
-   "on": "room < HospitalWard",
-   "at": [
-    4,
-    1.4,
-    -0.9
-   ]
-  },
-  "ward-magazine": {
-   "object": "spot:ward-magazine",
-   "how": "mesh",
-   "on": "furniture < HospitalWard",
-   "at": [
-    3.9,
-    0.05,
-    4.05
-   ]
   }
  },
  "premerge": {
@@ -682,27 +647,12 @@
    6.758253575861454,
    0.5339999992400408,
    3.3630015134811404
-  ],
-  "recliner": [
-   3.530714509198176,
-   0.9344524925777438,
-   3.3958274677150753
-  ],
-  "lamp": [
-   6.28,
-   0.9099999983794986,
-   0.4
-  ],
-  "cart": [
-   -0.18250000149011616,
-   0.4606117969751358,
-   0.3
   ]
  },
  "doorProps": {},
  "anchorsBefore": {
-  "named": 5,
-  "typed": 4
+  "named": 2,
+  "typed": 2
  },
  "models": {
   "baked": [],
@@ -717,59 +667,55 @@
  "manifest": false,
  "three": "170",
  "key": "hospital-b",
- "hour": 13,
- "bakedAt": "2026-10-21T12:57:29.427Z",
+ "hour": 14,
+ "bakedAt": "2026-10-27T01:43:44.421Z",
+ "quantizePosition": 14,
  "source": {
   "family": "HospitalWard () built at runtime by lab/src/scenes",
-  "exportBytes": 16191928,
-  "triangles": 42732,
-  "drawCalls": 258,
-  "textures": 35,
-  "textureMB": 71.8
+  "exportBytes": 20740620,
+  "triangles": 40194,
+  "drawCalls": 241,
+  "textures": 39,
+  "textureMB": 63.6
  },
  "lods": {
   "lod0": {
    "file": "hospital-b.glb",
-   "triangles": 34604,
-   "primitives": 188,
-   "materials": 171,
-   "textures": 15,
-   "textureKB": 1725,
-   "bytes": 2188048
+   "triangles": 35206,
+   "primitives": 189,
+   "materials": 180,
+   "textures": 31,
+   "textureKB": 1763,
+   "bytes": 2275424
   },
   "lod1": {
    "file": "hospital-b.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 31805,
-   "primitives": 188,
-   "materials": 171,
-   "textures": 15,
-   "textureKB": 458,
-   "bytes": 889048
+   "triangles": 27684,
+   "primitives": 189,
+   "materials": 180,
+   "textures": 31,
+   "textureKB": 511,
+   "bytes": 971260
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
-   "spot:ward-curtains",
    "spot:cranial-chart",
    "bed",
-   "recliner",
-   "cart",
    "tv",
-   "lamp",
-   "spot:ward-magazine",
    "spot:lab-door"
   ],
-  "exportBytes": 6892024
+  "exportBytes": 1092560
  },
  "live": {
   "file": "hospital-b.live.json",
-  "bytes": 1354669,
+  "bytes": 27251,
   "objects": [
    "Mesh",
-   "overcastView",
+   "skyDome",
    "smokePlume",
    "motes"
   ]
