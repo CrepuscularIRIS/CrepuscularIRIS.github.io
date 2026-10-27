@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 159855,
-  "drawCalls": 191,
-  "textures": 56,
-  "textureMB": 76.8
+  "triangles": 210920,
+  "drawCalls": 223,
+  "textures": 71,
+  "textureMB": 83.1
  },
  "exported": {
-  "triangles": 150171,
-  "drawCalls": 165,
-  "textures": 44,
-  "textureMB": 71.6
+  "triangles": 201234,
+  "drawCalls": 196,
+  "textures": 58,
+  "textureMB": 77.7
  },
  "lights": [
   {
@@ -81,31 +81,31 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "a1acb564-49a9-438a-a194-b076c2203749",
+   "material": "6f7585b9-20e3-43c0-9c01-954bf7195519",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "a1acb564-49a9-438a-a194-b076c2203749",
+   "material": "6f7585b9-20e3-43c0-9c01-954bf7195519",
    "uniform": "uWT",
    "a": 0.2,
    "b": -1.776357e-15
   },
   {
-   "material": "00872625-4c1e-4cb5-96db-711114dbfcf2",
+   "material": "3be9a761-5d09-4ac6-9719-6ac882920553",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "acd0657c-442d-450f-a50a-36fa5bd95b4d",
+   "material": "c2cf8512-e8c0-48e7-a0da-e5b4e0469352",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "fe6f6993-b9f7-463a-ab52-e2a607120d3d",
+   "material": "2eca7cf6-bbf5-45dc-998e-688d14071d97",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -117,7 +117,7 @@
  "hooks": {},
  "patchClocks": {},
  "uniformArrays": {
-  "a1acb564-49a9-438a-a194-b076c2203749": {
+  "6f7585b9-20e3-43c0-9c01-954bf7195519": {
    "uL": "v4",
    "uLC": "c"
   }
@@ -232,7 +232,32 @@
      0.8,
      0.9
     ],
-    "fov": 45
+    "fov": 45,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "tabletop",
+    "label": "Bread and linen",
+    "position": [
+     0.25,
+     1.35,
+     1.35
+    ],
+    "target": [
+     0.67,
+     0.79,
+     0.82
+    ],
+    "fov": 38,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "chair",
@@ -608,10 +633,10 @@
     2.26
    ],
    [
-    -2.16,
-    1.7899999999999998,
-    -1.64,
-    2.3099999999999996
+    -1.98,
+    2.0199999999999996,
+    -1.46,
+    2.54
    ],
    [
     1.9400000000000002,
@@ -650,10 +675,10 @@
     5.71
    ],
    [
-    -2.3600000000000003,
-    5.79,
-    -1.84,
-    6.31
+    -2.6399999999999997,
+    6.0200000000000005,
+    -2.12,
+    6.54
    ],
    [
     2.4,
@@ -830,13 +855,13 @@
   "rest-napkin": {
    "object": "spot:rest-napkin",
    "how": "carved",
-   "on": "furniture",
+   "on": "service",
    "at": [
     0.62,
     0.86,
     0.8
    ],
-   "triangles": 48
+   "triangles": 2
   }
  },
  "premerge": {
@@ -882,12 +907,12 @@
   "standIns": []
  },
  "dressStats": {
-  "props": 114,
-  "instanced": 9,
+  "props": 95,
+  "instanced": 25,
   "signs": 5,
   "lights": 0,
   "retextured": 0,
-  "triangles": 65195,
+  "triangles": 90538,
   "failed": 0
  },
  "detailStats": {
@@ -899,36 +924,36 @@
  "three": "170",
  "key": "restaurant-1-day",
  "hour": 13,
- "bakedAt": "2026-10-27T09:58:07.292Z",
+ "bakedAt": "2026-10-27T16:21:19.489Z",
  "quantizePosition": 14,
  "source": {
   "family": "Restaurant (D) built at runtime by lab/src/scenes",
-  "exportBytes": 15816712,
-  "triangles": 159855,
-  "drawCalls": 191,
-  "textures": 56,
-  "textureMB": 76.8
+  "exportBytes": 19012336,
+  "triangles": 210920,
+  "drawCalls": 223,
+  "textures": 71,
+  "textureMB": 83.1
  },
  "lods": {
   "lod0": {
    "file": "restaurant-1-day.glb",
-   "triangles": 129773,
-   "primitives": 123,
-   "materials": 111,
-   "textures": 51,
-   "textureKB": 1095,
-   "bytes": 2431520
+   "triangles": 176829,
+   "primitives": 151,
+   "materials": 123,
+   "textures": 65,
+   "textureKB": 1281,
+   "bytes": 3082460
   },
   "lod1": {
    "file": "restaurant-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 75665,
-   "primitives": 123,
-   "materials": 111,
-   "textures": 51,
-   "textureKB": 438,
-   "bytes": 1385228
+   "triangles": 108036,
+   "primitives": 151,
+   "materials": 123,
+   "textures": 65,
+   "textureKB": 624,
+   "bytes": 1950508
   }
  },
  "parts": {
@@ -941,12 +966,13 @@
    "spot:sideboard",
    "spot:rest-napkin"
   ],
-  "exportBytes": 963968
+  "exportBytes": 932556
  },
  "live": {
   "file": "restaurant-1-day.live.json",
-  "bytes": 125591,
+  "bytes": 139948,
   "objects": [
+   "Mesh",
    "skyDome",
    "water",
    "Mesh",

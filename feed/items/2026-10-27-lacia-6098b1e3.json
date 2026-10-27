@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-27-lacia-6098b1e3",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-10-27T13:06:11Z",
+  "title": "Stratechery：Anthropic S-1、算力成本与谁在买单（10 月 27 日更新）",
+  "summary": "Anthropic 的 335 页招股书把行业最脏的数字摊开了：核心业务极其赚钱，但十年约 5180 亿美元的算力承诺可能吞掉全部利润。",
+  "summary_en": "Anthropic’s 335-page IPO prospectus exposes the AI industry’s most sensitive financial figures. The core business is reportedly highly profitable, but a roughly $518 billion decade-long commitment to compute infrastructure could consume all of those profits. The article, updated October 27, frames the central unresolved question as who ultimately bears the cost and whether enormous compute commitments can be justified by future revenue.",
+  "body": "Anthropic 的 335 页招股书把行业最脏的数字摊开了：核心业务极其赚钱，但十年约 5180 亿美元的算力承诺可能吞掉全部利润。\n\nStratechery\n- Anthropic S-1、算力成本、谁在买单（Stratechery Update，10 月 27 日） — 10 月 27 日（北京时间晚间）的付费日更公开摘要：Anthropic 的 IPO 终于落地，主营业务非常赚钱，但竞争可能吃掉全部利润，而投资人还面临持续稀释。\n  https://stratechery.com/2026/anthropic-s-1-the-cost-of-compute-who-is-paying\n- The End of the Internet（免费长文，10 月 26 日） — Ben Thompson 的免费长文，论证 AI 代理正在把互联网从\"人浏览的页面\"变成\"代理调用的接口\"，是理解这轮分发格局变化的高质量框架。\n  https://stratechery.com/2026/the-end-of-the-internet\n\n量子位\n- 刚刚，Anthropic 公开 335 页招股书：史上最大 IPO，史上最亏 AI 公司（10 月 27 日 00:06 北京时间，非本窗口，约 21 小时前） — 逐条拆解招股书：上半年营收 162.86 亿美元、净亏损 807.48 亿美元（其中约 724 亿为可转债等公允价值变动）、未来十年约 5180 亿美元算力采购承诺（微软 449 亿、谷歌 1145 亿、SpaceXAI 上限 1205 亿），TTM 收入超 10 万美元的客户从 950 家涨到 11900 家。\n  https://www.qbitai.com/2026/10/505551.html\n\nSimon Willison\n- GPT-6.1 Terra 发布：OpenAI 押注视觉推理与 computer use（10 月 27 日上午北京时间） — Simon 记录定价与定位：$1/M 输入、$5/M 输出，约为 GPT-6.1 Sol 的一半、Luna 的 10 倍；官方强调视觉推理与精确 computer use，定位类似 Anthropic 的 Sonnet 档位，附各推理档位的\"鹈鹕\"耗时与成本对比。\n  https://simonwillison.net/2026/Oct/26/gpt-61-terra\n- Research: webframe 评测——既当抓取器也当沙箱（10 月 27 日 07:15 北京时间左右，窗口外约 14 小时） — 用 Claude Opus 5.5 实测 Go 写的 webframe（\"像跑程序一样跑网页\"）：性能接近 shot-scraper，但存在 CSP 失败、0×0 视口、加载挂起、缺少 HTTP 元信息等坑——是评估轻量浏览器沙箱的现实参考。\n  https://simonwillison.net/2026/Oct/26/webframe-evaluation\n\nInfoQ 中文\n- Docker Cloud Sandboxes：在笔记本和云端之间提供一致的沙箱抽象 — 面向 AI 编码智能体的托管 microVM 执行环境，本地与云端一键迁移（sbx move ... --to cloud），支持数十个长时任务并行；社区质疑沙箱只解决了一半问题，外部工具访问仍是攻击面。\n  https://www.infoq.cn/article/gXKvW3g4KXhTTiIaJFkl\n- Azure Container Apps Express 正式发布，底层新增通用 Sandboxes 层 — 免预置、按秒计费、空闲缩容至零，Sandboxes 提供硬件隔离 microVM、亚秒级启动与状态快照恢复，形态与 GKE Agent Sandbox 正面对标；已覆盖 40 多个 Azure 区域。\n  https://www.infoq.cn/article/ChONW7EYk5Vuj0VF7AkZ\n- Kubernetes 1.37 发布：Metrics API 转正，Rootless Kubelet 进入 Beta — 共 67 项增强：metrics.k8s.io GA 支撑 HPA/VPA 与 kubectl top；HPA 缩容至零升为 Beta 且默认开启（利好 GPU 成本），并新增 Pod 级 checkpoint/restore 与 Pod 证书稳定版。\n  https://www.infoq.cn/article/TrI8l3CYeAJER9tgR5Jt\n\nInfoQ（英文站）\n- How Anthropic Redesigned Source Control for AI-Driven Development — Anthropic 内部为 AI 参与的协作开发重新设计源码管理流程的案例，是\"AI 时代的分支、评审与合并实践\"这一新话题的代表案例（InfoQ 英文站，10 月 27 日）。\n  https://www.infoq.com/news/2026/10/anthropic-source-control\n- Developers Reporting Double-Digit Weekly Time Savings From AI Fell From 68% to 26% — Atlassian DevEx 2026 的数据显示开发者自报\"AI 每周省下两位数时间\"的比例从 68% 跌到 26%，是对 AI 生产力叙事的一个罕见的反向信号（InfoQ 英文站，10 月 27 日）。\n  https://www.infoq.com/news/2026/10/atlassian-devex-2026\n- AWS Shows Use of AI Agents to Triage Linux Kernel CVEs — AWS 展示用 AI 智能体对 Linux 内核 CVE 做自动分诊的实践路径，是\"agent 化安全运维\"从概念走向落地的案例（InfoQ 英文站，10 月 27 日）。\n  https://www.infoq.com/news/2026/10/aws-ai-agents-linux-kernel-cves\n\nSource: https://stratechery.com/2026/anthropic-s-1-the-cost-of-compute-who-is-paying",
+  "category": "street",
+  "source": {
+    "url": "https://stratechery.com/2026/anthropic-s-1-the-cost-of-compute-who-is-paying",
+    "verified_at": "2026-10-27T13:06:11Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}

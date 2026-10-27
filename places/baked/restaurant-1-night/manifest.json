@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 165315,
-  "drawCalls": 369,
-  "textures": 59,
-  "textureMB": 77
+  "triangles": 216380,
+  "drawCalls": 401,
+  "textures": 73,
+  "textureMB": 83.1
  },
  "exported": {
-  "triangles": 144807,
-  "drawCalls": 145,
-  "textures": 44,
-  "textureMB": 71.6
+  "triangles": 195870,
+  "drawCalls": 176,
+  "textures": 58,
+  "textureMB": 77.7
  },
  "lights": [
   {
@@ -210,7 +210,7 @@
    "type": "PointLight",
    "name": "light-pool-08",
    "color": 16756056,
-   "intensity": 0.34,
+   "intensity": 0.8,
    "position": [
     0.9,
     1.19,
@@ -218,13 +218,28 @@
    ],
    "visible": true,
    "distance": 2.2,
-   "decay": 2
+   "decay": 2,
+   "shadow": {
+    "mapSize": [
+     512,
+     512
+    ],
+    "bias": -0.0005,
+    "normalBias": 0.025,
+    "radius": 2,
+    "autoUpdate": true,
+    "camera": {
+     "near": 0.5,
+     "far": 2.2,
+     "fov": 90
+    }
+   }
   },
   {
    "type": "PointLight",
    "name": "light-pool-09",
    "color": 16756056,
-   "intensity": 0.34,
+   "intensity": 0.6,
    "position": [
     3.55,
     1.19,
@@ -413,55 +428,55 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "88aa69da-a660-477f-935d-0e61b379d645",
+   "material": "0c723f41-fbd9-431d-8a18-22d37dfc00b0",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "88aa69da-a660-477f-935d-0e61b379d645",
+   "material": "0c723f41-fbd9-431d-8a18-22d37dfc00b0",
    "uniform": "uWT",
    "a": 0.2,
    "b": -1.776357e-15
   },
   {
-   "material": "64799747-2274-421a-aeb8-c22845545817",
+   "material": "559233b7-f573-4355-bc29-83d4f375b185",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "76f44cfe-95be-4084-a2f0-1d4bcb684a71",
+   "material": "7a22a075-0abe-464c-9783-9514742b41cd",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "15435fe8-8faa-4a39-8a03-39d458d7c9e2",
+   "material": "ec83d99d-ab63-49b9-a237-522a6b7eee3e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "c15ff047-fca4-4912-ac1a-1fa977700f0d",
+   "material": "452b7941-8309-43f5-908e-c94e10057117",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "92197c75-2c19-47e0-b4c9-f6a178d3575a",
+   "material": "2d2737f3-54ac-4df5-be8d-588dd9617186",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "264ebb2f-c69d-4b27-8579-7212e9a4e3fe",
+   "material": "8ade7ba7-a600-4754-a869-5eef2179aa6a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "67ab61e0-98d0-4991-aac3-0cd6dde6afb3",
+   "material": "821ccb63-10d2-4379-81f6-9ed6bd68ff63",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -473,7 +488,7 @@
  "hooks": {},
  "patchClocks": {},
  "uniformArrays": {
-  "88aa69da-a660-477f-935d-0e61b379d645": {
+  "0c723f41-fbd9-431d-8a18-22d37dfc00b0": {
    "uL": "v4",
    "uLC": "c"
   }
@@ -588,7 +603,32 @@
      0.8,
      0.9
     ],
-    "fov": 45
+    "fov": 45,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "tabletop",
+    "label": "Bread and linen",
+    "position": [
+     0.25,
+     1.35,
+     1.35
+    ],
+    "target": [
+     0.67,
+     0.79,
+     0.82
+    ],
+    "fov": 38,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "chair",
@@ -965,10 +1005,10 @@
     2.26
    ],
    [
-    -2.16,
-    1.7899999999999998,
-    -1.64,
-    2.3099999999999996
+    -1.98,
+    2.0199999999999996,
+    -1.46,
+    2.54
    ],
    [
     1.9400000000000002,
@@ -1007,10 +1047,10 @@
     5.71
    ],
    [
-    -2.3600000000000003,
-    5.79,
-    -1.84,
-    6.31
+    -2.6399999999999997,
+    6.0200000000000005,
+    -2.12,
+    6.54
    ],
    [
     2.4,
@@ -1187,13 +1227,13 @@
   "rest-napkin": {
    "object": "spot:rest-napkin",
    "how": "carved",
-   "on": "furniture",
+   "on": "service",
    "at": [
     0.62,
     0.86,
     0.8
    ],
-   "triangles": 48
+   "triangles": 2
   }
  },
  "premerge": {
@@ -1239,12 +1279,12 @@
   "standIns": []
  },
  "dressStats": {
-  "props": 114,
-  "instanced": 9,
+  "props": 95,
+  "instanced": 25,
   "signs": 5,
   "lights": 0,
   "retextured": 0,
-  "triangles": 65195,
+  "triangles": 90538,
   "failed": 0
  },
  "detailStats": {
@@ -1256,36 +1296,36 @@
  "three": "170",
  "key": "restaurant-1-night",
  "hour": 22,
- "bakedAt": "2026-10-27T09:58:25.285Z",
+ "bakedAt": "2026-10-27T16:21:59.528Z",
  "quantizePosition": 14,
  "source": {
   "family": "Restaurant (N) built at runtime by lab/src/scenes",
-  "exportBytes": 16126824,
-  "triangles": 165315,
-  "drawCalls": 369,
-  "textures": 59,
-  "textureMB": 77
+  "exportBytes": 19322448,
+  "triangles": 216380,
+  "drawCalls": 401,
+  "textures": 73,
+  "textureMB": 83.1
  },
  "lods": {
   "lod0": {
    "file": "restaurant-1-night.glb",
-   "triangles": 124409,
-   "primitives": 122,
-   "materials": 110,
-   "textures": 51,
-   "textureKB": 1158,
-   "bytes": 2465324
+   "triangles": 171465,
+   "primitives": 150,
+   "materials": 122,
+   "textures": 65,
+   "textureKB": 1344,
+   "bytes": 3116252
   },
   "lod1": {
    "file": "restaurant-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 73029,
-   "primitives": 122,
-   "materials": 110,
-   "textures": 51,
-   "textureKB": 481,
-   "bytes": 1410180
+   "triangles": 105400,
+   "primitives": 150,
+   "materials": 122,
+   "textures": 65,
+   "textureKB": 666,
+   "bytes": 1975456
   }
  },
  "parts": {
@@ -1298,12 +1338,13 @@
    "spot:sideboard",
    "spot:rest-napkin"
   ],
-  "exportBytes": 963972
+  "exportBytes": 932560
  },
  "live": {
   "file": "restaurant-1-night.live.json",
-  "bytes": 851203,
+  "bytes": 856274,
   "objects": [
+   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",

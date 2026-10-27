@@ -3,18 +3,18 @@
  "place": "ktv-room-1",
  "family": "KTV",
  "variant": "",
- "tod": "night",
+ "tod": "day",
  "cost": {
-  "triangles": 48606,
-  "drawCalls": 138,
-  "textures": 37,
-  "textureMB": 32.3
+  "triangles": 67268,
+  "drawCalls": 178,
+  "textures": 57,
+  "textureMB": 94.4
  },
  "exported": {
-  "triangles": 44912,
-  "drawCalls": 116,
-  "textures": 30,
-  "textureMB": 29
+  "triangles": 63558,
+  "drawCalls": 160,
+  "textures": 52,
+  "textureMB": 91.4
  },
  "lights": [
   {
@@ -214,59 +214,50 @@
   {
    "type": "PointLight",
    "name": "dress:light",
-   "color": 9089279,
-   "intensity": 1.6,
+   "color": 8050943,
+   "intensity": 2.2,
    "position": [
-    -6.6,
-    1.7,
-    4.4
+    -3.95,
+    1.45,
+    -1.8
    ],
    "visible": true,
    "distance": 3,
    "decay": 1.8,
+   "dress": true
+  },
+  {
+   "type": "PointLight",
+   "name": "dress:light",
+   "color": 16747192,
+   "intensity": 4,
+   "position": [
+    -4.2,
+    2.15,
+    -1.05
+   ],
+   "visible": true,
+   "distance": 2.8,
+   "decay": 1.7,
    "dress": true
   }
  ],
  "lowDrop": [],
  "clocks": [
   {
-   "material": "1929b5b8-bce2-472b-b907-a0e35bb80c17",
+   "material": "84ae3c87-8a7b-43bc-a4c8-3471b70b13ea",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "ca8cea6a-4bbb-4fd0-95bc-80caf60846db",
+   "material": "82b6d6ae-414f-4bd8-ad7f-b9677f455630",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "d3334a69-76af-4b27-bfcc-81231421d659",
-   "uniform": "uTime",
-   "a": 1,
-   "b": 0
-  },
-  {
-   "material": "dd09cf51-d982-432e-919b-66c9db110010",
-   "uniform": "uTime",
-   "a": 1,
-   "b": 0
-  },
-  {
-   "material": "e7860e89-7303-485b-8bf1-1067ad494141",
-   "uniform": "uTime",
-   "a": 1,
-   "b": 0
-  },
-  {
-   "material": "a50a9b10-84f1-4edf-9711-c23923a90025",
-   "uniform": "uTime",
-   "a": 1,
-   "b": 0
-  },
-  {
-   "material": "feed9a20-97a2-4711-8c22-c9ef5c0d90b2",
+   "material": "707d8856-b6d5-4300-9058-caf1ec1c333a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -369,16 +360,41 @@
     "name": "hall-left",
     "label": "Hall",
     "position": [
-     4.8,
+     -2.35,
      1.6,
-     4.4
+     4.1
     ],
     "target": [
-     -2,
-     1.3,
-     1.2
+     -3.25,
+     1.1,
+     -0.6
     ],
-    "fov": 58
+    "fov": 62,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "room-103",
+    "label": "Room 103 · Open mic",
+    "position": [
+     -3.2,
+     1.4,
+     0.15
+    ],
+    "target": [
+     -3.55,
+     1.05,
+     -1.25
+    ],
+    "fov": 68,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "reverse",
@@ -488,7 +504,7 @@
    },
    "bloom": {
     "threshold": 0.7,
-    "strength": 0.6,
+    "strength": 0.35,
     "weights": [
      0.45,
      0.35,
@@ -501,14 +517,14 @@
     "exposure": 0.9575999999999999,
     "saturation": 0.95,
     "lift": [
-     0.02,
-     0.005,
-     0
+     0.012,
+     0.006,
+     0.004
     ],
     "gain": [
-     1.02,
-     0.9,
-     0.82
+     1.01,
+     0.96,
+     0.9
     ],
     "vignette": 0.36,
     "gamma": 1.06
@@ -530,7 +546,7 @@
       0.45
      ],
      "soft": 0.3,
-     "strength": 7
+     "strength": 2
     }
    }
   }
@@ -581,9 +597,9 @@
     1.45
    ],
    [
-    -3.1,
+    -4.4,
     0.8,
-    -2.7,
+    -4,
     1.2
    ],
    [
@@ -832,13 +848,13 @@
   "ktv-door-103": {
    "object": "spot:ktv-door-103",
    "how": "carved",
-   "on": "extras",
+   "on": "room-103-leaf < extras",
    "at": [
     -3.35,
     1.1,
     0.75
    ],
-   "triangles": 12
+   "triangles": 36
   }
  },
  "premerge": {
@@ -909,12 +925,12 @@
   "standIns": []
  },
  "dressStats": {
-  "props": 28,
+  "props": 30,
   "instanced": 11,
   "signs": 3,
-  "lights": 3,
+  "lights": 4,
   "retextured": 0,
-  "triangles": 28190,
+  "triangles": 31082,
   "failed": 0
  },
  "detailStats": {
@@ -926,36 +942,36 @@
  "three": "170",
  "key": "ktv-room-1",
  "hour": 22,
- "bakedAt": "2026-10-27T10:00:11.273Z",
+ "bakedAt": "2026-10-27T16:22:51.452Z",
  "quantizePosition": 14,
  "source": {
   "family": "KTV () built at runtime by lab/src/scenes",
-  "exportBytes": 7492240,
-  "triangles": 48606,
-  "drawCalls": 138,
-  "textures": 37,
-  "textureMB": 32.3
+  "exportBytes": 32991556,
+  "triangles": 67268,
+  "drawCalls": 178,
+  "textures": 57,
+  "textureMB": 94.4
  },
  "lods": {
   "lod0": {
    "file": "ktv-room-1.glb",
-   "triangles": 34898,
-   "primitives": 115,
-   "materials": 100,
-   "textures": 29,
-   "textureKB": 476,
-   "bytes": 949572
+   "triangles": 53568,
+   "primitives": 160,
+   "materials": 144,
+   "textures": 46,
+   "textureKB": 3104,
+   "bytes": 3869456
   },
   "lod1": {
    "file": "ktv-room-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 24137,
-   "primitives": 115,
-   "materials": 100,
-   "textures": 29,
-   "textureKB": 181,
-   "bytes": 578548
+   "triangles": 35248,
+   "primitives": 160,
+   "materials": 144,
+   "textures": 46,
+   "textureKB": 797,
+   "bytes": 1379884
   }
  },
  "parts": {
@@ -971,16 +987,12 @@
    "spot:ktv-porthole",
    "spot:ktv-door-103"
   ],
-  "exportBytes": 553492
+  "exportBytes": 556896
  },
  "live": {
   "file": "ktv-room-1.live.json",
-  "bytes": 35026,
+  "bytes": 25537,
   "objects": [
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",

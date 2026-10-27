@@ -1,0 +1,75 @@
+{
+  "source": "neon-zenith facade_albedo.webp / facade_mask.webp",
+  "layers": [
+    {
+      "name": "hk-white",
+      "kind": "res",
+      "w": 14.834,
+      "h": 14.5,
+      "bays": 3,
+      "floors": 5,
+      "cell": 0,
+      "col": 0,
+      "row": 0
+    },
+    {
+      "name": "hk-tower",
+      "kind": "res",
+      "w": 14.859,
+      "h": 15,
+      "bays": 6,
+      "floors": 5,
+      "cell": 1,
+      "col": 1,
+      "row": 0
+    },
+    {
+      "name": "tonglau",
+      "kind": "res",
+      "w": 21.692,
+      "h": 15.5,
+      "bays": 7,
+      "floors": 5,
+      "cell": 2,
+      "col": 0,
+      "row": 1
+    },
+    {
+      "name": "office-c",
+      "kind": "lit",
+      "w": 30.4,
+      "h": 30.4,
+      "bays": 0,
+      "floors": 8,
+      "cell": 3,
+      "col": 1,
+      "row": 1
+    }
+  ],
+  "albedo": {
+    "file": "facades_albedo.webp",
+    "width": 1024,
+    "height": 1024,
+    "cell": 512,
+    "gutter": 8
+  },
+  "mask": {
+    "file": "facades_mask.webp",
+    "width": 512,
+    "height": 512,
+    "cell": 256,
+    "gutter": 4
+  },
+  "tiling": "2x2; sample the inner cell only; edge-copy gutters prevent mip bleed",
+  "color": {
+    "albedo": "sRGB",
+    "mask": "linear data; R window/lit fraction"
+  },
+  "modifications": "Cropped by normalized source layer, resized, edge-extended and repacked; no interior atlas used.",
+  "licences": {
+    "hk-white": "CC BY 4.0; Full Gameready City Buildings III [HongKong] by abhayexe; orthographic model render via neon-zenith",
+    "hk-tower": "CC BY 4.0; Full Gameready City Buildings III [HongKong] by abhayexe; orthographic model render via neon-zenith",
+    "tonglau": "CC BY 4.0; Procedural Hong Kong building by udayjeet; orthographic model render via neon-zenith",
+    "office-c": "CC0; ambientCG Facade009 via neon-zenith"
+  }
+}
