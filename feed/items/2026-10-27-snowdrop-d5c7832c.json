@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-27-snowdrop-d5c7832c",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-27T05:08:11Z",
+  "title": "Trajectory2Gym：把工具型 Agent 的训练数据从「收集成功轨迹」改成「构造可学交互」，三基准均值暴涨 17–30 分",
+  "summary": "蚂蚁集团 Ant International 的 Trajectory2Gym 登顶今日 HF 每日论文榜首——它指出「成功轨迹≠有用监督」，通过合成交互让 Qwen3 在 Tau1/Tau2/BFCL 上平均提升 16.9–29.8 个百分点。",
+  "summary_en": "Trajectory2Gym argues that successful tool-use trajectories are not automatically useful supervision, because they may underrepresent multi-step dependencies or contain actions unjustified by what the agent could see. The method builds executable interactions with compositional coverage and decision grounding, then supervises only grounded decisions. Across five Qwen3 scales it improves Tau1, Tau2 and BFCL, lifting the equal-weight three-benchmark mean by 16.9-29.8 percentage points, with the largest gains in stateful multi-turn interaction.",
+  "body": "蚂蚁集团 Ant International 的 Trajectory2Gym 登顶今日 HF 每日论文榜首——它指出「成功轨迹≠有用监督」，通过合成交互让 Qwen3 在 Tau1/Tau2/BFCL 上平均提升 16.9–29.8 个百分点。\n\nHugging Face 每日论文\n- Trajectory2Gym: Decision-Grounded Compositional Interaction Synthesis for Tool-Use Agents（Ant International） — 今日 HF 榜首（74 赞）。核心观点是「成功轨迹不等于有效监督」：它围绕缺失的多步依赖合成可执行交互，只监督有依据的决策，在 5 个 Qwen3 规模上把 Tau1/Tau2/BFCL 均值拉高 16.9–29.8 个百分点。\n  https://huggingface.co/papers/2610.33568\n- InteractiveWorld：可验证的人机闭环环境与 InteractiveBench（Meta） — 让多模态助手真正指导真人完成物理任务的闭环模拟环境；12 个前沿 MLLM 表现惨淡——最强的 Claude Fable 5.1 在长程指引上最高只有 20%，是「落地还早」的硬证据。\n  https://huggingface.co/papers/2610.33966\n- StreamVibe: Proactive Video Agents for Evolving User Intent（Google） — 把视频模型从「被动理解」推向「主动响应」：4.1K 评测 + 85K 训练的基准、推断隐式且动态变化的意图，并判断何时该开口，代表交互式视频助手的方向。\n  https://huggingface.co/papers/2610.34662\n- Trial by Trace: Benchmarking AI Agent Harnesses（TraceLite AI） — 评测对象从模型换成 Agent 框架本身：7 个维度、95 个专家级任务、3420 次运行，并给出失败归因；结果提示很多「成功」其实卡在框架缺陷上。\n  https://huggingface.co/papers/2610.32285\n- World-in-Context: Interactive Video World Modeling with In-Context Conditioning（通义实验室） — 把视角、动作、镜头统一成显式 token 塞进同一个自注意力空间，5B 模型在 WBench 上视角切换成功率从 18.8% 跳到 93.8%，并用 IT-RoPE 保住时间连续性。\n  https://huggingface.co/papers/2610.33169\n\narXiv 新论文\n- When and How Does Muon Precondition? The Role of Structured Gradient Noise — 给热门优化器 Muon 补上了理论基础：证明在各向同性噪声下 Muon 只是学习率重缩放，真正的收益来自 mini-batch 的结构化噪声，能把任务频率依赖从线性软化到平方根。\n  https://arxiv.org/abs/2610.31728\n- Propensities Please: Exposing Alignment-Faking LLMs using Synthetic Document Finetuning — 不依赖 CoT 可监控性、逼真环境或机制干预，而是用合成文档微调教模型「只要出现某关键词就没人会发现」，以此暴露对齐伪装模型的隐藏倾向——面向未来更难审计的模型。\n  https://arxiv.org/abs/2610.33180\n- Eat Your Precision: Precision Objective Mitigates Reward Hacking in Rubric-based RL — 指出 rubric 奖励天然只优化召回，导致模型又啰嗦又容易编造；FORK 奖励同时要求「必要且正确」，HealthBench 上对基座的胜率从 22.1% 提到 74.1%。\n  https://arxiv.org/abs/2610.33512\n- DynaFlow: Learning Free-Form Multi-Agent Orchestration（新加坡国立大学） — 把「自由编排子 Agent」直接写进主 Agent 的动作空间，由它生成程序决定串行/并行、校验与返工；同骨干下比最强基线高 10.9 个百分点。\n  https://arxiv.org/abs/2610.34467\n- Conceptizer: Next-Token Prediction Is Not All You Need — 用约 9K 个概念做一层固定语义词表，把下一词奖励扩展到「意义奖励」，同一含义的多种说法共享回报；不加参数即在 1B–8B 三个系列上提升困惑度与下游知识/情感任务。\n  https://arxiv.org/abs/2610.33027\n\nNature（AI/ML 相关）\n- Comparative analysis of end-to-end learning and foundation models for clinical-grade prostate pathology — Nature 新刊的临床级前列腺病理对比研究，考察基础模型相对端到端训练在真实病理工作流中的实际收益边界。\n  https://www.nature.com/articles/s41467-026-78996-7\n- Efficient structural information integration into protein language models with implicit mixture-of-experts ProBEiT — 用隐式 MoE 往蛋白语言模型里注入结构信息，是「结构先验 + 预训练蛋白模型」这条路线的新进展。\n  https://www.nature.com/articles/s42003-026-10816-6\n\nSource: https://huggingface.co/papers/2610.33568",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2610.33568",
+    "verified_at": "2026-10-27T05:08:11Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}
