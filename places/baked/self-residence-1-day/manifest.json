@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 72816,
-  "drawCalls": 360,
-  "textures": 64,
-  "textureMB": 81.3
+  "triangles": 114928,
+  "drawCalls": 368,
+  "textures": 78,
+  "textureMB": 134.3
  },
  "exported": {
-  "triangles": 64774,
-  "drawCalls": 292,
-  "textures": 60,
-  "textureMB": 80.5
+  "triangles": 106886,
+  "drawCalls": 300,
+  "textures": 74,
+  "textureMB": 133.5
  },
  "lights": [
   {
@@ -91,14 +91,14 @@
     0.34
    ],
    "visible": true,
-   "distance": 2.4,
+   "distance": 2.7,
    "decay": 2,
-   "angle": 0.82,
+   "angle": 0.84,
    "penumbra": 0.78,
    "target": [
-    0.1,
-    0.73,
-    0.44
+    0.08,
+    0.72,
+    0.56
    ]
   },
   {
@@ -136,13 +136,13 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "a4c650a5-03b1-4c96-9af3-7d3b258dae26",
+   "material": "9aa93e76-e47a-46d2-8bba-3f293809fec3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "c6c16c06-0620-43ba-894f-069195f08ed2",
+   "material": "a61e13db-5659-4957-b5fc-40d8f49d8af5",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -158,16 +158,16 @@
  "camera": {
   "ref": {
    "position": [
-    -0.6,
+    -0.5,
     1.2,
-    5.1
+    4.9
    ],
    "target": [
-    2.5,
-    1.15,
+    1.95,
+    0.93,
     1.2
    ],
-   "fov": 56
+   "fov": 53
   },
   "views": [
    {
@@ -519,18 +519,18 @@
     "range": 3,
     "near": 0.8,
     "far": 0.45,
-    "maxRadius": 10,
+    "maxRadius": 6,
     "tilt": {
      "center": [
-      0.66,
-      0.52
+      0.62,
+      0.5
      ],
      "radius": [
-      0.4,
-      0.4
+      0.45,
+      0.45
      ],
      "soft": 0.3,
-     "strength": 9
+     "strength": 5
     }
    }
   }
@@ -545,13 +545,13 @@
   "eye": 1.55,
   "start": {
    "position": [
-    -0.6,
+    -0.5,
     0,
-    5.1
+    4.9
    ],
    "target": [
-    2.5,
-    1.4,
+    1.95,
+    1.3,
     1.2
    ]
   },
@@ -709,36 +709,36 @@
  "three": "170",
  "key": "self-residence-1-day",
  "hour": 13,
- "bakedAt": "2026-10-28T09:25:31.336Z",
+ "bakedAt": "2026-10-28T16:53:55.063Z",
  "quantizePosition": 14,
  "source": {
   "family": "SelfResidence (D) built at runtime by lab/src/scenes",
-  "exportBytes": 22944880,
-  "triangles": 72816,
-  "drawCalls": 360,
-  "textures": 64,
-  "textureMB": 81.3
+  "exportBytes": 52978528,
+  "triangles": 114928,
+  "drawCalls": 368,
+  "textures": 78,
+  "textureMB": 134.3
  },
  "lods": {
   "lod0": {
    "file": "self-residence-1-day.glb",
-   "triangles": 68136,
-   "primitives": 270,
-   "materials": 254,
-   "textures": 59,
-   "textureKB": 2246,
-   "bytes": 3049152
+   "triangles": 110248,
+   "primitives": 280,
+   "materials": 264,
+   "textures": 67,
+   "textureKB": 4138,
+   "bytes": 5335948
   },
   "lod1": {
    "file": "self-residence-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 46078,
-   "primitives": 270,
-   "materials": 254,
-   "textures": 59,
-   "textureKB": 667,
-   "bytes": 1390036
+   "triangles": 66504,
+   "primitives": 280,
+   "materials": 264,
+   "textures": 67,
+   "textureKB": 1081,
+   "bytes": 2035356
   }
  },
  "parts": {
@@ -755,7 +755,7 @@
  },
  "live": {
   "file": "self-residence-1-day.live.json",
-  "bytes": 115273,
+  "bytes": 113245,
   "objects": [
    "Mesh",
    "skyDome",

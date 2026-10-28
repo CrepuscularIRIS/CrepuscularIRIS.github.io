@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 17446,
-  "drawCalls": 232,
-  "textures": 36,
-  "textureMB": 61.2
+  "triangles": 18702,
+  "drawCalls": 246,
+  "textures": 42,
+  "textureMB": 73.5
  },
  "exported": {
-  "triangles": 13938,
-  "drawCalls": 113,
-  "textures": 33,
-  "textureMB": 60.7
+  "triangles": 14006,
+  "drawCalls": 124,
+  "textures": 38,
+  "textureMB": 72.5
  },
  "lights": [
   {
@@ -241,6 +241,7 @@
     "bias": -0.0004,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 0.5,
@@ -277,6 +278,7 @@
     "bias": -0.0004,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 0.5,
@@ -322,6 +324,7 @@
     "bias": -0.0003,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 1,
@@ -354,21 +357,21 @@
    "type": "PointLight",
    "name": "light-end-window",
    "color": 16769208,
-   "intensity": 5.4,
+   "intensity": 3.2,
    "position": [
-    -8.72,
-    1.6,
+    -8,
+    1.5,
     1.45
    ],
    "visible": true,
-   "distance": 7,
+   "distance": 6,
    "decay": 1.8
   }
  ],
  "lowDrop": [],
  "clocks": [
   {
-   "material": "b4ac951a-bf8f-402e-a17a-6475b0f83567",
+   "material": "4141848a-c52f-483c-942e-78932d979439",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -384,20 +387,16 @@
  "camera": {
   "ref": {
    "position": [
-    0,
+    0.35,
     1.5,
-    2.68
+    2.5
    ],
    "target": [
-    0,
-    1.5,
-    0
+    -4.2,
+    1.25,
+    0.2
    ],
-   "fov": 50,
-   "shift": [
-    0,
-    -0.132
-   ]
+   "fov": 54
   },
   "views": [
    {
@@ -473,7 +472,12 @@
      0.97,
      -0.03
     ],
-    "fov": 40
+    "fov": 40,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
    },
    {
     "name": "reverse",
@@ -584,6 +588,25 @@
      2.9
     ],
     "fov": 60
+   },
+   {
+    "position": [
+     0,
+     1.5,
+     2.68
+    ],
+    "target": [
+     0,
+     1.5,
+     0
+    ],
+    "fov": 50,
+    "shift": [
+     0,
+     -0.132
+    ],
+    "name": "plate",
+    "label": "Door wall"
    }
   ]
  },
@@ -694,7 +717,7 @@
     "guard": 0.08
    },
    "dof": {
-    "enabled": true,
+    "enabled": false,
     "focus": 2.7,
     "range": 1.6,
     "near": 1,
@@ -773,12 +796,12 @@
    "anchor": [
     -2.45,
     1.45,
-    0.016
+    0.02084417096018224
    ],
    "built": [
     -2.45,
     1.45,
-    0.016
+    0.02084417096018224
    ],
    "reach": 3.2
   },
@@ -860,7 +883,7 @@
   "board": [
    -2.45,
    1.45,
-   0.016
+   0.02084417096018224
   ],
   "door-home": [
    -1.0780000000000003,
@@ -911,36 +934,36 @@
  "three": "170",
  "key": "self-residence-corridor-1-day",
  "hour": 13,
- "bakedAt": "2026-10-27T09:39:25.695Z",
+ "bakedAt": "2026-10-28T18:29:07.313Z",
  "quantizePosition": 14,
  "source": {
   "family": "ApartmentCorridor (D) built at runtime by lab/src/scenes",
-  "exportBytes": 17157896,
-  "triangles": 17446,
-  "drawCalls": 232,
-  "textures": 36,
-  "textureMB": 61.2
+  "exportBytes": 17530016,
+  "triangles": 18702,
+  "drawCalls": 246,
+  "textures": 42,
+  "textureMB": 73.5
  },
  "lods": {
   "lod0": {
    "file": "self-residence-corridor-1-day.glb",
-   "triangles": 9074,
-   "primitives": 116,
-   "materials": 96,
-   "textures": 28,
-   "textureKB": 1347,
-   "bytes": 1629728
+   "triangles": 10474,
+   "primitives": 134,
+   "materials": 112,
+   "textures": 34,
+   "textureKB": 1378,
+   "bytes": 1682864
   },
   "lod1": {
    "file": "self-residence-corridor-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 7488,
-   "primitives": 116,
-   "materials": 96,
-   "textures": 28,
-   "textureKB": 372,
-   "bytes": 625844
+   "triangles": 8863,
+   "primitives": 134,
+   "materials": 112,
+   "textures": 34,
+   "textureKB": 392,
+   "bytes": 668740
   }
  },
  "parts": {
@@ -952,11 +975,11 @@
    "parcel",
    "mailboxes"
   ],
-  "exportBytes": 74464
+  "exportBytes": 221256
  },
  "live": {
   "file": "self-residence-corridor-1-day.live.json",
-  "bytes": 185885,
+  "bytes": 185886,
   "objects": [
    "skyDome",
    "Mesh",

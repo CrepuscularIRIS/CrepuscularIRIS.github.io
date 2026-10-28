@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 73224,
-  "drawCalls": 369,
-  "textures": 68,
-  "textureMB": 82.6
+  "triangles": 115336,
+  "drawCalls": 377,
+  "textures": 82,
+  "textureMB": 135.6
  },
  "exported": {
-  "triangles": 65178,
-  "drawCalls": 299,
-  "textures": 62,
-  "textureMB": 81.7
+  "triangles": 107290,
+  "drawCalls": 307,
+  "textures": 76,
+  "textureMB": 134.7
  },
  "lights": [
   {
@@ -69,8 +69,8 @@
   {
    "type": "SpotLight",
    "name": "light-pool-01",
-   "color": 15755930,
-   "intensity": 2.04,
+   "color": 9082036,
+   "intensity": 0.96,
    "position": [
     1.1,
     1.55,
@@ -91,21 +91,21 @@
    "type": "SpotLight",
    "name": "light-pool-02",
    "color": 16757354,
-   "intensity": 4.32,
+   "intensity": 5.1,
    "position": [
     0.16,
     1.17,
     0.34
    ],
    "visible": true,
-   "distance": 2.4,
+   "distance": 2.7,
    "decay": 2,
-   "angle": 0.82,
+   "angle": 0.84,
    "penumbra": 0.78,
    "target": [
-    0.1,
-    0.73,
-    0.44
+    0.08,
+    0.72,
+    0.56
    ],
    "shadow": {
     "mapSize": [
@@ -119,8 +119,8 @@
     "autoUpdate": true,
     "camera": {
      "near": 0.04,
-     "far": 2.4,
-     "fov": 93.965078401455
+     "far": 2.7,
+     "fov": 96.2569095819783
     }
    }
   },
@@ -135,28 +135,28 @@
     0.82
    ],
    "visible": true,
-   "distance": 3,
+   "distance": 1.8,
    "decay": 2
   },
   {
    "type": "PointLight",
    "name": "light-pool-04",
-   "color": 5014468,
-   "intensity": 3.3000000000000003,
+   "color": 7308960,
+   "intensity": 1.2000000000000002,
    "position": [
     -1.85,
     1.35,
     1.05
    ],
    "visible": true,
-   "distance": 3,
+   "distance": 2,
    "decay": 2
   },
   {
    "type": "SpotLight",
    "name": "light-pool-05",
-   "color": 3791080,
-   "intensity": 2.88,
+   "color": 8228515,
+   "intensity": 15.600000000000001,
    "position": [
     3.34,
     2.58,
@@ -165,33 +165,49 @@
    "visible": true,
    "distance": 4.5,
    "decay": 2,
-   "angle": 0.62,
+   "angle": 0.7,
    "penumbra": 0.78,
    "target": [
-    2.55,
-    0.48,
-    0.95
-   ]
+    2.15,
+    0.6,
+    0.45
+   ],
+   "shadow": {
+    "mapSize": [
+     1024,
+     1024
+    ],
+    "bias": -0.0008,
+    "normalBias": 0.025,
+    "radius": 2,
+    "intensity": 1,
+    "autoUpdate": true,
+    "camera": {
+     "near": 0.3,
+     "far": 4.5,
+     "fov": 80.21409131831524
+    }
+   }
   },
   {
    "type": "SpotLight",
    "name": "light-pool-06",
-   "color": 3791080,
-   "intensity": 7.199999999999999,
+   "color": 8228515,
+   "intensity": 18,
    "position": [
     3.34,
     2.58,
     3.45
    ],
    "visible": true,
-   "distance": 3.8,
+   "distance": 5.5,
    "decay": 2,
-   "angle": 0.42,
+   "angle": 0.6,
    "penumbra": 0.78,
    "target": [
-    2.62,
-    0.38,
-    2.2
+    2.05,
+    0.55,
+    1.05
    ]
   },
   {
@@ -236,13 +252,13 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "c9dd399d-838e-4872-a4a2-79d275f8a2a1",
+   "material": "165af272-907c-411f-8f55-addf621991f7",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "50683ee8-6420-4739-9d9c-8518113202f2",
+   "material": "87a67902-f330-4a0e-93a5-c74640f236b0",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -258,16 +274,16 @@
  "camera": {
   "ref": {
    "position": [
-    -0.6,
+    -0.5,
     1.2,
-    5.1
+    4.9
    ],
    "target": [
-    2.5,
-    1.15,
+    1.95,
+    0.93,
     1.2
    ],
-   "fov": 56
+   "fov": 53
   },
   "views": [
    {
@@ -544,8 +560,8 @@
       2.3,
       1.3
      ],
-     "color": 14048145,
-     "power": 0.75,
+     "color": 6979496,
+     "power": 0.55,
      "lookAt": [
       0.6,
       1.5,
@@ -562,8 +578,8 @@
       2.6,
       0.22
      ],
-     "color": 3791080,
-     "power": 1.4,
+     "color": 7311008,
+     "power": 0.9,
      "lookAt": [
       0,
       1.5,
@@ -619,18 +635,18 @@
     "range": 3,
     "near": 0.8,
     "far": 0.45,
-    "maxRadius": 10,
+    "maxRadius": 6,
     "tilt": {
      "center": [
-      0.66,
-      0.52
+      0.62,
+      0.5
      ],
      "radius": [
-      0.4,
-      0.4
+      0.45,
+      0.45
      ],
      "soft": 0.3,
-     "strength": 9
+     "strength": 5
     }
    }
   }
@@ -645,13 +661,13 @@
   "eye": 1.55,
   "start": {
    "position": [
-    -0.6,
+    -0.5,
     0,
-    5.1
+    4.9
    ],
    "target": [
-    2.5,
-    1.4,
+    1.95,
+    1.3,
     1.2
    ]
   },
@@ -809,36 +825,36 @@
  "three": "170",
  "key": "self-residence-1-night",
  "hour": 22,
- "bakedAt": "2026-10-28T09:25:40.870Z",
+ "bakedAt": "2026-10-28T16:53:01.056Z",
  "quantizePosition": 14,
  "source": {
   "family": "SelfResidence (N) built at runtime by lab/src/scenes",
-  "exportBytes": 23122320,
-  "triangles": 73224,
-  "drawCalls": 369,
-  "textures": 68,
-  "textureMB": 82.6
+  "exportBytes": 53155576,
+  "triangles": 115336,
+  "drawCalls": 377,
+  "textures": 82,
+  "textureMB": 135.6
  },
  "lods": {
   "lod0": {
    "file": "self-residence-1-night.glb",
-   "triangles": 68540,
-   "primitives": 276,
-   "materials": 260,
-   "textures": 61,
-   "textureKB": 2296,
-   "bytes": 3107412
+   "triangles": 110652,
+   "primitives": 286,
+   "materials": 270,
+   "textures": 69,
+   "textureKB": 4189,
+   "bytes": 5395776
   },
   "lod1": {
    "file": "self-residence-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 46300,
-   "primitives": 276,
-   "materials": 260,
-   "textures": 61,
-   "textureKB": 710,
-   "bytes": 1442560
+   "triangles": 66766,
+   "primitives": 286,
+   "materials": 270,
+   "textures": 69,
+   "textureKB": 1125,
+   "bytes": 2090340
   }
  },
  "parts": {
