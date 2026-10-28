@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-28-methode-66c8d565",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-28T01:05:54Z",
+  "title": "llama.cpp b11941 接入 Liquid AI LFM3-Audio-2B / LFM3-Omni-2B，Ollama v0.40.12 同步落地 LFM3 全家桶",
+  "summary": "llama.cpp b11941（10月28日 09:03 北京时间）为 Liquid AI LFM3-Audio-2B / LFM3-Omni-2B 加上语音识别与 TTS 支持，本地小模型这条线今天最热。",
+  "summary_en": "The note reports that llama.cpp build b11941, timestamped October 28 at 09:03 Beijing time, added speech recognition and text-to-speech support for Liquid AI’s LFM3-Audio-2B and LFM3-Omni-2B models. It also says Ollama v0.40.12 concurrently brought support for the broader LFM3 model family, describing local small-model development as the day’s hottest trend.",
+  "body": "llama.cpp b11941（10月28日 09:03 北京时间）为 Liquid AI LFM3-Audio-2B / LFM3-Omni-2B 加上语音识别与 TTS 支持，本地小模型这条线今天最热。\n\n论文\n- OpenESM: Energy-Steered Models Are Scalable Foundation Learners — 把能量引导搜索与 token 生成合进单一架构，在 26 个下游任务上多数超过 GPT 基线，并开源权重与训练基础设施，是非自回归/能量模型路线少见的规模化证据。\n  https://arxiv.org/abs/2610.33005\n- Conceptizer: Next-Token Prediction Is Not All You Need — 用约 9K 条上下文同义词概念词表给训练加一层「语义奖励」，在 1B–8B 三个模型族上降低困惑度并提升知识/情感任务，直接挑战纯 next-token 目标。\n  https://arxiv.org/abs/2610.33027\n- Linear-Time Context Compression with State-Space Encoding（Boa Compressor） — 基于 Mamba SSM 的在线上下文压缩器，单次线性扫描压缩任意长上下文，比 Transformer 压缩方案快一个数量级，可支撑每次请求都压缩的长上下文推理。\n  https://arxiv.org/abs/2610.33006\n- AutoSwarm: Automating Agent Swarms — 多智能体协作框架：显式定义责任边界与验收条件、用共享状态协调执行，在长程编程、交互式规划与金融分析上优于单智能体与现有多智能体方案。\n  https://arxiv.org/abs/2610.33048\n- Parametric Session States Recover Retrieval Intent without Replaying History — 提出可复用的会话记忆层，记住「该搜什么」而非重放历史，把长对话里的检索意图恢复问题从上下文长度问题中拆出来。\n  https://arxiv.org/abs/2610.33047\n- SLICE-Mem: Salience-Gated Lightweight Information Curation for Efficient LLM Agent Memory — 记忆准入与抽取全程不调用生成式 LLM，在 Memora / LongMemEval-S 上把 LLM token 消耗降低约 92%–99.5%，精度基本持平。\n  https://arxiv.org/abs/2610.33015\n\n研究博客 / 媒体\n- Nature：AI 幻觉引用应被视为学术不端 — Nature 新闻（10月27日）明确指出 AI 生成的虚假引用应按学术不端处理，对投稿与同行评审流程有直接政策影响。\n  https://www.nature.com/articles/d41586-026-03407-2\n- Nature：AI 水印需要独立的公开审查 — 同日的 Nature 评论指出 AI 水印检测方法必须引入第三方独立审查，否则难以作为判定依据。\n  https://www.nature.com/articles/d41586-026-03406-3\n\nGitHub与基建\n- llama.cpp b11941：支持 LiquidAI/LFM3-Audio-2B 与 LFM3-Omni-2B — 10月28日 09:03（北京时间）发布：新增 LFM3-Audio/Omni 模型与转换逻辑，TTS 支持男女音色（--tts-voice / server /tts），并保留 encoder 与 codec 不量化。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11941\n- llama.cpp b11940：支持 deferred tools 与 tool_reference 内容块 — 10月28日 08:32（北京时间）发布：让本地服务能处理延迟加载的工具定义与 tool_reference 片段，对齐 OpenAI 风格的多工具协议。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11940\n- Ollama v0.40.12：全面接入 Liquid AI LFM3 与 d1 2B — 10月28日凌晨（北京时间）发布：lfm3 1.7B（256K 上下文）、lfm3-vl / lfm3-audio / lfm3-omni、d1:2b 决策模型上线，Apple 端提示处理更快，MLX 支持 DFlash2 投机解码。\n  https://github.com/ollama/ollama/releases/tag/v0.40.12\n- LiteLLM v1.106.5 — 10月28日 03:58（北京时间）发布：被拒请求的失败日志只保留核心字段、标签与 guardrail 细节，GCS logger 改用代理端配置的桶与凭据。\n  https://github.com/BerriAI/litellm/releases/tag/v1.106.5\n- langchain-anthropic 1.7.7 — 10月28日 07:48（北京时间）发布，LangChain 侧的 Anthropic 集成例行更新。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-anthropic%3D%3D1.7.7\n\n系统\n- Wine 合入 MESA_map_buffer_client_pointer，改善 WoW64 32 位 OpenGL — 10月28日 08:33（北京时间）：Wine 端支持落地，可用扩展为 32 位 Windows 应用提供零拷贝缓冲区映射，将随 Wine 11.21 发布，Zink 已合并、RadeonSI 跟进中。\n  https://www.phoronix.com/news/Wine-Mesa-Map-Buffer-Client-Ptr\n- Linux 7.4 引入 DMA-BUF 到 IO_uring I/O 路径 — 10月28日 05:09（北京时间）：经 11 轮评审后进入主线，基于 io_uring registered buffers 实现 DMA-BUF 读写，当前仅支持原始 NVMe PCIe 块设备，单缓冲最大 4GB。\n  https://www.phoronix.com/news/DMA-BUF-IO-uring-Linux-7.4\n- LWN：Robinson 谈 Fedora 对树莓派 5 的支持现状 — 10月28日 02:11（北京时间）：即将发布的 Fedora 45 可在树莓派 5B 全系运行（带注意事项），Compute Module 5 与 Pi 500+ 仍在推进，暂无声音支持。\n  https://lwn.net/Articles/1103212\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11941",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11941",
+    "verified_at": "2026-10-28T01:05:54Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

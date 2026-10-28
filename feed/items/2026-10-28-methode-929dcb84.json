@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-28-methode-929dcb84",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-28T04:58:27Z",
+  "title": "OmniBrain-0：小米具身团队发布统一具身智能体，用多教师 on-policy 蒸馏把操作与导航压进单一决策模型",
+  "summary": "小米具身智能团队放出 OmniBrain-0：把操作与导航统一到一个轻量决策模型里，推理与执行开销远低于闭源教师模型（arXiv 新公告，10月28日 12:00 北京时间）。",
+  "summary_en": "Xiaomi’s embodied intelligence team announced OmniBrain-0, a unified embodied agent that combines manipulation and navigation in one lightweight decision model. According to the announcement, multi-teacher on-policy distillation compresses the two capabilities into a single policy, with inference and execution overhead claimed to be far below closed-source teacher models. The arXiv notice was listed for October 28, 12:00 Beijing time.",
+  "body": "小米具身智能团队放出 OmniBrain-0：把操作与导航统一到一个轻量决策模型里，推理与执行开销远低于闭源教师模型（arXiv 新公告，10月28日 12:00 北京时间）。\n\n论文\n- OmniBrain-0: A Unified Agentic Model for Embodied Intelligence（小米具身团队） — 单一高层决策模型同时调度操作与导航，靠多教师 on-policy 蒸馏（MOPD）+ Rubric 引导的自我改进数据飞轮把大模型经验压进小模型，在 LIBERO-Pro、RoboCasa365、RoboTwin 2.0、R2R-CE 等基准上以更低推理/执行开销逼近闭源教师。\n  https://arxiv.org/abs/2610.36013\n- The Trinity: Capability-Driven Recursive Self-Improvement for Multimodal Agents — Creator/Explorer/Evolver 三角色把任务从“表面类别”重组为能力树，并做 Real2Sim2Real 迁移；28 个训练基准平均 +34 分、18 个未见基准 +26 分，HF Daily Papers 同步上榜。\n  https://arxiv.org/abs/2610.36077\n- WAKMan: Workload Aware KVCache Manager — 按线上流量自动切换 KV 淘汰策略：LRU 在 agentic 混合负载上比 S3FIFO 高 12% 命中，但在其他场景反低至 22%；WAKMan 无需知道请求类型，平均命中率比 LRU 高 5 个百分点，对 vLLM 前缀缓存调优有直接参考价值。\n  https://arxiv.org/abs/2610.36355\n- Plenty of Room in the Middle: 100ms 粒度 GPU 集群监控 — 在 89 节点、319 GPU 的大学集群上以 100ms 间隔采集 DCGM 指标：超 70% 作业显存占用低于 20%、半数 SM 利用率低于 5%，80% 作业申请时长与实际严重偏离——调度与多任务复用还有大量空间，工具开源。\n  https://arxiv.org/abs/2610.36329\n- Memory Tax: Dissecting the Net Value of Agent Memory — 大规模评测显示不少专用记忆系统反而不如朴素 RAG，提出“记忆税”概念，把记忆的净收益拆成收益与对原始证据的遮蔽损耗，HF Daily Papers 上升条目。\n  https://arxiv.org/abs/2610.34073\n- Omni-InteractScope：全模态流式交互基准（Qwen 相关） — 1479 条人工标注交互、1790 个时间目标：12 个受测模型按时首次响应工具调用最多仅 40%，免查询提醒召回率不超过 23%，暴露流式助手“该动不动”的短板。\n  https://arxiv.org/abs/2610.35439\n- When Retrieval Is Not Enough: Obsolete Facts in Agent Memory — 检索预算从 64 扩到 512 token 时 Qwen2.5-7B 的 BM25 准确率反从 45% 掉到 32%；一条过时的竞争性陈述比同等大小的无关证据更具破坏性（100%→44.6%）。\n  https://arxiv.org/abs/2610.36308\n- HSC-Bench: Benchmarking Task Takeover Across Agent Handoffs — 1039 个任务评测多智能体交接时“接手方”能否恢复仓库证据并延续既有对话/工具/文件状态，六个接手模型对比显示证据恢复排名不足以预测续做能力。\n  https://arxiv.org/abs/2610.36523\n\nGitHub与基建\n- LiteLLM v1.109.0-dev.1（预发布） — 10月28日 12:34（北京时间）发布，一次性合入 704 个 PR（113 新增、312 修复）：Gemini 3.6 Flash/3.5 Flash-Lite 默认不再发送 temperature/top_p/top_k，成本统计改读 max_input_tokens/max_output_tokens，并要求更新镜像签名用的 cosign 公钥。\n  https://github.com/BerriAI/litellm/releases/tag/v1.109.0-dev.1\n- llama.cpp b11944：server 暴露 chat template 的 reasoning effort 档位 — 能力探针会渲染 minimal/low/medium/high/xhigh/max 各档并与未知档比对，/props 的 chat_template_caps 新增 reasoning_effort_levels 列表，方便推理服务按模板实际支持的档位下发参数。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11944\n\n系统\n- 树莓派 Zero 3 W 与 Pi 4 Model A 现身官方内核补丁 — 合入 Raspberry Pi 内核树的 Device Tree 显示 Zero 3 W 采用与 Pi 4 同款 BCM2711 SoC；同时出现低配无网口的 Pi 4 Model A，指向成本上涨背景下的低价产品线。\n  https://www.phoronix.com/news/Raspberry-Pi-Zero-3-W-Pi-4-A\n\nSource: https://arxiv.org/abs/2610.36013",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.36013",
+    "verified_at": "2026-10-28T04:58:27Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

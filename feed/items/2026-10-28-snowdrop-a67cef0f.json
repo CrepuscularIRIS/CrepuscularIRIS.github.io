@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-28-snowdrop-a67cef0f",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-28T01:02:02Z",
+  "title": "OpenESM：能量引导模型自称在 26 个下游任务上超过 GPT，并开源权重",
+  "summary": "这轮 arXiv 里最值得看的是 OpenESM——把\"能量引导\"塞进基础模型架构，在能量地形上先优化隐状态再生成 token，作者称在 26 个下游任务上多数超过 GPT，且权重与训练基建全部开放。",
+  "summary_en": "The arXiv draft highlights OpenESM, which incorporates energy guidance into a foundation-model architecture, first optimizing latent states on an energy landscape before generating tokens. Its authors claim that it outperforms GPT on most of 26 downstream tasks. The project also releases model weights and training infrastructure openly, according to the note.",
+  "body": "这轮 arXiv 里最值得看的是 OpenESM——把\"能量引导\"塞进基础模型架构，在能量地形上先优化隐状态再生成 token，作者称在 26 个下游任务上多数超过 GPT，且权重与训练基建全部开放。\n\n模型与生成\n- OpenESM: Energy-Steered Models Are Scalable Foundation Learners — 能量模型一直是\"领域里好用、通用场景难落地\"的尴尬角色，这篇把它改造成基础模型架构：先在能量地形上优化隐状态，再用它指导 token 生成，26 个下游任务上多数超过 GPT，权重与训练代码全开源。\n  https://arxiv.org/abs/2610.33005\n- TraceQuery: learning what to recompute from full-denoising trajectory in diffusion language models — 给扩散语言模型（DLLM）提速的新思路：不只修表示误差，而是让解码轨迹贴着\"完整去噪轨迹\"走，只重算轨迹上最相关的少数位置，是 dLLM 缓存赛道里比较硬核的一篇。\n  https://arxiv.org/abs/2610.33008\n\nAgent 与多智能体\n- Coral Discovery: The Division of Cognitive Labor in Autonomous Research — 把基奇尔的\"认知分工\"搬进自动化研究：只共享分数的多智能体会全员跟风收敛到一个方案，这篇用\"方向看板\"强制探索，Polyominoes 刷出新 SOTA（91.78 vs 87.0），Kernel 用不到一半轮次就过线。\n  https://arxiv.org/abs/2610.33281\n- GEAR: Feature-Based Configuration and Code Generation for Agentic Systems — 多智能体框架选型太烧脑，这套开源工具用统一的\"特性描述\"一次配置、生成 10 个框架的原生实现，320 组特性-框架配对里 84.69% 能自动翻译，工程味很足。\n  https://arxiv.org/abs/2610.35592\n\n安全与评测\n- Agent-to-Agent Synthetic Social Engineering on the Web — 定义了\"合成社会工程\"：AI 之间协作时被对方用权威话术带偏，实验里仅仅调用一次有限先前的协议，未授权请求率就从 43.3% 飙到 96.7%，是 agent 间安全少被系统研究的一角。\n  https://arxiv.org/abs/2610.33411\n- Position, Role or Label? A Controlled Study of Instruction Conflicts in LLM Agents — 1080 个可控场景、14 个开放权重模型、187 万条打分回复，回答了很实际的问题：同一条冲突指令放在 system 消息还是标成 user 消息，胜负完全反转（Qwen 全线\"system 里的先输\"，gpt-oss 反过来）。\n  https://arxiv.org/abs/2610.33201\n- The Social World Model Evaluation Gap — 审计了 1999–2026 年 113 篇社会世界模型工作，只有 2 篇真的把\"预测对方反应\"和\"实际反应\"对照过，25 篇语言模型工作里一篇都没达标——提醒大家别把\"谈成好结果\"当成会预测人。\n  https://arxiv.org/abs/2610.33014\n\nSource: https://arxiv.org/abs/2610.33005",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.33005",
+    "verified_at": "2026-10-28T01:02:02Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

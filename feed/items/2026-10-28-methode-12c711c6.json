@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-28-methode-12c711c6",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-28T02:58:13Z",
+  "title": "腾讯混元开源 Hy-Nomas：8B 扩散世界模型支持自由形式多轮交互式世界生成，HF 当日第 3 热",
+  "summary": "腾讯混元开源 Hy-Nomas：8B 扩散世界模型支持多轮文本+镜头控制，HF Daily Papers 当日第 3（274 赞），权重与代码全部开放。",
+  "summary_en": "The note reports that Tencent Hunyuan has open-sourced Hy-Nomas, an 8-billion-parameter diffusion world model supporting free-form, multi-turn interaction and generation through text and camera controls. It says the model ranked third on Hugging Face Daily Papers that day with 274 likes, and that both model weights and code are fully available.",
+  "body": "腾讯混元开源 Hy-Nomas：8B 扩散世界模型支持多轮文本+镜头控制，HF Daily Papers 当日第 3（274 赞），权重与代码全部开放。\n\n论文\n- Hy-Nomas: Towards Free-form Interactive World Generation（腾讯混元） — 8B 扩散视频世界模型，用动作感知的因果注意力+结构化字幕支持多轮文本与连续镜头控制，开源权重/代码/benchmark，HF 当日第 3 热（274 赞）。\n  https://arxiv.org/abs/2610.36729\n- ThinkWorld: World Imagination Reinforces Chain-of-Dynamics Reasoning（NVIDIA） — 把动作思考表示为“动力学链”离散运动 token，用世界想象做强化学习，让无动作标注的人类视频也能监督 VLA，泛化到未见任务。\n  https://arxiv.org/abs/2610.37666\n- Scaling Laws for Tool-Use Agents via Controllable Environment Synthesis — 用 45.8 万任务、849 个模型拟合出工具使用 agent 的缩放律：扩工具与数据库多样性比堆任务数更有效。\n  https://arxiv.org/abs/2610.37648\n- MuonGS: Pretraining LLMs with Relaxed Weight-Norm Control — 用 Gram-Schmidt 投影去掉 Muon 更新的径向分量而不固定权重范数，保证 Ω(√T) 的有效学习率累积，160M/400M 稠密模型上约 15% token 等效加速。\n  https://arxiv.org/abs/2610.37647\n- API-TAIL: Detecting Model Substitution in LLM APIs — 用“温度对齐的似然尾部”审计商用 LLM API，能在少量查询下识别服务商偷偷把部分请求路由到廉价替代模型。\n  https://arxiv.org/abs/2610.36801\n- When Should We Intervene at Test Time?（PORTAL 控制器） — 测试时自适应的一个统一控制器：决定何时做干预、标注哪些输入、何时停止查询，把整体掉点的干预变成只在该用的批次上生效。\n  https://arxiv.org/abs/2610.37658\n- Rollback: Experience Backtracking in World Models for Policy Improvement（智元世界） — 在世界模型里“回溯”已有经验再用于策略改进，登上 HF 当日热门榜（28 赞）。\n  https://arxiv.org/abs/2610.36068\n- Nemotron-Labs-Diffusion-Uni（NVIDIA） — 跨范式在策略蒸馏的统一扩散 LLM，弹性自精炼，被推到 HF 当日热门榜首页。\n  https://arxiv.org/abs/2610.36466\n\nGitHub与基建\n- llama.cpp b11946（10:02 CST） — server 新增 /v1/realtime 的实时对话与转写端点，并修复多 slot 并发采样互相串扰导致输出混杂的问题。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11946\n- llama.cpp b11945 / b11944（09:44、09:27 CST） — 两小时内连续两个构建版本，实时端点相关改动在上游持续迭代。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11945\n\nSource: https://arxiv.org/abs/2610.36729",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.36729",
+    "verified_at": "2026-10-28T02:58:13Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
