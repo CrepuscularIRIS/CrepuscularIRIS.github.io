@@ -5,23 +5,23 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 119923,
-  "drawCalls": 604,
-  "textures": 79,
-  "textureMB": 104
+  "triangles": 120381,
+  "drawCalls": 616,
+  "textures": 92,
+  "textureMB": 156.6
  },
  "exported": {
-  "triangles": 103599,
-  "drawCalls": 458,
-  "textures": 70,
-  "textureMB": 98.6
+  "triangles": 104057,
+  "drawCalls": 470,
+  "textures": 83,
+  "textureMB": 151.3
  },
  "lights": [
   {
    "type": "HemisphereLight",
    "name": "",
    "color": 7106162,
-   "intensity": 0.8999999999999999,
+   "intensity": 0.48,
    "position": [
     0,
     1,
@@ -34,14 +34,14 @@
    "type": "PointLight",
    "name": "",
    "color": 16772838,
-   "intensity": 7.6800000000000015,
+   "intensity": 8.832,
    "position": [
     -0.8,
     2.3,
     2.03
    ],
    "visible": true,
-   "distance": 8,
+   "distance": 5.4,
    "decay": 1.8
   },
   {
@@ -72,6 +72,7 @@
     "bias": -0.0005,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 0.5,
@@ -84,11 +85,11 @@
    "type": "PointLight",
    "name": "",
    "color": 16773346,
-   "intensity": 1.44,
+   "intensity": 0.576,
    "position": [
-    -1.3,
-    1.7,
-    3.3
+    -1,
+    2.3,
+    3.7
    ],
    "visible": true,
    "distance": 3.4,
@@ -98,7 +99,7 @@
    "type": "DirectionalLight",
    "name": "",
    "color": 7107200,
-   "intensity": 0.9099999999999999,
+   "intensity": 0.5599999999999999,
    "position": [
     1,
     5,
@@ -117,12 +118,12 @@
    "color": 13625586,
    "intensity": 1.3440000000000003,
    "position": [
-    -1.45,
-    1.35,
-    3.4
+    -1.95,
+    1.42,
+    3.32
    ],
    "visible": true,
-   "distance": 3.4,
+   "distance": 2.6,
    "decay": 1.8
   },
   {
@@ -157,35 +158,35 @@
    "type": "PointLight",
    "name": "",
    "color": 8029848,
-   "intensity": 28.800000000000004,
+   "intensity": 13.440000000000001,
    "position": [
-    2.6,
-    2.3,
-    5.4
+    1.6,
+    2.4,
+    5.6
    ],
    "visible": true,
-   "distance": 6,
+   "distance": 3.4,
    "decay": 1.8
   },
   {
    "type": "PointLight",
    "name": "",
    "color": 8029848,
-   "intensity": 6.719999999999999,
+   "intensity": 4.703999999999999,
    "position": [
-    3.2,
+    2.2,
     2.3,
     2.2
    ],
    "visible": true,
-   "distance": 5,
+   "distance": 2.2,
    "decay": 1.8
   },
   {
    "type": "PointLight",
    "name": "",
    "color": 8029848,
-   "intensity": 20.159999999999997,
+   "intensity": 9.407999999999998,
    "position": [
     0.4,
     2.4,
@@ -196,67 +197,104 @@
    "decay": 1.8
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
+   "name": "dress:light",
+   "color": 16763024,
+   "intensity": 12,
+   "position": [
+    4.5,
+    1.46,
+    2.53
+   ],
+   "visible": true,
+   "distance": 2.6,
+   "decay": 2,
+   "angle": 0.3490658503988659,
+   "penumbra": 0.45,
+   "target": [
+    4.02,
+    0.79,
+    2.95
+   ],
+   "shadow": {
+    "mapSize": [
+     512,
+     512
+    ],
+    "bias": -0.0008,
+    "normalBias": 0.03,
+    "radius": 1,
+    "intensity": 1,
+    "autoUpdate": true,
+    "camera": {
+     "near": 0.5,
+     "far": 2.6,
+     "fov": 40
+    }
+   },
+   "dress": true
+  },
+  {
+   "type": "SpotLight",
    "name": "dress:light",
    "color": 16767400,
-   "intensity": 2.4,
+   "intensity": 8,
    "position": [
     3.3,
-    2.35,
+    2.6,
     3
    ],
    "visible": true,
-   "distance": 5.5,
+   "distance": 4.5,
    "decay": 1.6,
+   "angle": 0.8377580409572781,
+   "penumbra": 0.65,
+   "target": [
+    3.4,
+    0,
+    3
+   ],
    "dress": true
   },
   {
-   "type": "PointLight",
+   "type": "SpotLight",
    "name": "dress:light",
    "color": 16767400,
-   "intensity": 3.2,
+   "intensity": 3,
    "position": [
     1.05,
-    2.35,
+    2.6,
     4.15
    ],
    "visible": true,
-   "distance": 5,
+   "distance": 4.5,
    "decay": 1.6,
-   "dress": true
-  },
-  {
-   "type": "PointLight",
-   "name": "dress:light",
-   "color": 12574975,
-   "intensity": 0.8,
-   "position": [
-    4.2,
-    2.1,
-    4.9
+   "angle": 0.8377580409572781,
+   "penumbra": 0.65,
+   "target": [
+    1.05,
+    0,
+    4.15
    ],
-   "visible": true,
-   "distance": 3,
-   "decay": 1.8,
    "dress": true
   }
  ],
  "lowDrop": [],
  "clocks": [
   {
-   "material": "d8b73fd5-e23b-4e27-a14e-343514b2711f",
+   "material": "24e43f3a-b4b4-43c3-87d5-3bf46860468e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "69da5d9f-f19e-4e74-894f-b7afad62bda2",
+   "material": "d9f6b8e4-6940-4754-9b50-bcda6b9d084d",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "0aea87bc-9358-45b8-8adc-98f7574dd7e8",
+   "material": "b6795e5c-f6eb-48eb-8988-43a9251ae1bb",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -433,7 +471,7 @@
    "top": 2895153,
    "wall": 3947840,
    "floor": 1447448,
-   "intensity": 1.26,
+   "intensity": 0.7200000000000001,
    "lights": [
     {
      "pos": [
@@ -483,11 +521,11 @@
     "density": 0.02,
     "falloff": 0.3,
     "base": 0,
-    "near": 2,
-    "maxOpacity": 0.12
+    "near": 3.5,
+    "maxOpacity": 0.06
    },
    "grade": {
-    "exposure": 0.7284999999999999,
+    "exposure": 0.5733999999999999,
     "saturation": 0.92,
     "lift": [
      0.01,
@@ -499,8 +537,7 @@
      1,
      0.985
     ],
-    "vignette": 0.3,
-    "gamma": 1.2
+    "vignette": 0.3
    },
    "dof": {
     "enabled": true,
@@ -972,10 +1009,10 @@
  },
  "dressStats": {
   "props": 17,
-  "instanced": 3,
+  "instanced": 2,
   "signs": 4,
   "lights": 3,
-  "retextured": 1,
+  "retextured": 4,
   "triangles": 44951,
   "failed": 0
  },
@@ -987,37 +1024,37 @@
  "manifest": true,
  "three": "170",
  "key": "company-office",
- "hour": 13,
- "bakedAt": "2026-10-26T02:18:57.761Z",
+ "hour": 22,
+ "bakedAt": "2026-10-28T07:57:04.348Z",
  "quantizePosition": 14,
  "source": {
   "family": "CompanyOffice (D) built at runtime by lab/src/scenes",
-  "exportBytes": 23952768,
-  "triangles": 119923,
-  "drawCalls": 604,
-  "textures": 79,
-  "textureMB": 104
+  "exportBytes": 26141560,
+  "triangles": 120381,
+  "drawCalls": 616,
+  "textures": 92,
+  "textureMB": 156.6
  },
  "lods": {
   "lod0": {
    "file": "company-office.glb",
-   "triangles": 91955,
-   "primitives": 367,
-   "materials": 349,
-   "textures": 71,
-   "textureKB": 2266,
-   "bytes": 3739996
+   "triangles": 92413,
+   "primitives": 380,
+   "materials": 362,
+   "textures": 84,
+   "textureKB": 2443,
+   "bytes": 3935756
   },
   "lod1": {
    "file": "company-office.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 67044,
-   "primitives": 367,
-   "materials": 349,
-   "textures": 71,
-   "textureKB": 846,
-   "bytes": 2144068
+   "triangles": 67278,
+   "primitives": 380,
+   "materials": 362,
+   "textures": 84,
+   "textureKB": 946,
+   "bytes": 2264752
   }
  },
  "parts": {
@@ -1036,11 +1073,11 @@
    "spot:door-meetingroom",
    "spot:frag-9"
   ],
-  "exportBytes": 1209456
+  "exportBytes": 1209560
  },
  "live": {
   "file": "company-office.live.json",
-  "bytes": 32030,
+  "bytes": 122110,
   "objects": [
    "Mesh",
    "skyDome",

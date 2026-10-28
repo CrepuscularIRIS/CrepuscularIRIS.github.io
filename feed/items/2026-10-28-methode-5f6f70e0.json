@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-28-methode-5f6f70e0",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-28T07:00:07Z",
+  "title": "Your Policy Is Secretly a Harness: 你的 Agent 策略其实内化了 harness 的偏好",
+  "summary": "最新 arXiv 论文用「回报 = harness 上限 − 策略失配」解释了 Agent 评测的混乱：在 MiniWoB++ 上仅调换观察字段顺序就能让训练后的模型成功率从 85.0% 崩到 19.2%，意味着只换 harness 不重训的对比基本无效。",
+  "summary_en": "A recent arXiv paper proposes that agent performance equals the harness’s upper limit minus policy mismatch, offering this as an explanation for confusing evaluations. On MiniWoB++, changing only the order of observation fields reportedly reduces a trained model’s success rate from 85.0% to 19.2%. The note therefore suggests that comparing policies under different harnesses without retraining is largely invalid because harness-specific preferences may already be internalized.",
+  "body": "最新 arXiv 论文用「回报 = harness 上限 − 策略失配」解释了 Agent 评测的混乱：在 MiniWoB++ 上仅调换观察字段顺序就能让训练后的模型成功率从 85.0% 崩到 19.2%，意味着只换 harness 不重训的对比基本无效。\n\n论文\n- Your Policy Is Secretly a Harness: The Decision Geometry of Agent Interfaces — 10月27日 21:52（北京时间）。指出训练后的策略会内化 harness 的偏好：仅调换观察字段顺序就使 MiniWoB++ 成功率从 85.0% 跌到 19.2%，用「harness 上限 − 策略失配」重定义了 Agent 对比评测的效力。\n  https://arxiv.org/abs/2610.37255\n- PDRVLA: 用物理动力学表征做视觉-语言-动作模型 — 10月27日 23:09（北京时间），HF 每日热榜高位。不生成在线视频，而是用轻量物理动力学模块从视觉-语言特征抽物理 token；LIBERO 成功率 99.3%、SimplerEnv 81.5%。\n  https://arxiv.org/abs/2610.37381\n- ChronoReplay: 流式空间智能需要多种回答接口 — 10月25日 21:31（北京时间），HF 日榜第一。诊断出「接口锁定」：后训练只强化单一问答接口，跨接口迁移反而退化；用按时序回放的异构空间监督同时提升 OVO-S-Bench/OST-Bench/UCS-Bench，OST-Bench 涨 13.41 分。\n  https://arxiv.org/abs/2610.34283\n- Cross-modal Steering Vectors Exist Across Both Image and Text Generation — 10月27日 04:42（北京时间），Mila/CMU/MIT 工作。在统一多模态模型里，文本侧的 steering 向量可零样本迁移去控制图像生成，反之亦然，且同概念向量方向趋同——为模态无关的可控生成提供因果证据。\n  https://arxiv.org/abs/2610.36269\n- All-in-One: A Composable Attack on LLM Transformations — 10月24日 05:10（北京时间）。把量化、剪枝、模型合并统一为一个可组合攻击：任一部署变换都可能把通过安全检查的模型变回恶意，是「模型即服务」链路的现实安全风险。\n  https://arxiv.org/abs/2610.33298\n- Can Language Models Learn While They Think? 动态评估跨架构实测 — 10月11日 01:32（北京时间）新列入 cs.LG。实测边读边梯度更新：softmax 注意力模型降 5-8% 下一 token 损失，混合线性注意力几乎无增益，扩散语言模型收益更大（17-20%），但适配的是风格与词汇而非检索能力。\n  https://arxiv.org/abs/2610.33025\n- LOTUS: 基于低秩多线性分解的 LLM 幻觉检测 — 10月27日 03:24（北京时间）。用 Tucker 型低秩多线性分解压缩各层隐状态的统计描述子，少量标注即可训练轻量分类器，多模型与 QA 基准上优于近期 SOTA。\n  https://arxiv.org/abs/2610.36191\n- Counting the Bandages: 如何衡量 AI 真正节省的时间 — 10月23日 23:34（北京时间）。主张用「账本视角」而非秒表视角核算 AI 收益，复现 METR 开发者研究：同一批 246 个 issue 对应 19%~24% 的减速，并指出 GDPval 复核工作流下 GPT-5 提速上限仅 3.6x。\n  https://arxiv.org/abs/2610.35942\n- Pinterest 用 RL 为自动出价系统选 PID 参数 — 10月24日 03:52（北京时间）。RLBP 用多头 Q 网络作元控制器每日为广告主选 PID 参数、高频出价仍交 PID；线上 A/B 显示 ePC 显著下降且无收入损失，是 RL 改造大规模生产控制系统的少见实案例。\n  https://arxiv.org/abs/2610.33248\n\nGitHub与基建\n- vLLM: 修复校验错误路径 sanitizer 的 ReDoS — 10月28日合入。修复 GHSA-f2g9-pmwr-xwc7 相关正则回溯问题，并加入 5 万斜杠分段的回归测试，保证 sanitize_message 近线性耗时。\n  https://github.com/vllm-project/vllm/commit/665bfc8\n- vLLM: 跨流水线阶段合并可用 KV cache 布局 — 10月28日合入。PP 各阶段持有不同层、支持的 layout 可能不同，改为解析所有阶段共同支持的布局，避免断言直接报错。\n  https://github.com/vllm-project/vllm/commit/edad8b0\n- SGLang: dsv41 Engram all-to-all 输出改用 Triton kernel 重排 — 10月28日合入的集合通信性能优化：文档给出的实测显示在 GB300/B300/H200 的 DP 2-8、8192 token/rank 以上区间比 all-reduce 快 8-62%。\n  https://github.com/sgl-project/sglang/commit/db0dfc7\n- SGLang: AMD 路径移除 kimi-k3 MoE 的逐层拷贝 — 10月28日合入。借助 zero_copy_context 直接传递 MORI EPv2 的 arena 视图，避免 aiter MoE 路径上的逐层拷贝。\n  https://github.com/sgl-project/sglang/commit/41eaeb0\n\nSource: https://arxiv.org/abs/2610.37255",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.37255",
+    "verified_at": "2026-10-28T07:00:07Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

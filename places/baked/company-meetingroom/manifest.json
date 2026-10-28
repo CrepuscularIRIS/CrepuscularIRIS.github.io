@@ -5,23 +5,23 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 63083,
-  "drawCalls": 198,
-  "textures": 35,
-  "textureMB": 98.4
+  "triangles": 66441,
+  "drawCalls": 268,
+  "textures": 27,
+  "textureMB": 58.5
  },
  "exported": {
-  "triangles": 61797,
-  "drawCalls": 149,
-  "textures": 32,
-  "textureMB": 96.2
+  "triangles": 65173,
+  "drawCalls": 228,
+  "textures": 25,
+  "textureMB": 56.4
  },
  "lights": [
   {
    "type": "HemisphereLight",
    "name": "",
    "color": 10132120,
-   "intensity": 0.3,
+   "intensity": 0.18,
    "position": [
     0,
     1,
@@ -34,7 +34,7 @@
    "type": "DirectionalLight",
    "name": "",
    "color": 16773348,
-   "intensity": 0.55,
+   "intensity": 0.8,
    "position": [
     0.6,
     6.5,
@@ -54,6 +54,7 @@
     "bias": -0.0004,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 1,
@@ -153,7 +154,7 @@
    "type": "DirectionalLight",
    "name": "",
    "color": 9081504,
-   "intensity": 0.25,
+   "intensity": 0.15,
    "position": [
     -2,
     2.5,
@@ -212,19 +213,19 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "e402191d-0c14-4b0c-9a99-c75c8de93f51",
+   "material": "8bebd6df-80d5-481e-b130-1034106f35d6",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "7d6fc02e-4fcf-4c5d-a6fe-3aed28813a08",
+   "material": "440195f5-f594-417b-84c0-cde463a373de",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "be7e0d9e-b967-41c3-8863-c2c64d01e717",
+   "material": "e82030e5-1379-4fe4-951c-f45341bb6d0d",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -243,8 +244,8 @@
    "x": -0.51,
    "y": 0.74,
    "z": 5.9,
-   "strength": 0.9,
-   "blur": 1.15,
+   "strength": 1.1,
+   "blur": 0.9,
    "f0": 0.14,
    "tint": 15921904,
    "fade": 12,
@@ -264,8 +265,8 @@
    "x": 0.1499999999999999,
    "y": 0,
    "z": 4.35,
-   "strength": 0.34,
-   "blur": 1.6,
+   "strength": 0.42,
+   "blur": 1.25,
    "f0": 0.06,
    "tint": 15790316,
    "fade": 40,
@@ -330,9 +331,9 @@
     "fov": 50,
     "post": {
      "dof": {
-      "focus": 2.2,
-      "range": 1.8,
-      "maxRadius": 3
+      "focus": 2.3,
+      "range": 2.2,
+      "maxRadius": 1.5
      }
     }
    },
@@ -340,21 +341,21 @@
     "name": "credenza",
     "label": "Credenza",
     "position": [
-     -0.9,
-     1.25,
-     2
+     -0.5,
+     1.4,
+     2.5
     ],
     "target": [
-     0.6,
-     0.8,
+     0.5,
+     1.15,
      0.3
     ],
-    "fov": 50,
+    "fov": 48,
     "post": {
      "dof": {
       "focus": 2.1,
-      "range": 1.6,
-      "maxRadius": 3
+      "range": 2,
+      "maxRadius": 1.5
      }
     }
    },
@@ -410,8 +411,8 @@
     "post": {
      "dof": {
       "focus": 2.4,
-      "range": 2,
-      "maxRadius": 3
+      "range": 2.4,
+      "maxRadius": 1.5
      }
     }
    },
@@ -455,7 +456,7 @@
    "top": 3684668,
    "wall": 8027004,
    "floor": 3815992,
-   "intensity": 0.55,
+   "intensity": 0.45,
    "lights": [
     {
      "pos": [
@@ -597,14 +598,14 @@
     "radius": 0.32
    },
    "bloom": {
-    "threshold": 0.78,
-    "strength": 0.55,
+    "threshold": 0.86,
+    "strength": 0.4,
     "weights": [
+     0.55,
      0.45,
-     0.45,
-     0.4,
-     0.35,
-     0.3
+     0.3,
+     0.18,
+     0.1
     ]
    },
    "fog": {
@@ -614,15 +615,15 @@
     "falloff": 0.3,
     "base": 0,
     "near": 3,
-    "maxOpacity": 0.12
+    "maxOpacity": 0.04
    },
    "grade": {
     "exposure": 0.92,
     "saturation": 0.9,
     "lift": [
-     0.016,
-     0.016,
-     0.018
+     0.004,
+     0.004,
+     0.005
     ],
     "gain": [
      1,
@@ -763,14 +764,14 @@
    "object": "credenzaProps",
    "typed": false,
    "anchor": [
-    0.44000000089406965,
+    0.45999999999999996,
     0.9899999994784594,
-    0.30500000216066836
+    0.29999999999999993
    ],
    "built": [
-    0.44000000089406965,
+    0.45999999999999996,
     0.9899999994784594,
-    0.30500000216066836
+    0.29999999999999993
    ],
    "reach": 3.2
   },
@@ -913,9 +914,9 @@
    6
   ],
   "credenzaProps": [
-   0.44000000089406965,
+   0.45999999999999996,
    0.9899999994784594,
-   0.30500000216066836
+   0.29999999999999993
   ]
  },
  "doorProps": {},
@@ -937,44 +938,44 @@
   "failed": 0
  },
  "detailStats": {
-  "meshes": 25,
-  "triangles": 8718
+  "meshes": 30,
+  "triangles": 8730
  },
  "manifestColliders": 0,
  "manifest": false,
  "three": "170",
  "key": "company-meetingroom",
- "hour": 13,
- "bakedAt": "2026-10-26T00:43:59.666Z",
+ "hour": 12,
+ "bakedAt": "2026-10-28T08:09:40.309Z",
  "quantizePosition": 14,
  "source": {
   "family": "CompanyMeetingroom (D) built at runtime by lab/src/scenes",
-  "exportBytes": 26158244,
-  "triangles": 63083,
-  "drawCalls": 198,
-  "textures": 35,
-  "textureMB": 98.4
+  "exportBytes": 30263520,
+  "triangles": 66441,
+  "drawCalls": 268,
+  "textures": 27,
+  "textureMB": 58.5
  },
  "lods": {
   "lod0": {
    "file": "company-meetingroom.glb",
-   "triangles": 34869,
-   "primitives": 121,
-   "materials": 118,
-   "textures": 16,
-   "textureKB": 997,
-   "bytes": 1464716
+   "triangles": 39135,
+   "primitives": 142,
+   "materials": 140,
+   "textures": 21,
+   "textureKB": 1332,
+   "bytes": 1857412
   },
   "lod1": {
    "file": "company-meetingroom.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 20361,
-   "primitives": 121,
-   "materials": 118,
-   "textures": 16,
-   "textureKB": 269,
-   "bytes": 641688
+   "triangles": 22535,
+   "primitives": 142,
+   "materials": 140,
+   "textures": 21,
+   "textureKB": 347,
+   "bytes": 758452
   }
  },
  "parts": {
@@ -988,11 +989,11 @@
    "spot:meet-audit-card",
    "spot:frag-10"
   ],
-  "exportBytes": 193556
+  "exportBytes": 4561808
  },
  "live": {
   "file": "company-meetingroom.live.json",
-  "bytes": 45132,
+  "bytes": 27220,
   "objects": [
    "Mesh",
    "Mesh",
@@ -1003,26 +1004,7 @@
    "Mesh",
    "Mesh",
    "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
    "motes",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
-   "Mesh",
    "Mesh",
    "Mesh"
   ]
