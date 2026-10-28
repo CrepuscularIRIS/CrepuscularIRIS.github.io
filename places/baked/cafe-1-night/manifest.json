@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 113466,
-  "drawCalls": 303,
-  "textures": 65,
-  "textureMB": 116
+  "triangles": 116076,
+  "drawCalls": 306,
+  "textures": 70,
+  "textureMB": 119.3
  },
  "exported": {
-  "triangles": 98634,
-  "drawCalls": 287,
-  "textures": 62,
-  "textureMB": 115.9
+  "triangles": 101242,
+  "drawCalls": 289,
+  "textures": 67,
+  "textureMB": 119.2
  },
  "lights": [
   {
@@ -46,7 +46,7 @@
    "type": "SpotLight",
    "name": "",
    "color": 16769724,
-   "intensity": 21.6,
+   "intensity": 15,
    "position": [
     -3.9,
     2.56,
@@ -70,6 +70,7 @@
     "bias": -0.0008,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 0.5,
@@ -82,7 +83,7 @@
    "type": "SpotLight",
    "name": "",
    "color": 16768952,
-   "intensity": 22.799999999999997,
+   "intensity": 16.200000000000003,
    "position": [
     -3.6,
     2.56,
@@ -556,12 +557,12 @@
    "color": 16763024,
    "intensity": 15.600000000000001,
    "position": [
-    -4.85,
-    1.3,
-    3.35
+    -4.95,
+    2.05,
+    3.2
    ],
    "visible": true,
-   "distance": 2.2,
+   "distance": 3.2,
    "decay": 2
   },
   {
@@ -778,25 +779,25 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "0dc67f43-0791-4fad-b924-1281e0365449",
+   "material": "9a8fd9de-44b0-4e6c-9b45-d9be56ad2336",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "50831d98-abb2-48b6-bbb9-7db5127823d5",
+   "material": "f031cade-31d6-4158-8370-11920ef98a02",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "84fb0222-1110-4e3e-bd25-b0d62af23da1",
+   "material": "a0dc8f96-ea6d-4b39-b6ff-bf72893a483e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "be3a4940-b22f-4427-b3f8-2847f4c01036",
+   "material": "a67cbc21-af44-4ebe-bee8-20d13320d93a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -869,16 +870,16 @@
     "name": "wide",
     "label": "Wide",
     "position": [
-     5.2,
-     2,
-     9.2
+     5,
+     1.75,
+     9
     ],
     "target": [
      -3,
-     0.9,
+     0.02,
      2
     ],
-    "fov": 62
+    "fov": 54
    },
    {
     "name": "counter",
@@ -980,10 +981,10 @@
     ],
     "target": [
      4,
-     1.1,
+     0.02,
      8.6
     ],
-    "fov": 60
+    "fov": 54
    }
   ]
  },
@@ -1194,9 +1195,9 @@
    ],
    [
     2.91,
-    6.31,
+    6.4399999999999995,
     3.3899999999999997,
-    6.79
+    6.92
    ],
    [
     -0.7250000000000001,
@@ -1600,49 +1601,51 @@
   "typed": 7
  },
  "models": {
-  "baked": [],
+  "baked": [
+   "outdoor_table_chair_set_01_chair@3.15,0,6.68"
+  ],
   "standIns": []
  },
  "dressStats": null,
  "detailStats": {
-  "meshes": 10,
-  "triangles": 4076
+  "meshes": 11,
+  "triangles": 4014
  },
  "manifestColliders": 0,
  "manifest": true,
  "three": "170",
  "key": "cafe-1-night",
  "hour": 22,
- "bakedAt": "2026-10-25T21:48:36.196Z",
+ "bakedAt": "2026-10-28T12:57:13.008Z",
  "quantizePosition": 14,
  "source": {
   "family": "CafeNight (N) built at runtime by lab/src/scenes",
-  "exportBytes": 28644296,
-  "triangles": 113466,
-  "drawCalls": 303,
-  "textures": 65,
-  "textureMB": 116
+  "exportBytes": 29780108,
+  "triangles": 116076,
+  "drawCalls": 306,
+  "textures": 70,
+  "textureMB": 119.3
  },
  "lods": {
   "lod0": {
    "file": "cafe-1-night.glb",
-   "triangles": 98866,
-   "primitives": 287,
-   "materials": 280,
-   "textures": 56,
-   "textureKB": 1536,
-   "bytes": 2666660
+   "triangles": 101798,
+   "primitives": 289,
+   "materials": 282,
+   "textures": 61,
+   "textureKB": 1592,
+   "bytes": 2772184
   },
   "lod1": {
    "file": "cafe-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 63120,
-   "primitives": 287,
-   "materials": 280,
-   "textures": 56,
-   "textureKB": 486,
-   "bytes": 1387288
+   "triangles": 65028,
+   "primitives": 289,
+   "materials": 282,
+   "textures": 61,
+   "textureKB": 542,
+   "bytes": 1481360
   }
  },
  "parts": {
@@ -1662,12 +1665,13 @@
  },
  "live": {
   "file": "cafe-1-night.live.json",
-  "bytes": 77964,
+  "bytes": 170257,
   "objects": [
    "Sprite",
    "Sprite",
    "Sprite",
    "Sprite",
+   "Mesh",
    "Mesh",
    "Mesh",
    "Mesh",

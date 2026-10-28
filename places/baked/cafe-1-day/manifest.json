@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 202466,
-  "drawCalls": 544,
-  "textures": 65,
-  "textureMB": 169.3
+  "triangles": 197908,
+  "drawCalls": 583,
+  "textures": 84,
+  "textureMB": 162.1
  },
  "exported": {
-  "triangles": 181500,
-  "drawCalls": 376,
-  "textures": 61,
-  "textureMB": 169.2
+  "triangles": 176942,
+  "drawCalls": 415,
+  "textures": 80,
+  "textureMB": 162
  },
  "lights": [
   {
@@ -54,6 +54,7 @@
     "bias": -0.0004,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 1,
@@ -278,7 +279,7 @@
    "type": "PointLight",
    "name": "light-pool-06",
    "color": 5564146,
-   "intensity": 0.8,
+   "intensity": 0.24,
    "position": [
     -1.7000000000000002,
     0.65,
@@ -296,37 +297,37 @@
  ],
  "clocks": [
   {
-   "material": "76ed0ab0-f2a2-4620-b68b-5eb42b352332",
+   "material": "9a202927-1f8d-4ccd-9aa4-97d21aeaa655",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "f7378f99-4ffc-4e71-bc71-5ad3560c4e89",
+   "material": "01ddb086-e661-4bf3-858a-03ee1703d4ee",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "34636fb7-b0ea-4776-a446-8912cae115f4",
+   "material": "eb5d6930-28b1-41b7-bf9f-98a01190e053",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "03d2af85-3f84-4c43-a2ca-17c4686852e0",
+   "material": "38fe337a-d64a-4c85-be23-4c2ea9bc0cc0",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "a911cd30-9b17-4b4c-a2af-bce08257ff40",
+   "material": "4b816032-9d8c-48fb-bd79-a432bac12d8a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "f9b2d94c-6fda-40e0-a2a0-6816c4416eee",
+   "material": "6c96da99-35dd-4878-a7a6-d51611d75a35",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -608,7 +609,13 @@
     "dist": 12,
     "floor": 0.38,
     "top": 1.95,
-    "bottom": 0.05
+    "bottom": 0.05,
+    "box": [
+     -2.7,
+     0,
+     3.7,
+     8.1
+    ]
    },
    "grade": {
     "exposure": 1.03,
@@ -1046,44 +1053,44 @@
  },
  "dressStats": null,
  "detailStats": {
-  "meshes": 19,
-  "triangles": 121080
+  "meshes": 21,
+  "triangles": 116270
  },
  "manifestColliders": 0,
  "manifest": true,
  "three": "170",
  "key": "cafe-1-day",
  "hour": 13,
- "bakedAt": "2026-10-25T21:48:27.651Z",
+ "bakedAt": "2026-10-28T12:56:54.116Z",
  "quantizePosition": 14,
  "source": {
   "family": "CafeLoft (D) built at runtime by lab/src/scenes",
-  "exportBytes": 55199196,
-  "triangles": 202466,
-  "drawCalls": 544,
-  "textures": 65,
-  "textureMB": 169.3
+  "exportBytes": 54736632,
+  "triangles": 197908,
+  "drawCalls": 583,
+  "textures": 84,
+  "textureMB": 162.1
  },
  "lods": {
   "lod0": {
    "file": "cafe-1-day.glb",
-   "triangles": 173318,
-   "primitives": 313,
-   "materials": 273,
-   "textures": 43,
-   "textureKB": 2576,
-   "bytes": 4087940
+   "triangles": 168364,
+   "primitives": 333,
+   "materials": 293,
+   "textures": 64,
+   "textureKB": 2621,
+   "bytes": 4135480
   },
   "lod1": {
    "file": "cafe-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 97244,
-   "primitives": 313,
-   "materials": 273,
-   "textures": 43,
-   "textureKB": 669,
-   "bytes": 1804472
+   "triangles": 94976,
+   "primitives": 333,
+   "materials": 293,
+   "textures": 64,
+   "textureKB": 720,
+   "bytes": 1871016
   }
  },
  "parts": {
@@ -1103,7 +1110,7 @@
  },
  "live": {
   "file": "cafe-1-day.live.json",
-  "bytes": 92277,
+  "bytes": 193835,
   "objects": [
    "Sprite",
    "Sprite",

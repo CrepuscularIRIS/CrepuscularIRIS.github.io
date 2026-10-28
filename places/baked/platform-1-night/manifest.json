@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 96428,
-  "drawCalls": 454,
-  "textures": 74,
-  "textureMB": 58.8
+  "triangles": 97626,
+  "drawCalls": 503,
+  "textures": 110,
+  "textureMB": 106.4
  },
  "exported": {
-  "triangles": 77078,
-  "drawCalls": 235,
-  "textures": 33,
-  "textureMB": 39.9
+  "triangles": 78234,
+  "drawCalls": 271,
+  "textures": 46,
+  "textureMB": 67
  },
  "lights": [
   {
@@ -329,7 +329,7 @@
     -3.2
    ],
    "visible": true,
-   "distance": 5,
+   "distance": 1.8,
    "decay": 1.6
   },
   {
@@ -436,48 +436,71 @@
     0.74,
     0.14999999999999997
    ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-21",
+   "color": 14200188,
+   "intensity": 4.5,
+   "position": [
+    5.45,
+    1.29,
+    -1.25
+   ],
+   "visible": true,
+   "distance": 1.2,
+   "decay": 1.7,
+   "angle": 0.85,
+   "penumbra": 0.75,
+   "target": [
+    5.33,
+    1,
+    -1.25
+   ]
   }
  ],
- "lowDrop": [],
+ "lowDrop": [
+  "hall"
+ ],
  "clocks": [
   {
-   "material": "ce018cdc-36e8-47eb-971e-cf06230cc4f1",
+   "material": "54de16be-e1b0-41ed-bdb8-566a8116650f",
    "uniform": "uT",
    "a": 1,
    "b": 0
   },
   {
-   "material": "b8f6394d-87b8-4547-99e3-c81eed4bb51a",
+   "material": "a267b871-ea18-4b29-8546-e75acf2c87b6",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "0d051c9f-6bb8-4046-8b0c-08322a16d411",
+   "material": "d48baf19-207e-4603-9a7d-ac176183f323",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "c2896b51-5481-4fc4-82e6-ac4dc074d799",
+   "material": "7262690e-e3f4-4023-bb56-ca4e04d9c55a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "2601ac53-3fcb-4ac3-9d77-9005c078a0e1",
+   "material": "f2ce3e98-1595-4db2-a3d7-849cdb71f298",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "b05cf46d-6b24-42e9-8193-5a507821e550",
+   "material": "80309d68-efc2-4095-8c92-496f72335481",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "45a04bb5-7dc4-477f-9294-c3a604de87e9",
+   "material": "1c0f1b33-9c1f-468e-93c8-9dd940500811",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -520,11 +543,11 @@
     3.7
    ],
    "target": [
-    1.57,
+    1.49,
     1.185,
     -1.047
    ],
-   "fov": 44.26
+   "fov": 46.5
   },
   "views": [
    {
@@ -546,7 +569,7 @@
     "name": "wide",
     "label": "Concourse",
     "position": [
-     -2,
+     -1.5,
      2.4,
      4.9
     ],
@@ -555,7 +578,7 @@
      0.8,
      -8
     ],
-    "fov": 62
+    "fov": 58
    },
    {
     "name": "gate",
@@ -597,10 +620,10 @@
     ],
     "target": [
      0.8,
-     3.2,
+     2.85,
      -6
     ],
-    "fov": 55,
+    "fov": 51,
     "post": {
      "dof": {
       "enabled": false
@@ -1194,36 +1217,36 @@
  "three": "170",
  "key": "platform-1-night",
  "hour": 22,
- "bakedAt": "2026-10-28T09:25:19.877Z",
+ "bakedAt": "2026-10-28T13:48:36.603Z",
  "quantizePosition": 14,
  "source": {
   "family": "Platform (N) built at runtime by lab/src/scenes",
-  "exportBytes": 12305336,
-  "triangles": 96428,
-  "drawCalls": 454,
-  "textures": 74,
-  "textureMB": 58.8
+  "exportBytes": 16642592,
+  "triangles": 97626,
+  "drawCalls": 503,
+  "textures": 110,
+  "textureMB": 106.4
  },
  "lods": {
   "lod0": {
    "file": "platform-1-night.glb",
-   "triangles": 66348,
-   "primitives": 212,
-   "materials": 206,
-   "textures": 43,
-   "textureKB": 602,
-   "bytes": 1340456
+   "triangles": 67360,
+   "primitives": 258,
+   "materials": 252,
+   "textures": 75,
+   "textureKB": 2095,
+   "bytes": 2937996
   },
   "lod1": {
    "file": "platform-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 35992,
-   "primitives": 212,
-   "materials": 206,
-   "textures": 43,
-   "textureKB": 258,
-   "bytes": 873564
+   "triangles": 36704,
+   "primitives": 258,
+   "materials": 252,
+   "textures": 75,
+   "textureKB": 540,
+   "bytes": 1227996
   }
  },
  "parts": {
@@ -1256,11 +1279,11 @@
    "spot:plat-phone",
    "spot:frag-7"
   ],
-  "exportBytes": 1212504
+  "exportBytes": 16648200
  },
  "live": {
   "file": "platform-1-night.live.json",
-  "bytes": 217726,
+  "bytes": 220369,
   "objects": [
    "Mesh",
    "Mesh",
@@ -1285,7 +1308,8 @@
    "smokePlume",
    "smokePlume",
    "Mesh",
-   "Mesh"
+   "Mesh",
+   "hall"
   ]
  },
  "notes": [

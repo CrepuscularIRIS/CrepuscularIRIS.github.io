@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 95716,
-  "drawCalls": 436,
-  "textures": 48,
-  "textureMB": 46.8
+  "triangles": 96914,
+  "drawCalls": 482,
+  "textures": 86,
+  "textureMB": 96.4
  },
  "exported": {
-  "triangles": 76390,
-  "drawCalls": 229,
-  "textures": 33,
-  "textureMB": 39.9
+  "triangles": 77546,
+  "drawCalls": 262,
+  "textures": 46,
+  "textureMB": 67
  },
  "lights": [
   {
@@ -36,9 +36,9 @@
    "color": 14217215,
    "intensity": 1.15,
    "position": [
-    -2,
-    8,
-    6
+    -6,
+    6.5,
+    3.5
    ],
    "visible": true,
    "target": [
@@ -323,46 +323,48 @@
    ]
   }
  ],
- "lowDrop": [],
+ "lowDrop": [
+  "hall"
+ ],
  "clocks": [
   {
-   "material": "ae737d64-4175-4f11-aafb-0d77752013c7",
+   "material": "8571a167-f7f5-4667-a260-9bbc2e360861",
    "uniform": "uT",
    "a": 1,
    "b": 0
   },
   {
-   "material": "90e564af-ce07-406b-bfc9-ee8430955632",
+   "material": "0570d151-e432-4967-8d58-821016407957",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "fca55a1e-8a52-42af-aa99-7093b51b0315",
+   "material": "0f77d0aa-f5c8-4fab-a9be-ca888e813f5f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "694db61f-015a-4bb1-9746-c1d6bd3d6b24",
+   "material": "e55265bc-8944-496b-bbdd-2a3cf8eaa511",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "a9a76d78-0053-456e-bdc1-480b037cc51c",
+   "material": "3f46ab74-22f6-4c7f-a512-19eb94b3147e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "d2b34d4c-2fb9-4e26-b9d3-5b80e855f5c9",
+   "material": "3a94b3d6-1760-42b4-a8db-c67b52588fb3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "c7613770-04be-45f9-b58b-fdad6cf0a5ad",
+   "material": "56b8a2c0-d812-40ed-81db-1f69f76a0a00",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -405,11 +407,11 @@
     3.7
    ],
    "target": [
-    1.57,
+    1.49,
     1.185,
     -1.047
    ],
-   "fov": 44.26
+   "fov": 46.5
   },
   "views": [
    {
@@ -431,7 +433,7 @@
     "name": "wide",
     "label": "Concourse",
     "position": [
-     -2,
+     -1.5,
      2.4,
      4.9
     ],
@@ -440,7 +442,7 @@
      0.8,
      -8
     ],
-    "fov": 62
+    "fov": 58
    },
    {
     "name": "gate",
@@ -482,10 +484,10 @@
     ],
     "target": [
      0.8,
-     3.2,
+     2.85,
      -6
     ],
-    "fov": 55,
+    "fov": 51,
     "post": {
      "dof": {
       "enabled": false
@@ -1079,36 +1081,36 @@
  "three": "170",
  "key": "platform-1-day",
  "hour": 13,
- "bakedAt": "2026-10-28T09:25:13.227Z",
+ "bakedAt": "2026-10-28T13:48:28.723Z",
  "quantizePosition": 14,
  "source": {
   "family": "Platform (D) built at runtime by lab/src/scenes",
-  "exportBytes": 12227060,
-  "triangles": 95716,
-  "drawCalls": 436,
-  "textures": 48,
-  "textureMB": 46.8
+  "exportBytes": 16551056,
+  "triangles": 96914,
+  "drawCalls": 482,
+  "textures": 86,
+  "textureMB": 96.4
  },
  "lods": {
   "lod0": {
    "file": "platform-1-day.glb",
-   "triangles": 65660,
-   "primitives": 208,
-   "materials": 202,
-   "textures": 41,
-   "textureKB": 594,
-   "bytes": 1321380
+   "triangles": 66636,
+   "primitives": 253,
+   "materials": 247,
+   "textures": 75,
+   "textureKB": 2099,
+   "bytes": 2935124
   },
   "lod1": {
    "file": "platform-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 35432,
-   "primitives": 208,
-   "materials": 202,
-   "textures": 41,
-   "textureKB": 250,
-   "bytes": 853196
+   "triangles": 36108,
+   "primitives": 253,
+   "materials": 247,
+   "textures": 75,
+   "textureKB": 544,
+   "bytes": 1224116
   }
  },
  "parts": {
@@ -1141,11 +1143,11 @@
    "spot:plat-phone",
    "spot:frag-7"
   ],
-  "exportBytes": 837340
+  "exportBytes": 16632384
  },
  "live": {
   "file": "platform-1-day.live.json",
-  "bytes": 45273,
+  "bytes": 47825,
   "objects": [
    "Mesh",
    "Mesh",
@@ -1158,7 +1160,8 @@
    "smokePlume",
    "smokePlume",
    "Mesh",
-   "Mesh"
+   "Mesh",
+   "hall"
   ]
  },
  "notes": [
