@@ -11,9 +11,9 @@
   "textureMB": 82.6
  },
  "exported": {
-  "triangles": 65210,
-  "drawCalls": 300,
-  "textures": 63,
+  "triangles": 65178,
+  "drawCalls": 299,
+  "textures": 62,
   "textureMB": 81.7
  },
  "lights": [
@@ -54,6 +54,7 @@
     "bias": -0.0004,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 1,
@@ -114,6 +115,7 @@
     "bias": -0.0008,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 0.04,
@@ -234,13 +236,13 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "5b5c0609-0f5d-4041-a8d7-a58cff8a31e7",
+   "material": "c9dd399d-838e-4872-a4a2-79d275f8a2a1",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "8f76fb8b-1541-4e38-a6a9-65f4f77d1941",
+   "material": "50683ee8-6420-4739-9d9c-8518113202f2",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -807,11 +809,11 @@
  "three": "170",
  "key": "self-residence-1-night",
  "hour": 22,
- "bakedAt": "2026-10-25T11:01:24.904Z",
+ "bakedAt": "2026-10-28T09:25:40.870Z",
  "quantizePosition": 14,
  "source": {
   "family": "SelfResidence (N) built at runtime by lab/src/scenes",
-  "exportBytes": 23130772,
+  "exportBytes": 23122320,
   "triangles": 73224,
   "drawCalls": 369,
   "textures": 68,
@@ -821,22 +823,22 @@
   "lod0": {
    "file": "self-residence-1-night.glb",
    "triangles": 68540,
-   "primitives": 275,
-   "materials": 259,
+   "primitives": 276,
+   "materials": 260,
    "textures": 61,
    "textureKB": 2296,
-   "bytes": 3106612
+   "bytes": 3107412
   },
   "lod1": {
    "file": "self-residence-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 46298,
-   "primitives": 275,
-   "materials": 259,
+   "triangles": 46300,
+   "primitives": 276,
+   "materials": 260,
    "textures": 61,
    "textureKB": 710,
-   "bytes": 1441696
+   "bytes": 1442560
   }
  },
  "parts": {
@@ -846,13 +848,14 @@
    "shelf",
    "tinbot",
    "corkboard",
+   "time-face",
    "spot:door"
   ],
-  "exportBytes": 627496
+  "exportBytes": 635732
  },
  "live": {
   "file": "self-residence-1-night.live.json",
-  "bytes": 38424,
+  "bytes": 130504,
   "objects": [
    "Mesh",
    "skyDome",

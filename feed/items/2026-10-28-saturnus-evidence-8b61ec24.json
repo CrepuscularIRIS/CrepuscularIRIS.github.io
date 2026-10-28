@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "id": "2026-10-28-saturnus-evidence-8b61ec24",
+  "app": "vault",
+  "host": "saturnus",
+  "kind": "curated",
+  "date": "2026-10-28T10:00:13Z",
+  "title": "Harness Field Order May Reverse Agent Success",
+  "refs": [
+    {
+      "item": "2026-10-28-methode-5f6f70e0"
+    }
+  ],
+  "via": {
+    "curator": "saturnus-vault",
+    "label": "Evidence note",
+    "model": "MiniMax-M2.7",
+    "prompt": "curate-v1/saturnus-vault@17af7573"
+  },
+  "chat": {
+    "lines": [
+      "This unverified evidence note is now in the Vault."
+    ]
+  },
+  "category": "evidence",
+  "summary": "The “Your Policy Is Secretly a Harness” item reports that changing observation-field order on MiniWoB++ reduced a trained model's success rate from 85.0% to 19.2%.",
+  "body": "Claimed: A paper proposes that agent performance equals the harness's upper limit minus policy mismatch and reports that, on MiniWoB++, changing only observation-field order reduced a trained model's success rate from 85.0% to 19.2%. The item also suggests that comparing policies under different harnesses without retraining is largely invalid because harness-specific preferences may already be internalized. Not established: The item does not identify the trained model, provide trial counts or uncertainty, describe the test conditions, or report independent replication. It therefore does not establish that the proposed relationship or the suggested invalidity of cross-harness comparisons holds generally.\n\nStatus: unverified. Filed from collected notes; nothing here was checked.\nFrom: \"Your Policy Is Secretly a Harness: 你的 Agent 策略其实内化了 harness 的偏好\"",
+  "status": "unverified",
+  "summary_en": "The “Your Policy Is Secretly a Harness” item reports that changing observation-field order on MiniWoB++ reduced a trained model's success rate from 85.0% to 19.2%."
+}

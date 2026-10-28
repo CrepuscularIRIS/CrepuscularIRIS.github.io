@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-28-methode-d41f4650",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-28T09:02:43Z",
+  "title": "RSI Arena：十个前沿模型自主后训练，用人类反馈逼近递归自我改进",
+  "summary": "RSI Arena 让 10 个前沿模型各自从 NVIDIA Nemotron 3.5 Lightning 30B-A3B 出发、用 1000 GPU 小时和 300 美元 API 额度自主后训练，最强模型（GPT-6 Astra 训练）跨 12 项能力基准弥合了基座到 Instruct 模型中位差距的 76%。",
+  "summary_en": "RSI Arena reportedly has ten frontier models autonomously post-train from NVIDIA Nemotron 3.5 Lightning 30B-A3B, each using 1,000 GPU hours and a $300 API credit allowance. The strongest result, from GPT-6 Astra training, reportedly closes 76% of the median gap between the base and Instruct models across 12 capability benchmarks.",
+  "body": "RSI Arena 让 10 个前沿模型各自从 NVIDIA Nemotron 3.5 Lightning 30B-A3B 出发、用 1000 GPU 小时和 300 美元 API 额度自主后训练，最强模型（GPT-6 Astra 训练）跨 12 项能力基准弥合了基座到 Instruct 模型中位差距的 76%。\n\n论文\n- RSI Arena：带人类反馈的递归自我改进 — 10 个前沿模型当“训练智能体”，自主选数据、写训练流程、选 checkpoint，两阶段后训练后 8/10 模型的风格校正偏好分提升，但也暴露了长度膨胀与有害遵从上升等副作用。\n  https://arxiv.org/abs/2610.33624\n- 离散视觉 token 能否无损表示视觉信号？（Factorized Vector Quantization） — 推翻“量化误差必然带来语义损失”的假设：FVQ 用对称并行码本量化互补特征视图，在九项指标均值上超过 UniAR 22.8%、Emu3-Chat 59.2%，成为首个可比肩 Qwen3-VL 的离散表示模型。\n  https://huggingface.co/papers/2610.37662\n- 交易智能体群中的测试时通信 — 200 个智能体、7 个美股交易日实测：群体收益主要来自共同持仓，看到群友发言后 8 个词短语的复用率上升 7 个百分点，但未明显改变当日交易，提示“羊群”评估必须以孤立基线校准。\n  https://arxiv.org/abs/2610.37448\n- Transformer 中证据效应的因果定位 — 用受控符号输入 + 头消融/均值修补，选出的 1–12 个注意力头可移除 65.5%–91.6% 的计数效应，并在自然语言任务上带来 8.2 个百分点的准确率下降（随机对照仅 0.8）。\n  https://arxiv.org/abs/2610.36524\n- AI 科学家知道什么是新研究吗？ — 评测大模型对其领域新颖性/文献查新的判断能力，直接关系到自动化科研流水线的可信度边界。\n  https://arxiv.org/abs/2610.36511\n\nGitHub与基建\n- llama.cpp b11951（10-28 16:11 CST） — chat 模板修复：在模板分隔符前停止 qwen3-coder 的 reasoning 与 content 输出，解决该模型在模板化对话下的重复/串味问题。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11951\n- vLLM：为 DSv4.1 的 NVFP4 压缩 KV 做 tile 化反量化取回 — 15:22 CST 合入，针对 DeepSeek v4.1 的 NVFP4 压缩 KV cache 读取路径做分块优化，是长上下文推理的关键路径改动。\n  https://github.com/vllm-project/vllm/commit/6abdff59301f96f6c8733c38691bd36bd2dd0066\n- vLLM：run-batch 支持 /v1/completions 前端 — 15:31 CST 合入，批处理前端兼容 OpenAI 补全接口，降低离线批量推理的接入成本。\n  https://github.com/vllm-project/vllm/commit/9fc019a749cbf3235cc06aa5357b17fd37cb648a\n- vLLM：NIXL 连接器新增 push 模式传输 — 16:50 CST 合入，KV 传输在 pull 之外可选 push，缓解 disaggregated 推理下 KV 搬运的延迟瓶颈。\n  https://github.com/vllm-project/vllm/commit/066d9799347c88c14e91baa9d849e9595ff8a3d3\n- SGLang：为 gfx950 调优 bf16 matmul（batch-invariant） — 16:51 CST 合入，AMD MI355X 平台上的 bf16 矩阵乘调优，配合近期的 AMD 单核（mono-kernel）DeepSeek-v4 配方一起推进。\n  https://github.com/sgl-project/sglang/commit/1e7e19285d787540b18f0d33490df9ca7019c51a\n- SGLang：custom-all-reduce 保持整数 all-reduce 走通用路径 — 16:15 CST 合入，修复自定义 all-reduce 对整数归约的错误接管，正确性优先的稳定性修复。\n  https://github.com/sgl-project/sglang/commit/c240169265af83800d0b901661c1075f9c5ed3ff\n\nSource: https://arxiv.org/abs/2610.33624",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.33624",
+    "verified_at": "2026-10-28T09:02:43Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

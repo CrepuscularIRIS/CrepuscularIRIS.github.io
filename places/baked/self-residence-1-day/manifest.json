@@ -11,10 +11,10 @@
   "textureMB": 81.3
  },
  "exported": {
-  "triangles": 64806,
-  "drawCalls": 293,
-  "textures": 61,
-  "textureMB": 80.6
+  "triangles": 64774,
+  "drawCalls": 292,
+  "textures": 60,
+  "textureMB": 80.5
  },
  "lights": [
   {
@@ -54,6 +54,7 @@
     "bias": -0.0004,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 1,
@@ -135,13 +136,13 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "c3c436c1-4e70-4cdd-b374-5776fffc857e",
+   "material": "a4c650a5-03b1-4c96-9af3-7d3b258dae26",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "aaf40a8e-a5fd-44a3-9230-4f7ba87470aa",
+   "material": "c6c16c06-0620-43ba-894f-069195f08ed2",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -708,11 +709,11 @@
  "three": "170",
  "key": "self-residence-1-day",
  "hour": 13,
- "bakedAt": "2026-10-25T10:53:06.806Z",
+ "bakedAt": "2026-10-28T09:25:31.336Z",
  "quantizePosition": 14,
  "source": {
   "family": "SelfResidence (D) built at runtime by lab/src/scenes",
-  "exportBytes": 22953336,
+  "exportBytes": 22944880,
   "triangles": 72816,
   "drawCalls": 360,
   "textures": 64,
@@ -725,19 +726,19 @@
    "primitives": 270,
    "materials": 254,
    "textures": 59,
-   "textureKB": 2247,
-   "bytes": 3049112
+   "textureKB": 2246,
+   "bytes": 3049152
   },
   "lod1": {
    "file": "self-residence-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 46086,
+   "triangles": 46078,
    "primitives": 270,
    "materials": 254,
    "textures": 59,
    "textureKB": 667,
-   "bytes": 1390060
+   "bytes": 1390036
   }
  },
  "parts": {
@@ -747,13 +748,14 @@
    "shelf",
    "tinbot",
    "corkboard",
+   "time-face",
    "spot:door"
   ],
-  "exportBytes": 627476
+  "exportBytes": 635628
  },
  "live": {
   "file": "self-residence-1-day.live.json",
-  "bytes": 23837,
+  "bytes": 115273,
   "objects": [
    "Mesh",
    "skyDome",

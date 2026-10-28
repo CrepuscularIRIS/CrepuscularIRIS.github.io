@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-28-snowdrop-5876e7a1",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-28T09:10:19Z",
+  "title": "The Trinity：多模态智能体递归自进化，28 个基准平均提升 34 分",
+  "summary": "今天最值得看的是 The Trinity——用 Creator/Explorer/Evolver 三角色把\"造环境+改 harness\"做成递归自改进闭环，同时腾讯混元放出了能自由交互的 8B 世界模型 Hy-Nomas。",
+  "summary_en": "The note highlights The Trinity, a multimodal-agent framework that uses Creator, Explorer, and Evolver roles to create environments and modify the harness within a recursive self-improvement loop. It reports an average 34-point gain across 28 benchmarks, while framing The Trinity as today’s most noteworthy development. The note also mentions Tencent Hunyuan’s release of Hy-Nomas, an interactive 8B world model.",
+  "body": "今天最值得看的是 The Trinity——用 Creator/Explorer/Evolver 三角色把\"造环境+改 harness\"做成递归自改进闭环，同时腾讯混元放出了能自由交互的 8B 世界模型 Hy-Nomas。\n\n世界模型与具身智能\n- Hy-Nomas: Towards Free-form Interactive World Generation（腾讯混元） — 8B 扩散骨架的视频世界模型，支持自由文本指令加连续相机控制、多轮交互且保留历史，用\"动作感知因果注意力\"把动作限制在对应时间窗；权重、代码和基准全部开源，HF 今日热门第 4（89 赞）。\n  https://arxiv.org/abs/2610.36729\n- Rollback: Experience Backtracking in World Models for Policy Improvement（AgiBot） — 把世界模型从\"只能向前演化的模拟器\"变成可回溯的反事实引擎，回滚到关键决策点分叉对比；三个真机任务成功率绝对提升 10.67%/11.11%/11.85%，8 小时训练即超过人类平均水平。\n  https://arxiv.org/abs/2610.36068\n- ThinkWorld: World Imagination Reinforces Chain-of-Dynamics Reasoning（NVIDIA） — 把动作思考表示成离散运动 token 链（CoD），用世界想象做强化学习对齐预测与真实结果，从而让无动作标注的人类视频也能直接监督机器人策略，缓解具身数据稀缺。\n  https://arxiv.org/abs/2610.37666\n- PDRVLA: A Vision-Language-Action Model with Physical Dynamics Representations — 轻量物理动态模块直接从视觉-语言特征预测未来 RGB/深度/光流，避免在线生成视频带来的延迟；LIBERO 99.3%、SimplerEnv 81.5%，全部基于公开数据训练。\n  https://arxiv.org/abs/2610.37381\n\nAgent 自进化、记忆与协作\n- Memory Tax: Dissecting the Net Value of Agent Memory（UIUC） — 大规模评测发现不少专用记忆系统还不如朴素 RAG，提出\"记忆税\"概念：记忆在重组信息带来收益的同时也会遮蔽原始证据，把评估标准从单点性能拉回净收益。\n  https://arxiv.org/abs/2610.34073\n- The Inbox as a Coordination Primitive for LLM Agent Societies — 指出多智能体协作的瓶颈不是消息投递而是\"读\"：push 模式下并行协调 20 场谈判的 agent 有 97% 概率重提已被拒绝的方案；改用 pull 式收件箱后，在 1.6 万 agent 规模上仍能找回约 60% 请求。\n  https://arxiv.org/abs/2610.36264\n- PASS Is a Claim, Not an Observation: Mechanical Re-verification of 10 Self-Asserted Fix Claims — 在真实多智能体平台上机械复核 10 条\"我已修复\"的自我声明，信息充分可验证的那些里有 50% 在声称位置根本不存在——给 agent 自证式报告加了一道现实检验。\n  https://arxiv.org/abs/2610.35950\n\n研究方法与评测\n- Do AI Scientists Know What's New? — 用 1060 个提案做带时间真值的\"新颖性检查\"审计，发现现有检查要么误杀太多、要么只能整篇否决；其 ClaimNov 模块把 LLM 评审的误报率从 11.8% 压到 1.5%，并保留 91/100 个仅部分新颖的提案。\n  https://arxiv.org/abs/2610.36511\n- ChronoReplay: One Answer Interface Is Not Enough for Streaming Spatial Intelligence — 提出\"接口锁定\"现象：空间 VLM 只在单一问答接口上变强、迁移到其他接口反而退化；用按时间顺序重放的异构监督加家族平衡学习，一个 checkpoint 同时提升 OVO/OST/UCS 三个基准（OST +13.41 分）。\n  https://arxiv.org/abs/2610.34283\n\nNature 观点\n- AI-hallucinated citations should be treated as research misconduct — Nature 社论主张把 AI 编造引用按学术不端处理，而不是当成无害的格式问题——对投稿核查和作者自查都是明确的信号。\n  https://www.nature.com/articles/d41586-026-03407-2\n- AI watermarking efforts must encourage independent public scrutiny — 水印方案若由开发者自评就失去意义，社论要求开放给独立第三方公开审查，与近期水印可被绕过的研究形成呼应。\n  https://www.nature.com/articles/d41586-026-03406-3\n\nSource: https://arxiv.org/abs/2610.36077",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.36077",
+    "verified_at": "2026-10-28T09:10:19Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

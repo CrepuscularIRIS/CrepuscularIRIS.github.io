@@ -1,0 +1,896 @@
+{
+ "version": 2,
+ "place": "company-entrance",
+ "family": "CompanyEntrance",
+ "variant": "N",
+ "tod": "night",
+ "cost": {
+  "triangles": 43708,
+  "drawCalls": 213,
+  "textures": 66,
+  "textureMB": 167.6
+ },
+ "exported": {
+  "triangles": 20978,
+  "drawCalls": 117,
+  "textures": 46,
+  "textureMB": 135.6
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 2766928,
+   "intensity": 0.12,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 2762272
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 8363208,
+   "intensity": 0.25,
+   "position": [
+    11.892533624651225,
+    9.61105908057461,
+    -28.512808605704674
+   ],
+   "visible": true,
+   "target": [
+    1,
+    0,
+    0
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0003,
+    "normalBias": 0.025,
+    "radius": 2,
+    "intensity": 1,
+    "autoUpdate": true,
+    "camera": {
+     "near": 2,
+     "far": 70,
+     "left": -13,
+     "right": 13,
+     "top": 13,
+     "bottom": -13
+    }
+   }
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 3425886,
+   "intensity": 0.3,
+   "position": [
+    9.36,
+    3,
+    11.15
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "",
+   "color": 16768192,
+   "intensity": 28,
+   "position": [
+    -1.6,
+    2.95,
+    2.3
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 2,
+   "angle": 0.62,
+   "penumbra": 0.75,
+   "target": [
+    -1.25,
+    0.5,
+    1
+   ]
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "c8d97164-f474-4044-84d5-858424517ace",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "594ed052-832e-4286-9f17-b6ff4d0e6237",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
+ "uniformArrays": {},
+ "reflectors": [
+  {
+   "w": 17,
+   "d": 29,
+   "x": 1,
+   "y": 0,
+   "z": -1.5,
+   "strength": 0.4,
+   "blur": 1.6,
+   "f0": 0.08,
+   "tint": 13159636,
+   "fade": 40,
+   "zones": 1,
+   "smear": 0,
+   "near": 0,
+   "maskRepeat": [
+    1,
+    1
+   ],
+   "size": 768,
+   "mask": "company-entrance-night.mask0.webp"
+  }
+ ],
+ "camera": {
+  "ref": {
+   "position": [
+    0,
+    1.2,
+    9
+   ],
+   "target": [
+    0,
+    1.2,
+    0
+   ],
+   "fov": 33.4,
+   "shift": [
+    0,
+    0.148
+   ]
+  },
+  "views": [
+   {
+    "name": "wide",
+    "label": "Wide",
+    "position": [
+     -3.8,
+     1.85,
+     8.3
+    ],
+    "target": [
+     1.4,
+     1.55,
+     -2.2
+    ],
+    "fov": 58
+   },
+   {
+    "name": "counter",
+    "label": "Counter",
+    "position": [
+     -0.6,
+     1.6,
+     4.4
+    ],
+    "target": [
+     -2.2,
+     0.9,
+     1.3
+    ],
+    "fov": 50,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "gate",
+    "label": "Gate",
+    "position": [
+     2.8,
+     1.5,
+     5
+    ],
+    "target": [
+     1.1,
+     1.3,
+     1.8
+    ],
+    "fov": 50,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "atrium",
+    "label": "Atrium",
+    "position": [
+     1.35,
+     1.45,
+     -0.6
+    ],
+    "target": [
+     3.2,
+     5.2,
+     -12
+    ],
+    "fov": 65,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     3.5,
+     4.3,
+     -8.5
+    ],
+    "target": [
+     -1,
+     1,
+     8
+    ],
+    "fov": 60
+   },
+   {
+    "name": "sky",
+    "label": "Glass and sky",
+    "position": [
+     3.2,
+     1.7,
+     2.4
+    ],
+    "target": [
+     4.8,
+     6.2,
+     -16
+    ],
+    "fov": 62,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   },
+   {
+    "name": "kiosk",
+    "label": "Kiosk",
+    "position": [
+     -2.4,
+     1.4,
+     4.6
+    ],
+    "target": [
+     -3.6,
+     1,
+     2.4
+    ],
+    "fov": 45,
+    "post": {
+     "dof": {
+      "enabled": false
+     }
+    }
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -7.3,
+   0.2,
+   -15.7
+  ],
+  "max": [
+   9.3,
+   13.7,
+   12.8
+  ]
+ },
+ "env": {
+  "background": 726566,
+  "ibl": {
+   "top": 1843760,
+   "wall": 2501688,
+   "floor": 1447450,
+   "intensity": 0.32,
+   "lights": [
+    {
+     "pos": [
+      4,
+      6,
+      -15
+     ],
+     "size": [
+      16,
+      9
+     ],
+     "color": 5929128,
+     "power": 1.2,
+     "lookAt": [
+      0,
+      2,
+      5
+     ]
+    },
+    {
+     "pos": [
+      -2,
+      3.1,
+      3
+     ],
+     "size": [
+      3,
+      2
+     ],
+     "color": 16767160,
+     "power": 4.5,
+     "lookAt": [
+      -2,
+      0,
+      3
+     ]
+    },
+    {
+     "pos": [
+      1.5,
+      3.15,
+      4
+     ],
+     "size": [
+      6,
+      1
+     ],
+     "color": 13161696,
+     "power": 1.4,
+     "lookAt": [
+      1.5,
+      0,
+      4
+     ]
+    }
+   ]
+  },
+  "fog": {
+   "color": 1055272,
+   "near": 30,
+   "far": 90
+  },
+  "post": {
+   "outline": {
+    "color": 790552,
+    "opacity": 0.38,
+    "depthTh": 0.012,
+    "normalTh": 0.3
+   },
+   "ao": {
+    "strength": 0.55,
+    "radius": 0.35
+   },
+   "bloom": {
+    "threshold": 0.72,
+    "strength": 0.6,
+    "weights": [
+     0.5,
+     0.4,
+     0.35,
+     0.3,
+     0.25
+    ]
+   },
+   "fog": {
+    "enabled": true,
+    "color": 1713720,
+    "density": 0.006,
+    "falloff": 0.25,
+    "base": 0,
+    "near": 10,
+    "maxOpacity": 0.15
+   },
+   "grade": {
+    "exposure": 1,
+    "contrast": 1.05,
+    "saturation": 0.95,
+    "lift": [
+     0.004,
+     0.005,
+     0.008
+    ],
+    "gain": [
+     1.02,
+     1,
+     0.98
+    ],
+    "vignette": 0.32
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 8,
+    "range": 4.5,
+    "near": 1,
+    "far": 0.4,
+    "maxRadius": 4,
+    "tilt": {
+     "center": [
+      0.5,
+      0.45
+     ],
+     "radius": [
+      0.6,
+      0.36
+     ],
+     "soft": 0.4,
+     "strength": 1.5
+    }
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -7.5,
+   -4.2,
+   9.5,
+   13
+  ],
+  "eye": 1.6,
+  "start": {
+   "position": [
+    0,
+    0,
+    9.5
+   ],
+   "target": [
+    0.5,
+    1.3,
+    0
+   ]
+  },
+  "colliders": [
+   [
+    -3.3,
+    -0.8,
+    0.9,
+    1.9
+   ],
+   [
+    0.5950000000000001,
+    0.48999999999999994,
+    0.8950000000000001,
+    0.8899999999999999
+   ],
+   [
+    1.8050000000000002,
+    0.48999999999999994,
+    2.105,
+    0.8899999999999999
+   ],
+   [
+    -3.65,
+    -2,
+    -1.95,
+    0.6
+   ],
+   [
+    -3.55,
+    1.4,
+    -2.55,
+    2.15
+   ],
+   [
+    0.2,
+    -10,
+    8.6,
+    -2.4
+   ],
+   [
+    5.4,
+    -0.95,
+    9.2,
+    -0.35
+   ],
+   [
+    3.85,
+    0.5,
+    4.65,
+    1.3
+   ],
+   [
+    -4.95,
+    4.45,
+    -3.9,
+    6.75
+   ],
+   [
+    -2.7,
+    4.45,
+    -1.65,
+    6.75
+   ],
+   [
+    -3.95,
+    5.05,
+    -2.85,
+    6.15
+   ],
+   [
+    -7,
+    9.1,
+    -6.199999999999999,
+    9.9
+   ],
+   [
+    6,
+    9.1,
+    6.800000000000001,
+    9.9
+   ],
+   [
+    -7,
+    2,
+    -6.199999999999999,
+    2.8
+   ],
+   [
+    7.3999999999999995,
+    5.1,
+    8.2,
+    5.9
+   ],
+   [
+    -2.3,
+    6.1,
+    -1.2,
+    7.1
+   ],
+   [
+    2.6,
+    7,
+    3.4,
+    7.8
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "lacia-counter",
+   "kind": "chat",
+   "label": "Lacia",
+   "object": "counter",
+   "typed": false,
+   "anchor": [
+    -1.4729795338358822,
+    1.1141701720464072,
+    -0.0009186243342402811
+   ],
+   "built": [
+    -1.4729795338358822,
+    1.1141701720464072,
+    -0.0009186243342402811
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-street",
+   "kind": "link",
+   "label": "To the main street",
+   "object": "spot:door-street",
+   "typed": true,
+   "anchor": [
+    0,
+    1.2,
+    13
+   ],
+   "built": [
+    0,
+    1.2,
+    13
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "door-office",
+   "kind": "link",
+   "label": "Escalators to the workshop floor",
+   "object": "esc",
+   "typed": false,
+   "anchor": [
+    9.418356510885062,
+    1.1537500132620335,
+    4.015172442698548
+   ],
+   "built": [
+    9.418356510885062,
+    1.1537500132620335,
+    4.015172442698548
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "lobby-directory",
+   "kind": "note",
+   "label": "Directory board",
+   "object": "kiosk",
+   "typed": false,
+   "anchor": [
+    -3.05,
+    1.024999976158142,
+    1.7599999999999998
+   ],
+   "built": [
+    -3.05,
+    1.024999976158142,
+    1.7599999999999998
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "lobby-totem",
+   "kind": "inspect",
+   "label": "Dark slab",
+   "object": "totem",
+   "typed": false,
+   "anchor": [
+    3,
+    1,
+    7.4
+   ],
+   "built": [
+    3,
+    1,
+    7.4
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "lobby-planter",
+   "kind": "inspect",
+   "label": "Lobby aloe",
+   "object": "planter",
+   "typed": false,
+   "anchor": [
+    -6.4495712863231045,
+    0.9771338172159759,
+    9.354766768035327
+   ],
+   "built": [
+    -6.4495712863231045,
+    0.9771338172159759,
+    9.354766768035327
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "lobby-sofa",
+   "kind": "use",
+   "label": "Lobby sofa",
+   "object": "sofa",
+   "typed": false,
+   "anchor": [
+    -4.611999999303371,
+    0.4403021641705922,
+    5.6
+   ],
+   "built": [
+    -4.611999999303371,
+    0.4403021641705922,
+    5.6
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "frag-11",
+   "kind": "fragment",
+   "label": "Glowing shard",
+   "object": "spot:frag-11",
+   "typed": true,
+   "anchor": [
+    -4,
+    1,
+    12.4
+   ],
+   "built": [
+    -4,
+    1,
+    12.4
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "door-street": {
+   "object": "spot:door-street",
+   "how": "node",
+   "on": null,
+   "at": [
+    0,
+    1.2,
+    13
+   ]
+  },
+  "frag-11": {
+   "object": "spot:frag-11",
+   "how": "node",
+   "on": null,
+   "at": [
+    -4,
+    1,
+    12.4
+   ]
+  }
+ },
+ "premerge": {
+  "spot:door-street": [
+   0,
+   1.2,
+   13
+  ],
+  "spot:frag-11": [
+   -4,
+   1,
+   12.4
+  ],
+  "counter": [
+   -1.4729795338358822,
+   1.1141701720464072,
+   -0.0009186243342402811
+  ],
+  "esc": [
+   9.418356510885062,
+   1.1537500132620335,
+   4.015172442698548
+  ],
+  "kiosk": [
+   -3.05,
+   1.024999976158142,
+   1.7599999999999998
+  ],
+  "totem": [
+   3,
+   1,
+   7.4
+  ],
+  "planter": [
+   -6.4495712863231045,
+   0.9771338172159759,
+   9.354766768035327
+  ],
+  "sofa": [
+   -4.611999999303371,
+   0.4403021641705922,
+   5.6
+  ]
+ },
+ "doorProps": {
+  "door-office": {
+   "p": [
+    9.47,
+    0,
+    4.0152
+   ],
+   "q": [
+    0,
+    -0.707107,
+    0,
+    0.707107
+   ],
+   "gate": false,
+   "tint": 0
+  }
+ },
+ "anchorsBefore": {
+  "named": 6,
+  "typed": 2
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 6,
+  "triangles": 3576
+ },
+ "manifestColliders": 0,
+ "manifest": true,
+ "three": "170",
+ "key": "company-entrance-night",
+ "hour": 22,
+ "bakedAt": "2026-10-28T08:16:27.943Z",
+ "quantizePosition": 14,
+ "source": {
+  "family": "CompanyEntrance (N) built at runtime by lab/src/scenes",
+  "exportBytes": 30938120,
+  "triangles": 43708,
+  "drawCalls": 213,
+  "textures": 66,
+  "textureMB": 167.6
+ },
+ "lods": {
+  "lod0": {
+   "file": "company-entrance-night.glb",
+   "triangles": 19867,
+   "primitives": 147,
+   "materials": 147,
+   "textures": 45,
+   "textureKB": 3628,
+   "bytes": 4030168
+  },
+  "lod1": {
+   "file": "company-entrance-night.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 15019,
+   "primitives": 147,
+   "materials": 147,
+   "textures": 45,
+   "textureKB": 864,
+   "bytes": 1196104
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "counter",
+   "kiosk",
+   "esc",
+   "esc",
+   "sofa",
+   "sofa",
+   "planter",
+   "planter",
+   "planter",
+   "planter",
+   "sofa",
+   "totem",
+   "sofa",
+   "sofa",
+   "spot:door-street",
+   "spot:frag-11"
+  ],
+  "exportBytes": 15386200
+ },
+ "live": {
+  "file": "company-entrance-night.live.json",
+  "bytes": 135517,
+  "objects": [
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "Mesh",
+   "skyDome",
+   "motes"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs company-entrance --variant night (dev server running, BASE=...)"
+ ]
+}

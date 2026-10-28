@@ -7,14 +7,14 @@
  "cost": {
   "triangles": 95716,
   "drawCalls": 436,
-  "textures": 46,
-  "textureMB": 44.2
+  "textures": 48,
+  "textureMB": 46.8
  },
  "exported": {
-  "triangles": 76400,
-  "drawCalls": 234,
-  "textures": 36,
-  "textureMB": 42
+  "triangles": 76390,
+  "drawCalls": 229,
+  "textures": 33,
+  "textureMB": 39.9
  },
  "lights": [
   {
@@ -75,6 +75,7 @@
     "bias": -0.0006,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 0.5,
@@ -325,43 +326,43 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "88ef5636-d4b9-4965-97bf-9b7b716842fc",
+   "material": "ae737d64-4175-4f11-aafb-0d77752013c7",
    "uniform": "uT",
    "a": 1,
    "b": 0
   },
   {
-   "material": "4b1121cf-16fb-48fe-b401-1b85e3b5e5f2",
+   "material": "90e564af-ce07-406b-bfc9-ee8430955632",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "a8f307e8-ee95-4bb3-bc97-e1ef5a7d9944",
+   "material": "fca55a1e-8a52-42af-aa99-7093b51b0315",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "cb7e72eb-7362-42df-8e5e-135a3bcab2d4",
+   "material": "694db61f-015a-4bb1-9746-c1d6bd3d6b24",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "4fea8836-a206-40ec-97db-0a9e28481060",
+   "material": "a9a76d78-0053-456e-bdc1-480b037cc51c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "535d907b-8aec-446c-bd26-509ea7cbb5f7",
+   "material": "d2b34d4c-2fb9-4e26-b9d3-5b80e855f5c9",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "074120df-f074-4c55-9ad6-b30150d35b33",
+   "material": "c7613770-04be-45f9-b58b-fdad6cf0a5ad",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -1078,41 +1079,43 @@
  "three": "170",
  "key": "platform-1-day",
  "hour": 13,
- "bakedAt": "2026-10-25T19:19:52.076Z",
+ "bakedAt": "2026-10-28T09:25:13.227Z",
  "quantizePosition": 14,
  "source": {
   "family": "Platform (D) built at runtime by lab/src/scenes",
-  "exportBytes": 12337500,
+  "exportBytes": 12227060,
   "triangles": 95716,
   "drawCalls": 436,
-  "textures": 46,
-  "textureMB": 44.2
+  "textures": 48,
+  "textureMB": 46.8
  },
  "lods": {
   "lod0": {
    "file": "platform-1-day.glb",
-   "triangles": 65664,
-   "primitives": 209,
-   "materials": 203,
+   "triangles": 65660,
+   "primitives": 208,
+   "materials": 202,
    "textures": 41,
-   "textureKB": 595,
-   "bytes": 1322060
+   "textureKB": 594,
+   "bytes": 1321380
   },
   "lod1": {
    "file": "platform-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 35436,
-   "primitives": 209,
-   "materials": 203,
+   "triangles": 35432,
+   "primitives": 208,
+   "materials": 202,
    "textures": 41,
    "textureKB": 250,
-   "bytes": 853816
+   "bytes": 853196
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
+   "time-face",
+   "time-face",
    "exit-a-stair",
    "pf",
    "pf",
@@ -1127,7 +1130,10 @@
    "pf",
    "pf",
    "gates",
+   "time-face",
+   "time-face",
    "fareboard",
+   "time-face",
    "pf",
    "pf",
    "pf",
@@ -1135,11 +1141,11 @@
    "spot:plat-phone",
    "spot:frag-7"
   ],
-  "exportBytes": 671512
+  "exportBytes": 837340
  },
  "live": {
   "file": "platform-1-day.live.json",
-  "bytes": 44288,
+  "bytes": 45273,
   "objects": [
    "Mesh",
    "Mesh",
