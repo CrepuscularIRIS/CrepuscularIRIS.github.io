@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 137242,
-  "drawCalls": 318,
-  "textures": 23,
-  "textureMB": 60.1
+  "triangles": 158968,
+  "drawCalls": 351,
+  "textures": 26,
+  "textureMB": 61.4
  },
  "exported": {
-  "triangles": 134928,
-  "drawCalls": 311,
-  "textures": 22,
-  "textureMB": 60
+  "triangles": 156654,
+  "drawCalls": 344,
+  "textures": 24,
+  "textureMB": 60.3
  },
  "lights": [
   {
@@ -54,6 +54,7 @@
     "bias": -0.0005,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 1,
@@ -265,25 +266,25 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "c085b701-209a-4236-a7ac-1fd562941e8e",
+   "material": "ded9653a-c2a8-428d-a49a-1f4225bf98cf",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "c085b701-209a-4236-a7ac-1fd562941e8e",
+   "material": "ded9653a-c2a8-428d-a49a-1f4225bf98cf",
    "uniform": "uWT",
    "a": 0.35,
    "b": 3.552714e-15
   },
   {
-   "material": "69262407-8d6c-419a-9547-6adf254b1000",
+   "material": "6fb9f495-002d-4da2-98fc-46c58c3999a3",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "69262407-8d6c-419a-9547-6adf254b1000",
+   "material": "6fb9f495-002d-4da2-98fc-46c58c3999a3",
    "uniform": "uWT",
    "a": 0.2,
    "b": -1.776357e-15
@@ -295,11 +296,11 @@
  "hooks": {},
  "patchClocks": {},
  "uniformArrays": {
-  "c085b701-209a-4236-a7ac-1fd562941e8e": {
+  "ded9653a-c2a8-428d-a49a-1f4225bf98cf": {
    "uL": "v4",
    "uLC": "c"
   },
-  "69262407-8d6c-419a-9547-6adf254b1000": {
+  "6fb9f495-002d-4da2-98fc-46c58c3999a3": {
    "uL": "v4",
    "uLC": "c"
   }
@@ -311,12 +312,12 @@
    "x": -0.5,
    "y": 0,
    "z": -1.5,
-   "strength": 0.14,
-   "blur": 2.4,
-   "f0": 0.05,
+   "strength": 1.2,
+   "blur": 2,
+   "f0": 0.1,
    "tint": 13162712,
    "fade": 40,
-   "zones": 0,
+   "zones": 0.35,
    "smear": 0,
    "near": 0,
    "maskRepeat": [
@@ -324,25 +325,25 @@
     1
    ],
    "size": 1024,
-   "mask": null
+   "mask": "luxury-house-1-night.mask0.webp"
   }
  ],
  "camera": {
   "ref": {
    "position": [
-    0,
-    0.9,
+    -0.2,
+    1.1,
     6
    ],
    "target": [
-    0,
-    0.9,
+    -0.6,
+    1.1,
     1
    ],
-   "fov": 75.3,
+   "fov": 68,
    "shift": [
     0,
-    0.148
+    0.02
    ]
   },
   "views": [
@@ -712,21 +713,21 @@
     -9.25
    ],
    [
-    0.050000000000000044,
+    2.25,
     -11.549999999999999,
-    0.75,
+    2.95,
     -10.85
    ],
    [
-    -2.95,
+    -4.6499999999999995,
     -11.549999999999999,
-    -2.25,
+    -3.9499999999999997,
     -10.85
    ],
    [
-    2.65,
+    3.65,
     -11.549999999999999,
-    3.35,
+    4.35,
     -10.85
    ],
    [
@@ -863,36 +864,36 @@
  "three": "170",
  "key": "luxury-house-1-night",
  "hour": 22,
- "bakedAt": "2026-10-25T18:54:52.951Z",
+ "bakedAt": "2026-10-28T22:01:04.181Z",
  "quantizePosition": 14,
  "source": {
   "family": "LuxuryHouseNight (N) built at runtime by lab/src/scenes",
-  "exportBytes": 14910908,
-  "triangles": 137242,
-  "drawCalls": 318,
-  "textures": 23,
-  "textureMB": 60.1
+  "exportBytes": 15372776,
+  "triangles": 158968,
+  "drawCalls": 351,
+  "textures": 26,
+  "textureMB": 61.4
  },
  "lods": {
   "lod0": {
    "file": "luxury-house-1-night.glb",
-   "triangles": 46018,
-   "primitives": 173,
-   "materials": 156,
-   "textures": 13,
-   "textureKB": 736,
-   "bytes": 2112156
+   "triangles": 65596,
+   "primitives": 183,
+   "materials": 166,
+   "textures": 15,
+   "textureKB": 740,
+   "bytes": 2233280
   },
   "lod1": {
    "file": "luxury-house-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 27554,
-   "primitives": 173,
-   "materials": 156,
-   "textures": 13,
-   "textureKB": 226,
-   "bytes": 1481168
+   "triangles": 37535,
+   "primitives": 183,
+   "materials": 166,
+   "textures": 15,
+   "textureKB": 229,
+   "bytes": 1567144
   }
  },
  "parts": {
@@ -906,7 +907,7 @@
  },
  "live": {
   "file": "luxury-house-1-night.live.json",
-  "bytes": 50106,
+  "bytes": 143722,
   "objects": [
    "skyDome",
    "water",

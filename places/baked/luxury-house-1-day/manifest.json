@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 85003,
-  "drawCalls": 9001,
-  "textures": 38,
-  "textureMB": 115.3
+  "triangles": 85969,
+  "drawCalls": 295,
+  "textures": 39,
+  "textureMB": 111.6
  },
  "exported": {
-  "triangles": 82779,
-  "drawCalls": 8996,
+  "triangles": 83745,
+  "drawCalls": 290,
   "textures": 38,
-  "textureMB": 115.3
+  "textureMB": 111.3
  },
  "lights": [
   {
@@ -54,6 +54,7 @@
     "bias": -0.0004,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 1,
@@ -125,19 +126,19 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "577c7775-aa84-40c6-b25e-697c289c815f",
+   "material": "0d789aa6-5c44-4db4-ba2d-f8f44b5f430e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "577c7775-aa84-40c6-b25e-697c289c815f",
+   "material": "0d789aa6-5c44-4db4-ba2d-f8f44b5f430e",
    "uniform": "uWT",
    "a": 0.28,
    "b": -1.776357e-15
   },
   {
-   "material": "0d55470a-6da1-4b1c-be73-d079ac31819a",
+   "material": "8b951255-2a34-4b03-83db-54f4ae697703",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -149,7 +150,7 @@
  "hooks": {},
  "patchClocks": {},
  "uniformArrays": {
-  "577c7775-aa84-40c6-b25e-697c289c815f": {
+  "0d789aa6-5c44-4db4-ba2d-f8f44b5f430e": {
    "uL": "v4",
    "uLC": "c"
   }
@@ -161,12 +162,12 @@
    "x": 2.05,
    "y": 0,
    "z": 7.65,
-   "strength": 0.28,
-   "blur": 2.4,
+   "strength": 0.36,
+   "blur": 1.8,
    "f0": 0.04,
    "tint": 14083300,
    "fade": 40,
-   "zones": 0,
+   "zones": 1,
    "smear": 0,
    "near": 0,
    "maskRepeat": [
@@ -174,7 +175,7 @@
     1
    ],
    "size": 1024,
-   "mask": null
+   "mask": "luxury-house-1-day.mask0.webp"
   }
  ],
  "camera": {
@@ -359,9 +360,45 @@
       5
      ],
      "color": 13954546,
-     "power": 3.5,
+     "power": 3.9,
      "lookAt": [
       2.5,
+      1.5,
+      6
+     ]
+    },
+    {
+     "pos": [
+      1.5,
+      2.8,
+      -2.85
+     ],
+     "size": [
+      0.5,
+      5.2
+     ],
+     "color": 10195327,
+     "power": 0.35,
+     "lookAt": [
+      1.5,
+      1.5,
+      6
+     ]
+    },
+    {
+     "pos": [
+      3,
+      2.8,
+      -2.85
+     ],
+     "size": [
+      0.5,
+      5.2
+     ],
+     "color": 10195327,
+     "power": 0.35,
+     "lookAt": [
+      3,
       1.5,
       6
      ]
@@ -606,37 +643,37 @@
  "manifest": false,
  "three": "170",
  "key": "luxury-house-1-day",
- "hour": 13,
- "bakedAt": "2026-10-25T18:54:46.596Z",
+ "hour": 12,
+ "bakedAt": "2026-10-28T22:51:14.454Z",
  "quantizePosition": 14,
  "source": {
   "family": "LuxuryHouseDay (D) built at runtime by lab/src/scenes",
-  "exportBytes": 48817788,
-  "triangles": 85003,
-  "drawCalls": 9001,
-  "textures": 38,
-  "textureMB": 115.3
+  "exportBytes": 44384816,
+  "triangles": 85969,
+  "drawCalls": 295,
+  "textures": 39,
+  "textureMB": 111.6
  },
  "lods": {
   "lod0": {
    "file": "luxury-house-1-day.glb",
-   "triangles": 73787,
-   "primitives": 170,
-   "materials": 169,
+   "triangles": 74717,
+   "primitives": 178,
+   "materials": 177,
    "textures": 32,
-   "textureKB": 2868,
-   "bytes": 3788312
+   "textureKB": 2812,
+   "bytes": 3749588
   },
   "lod1": {
    "file": "luxury-house-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 43603,
-   "primitives": 170,
-   "materials": 169,
+   "triangles": 44134,
+   "primitives": 178,
+   "materials": 177,
    "textures": 32,
-   "textureKB": 752,
-   "bytes": 1434188
+   "textureKB": 737,
+   "bytes": 1431272
   }
  },
  "parts": {
@@ -650,7 +687,7 @@
  },
  "live": {
   "file": "luxury-house-1-day.live.json",
-  "bytes": 30813,
+  "bytes": 122886,
   "objects": [
    "skyDome",
    "water",
