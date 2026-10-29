@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-29-methode-d2493f9c",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-29T02:59:13Z",
+  "title": "DTCA：给扩散语言模型的 RL 做 token 级信用分配，登顶 Hugging Face 今日论文（252 赞）",
+  "summary": "扩散语言模型的 RL 信用分配有了新解法：DTCA 用去噪过程中的置信度增益做 token 级加权，在 LLaDA-8B-Instruct 上把 MATH500 提升最多 9.0 分，登上 Hugging Face 今日论文第一（252 赞）。",
+  "summary_en": "DTCA proposes token-level credit assignment for reinforcement learning in diffusion language models. It weights tokens using confidence gains observed during denoising. According to the note, on LLaDA-8B-Instruct, the method improves MATH500 performance by as much as 9.0 points and ranked first among Hugging Face’s daily papers, receiving 252 likes. The note presents these as reported results.",
+  "body": "扩散语言模型的 RL 信用分配有了新解法：DTCA 用去噪过程中的置信度增益做 token 级加权，在 LLaDA-8B-Instruct 上把 MATH500 提升最多 9.0 分，登上 Hugging Face 今日论文第一（252 赞）。\n\n论文\n- DTCA: Denoising Token Credit Assignment for RL in Diffusion Language Models（HF 今日论文 #1，252 赞） — 用 token 提交后其余掩码位置置信度的提升量来量化 token 贡献，并按词性分组，用于挑选去噪时间步与分配 RL 学习信号；LLaDA-8B-Instruct 上 MATH500 最高 +9.0 分、GSM8K +5.3 分。\n  https://arxiv.org/abs/2610.35201\n- Why and How to Do Science When AI Is Better at It: A Framework Grounded in Human Understanding and Direction — Heidari 与 Mohseni 提出“人类理解 + 人类方向”双重判据，回答当 AI 在科研任务上超越人类后，人类还该不该做科学、以及该如何用 AI；适用于 CRediT 各研究阶段包括同行评审。\n  https://arxiv.org/abs/2610.36116\n- AgentBaton: Efficient Model Collaboration in Agentic Tasks — 研究长程 agent 任务中强模型与廉价小模型的接力（handoff）时机：单向“强→弱”在合适阶段可几乎不掉精度地降本，AgentBaton 检测器在 11 组模型对上平均省 65.9% API 成本，精度最高反超纯强模型 8.8 个百分点。\n  https://arxiv.org/abs/2610.35959\n- Efficient Streaming Audio-Visual Target Speaker Extraction (Falcon / RealSSA 基准) — 发布贴近真实场景的流式视听目标说话人分离基准 RealSSA（1–5 近场干扰 + 10–15 远场干扰），并给出轻量因果方法 Falcon：参数量降 91.9%、GPU 推理延迟降 11.1 倍。\n  https://arxiv.org/abs/2610.32749\n\nGitHub与基建\n- llama.cpp 构建 b11976：Hexagon IM2COL 优化（10:28 CST） — 高通 Hexagon NPU 后端的 IM2COL 改为基于输出列分块的 HVX 并行化，多线程执行并修正 padding 处理。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11976\n- Ollama v0.40.13 正式版（10:54 CST） — Liquid AI 的 LFM3 系列（含带 TTS 的 lfm3-audio 与 lfm3-omni）除 Apple silicon 外也登陆 Linux 与 Windows。\n  https://github.com/ollama/ollama/releases/tag/v0.40.13\n\n系统\n- LWN.net Weekly Edition for October 29, 2026（08:19 CST） — 本周合辑涵盖 Python 实验性 JIT 被移除、内核清理、内核代码中 Rust panic 的准则、7.4 合并窗口首段进展以及更小的内核栈等议题。\n  https://lwn.net/Articles/1102136\n\nSource: https://huggingface.co/papers/2610.35201",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2610.35201",
+    "verified_at": "2026-10-29T02:59:13Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-29-saturnus-823f1d2d",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-10-29T03:06:45Z",
+  "title": "AI 云安全公司 Upwind 拒掉 Datadog 收购，拿到 4 亿美元 C 轮、估值 38 亿美元",
+  "summary": "过去 3 小时（10/29 00:00–11:00 北京时间）漏网的大事：Upwind 4 亿美元 C 轮拒售 Datadog、微软披露单季从 OpenAI 拿到 100 亿美元、Alphabet 财报与 AI 搜索广告出海、特朗普政府 50 亿美元核电贷款喂数据中心，以及 HN 上爆火的 Qwenputer 与 CircuitHub 机器人 PCB 工厂。",
+  "summary_en": "Upwind reportedly rejected Datadog’s acquisition offer and raised a $400 million Series C at a $3.8 billion valuation. A roundup of notable items from the past three hours also mentions Microsoft disclosing $10 billion received from OpenAI in one quarter, Alphabet earnings and overseas AI-search advertising, a proposed $5 billion Trump-government nuclear loan program for data centers, and HN highlights about Qwenputer and CircuitHub’s robot-PCB factory.",
+  "body": "过去 3 小时（10/29 00:00–11:00 北京时间）漏网的大事：Upwind 4 亿美元 C 轮拒售 Datadog、微软披露单季从 OpenAI 拿到 100 亿美元、Alphabet 财报与 AI 搜索广告出海、特朗普政府 50 亿美元核电贷款喂数据中心，以及 HN 上爆火的 Qwenputer 与 CircuitHub 机器人 PCB 工厂。\n\n融资与商业\n- Upwind 完成 4 亿美元 C 轮，估值 38 亿美元，拒掉 Datadog 收购 — 10/29 07:15 北京时间发布。Bessemer 领投，Greylock、Craft 跟投，九个月前估值仅 15 亿。关键是它拒绝了 Datadog 的收购报价，坚持独立；ARR 每季度净增 2000–3000 万美元，预计年底约 9000 万，估值超 40 倍 ARR，为 AI 安全赛道定价新标杆。\n  https://techcrunch.com/2026/10/28/upwind-raises-400m-after-walking-away-from-datadog-acquisition-offer\n- 微软财报披露：单季从 OpenAI 获得 100 亿美元收入，占总营收近 11% — 来自微软 10-K/监管文件，季度营收 923 亿美元中约 100 亿与 OpenAI 商业安排相关（含分成与 Azure）；2026 财年全年 241 亿，按此节奏年化可达 400 亿。另有 72 亿美元应收款，持股比例从 25% 降至 24%——两家既是盟友又是直接对手的财务关系首次被量化。\n  https://techcrunch.com/2026/10/28/microsoft-recorded-10-billion-in-revenue-from-openai\n- Alphabet Q3 财报：营收 1276 亿，AI 模式搜索广告首次全球铺开，Gemini 应用月活破 10 亿 — Google 搜索广告增速从 19%→17%→12% 逐季放缓，股价财报后跌 8%；公司把 AI Overviews/AI Mode 内的广告首次推向国际市场，并推多轮对话式广告。Cloud 营收同比增 103% 至 307 亿，Gemini 应用月活达 10 亿，季度内发布 Gemini 4 Argon、Pixel 11。\n  https://techcrunch.com/2026/10/28/google-expands-ai-search-ads-globally-as-core-ad-growth-slows\n\n政策与能源基建\n- 特朗普政府能源部向 Constellation 提供 50 亿美元贷款，为数据中心扩核电 1.1GW — 涉及伊利诺伊、宾州、马里兰州共 8 座核电站的扩容（uprate），新增电力中的绝大部分已被 Google、Amazon、Meta 买走（Meta 几乎包下 Clinton 全厂）。AI 数据中心电力争夺已直接进入美国能源政策层，DOE 强调降低融资成本但未证明电价会降。\n  https://techcrunch.com/2026/10/28/trump-doe-loans-5b-to-nuclear-plants-that-will-power-data-centers\n- 拜登时期反垄断主管们创办 AI 法律科技公司 FluxCap — 据纽约时报（并由 Reuters、PYMNTS 等转载）10/28 报道，前司法部反垄断主管团队创办 FluxCap，主打 AI 相关反垄断/竞争法法律服务——AI 巨头监管压力正催生新一批“AI 律所”式创业公司。\n  https://news.google.com/rss/articles/CBMikwFBVV95cUxNTm40WU5NR0pqTGU0bFpQb2oxWVoyRDZZRDVqTEhIZXlJamJsMzJteVR0UkhyVXpVS1JMMFBWSTYzUmJpckhGTmxTektPeS1MaU5TOGhlS19OSkhaNTZNekp6cUFOeUJkR2VqYU9VVW9zc1EtQTRhSkowb3E1c2xGS1FFYmlaZnA3Tk94WHZoRFNfaWM?oc=5\n\nHN 与技术突破\n- Qwenputer：把确定性 RISC-V CPU 编译进 Qwen3.5 权重里，用 Gated DeltaNet 层当内存 — HN 首页第 1 位（137 分 / 32 评论，约 2 小时）。模型前向传播内部自带 CPU，可直接跑 C 和 MicroPython，无插件、无沙箱；还带出“把推理藏进 RNN 状态以绕过 CoT 监控”“权重内编译不可篡改监控”等后续工作，是模型即计算机路线的爆款展示。\n  https://divagr.com/blog/qwenputer\n- CircuitHub “The Grid”：马萨诸塞的工厂级机器人按需造 PCB，单板走独立路线 — HN 442 分 / 208 评论。悬浮搬运机器人在机器人之间运送每块板与元件，印刷锡膏、贴片、焊接、检测全自动化，无换线停机、多种小批量同时生产，3 天起交付；官方称一家头部 EV 厂商和一家顶级 AI 实验室已在使用——AI 硬件供应链自动化的标志性事件。\n  https://circuithub.com\n\nSource: https://techcrunch.com/2026/10/28/upwind-raises-400m-after-walking-away-from-datadog-acquisition-offer",
+  "category": "breaking",
+  "source": {
+    "url": "https://techcrunch.com/2026/10/28/upwind-raises-400m-after-walking-away-from-datadog-acquisition-offer",
+    "verified_at": "2026-10-29T03:06:45Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}

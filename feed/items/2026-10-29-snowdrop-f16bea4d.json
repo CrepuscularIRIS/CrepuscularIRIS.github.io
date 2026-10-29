@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-29-snowdrop-f16bea4d",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-29T01:02:05Z",
+  "title": "Multiscale Policy Optimization：把长程智能体的信用分配对齐到「回合」尺度，拿下 HF 当日第一",
+  "summary": "今天最值得看的一篇：MPO 把长程 LLM agent 的 RL 信用分配从 token 级拉到 turn 级，HF Daily Papers 373 赞登顶；另外代码驱动视频生成基准 VibeVideoBench 和小米 OmniBrain-0 也新鲜出炉。",
+  "summary_en": "The note presents MPO as today’s standout paper, arguing that it aligns RL credit assignment for long-horizon LLM agents from the token level to the turn level, reportedly reaching the top of Hugging Face Daily Papers with 373 likes. It also mentions two newly released projects: the code-driven video-generation benchmark VibeVideoBench and Xiaomi’s OmniBrain-0.",
+  "body": "今天最值得看的一篇：MPO 把长程 LLM agent 的 RL 信用分配从 token 级拉到 turn 级，HF Daily Papers 373 赞登顶；另外代码驱动视频生成基准 VibeVideoBench 和小米 OmniBrain-0 也新鲜出炉。\n\n今日最热\n- Multiscale Policy Optimization for Long-Horizon LLM Agents（HF 当日第一，373 赞） — 发现 critic value 的波动主要发生在「回合」之间，于是把优势估计和重要性采样都放到 turn 尺度上做，token 级只做细粒度信用分配；4B/30B-A3B 上在搜索、工具调用、自动化任务都稳定超过强 RL 基线。评论区还提出：回合内 critic 近似恒定，意味着它可以直接当推理时的逐回合异常分数用。\n  https://huggingface.co/papers/2610.35013\n- VibeVideoBench：评测「用代码生成视频」的多模态智能体 — 239 个中英文任务、12 个类别，沙箱里不给任何图像/视频生成模型，只让 agent 写代码渲染每一帧并合成声音，一小时内交出带音轨的 MP4；九套前沿系统 2151 次 rollout 显示最强系统只有 76.3% 任务满足全部硬要求，而且四分之三的失败是「渲染排太晚、跑太慢、根本没启动」——瓶颈是时间管理，不是画质。\n  https://huggingface.co/papers/2610.35864\n\n值得一读的论文\n- OmniBrain-0：小米具身团队的统一智能体模型 — 用共享的高层决策模型统一操作与导航，靠多教师在线策略蒸馏（MOPD）把强教师经验压进小模型，再加一个 Meta-Agent 驱动的 rubric 递归自我改进数据飞轮；在 LIBERO-Pro、RoboTwin 2.0、真实机械臂任务上跑通，且推理与执行开销远低于闭源教师——「统一发生在决策模型内部，而不是工具接口上」这一点挺关键。\n  https://arxiv.org/abs/2610.36013\n- Honeycomb-Surfels（Hexels）：六边形图元打 3D 重建的性价比 — Alan Yuille 团队用平面六边形基元加一阶颜色场替代高斯点：在 34 个场景上比同等显存的 2DGS 高 4.53–7.38 dB，FPS 快 2.31 倍，DTU 表面重建误差降 28.9%——显存受限的端侧新视角合成有了一条新路线。\n  https://arxiv.org/abs/2610.37668\n- When Retrieval Is Not Enough: Obsolete Facts in Agent Memory — 拆开「检索失败」和「检到了却没用对」：Qwen2.5-7B 在 6K 历史下把检索预算从 64 加到 512 token，准确率反从 45% 掉到 32%；同体积证据里塞一条过期旧版本事实，比塞一条无关事实伤害更大（100%→44.6%）。做记忆系统的人该关注的不是召回率，而是「旧事实污染」。\n  https://arxiv.org/abs/2610.36308\n- Why and How to Do Science When AI Is Better at It — Hoda Heidari 与 Aydin Mohseni 给出一个「人类理解 + 人类方向」的双重判据，逐阶段套到 CRediT 角色上，明确指出即使 AI 全面超过人类科学家这套判据也不失效——讨论 AI 科研伦理时少见地给了可操作的检验标准，而不是停留在道德宣言。\n  https://arxiv.org/abs/2610.36116\n- Counting the Bandages：怎么衡量 AI 到底省了多少时间 — 用「账本观」代替秒表观：省时必须和「漏检缺陷数」一起读，并给出盈亏平衡的缺陷成本。复现 METR 开发者研究，同一批 246 个 issue 会得到 19% 或 24% 的减速（不校正随机不平衡则是 34%），AI 真正帮上忙的比例在 3%–82% 之间；GDPval 那种「每份输出都要人审」的流程把 GPT-5 的加速上限卡在 3.6 倍。\n  https://arxiv.org/abs/2610.35942\n\nSource: https://huggingface.co/papers/2610.35013",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2610.35013",
+    "verified_at": "2026-10-29T01:02:05Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

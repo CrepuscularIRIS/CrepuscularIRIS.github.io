@@ -5,16 +5,16 @@
  "variant": "",
  "tod": "day",
  "cost": {
-  "triangles": 51700,
-  "drawCalls": 237,
-  "textures": 55,
-  "textureMB": 127.8
+  "triangles": 60312,
+  "drawCalls": 236,
+  "textures": 53,
+  "textureMB": 126.5
  },
  "exported": {
-  "triangles": 23112,
-  "drawCalls": 185,
-  "textures": 43,
-  "textureMB": 87.8
+  "triangles": 23036,
+  "drawCalls": 183,
+  "textures": 41,
+  "textureMB": 86.5
  },
  "lights": [
   {
@@ -52,13 +52,13 @@
    ],
    "shadow": {
     "mapSize": [
-     1024,
-     1024
+     512,
+     512
     ],
     "bias": -0.0004,
     "normalBias": 0.025,
     "radius": 2,
-    "intensity": 0.7,
+    "intensity": 0.55,
     "autoUpdate": true,
     "camera": {
      "near": 0.5,
@@ -169,19 +169,19 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "427e841f-3293-4b3c-b406-c23b8d0b8396",
+   "material": "ad57c9f5-1b67-4f9e-ab4d-6b93f229033f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "4b9e2e2f-d775-447b-a63b-a42dd2361fa6",
+   "material": "6379dd24-5b99-43a3-a9d4-9a30357bc91f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "454d530a-8d09-4643-b2d5-9a97a787151d",
+   "material": "02109bbe-ed2f-4c5f-aa77-319e88dbb089",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -202,9 +202,9 @@
     6.179
    ],
    "target": [
-    4.962,
+    5.183,
     1.462,
-    2.68
+    2.469
    ],
    "fov": 30.22,
    "shift": [
@@ -217,13 +217,13 @@
     "name": "wide",
     "label": "Wide",
     "position": [
-     7.9,
-     1.85,
-     3.9
+     7.75,
+     2.05,
+     4.75
     ],
     "target": [
-     3.1,
-     0.95,
+     3,
+     0.85,
      1.55
     ],
     "fov": 58
@@ -377,7 +377,7 @@
   "ibl": {
    "top": 6119524,
    "wall": 6447454,
-   "floor": 10130046,
+   "floor": 9867396,
    "intensity": 0.3,
    "lights": [
     {
@@ -565,12 +565,12 @@
    "object": "bed",
    "typed": false,
    "anchor": [
-    6.758253575861454,
+    6.753939199628486,
     0.5339999992400408,
     3.3630015134811404
    ],
    "built": [
-    6.758253575861454,
+    6.753939199628486,
     0.5339999992400408,
     3.3630015134811404
    ],
@@ -611,7 +611,7 @@
    5.8
   ],
   "bed": [
-   6.758253575861454,
+   6.753939199628486,
    0.5339999992400408,
    3.3630015134811404
   ]
@@ -634,37 +634,37 @@
  "manifest": false,
  "three": "170",
  "key": "hospital-b",
- "hour": 23,
- "bakedAt": "2026-10-27T15:43:17.418Z",
+ "hour": 22,
+ "bakedAt": "2026-10-29T02:15:36.437Z",
  "quantizePosition": 14,
  "source": {
   "family": "HospitalWard () built at runtime by lab/src/scenes",
-  "exportBytes": 37320380,
-  "triangles": 51700,
-  "drawCalls": 237,
-  "textures": 55,
-  "textureMB": 127.8
+  "exportBytes": 37260888,
+  "triangles": 60312,
+  "drawCalls": 236,
+  "textures": 53,
+  "textureMB": 126.5
  },
  "lods": {
   "lod0": {
    "file": "hospital-b.glb",
-   "triangles": 48286,
-   "primitives": 189,
-   "materials": 183,
-   "textures": 38,
-   "textureKB": 2685,
-   "bytes": 3343936
+   "triangles": 56898,
+   "primitives": 187,
+   "materials": 180,
+   "textures": 36,
+   "textureKB": 2670,
+   "bytes": 3401212
   },
   "lod1": {
    "file": "hospital-b.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 40794,
-   "primitives": 189,
-   "materials": 183,
-   "textures": 38,
-   "textureKB": 687,
-   "bytes": 1272076
+   "triangles": 49444,
+   "primitives": 187,
+   "materials": 180,
+   "textures": 36,
+   "textureKB": 677,
+   "bytes": 1332544
   }
  },
  "parts": {
@@ -675,11 +675,11 @@
    "tv",
    "spot:lab-door"
   ],
-  "exportBytes": 14948024
+  "exportBytes": 15134320
  },
  "live": {
   "file": "hospital-b.live.json",
-  "bytes": 110793,
+  "bytes": 110754,
   "objects": [
    "skyDome",
    "smokePlume",

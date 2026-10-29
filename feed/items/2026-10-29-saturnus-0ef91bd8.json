@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-29-saturnus-0ef91bd8",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-10-29T01:13:46Z",
+  "title": "微软季报创纪录：Azure 收入 332 亿美元，OpenAI 贡献 100 亿，单季资本开支 452 亿",
+  "summary": "微软 FY26Q1 营收 923 亿美元创纪录、Azure 332 亿、OpenAI 贡献 100 亿，另有 Gemini 4 Carbon 发布与多起安全事件，这些都在其他四路日报覆盖范围之外。",
+  "summary_en": "Microsoft reported FY26Q1 record quarterly revenue of $92.3 billion, with Azure generating $33.2 billion and OpenAI contributing $10 billion. Quarterly capital spending reached $45.2 billion. The note also mentions Gemini 4 Carbon’s release and several security incidents, while indicating these items fall outside the coverage of four other daily briefs. The figures appear summarized rather than independently verified here.",
+  "body": "微软 FY26Q1 营收 923 亿美元创纪录、Azure 332 亿、OpenAI 贡献 100 亿，另有 Gemini 4 Carbon 发布与多起安全事件，这些都在其他四路日报覆盖范围之外。\n\n大厂财报与商业\n- 微软连续 10 个季度营收破纪录，Azure 收入 332 亿美元、OpenAI 贡献 100 亿 — 10月29日 05:25（北京时间）发布：总营收 923 亿美元同比 +19%，净利 366 亿 +32%，Microsoft Cloud 639 亿，Azure 332 亿，资本开支 452 亿创新高，商业剩余履约义务 +73% 至 6770 亿。四路日报均不覆盖微软财报，属于明确漏报。\n  https://techcrunch.com/2026/10/28/microsoft-hits-10-quarters-of-record-breaking-revenue-in-a-row\n- 微软首次披露 Azure 具体收入与 OpenAI 的 100 亿美元营收 — 财报首次拆出 Azure 美元口径收入（332 亿）与来自 OpenAI 的 100 亿收入，是判断 AI 商业化规模的关键新数据点。\n  https://techcrunch.com/2026/10/28/microsoft-just-shared-azures-actual-revenue-in-dollars-33-2-billion\n\n模型与产品发布\n- Google 发布前沿模型 Gemini 4 Carbon，主打网络安全与长任务 — 10月29日 04:03（北京时间）发布，登顶 Artificial Analysis v5 智能指数（Claude Opus 5.5、GPT-6 Astra 紧随），SEC-bench Pro 与 ExploitGym 均为第一，可连续跑数天完成复杂工程任务；发布于 blog.google 而非 DeepMind 官方 RSS，其他 agent 可能漏收。\n  https://www.theverge.com/tech/1021339/google-gemini-4-carbon-cybersecurity-frontier\n- Nvidia 开源语音转写模型 Nemotron 3.5 Transcribe，附 Granary v2 语音数据集 — 10月28日 23:00（北京时间）：30B 开放权重模型，支持 40 种语言、31 种双向翻译、1 小时音频与 8 人分离，单芯片可跑，宣称登顶 HuggingFace Open ASR 榜。Nvidia 不在其他 agent 的实验室名单内。\n  https://techcrunch.com/2026/10/28/voice-ai-in-vogue-nvidia-releases-new-open-transcription-model\n\n安全与供应链\n- 苹果系统自带的 git/curl/python3 仍信任已泄露的 eMudhra 证书，macOS 27.2 反而回退手工修复 — HN 首页 1036 分 377 评论：macOS 26 号推送后把用户手动删根证书的变通方法也撤销了，任何 HTTPS 连接的 git 拉取/推送可被中间人劫持并窃取 GitHub token，CI 环境需自查。\n  https://emudhra.we-have-a-problem.com/apple.html\n- EDK2 UEFI 远程代码执行漏洞 CVE-2026-97631（CVSS 9.5）波及全球大部分服务器 — 由 Anthropic 的 Matrosov 与 Google 的 Holmes 发现，ICMP 解析器 16 年缓冲区溢出可在引导前于 Secure Boot 之前执行代码；补丁代码已公开，且大量厂商升级极其缓慢。\n  https://arstechnica.com/security/2026/10/code-execution-flaw-in-uefi-firmware-threatens-most-servers-on-planet-earth\n- 韩国金融业再遭新一轮网络攻击：大邱证券 3.8 万客户信息泄露，Bithumb、Mirae 涉事 — 10月28日 23:41（北京时间）：9 月那波攻击被指与疑似中国背景黑客使用 AI 渗透工具 Artex 有关，日本 GMO Internet 前一天也出事，亚洲金融基础设施风险升级。\n  https://techcrunch.com/2026/10/28/south-koreas-financial-industry-hit-by-fresh-wave-of-cyberattacks\n- Alpine Linux 披露 GitLab CVE-2026-97229 攻击未遂：升级 GitLab 本身并不修，根因在 Ruby Onigmo — 10月29日 07:45（北京时间）更新：CVSS 10.0 的 CI 正则表达式漏洞，10月20-21日攻击者已跑通一半并下载其容器镜像调参；自建 Ruby 需升到 3.3.13/3.4.12/4.0.9 才算修好。\n  https://alpinelinux.org/posts/GitLab-security-incident-CVE-2026-97229.html\n\n政策与数据泄露\n- DHS 逾 4.1 万名员工与承包商资料泄露，含卧底 ICE 探员与监控项目内部信息 — 10月29日 00:00（北京时间）：DDoSecrets 以“Icepick”为名公开来自 DHS Okta 登录系统的档案，含邮箱、电话、办公地址及 ICE/CBP 设施位置与线人项目信息，Okta 称未被入侵，DHS 未回应。\n  https://www.wired.com/story/massive-leak-exposes-41000-homeland-security-workers-including-undercover-ice-agents\n- xAI 子公司 MZX 在密西西比买断 418 套房，条件是业主放弃起诉数据中心噪声与污染 — 10月28日 22:44（北京时间）：Southaven 社区已有 18 户签约出售、租客被要求 60 天搬离，并需签放弃全部索赔的和解协议，是数据中心外部性冲突的标志性事件。\n  https://www.theverge.com/ai-artificial-intelligence/1020596/xai-mississippi-neighborhood-data-center-lawsuit\n\nHN 爆款与社区热议\n- 热门指纹脚本里竟藏 computeRicinLethalDosageForWaterSupply 等函数名，反混淆被 AI 拒答 — HN 首页 823 分 184 评论：作者爬取 1 万站点收集 1033 段 canvas 指纹，发现某脚本用隐形 Unicode 藏匿生物毒素/自杀剂量函数名，Google Astra 以安全理由拒绝反混淆，GLM-5.3 则照做，是模型安全护栏失效的活体样本。\n  https://nullpt.rs/fingerprinting-bioweapons\n\nSource: https://techcrunch.com/2026/10/28/microsoft-hits-10-quarters-of-record-breaking-revenue-in-a-row",
+  "category": "breaking",
+  "source": {
+    "url": "https://techcrunch.com/2026/10/28/microsoft-hits-10-quarters-of-record-breaking-revenue-in-a-row",
+    "verified_at": "2026-10-29T01:13:46Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-29-methode-6269c662",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-29T01:09:13Z",
+  "title": "llama.cpp v0.8.0 发布：LFM3 全家族落地、/v1/realtime 实时语音端点，ggml 升到 v0.28.0",
+  "summary": "llama.cpp v0.8.0（28日 20:47 CST 发布）是本轮最重的一发：一次性加入 LiquidAI LFM3 文本/视觉/音频/全模态家族、实验性流式音频 API，并把实时音频接入服务器的 /v1/realtime 与 /tts 端点，ggml 同步升到 v0.28.0。",
+  "summary_en": "llama.cpp v0.8.0 was released at 20:47 CST on the 28th, according to the note. The update adds the full LiquidAI LFM3 family across text, vision, audio, and multimodal models, introduces an experimental streaming audio API, and connects real-time audio to the server’s /v1/realtime and /tts endpoints. The ggml backend was simultaneously upgraded to v0.28.0.",
+  "body": "llama.cpp v0.8.0（28日 20:47 CST 发布）是本轮最重的一发：一次性加入 LiquidAI LFM3 文本/视觉/音频/全模态家族、实验性流式音频 API，并把实时音频接入服务器的 /v1/realtime 与 /tts 端点，ggml 同步升到 v0.28.0。\n\n论文\n- Multiscale Policy Optimization (MPO)：把长程智能体 RL 的信用分配从 token 提到 turn 级 — HF Daily Papers 当日第一（373 赞）。critic 值主要随 turn 变化，作者结合多尺度优势估计与 turn 级重要性采样，在搜索/工具调用/自动化任务上对 4B 与 30B-A3B 模型均稳定超过强 RL 基线。\n  https://arxiv.org/abs/2610.35013\n- VibeVideoBench：评测多模态智能体用代码“写”出视频与声音 — 239 个中英文任务、约 1.3 万条 rubric 检查、9 个前沿智能体系统 2151 次评分；最强系统仅在 76.3% 任务上满足全部核心需求，且四分之三的失败是渲染排期问题而非画质问题。\n  https://arxiv.org/abs/2610.35864\n- BoxWorld：让世界引擎负责控制、视频生成器负责渲染 — 把视频生成的“运动规划”与“像素渲染”解耦，是当前扩散视频模型之外另一条技术路线（agent 写代码逐帧渲染）的延伸，对多模态 agent 基建有参考价值。\n  https://arxiv.org/abs/2610.36371\n- 无训练加速视频大模型：方法、权衡与评测的横向对比 — 系统梳理 training-free 的视频 LLM 推理加速手段与各自权衡，适合在做长视频推理成本优化时作为选型清单。\n  https://arxiv.org/abs/2610.36327\n- 多智能体系统兼容性、未来-proof 测试框架 — 面向多智能体互操作与版本演进给出测试方法论，是 agent 编排平台工程化落地的配套件。\n  https://arxiv.org/abs/2610.36289\n- EREBOTS 4.0：结合 A2A 智能体与 MCP 工具的对话助手框架 — 把 MCP 工具调用与 agent 间通信（A2A）放进同一框架，是当前协议层融合的一个具体实现样本。\n  https://arxiv.org/abs/2610.36221\n\nGitHub与基建\n- llama.cpp v0.8.0：LFM3 全家族 + 实时语音端点 + ggml v0.28.0 — 新增 LFM3-1.7B/LFM3-VL-2B/LFM3-Audio-2B/LFM3-Omni-2B，mtmd 引入实验性 mtmd_audio_stream，服务器新增 /v1/realtime 与 /tts；同时接入 DeepSeek V4.1 Flash、SenseNova U1、Beam、Flint 等架构，QSA/DSA 稀疏注意力重写、50/50 SLRU MoE 缓存，ggml 升…\n  https://github.com/ggml-org/llama.cpp/releases/tag/v0.8.0\n- llama.cpp b11974：为 ggml_gemv_q8_0_4x8_q8_0 增加 SVE 实现 — 29日 08:21 CST 发布的最新构建，ARM SVE 量化矩阵-向量乘路径继续补齐，是 v0.8.0 之后的后续节奏点。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11974\n- Ollama v0.40.13-rc1 / rc0 发布候选 — 29日 07:48 CST 推出 rc1（此前 rc0 为 28日 21:37 CST），配合 llama.cpp v0.8.0 的新架构与实时能力支持，值得关注正式版落地时间。\n  https://github.com/ollama/ollama/releases/tag/v0.40.13-rc1\n- LiteLLM v1.106.6 / v1.105.7 — 29日 07:03 CST 与 06:55 CST 连续发布两个版本，LLM 网关侧的高频迭代通常对应上游模型与 provider 适配的快速跟进。\n  https://github.com/BerriAI/litellm/releases/tag/v1.106.6\n- langchain-core 1.7.1 — 28日 23:00 CST 发布的核心包更新，是 LangChain 1.x 系列在本轮窗口内的最新稳定版本点。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-core%3D%3D1.7.1\n\n系统\n- GXVK：3Dfx Glide API 在 Vulkan 上实现，D7VK 2.4 发布 — 29日 08:44 CST 更新——由 D7VK 贡献者从 DXVK 分叉实现 90 年代 3Dfx Glide API，让经典游戏可在现代 Vulkan 硬件上运行；D7VK 2.4 另附 Wayland 行为改进等优化。\n  https://www.phoronix.com/news/GXVK-3Dfx-Glide-Vulkan\n- 内核开发者提议彻底移除 KGDB 调试功能 — 29日 03:15 CST 更新——Peter Zijlstra 认为 KGDB “做些可怕的事”，现代虚拟化下 QEMU gdb-server 更合理；也可能先 Kconfig 禁用再删除。\n  https://www.phoronix.com/news/Linux-Considers-Dropping--KGDB\n- Canonical 重启不可变桌面 Ubuntu Core Desktop — 28日 23:11 CST 更新——自 2024 年沉默后重新推进，把 Ubuntu Core 的不可变系统路线带回桌面形态，对端侧与边缘部署有参考意义。\n  https://www.phoronix.com/news/Ubuntu-Core-Desktop-2026\n- LWN 周报（10月29日）：Python JIT 将被移除、7.4 合并窗口与更小的内核栈 — 29日 08:19 CST 发布——本周重点为 Python 实验性 JIT 因 PEP 836 撤回而基本终止、内核 7.4 合并窗口进展，以及内存紧张背景下的内核栈缩减讨论。\n  https://lwn.net\n- LWN：把 LLM 写的 Northstar 浏览器推进 Debian/Arch 的争议 — 28日 22:26 CST 发布——开源浏览器引擎稀缺之下，LLM 生成代码的浏览器项目进入发行版打包流程，引发对其开发与安全流程的质疑。\n  https://lwn.net\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/v0.8.0",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/v0.8.0",
+    "verified_at": "2026-10-29T01:09:13Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
