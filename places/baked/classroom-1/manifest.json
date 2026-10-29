@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 61458,
-  "drawCalls": 143,
-  "textures": 27,
-  "textureMB": 82.2
+  "triangles": 66724,
+  "drawCalls": 162,
+  "textures": 45,
+  "textureMB": 113.8
  },
  "exported": {
-  "triangles": 57510,
-  "drawCalls": 137,
-  "textures": 27,
-  "textureMB": 82.2
+  "triangles": 62776,
+  "drawCalls": 156,
+  "textures": 45,
+  "textureMB": 113.8
  },
  "lights": [
   {
@@ -34,7 +34,7 @@
    "type": "HemisphereLight",
    "name": "",
    "color": 0,
-   "intensity": 0.42,
+   "intensity": 0.54,
    "position": [
     0,
     1,
@@ -67,6 +67,7 @@
     "bias": -0.00018,
     "normalBias": 0.012,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 3.16643415108984,
@@ -82,7 +83,7 @@
    "type": "DirectionalLight",
    "name": "",
    "color": 11057860,
-   "intensity": 0.45,
+   "intensity": 1.15,
    "position": [
     8,
     20,
@@ -99,13 +100,13 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "cb356660-dc56-47b8-a0ed-50fe5a576ad7",
+   "material": "dd1354d3-9d4b-4676-b3a5-b8b3eb82ab6c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "fdf902d8-0c93-4d54-9fa3-39b40efeede0",
+   "material": "3090a22c-aa9e-4a45-a66a-3a7042075376",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -126,11 +127,11 @@
     8.228
    ],
    "target": [
-    2.9818969800494726,
+    3.5258048249248644,
     1.2,
-    4.443024721741217
+    4.034647160272879
    ],
-   "fov": 41.2,
+   "fov": 44,
    "shift": [
     0,
     -0.161
@@ -231,14 +232,14 @@
     "name": "chairs",
     "label": "Chairs",
     "position": [
-     1.9,
-     0.75,
-     6.9
+     1.7,
+     1.1,
+     4.45
     ],
     "target": [
-     3,
-     0.4,
-     4.5
+     2.74,
+     0.45,
+     4.05
     ],
     "fov": 50
    }
@@ -262,7 +263,7 @@
    "top": 5858156,
    "wall": 7041140,
    "floor": 3877924,
-   "intensity": 0.24,
+   "intensity": 0.3,
    "lights": [
     {
      "pos": [
@@ -754,44 +755,44 @@
  },
  "dressStats": null,
  "detailStats": {
-  "meshes": 9,
-  "triangles": 1280
+  "meshes": 18,
+  "triangles": 2910
  },
  "manifestColliders": 0,
  "manifest": true,
  "three": "170",
  "key": "classroom-1",
  "hour": 13,
- "bakedAt": "2026-10-27T15:34:05.353Z",
+ "bakedAt": "2026-10-28T23:40:19.397Z",
  "quantizePosition": 14,
  "source": {
   "family": "Classroom (D) built at runtime by lab/src/scenes",
-  "exportBytes": 21668392,
-  "triangles": 61458,
-  "drawCalls": 143,
-  "textures": 27,
-  "textureMB": 82.2
+  "exportBytes": 23512884,
+  "triangles": 66724,
+  "drawCalls": 162,
+  "textures": 45,
+  "textureMB": 113.8
  },
  "lods": {
   "lod0": {
    "file": "classroom-1.glb",
-   "triangles": 16598,
-   "primitives": 102,
-   "materials": 96,
-   "textures": 22,
-   "textureKB": 1639,
-   "bytes": 1944928
+   "triangles": 21160,
+   "primitives": 118,
+   "materials": 113,
+   "textures": 34,
+   "textureKB": 1706,
+   "bytes": 2067628
   },
   "lod1": {
    "file": "classroom-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 10622,
-   "primitives": 102,
-   "materials": 96,
-   "textures": 22,
-   "textureKB": 374,
-   "bytes": 630724
+   "triangles": 13030,
+   "primitives": 118,
+   "materials": 113,
+   "textures": 34,
+   "textureKB": 431,
+   "bytes": 730412
   }
  },
  "parts": {
