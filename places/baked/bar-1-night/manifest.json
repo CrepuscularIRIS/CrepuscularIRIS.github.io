@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 93002,
-  "drawCalls": 236,
-  "textures": 92,
-  "textureMB": 50.6
+  "triangles": 74762,
+  "drawCalls": 178,
+  "textures": 70,
+  "textureMB": 131.7
  },
  "exported": {
-  "triangles": 82356,
-  "drawCalls": 219,
-  "textures": 84,
-  "textureMB": 46
+  "triangles": 68680,
+  "drawCalls": 161,
+  "textures": 62,
+  "textureMB": 127
  },
  "lights": [
   {
@@ -276,7 +276,7 @@
   {
    "type": "SpotLight",
    "name": "light-pool-14",
-   "color": 12902621,
+   "color": 16768946,
    "intensity": 8.525,
    "position": [
     0.2,
@@ -301,6 +301,7 @@
     "bias": -0.0006,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 0.5,
@@ -541,8 +542,22 @@
    ]
   },
   {
-   "type": "SpotLight",
+   "type": "PointLight",
    "name": "light-pool-26",
+   "color": 16763034,
+   "intensity": 1.085,
+   "position": [
+    0.5,
+    2.1,
+    4.6
+   ],
+   "visible": true,
+   "distance": 3.2,
+   "decay": 2
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-27",
    "color": 14214372,
    "intensity": 2.17,
    "position": [
@@ -559,6 +574,23 @@
     -3.79,
     0.9,
     -0.9
+   ]
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 9350613,
+   "intensity": 0.16,
+   "position": [
+    5,
+    13,
+    24
+   ],
+   "visible": true,
+   "target": [
+    0,
+    1,
+    18
    ]
   },
   {
@@ -610,37 +642,37 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "aa1e3d01-1b1e-4644-9700-dcd52384bbb7",
+   "material": "9ead6a8c-e327-44d0-8acf-2814d7df2732",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "ab3dadbc-b04b-42a0-aa61-68cd7b25d645",
+   "material": "59fb7544-e006-4e94-a3d1-08dbf950d397",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "6b7b2f63-96f7-4573-b4a9-8b36a9ef5178",
+   "material": "1bf03b52-f11c-4554-993e-e510c661e834",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "e4641493-f9c2-494c-98c9-534ce10fae9a",
+   "material": "31927137-e85a-42a4-821b-fe9baabec592",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "d017b38d-7285-4870-9042-6e1a7403baf0",
+   "material": "89ea834c-8c40-4e32-a3a5-9f21249caf2d",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "067fb01e-69d4-4060-8d49-ebbda2d7cc2c",
+   "material": "881928d6-d092-4c49-b6c2-6bb71de49a75",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -965,6 +997,1061 @@
   ]
  },
  "env": {
+  "streetKit": {
+   "version": 1,
+   "catalog": "../bar-rebuild/manifest.json",
+   "placements": [
+    {
+     "id": "bar-stool",
+     "position": [
+      -2.0909381280983963,
+      0,
+      3.076447255270125
+     ],
+     "rotationY": 2.9145755540172216
+    },
+    {
+     "id": "bar-stool",
+     "position": [
+      -1.0939680824634919,
+      0,
+      3.2660912464417855
+     ],
+     "rotationY": 2.9926605319909703
+    },
+    {
+     "id": "bar-stool",
+     "position": [
+      -0.08524258442589405,
+      0,
+      3.3773880787847617
+     ],
+     "rotationY": 3.070745509964719
+    },
+    {
+     "id": "bar-stool",
+     "position": [
+      0.9290910250151517,
+      0,
+      3.4096594908871207
+     ],
+     "rotationY": 3.1488304879384676
+    },
+    {
+     "id": "bar-stool",
+     "position": [
+      1.9428512280965269,
+      0,
+      3.3627088153947557
+     ],
+     "rotationY": 3.226915465912217
+    },
+    {
+     "id": "bar-stool",
+     "position": [
+      2.949860001488862,
+      0,
+      3.236822177534954
+     ],
+     "rotationY": 3.3050004438859655
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      -1.26,
+      1.72,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 1
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      -1.112,
+      1.72,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 1
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      -0.964,
+      1.72,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 1
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      -0.8160000000000001,
+      1.72,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 1
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      -0.668,
+      1.72,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 1
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      -0.52,
+      1.72,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 1
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      -1.26,
+      2.03,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 0.62
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      -1.112,
+      2.03,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 0.62
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      -0.964,
+      2.03,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 0.62
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      -0.8160000000000001,
+      2.03,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 0.62
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      -0.668,
+      2.03,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 0.62
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      -0.52,
+      2.03,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 0.62
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      0.91,
+      1.72,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 1
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      1.08,
+      1.72,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 1
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      1.25,
+      1.72,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 1
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      0.91,
+      2.03,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 0.62
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      1.08,
+      2.03,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 0.62
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      1.25,
+      2.03,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 0.62
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      -0.18,
+      1.72,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 1.17
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      -0.023999999999999994,
+      1.72,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 1.17
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      0.132,
+      1.72,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 1.17
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      0.288,
+      1.72,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 1.17
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      0.444,
+      1.72,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 1.17
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      0.6000000000000001,
+      1.72,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 1.17
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      -0.15,
+      1.12,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 1.15
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      0.020000000000000018,
+      1.12,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 1.15
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      0.19000000000000003,
+      1.12,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 1.15
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      0.36,
+      1.12,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 1.15
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      0.53,
+      1.12,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 1.15
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      2.32,
+      1.44,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 0.96
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      2.571428571428571,
+      1.44,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 0.96
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      2.822857142857143,
+      1.44,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 0.96
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      3.0742857142857143,
+      1.44,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 0.96
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      3.3257142857142856,
+      1.44,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 0.96
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      3.5771428571428574,
+      1.44,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 0.96
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      3.8285714285714287,
+      1.44,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 0.96
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      4.08,
+      1.44,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 0.96
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      2.32,
+      1.82,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 0.73
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      2.571428571428571,
+      1.82,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 0.73
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      2.822857142857143,
+      1.82,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 0.73
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      3.0742857142857143,
+      1.82,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 0.73
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      3.3257142857142856,
+      1.82,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 0.73
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      3.5771428571428574,
+      1.82,
+      0.17
+     ],
+     "rotationY": 0.12,
+     "scale": 0.73
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      3.8285714285714287,
+      1.82,
+      0.17
+     ],
+     "rotationY": -0.12,
+     "scale": 0.73
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      4.08,
+      1.82,
+      0.17
+     ],
+     "rotationY": 0,
+     "scale": 0.73
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      -1.3684060370441844,
+      0.86,
+      0.9011106102222204
+     ],
+     "rotationY": -0.20701709957257175,
+     "scale": 0.85
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      -0.9583563279751268,
+      0.86,
+      0.9789296090432718
+     ],
+     "rotationY": -0.16808100069826687,
+     "scale": 0.85
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      -0.5455881986699926,
+      0.86,
+      1.0407279254853083
+     ],
+     "rotationY": -0.12914490182396196,
+     "scale": 0.85
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      -0.13072733473180886,
+      0.86,
+      1.0864118839126764
+     ],
+     "rotationY": -0.09020880294965707,
+     "scale": 0.85
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      0.28559740601006134,
+      0.86,
+      1.1159122352893007
+     ],
+     "rotationY": -0.05127270407535217,
+     "scale": 0.85
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      0.7027549467403984,
+      0.86,
+      1.1291842621483283
+     ],
+     "rotationY": -0.01233660520104729,
+     "scale": 0.85
+    },
+    {
+     "id": "wine-burgundy",
+     "position": [
+      1.1201129482622105,
+      0.86,
+      1.1262078463761256
+     ],
+     "rotationY": 0.026599493673257618,
+     "scale": 0.85
+    },
+    {
+     "id": "wine-champagne",
+     "position": [
+      1.5370387675143682,
+      0.86,
+      1.106987499707893
+     ],
+     "rotationY": 0.06553559254756253,
+     "scale": 0.85
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      1.952900416549848,
+      0.86,
+      1.0715523568886383
+     ],
+     "rotationY": 0.10447169142186741,
+     "scale": 0.85
+    },
+    {
+     "id": "wine-alsace",
+     "position": [
+      2.3670675205209357,
+      0.86,
+      1.0199561315099146
+     ],
+     "rotationY": 0.1434077902961723,
+     "scale": 0.85
+    },
+    {
+     "id": "wine-bordeaux",
+     "position": [
+      -3.3,
+      0.55,
+      5.15
+     ],
+     "rotationY": 0.2,
+     "scale": 1
+    },
+    {
+     "id": "a1-door",
+     "position": [
+      22.200000000000003,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      18.45,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      15.350000000000001,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      12.25,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-door",
+     "position": [
+      9.8,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      6.050000000000002,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      2.95,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -0.1499999999999979,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-door",
+     "position": [
+      -2.599999999999999,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -6.3500000000000005,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -9.45,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -12.55,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-door",
+     "position": [
+      -15.000000000000002,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -18.750000000000004,
+      0.08,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    }
+   ],
+   "facades": [
+    {
+     "cell": "L0_2_1",
+     "position": [
+      23.1,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      23.1,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      20,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      20,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      16.900000000000002,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      16.900000000000002,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      16.900000000000002,
+      9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      13.8,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      13.8,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      13.8,
+      9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      10.700000000000001,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      10.700000000000001,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      7.600000000000001,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      7.600000000000001,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      4.5,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      4.5,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      1.4000000000000021,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      1.4000000000000021,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -1.6999999999999993,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -1.6999999999999993,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -1.6999999999999993,
+      9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -4.800000000000001,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -4.800000000000001,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -4.800000000000001,
+      9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -7.899999999999999,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -7.899999999999999,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -11,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -11,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -14.100000000000001,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -14.100000000000001,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -17.200000000000003,
+      2.8,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -17.200000000000003,
+      5.9,
+      19.5
+     ],
+     "rotationY": 3.141592653589793
+    }
+   ],
+   "shops": [],
+   "windows": {
+    "ratio": 0.2,
+    "strength": 1.6
+   }
+  },
+  "botanicalProps": {
+   "placements": [
+    {
+     "id": "bar-leafy",
+     "type": "potted_plant_02",
+     "at": [
+      -4.2,
+      0,
+      2.25
+     ],
+     "scale": 1.25
+    }
+   ]
+  },
   "background": 463128,
   "ibl": {
    "top": 1057580,
@@ -1013,7 +2100,7 @@
   "post": {
    "outline": {
     "color": 330768,
-    "opacity": 0.42,
+    "opacity": 0.14,
     "depthTh": 0.014,
     "normalTh": 0.3
    },
@@ -1074,12 +2161,12 @@
     "gamma": 1.02
    },
    "dof": {
-    "enabled": true,
+    "enabled": false,
     "focus": 4.1,
     "range": 2.2,
     "near": 0.8,
     "far": 0.35,
-    "maxRadius": 2,
+    "maxRadius": 4.5,
     "tilt": {
      "center": [
       0.52,
@@ -1177,40 +2264,40 @@
     2.6709244773955385
    ],
    [
-    -2.2909381280983965,
-    2.876447255270125,
-    -1.8909381280983963,
-    3.276447255270125
+    -2.3409381280983963,
+    2.826447255270125,
+    -1.8409381280983963,
+    3.326447255270125
    ],
    [
-    -1.2939680824634918,
-    3.0660912464417853,
-    -0.8939680824634919,
-    3.4660912464417857
+    -1.3439680824634919,
+    3.0160912464417855,
+    -0.8439680824634919,
+    3.5160912464417855
    ],
    [
-    -0.28524258442589406,
-    3.1773880787847615,
-    0.11475741557410596,
-    3.577388078784762
+    -0.33524258442589405,
+    3.1273880787847617,
+    0.16475741557410595,
+    3.6273880787847617
    ],
    [
-    0.7290910250151517,
-    3.2096594908871205,
-    1.1290910250151518,
-    3.609659490887121
+    0.6790910250151517,
+    3.1596594908871207,
+    1.1790910250151518,
+    3.6596594908871207
    ],
    [
-    1.742851228096527,
-    3.1627088153947556,
-    2.142851228096527,
-    3.562708815394756
+    1.6928512280965269,
+    3.1127088153947557,
+    2.1928512280965267,
+    3.6127088153947557
    ],
    [
-    2.749860001488862,
-    3.0368221775349538,
-    3.1498600014888622,
-    3.436822177534954
+    2.699860001488862,
+    2.986822177534954,
+    3.199860001488862,
+    3.486822177534954
    ],
    [
     -4.6,
@@ -1490,7 +2577,7 @@
     1.7,
     0.3
    ],
-   "triangles": 5106
+   "triangles": 542
   },
   "bar-jukebox": {
    "object": "spot:bar-jukebox",
@@ -1572,12 +2659,12 @@
   "standIns": []
  },
  "dressStats": {
-  "props": 22,
-  "instanced": 8,
+  "props": 11,
+  "instanced": 3,
   "signs": 6,
   "lights": 3,
   "retextured": 0,
-  "triangles": 26230,
+  "triangles": 19828,
   "failed": 0
  },
  "detailStats": {
@@ -1589,55 +2676,55 @@
  "three": "170",
  "key": "bar-1-night",
  "hour": 22,
- "bakedAt": "2026-10-25T14:12:41.132Z",
+ "bakedAt": "2026-10-30T02:00:19.473Z",
  "quantizePosition": 14,
  "source": {
   "family": "Bar (N) built at runtime by lab/src/scenes",
-  "exportBytes": 16938180,
-  "triangles": 93002,
-  "drawCalls": 236,
-  "textures": 92,
-  "textureMB": 50.6
+  "exportBytes": 44650300,
+  "triangles": 74762,
+  "drawCalls": 178,
+  "textures": 70,
+  "textureMB": 131.7
  },
  "lods": {
   "lod0": {
    "file": "bar-1-night.glb",
-   "triangles": 85860,
-   "primitives": 227,
-   "materials": 203,
-   "textures": 83,
-   "textureKB": 1038,
-   "bytes": 1985756
+   "triangles": 68612,
+   "primitives": 150,
+   "materials": 138,
+   "textures": 51,
+   "textureKB": 3401,
+   "bytes": 4229876
   },
   "lod1": {
    "file": "bar-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 56218,
-   "primitives": 227,
-   "materials": 203,
-   "textures": 83,
-   "textureKB": 430,
-   "bytes": 1207916
+   "triangles": 41842,
+   "primitives": 150,
+   "materials": 138,
+   "textures": 51,
+   "textureKB": 875,
+   "bytes": 1515524
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
+   "coat-stand",
    "bar-speaker",
    "specials-board",
-   "coat-stand",
    "cosmos-neon",
    "gig-poster",
    "spot:last-call-board",
    "spot:display-case",
    "spot:bar-jukebox"
   ],
-  "exportBytes": 1193608
+  "exportBytes": 707408
  },
  "live": {
   "file": "bar-1-night.live.json",
-  "bytes": 30838,
+  "bytes": 122907,
   "objects": [
    "skyDome",
    "Mesh",

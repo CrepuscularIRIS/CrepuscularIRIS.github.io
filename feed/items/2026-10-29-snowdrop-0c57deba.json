@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-29-snowdrop-0c57deba",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-29T05:02:34Z",
+  "title": "Mistral 放出 Timestral 时间序列基础模型，四个尺寸全部开源",
+  "summary": "Mistral 的 Timestral 一家拿下 GIFT-Eval 全榜第一，加上提示注入防御把攻击成功率从 97% 打到 10%，这轮 arXiv 值得看。",
+  "summary_en": "The note claims Mistral released Timestral, a time-series foundation model, and open-sourced all four size variants. It says Timestral ranked first across the GIFT-Eval leaderboard, while its prompt-injection defenses reduced attack success from 97% to 10%. The brief also suggests the related arXiv work is worth reviewing, framing the release as notable and potentially significant.",
+  "body": "Mistral 的 Timestral 一家拿下 GIFT-Eval 全榜第一，加上提示注入防御把攻击成功率从 97% 打到 10%，这轮 arXiv 值得看。\n\narXiv 新论文\n- Timestral: Mistral 的时间序列基础模型家族 — 5M/28M/123M/209M 四个尺寸，GIFT-Eval、TIME、fev-bench 上 123M 与 209M 包揽全部指标前两名，权重和推理代码都已开源，是本轮最实在的模型发布。\n  https://arxiv.org/abs/2610.37585\n- 工具调用智能体的 Scaling Law（SynthAPI 管线） — 可控地生成工具、任务与数据库组合，458752 个任务、849 个不同规模的模型跑出可预测的扩展律，第一次把\"工具型智能体该造什么数据\"变成可算的题。\n  https://arxiv.org/abs/2610.37648\n- GEPA-Curator：提示优化器也要挑食 — 反思式 prompt 优化器常常从噪声或失败里学到东西，作者先筛掉信号不可靠的任务、再检索历史成功轨迹作为上下文，在 GoBrowse、ALFWorld、AppWorld、τ-bench 上比 GEPA 和 ACE 高出最多 21%。\n  https://arxiv.org/abs/2610.37651\n- Understanding the limits of latent world models — 提出 latent rollout consistency（LRC）这个等变性指标来检验世界模型是否真的学到了环境动力学，结论相当扎心：目前一批 SOTA latent world model 没有一个真正忠实建模了动力学。\n  https://arxiv.org/abs/2610.37588\n- Heads of Security：用可学习注意力门防提示注入 — 逐 head 学习注意力如何在可信指令与不可信数据间重分配；黑盒 RL-Hammer 攻击在 GPT-OSS-20B 上成功率 97%，在 HoS 上只有 10%，且不损伤 few-shot 能力。\n  https://arxiv.org/abs/2610.37657\n- Metacognitive Decoding：扩散语言智能体的元认知解码 — 轻量插件学习\"何时定稿、生成到哪里\"，在五个基准上平均减少 20.6% 推理 FLOPs，同时保持任务准确率。\n  https://arxiv.org/abs/2610.37642\n- MuonGS：放宽权重范数控制的预训练优化器 — 用 Gram-Schmidt 投影去掉 Muon 更新的径向分量、不再硬约束范数，理论上保证权重范数至多按 √t 增长；在 160M/400M 稠密模型和 1B MoE 上验证损失更低，同等 loss 下等效提速约 15%。\n  https://arxiv.org/abs/2610.37647\n- 预训练过程中知识是怎么被学到的（时间点模型） — 用不同年份网页快照训出的模型提出 temporal variability score（TVS），发现低/高 TVS 知识早期学得一样快，但高 TVS 知识后期提升更快，在 36 组模型-基准中的 34 组反超，AACL 2026 录用。\n  https://arxiv.org/abs/2610.37631\n\nHugging Face 今日热门\n- DTCA：扩散语言模型 RL 的 token 级信用分配（今日第一，254 赞） — 按去噪时各 token 对剩余位置预测置信度的提升来估计贡献并做词性分组，再据此分配 RL 学习信号，LLaDA-8B-Instruct 上 MATH500 最高提升 9.0 分；顺带一提，作者已公开说明票数异常增长并向 HF 举报，选读时留意。\n  https://huggingface.co/papers/2610.35201\n- Falcon 与 RealSSA：流式音视频目标说话人提取 — 配套发布含 1-5 个近场干扰源、真实录音的 RealSSA 基准，以及边缘可跑的因果模型 Falcon：参数量少 91.9%、计算量少 20.2 倍、GPU 延迟降 11.1 倍。\n  https://arxiv.org/abs/2610.32749\n- OmniShowcase：多视图参考图的全向主体一致视频生成 — 用 3D 资产自动合成带相机轨迹的训练视频，并用法线图\"转盘\"条件生成，主体身份与 3D 一致性达到新 SOTA。\n  https://arxiv.org/abs/2610.35684\n\nSource: https://arxiv.org/abs/2610.37585",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.37585",
+    "verified_at": "2026-10-29T05:02:34Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

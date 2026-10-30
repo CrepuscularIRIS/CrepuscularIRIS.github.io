@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 133826,
-  "drawCalls": 531,
-  "textures": 147,
-  "textureMB": 342.6
+  "triangles": 92434,
+  "drawCalls": 354,
+  "textures": 124,
+  "textureMB": 339.5
  },
  "exported": {
-  "triangles": 122752,
-  "drawCalls": 455,
-  "textures": 136,
-  "textureMB": 339.1
+  "triangles": 86194,
+  "drawCalls": 325,
+  "textures": 123,
+  "textureMB": 338.5
  },
  "lights": [
   {
@@ -54,6 +54,7 @@
     "bias": -0.0005,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 1,
@@ -184,39 +185,39 @@
    "type": "PointLight",
    "name": "south-gate-lamp",
    "color": 16761987,
-   "intensity": 4,
+   "intensity": 7.5,
    "position": [
     0.3,
     2.48,
     2.92
    ],
    "visible": true,
-   "distance": 6.5,
+   "distance": 9,
    "decay": 1.8
   }
  ],
  "lowDrop": [],
  "clocks": [
   {
-   "material": "a11ccf79-204d-4475-ad58-598edf9d54a9",
+   "material": "8bdc97ad-5226-4642-9b8d-2e53593fa449",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "657e5777-784f-4e2a-927f-d7ee13622500",
+   "material": "7350f34f-03cc-4752-8df9-9cc42b8e2168",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "c61de2f7-30e6-496b-aea7-9697bfe0c3c4",
+   "material": "742c0d75-4afc-4e4b-adf3-53147bd4eef1",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "755256e0-fe2d-4469-bad5-eecc254ed063",
+   "material": "765db794-94df-4376-b979-4e16131053c2",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -375,6 +376,388 @@
   ]
  },
  "env": {
+  "streetKit": {
+   "version": 1,
+   "night": 1,
+   "placements": [
+    {
+     "id": "aircon",
+     "position": [
+      -1.82,
+      3.5,
+      -3.1
+     ],
+     "rotationY": 4.71238898038469,
+     "scale": 1
+    },
+    {
+     "id": "aircon",
+     "position": [
+      -2.35,
+      3.45,
+      -7.9
+     ],
+     "rotationY": 4.71238898038469,
+     "scale": 1
+    },
+    {
+     "id": "aircon",
+     "position": [
+      -2.35,
+      3.55,
+      -10.2
+     ],
+     "rotationY": 4.71238898038469,
+     "scale": 1
+    },
+    {
+     "id": "aircon",
+     "position": [
+      2.35,
+      3.25,
+      -5.2
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 1
+    },
+    {
+     "id": "aircon",
+     "position": [
+      2.35,
+      3.35,
+      -8.5
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 1
+    },
+    {
+     "id": "aircon",
+     "position": [
+      2.35,
+      3.4,
+      -11.8
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 1
+    },
+    {
+     "id": "toolbox",
+     "position": [
+      -1.35,
+      0.025,
+      -2.4
+     ],
+     "rotationY": 0.12,
+     "scale": 1
+    },
+    {
+     "id": "utility",
+     "position": [
+      2.35,
+      1.08,
+      -4.42
+     ],
+     "rotationY": -1.5707963267948966,
+     "scale": 1
+    },
+    {
+     "id": "shelves",
+     "position": [
+      -2.27,
+      0.025,
+      -8.04
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 1
+    },
+    {
+     "id": "carton",
+     "position": [
+      -2.22,
+      0.665,
+      -7.8
+     ],
+     "rotationY": 0.12,
+     "scale": 1
+    },
+    {
+     "id": "carton",
+     "position": [
+      -2.22,
+      0.665,
+      -8.27
+     ],
+     "rotationY": -0.18,
+     "scale": 1
+    },
+    {
+     "id": "carton",
+     "position": [
+      -2.25,
+      1.171,
+      -8.1
+     ],
+     "rotationY": 0.06,
+     "scale": 1
+    },
+    {
+     "id": "carton",
+     "position": [
+      -2.22,
+      0.03,
+      -6.3
+     ],
+     "rotationY": 0.08,
+     "scale": 1
+    },
+    {
+     "id": "carton",
+     "position": [
+      -2.2,
+      0.372,
+      -6.3
+     ],
+     "rotationY": -0.15,
+     "scale": 1
+    },
+    {
+     "id": "carton",
+     "position": [
+      -2.15,
+      0.03,
+      -6.91
+     ],
+     "rotationY": 0.25,
+     "scale": 1
+    },
+    {
+     "id": "carton",
+     "position": [
+      2.31,
+      0.03,
+      -12.7
+     ],
+     "rotationY": -0.13,
+     "scale": 1
+    },
+    {
+     "id": "crate",
+     "position": [
+      -2.24,
+      1.677,
+      -7.81
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 1
+    },
+    {
+     "id": "crate",
+     "position": [
+      -2.24,
+      1.677,
+      -8.34
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 1
+    },
+    {
+     "id": "crate",
+     "position": [
+      -1.9,
+      0.025,
+      -11.9
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 1
+    },
+    {
+     "id": "crate",
+     "position": [
+      -1.9,
+      0.291,
+      -11.9
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 1
+    },
+    {
+     "id": "crate",
+     "position": [
+      -1.9,
+      0.557,
+      -11.9
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 1
+    },
+    {
+     "id": "bag",
+     "position": [
+      2.23,
+      0.025,
+      -11.1
+     ],
+     "rotationY": 0.2,
+     "scale": 1
+    },
+    {
+     "id": "bag",
+     "position": [
+      2.22,
+      0.025,
+      -13.4
+     ],
+     "rotationY": -0.5,
+     "scale": 1
+    },
+    {
+     "id": "bag",
+     "position": [
+      -1.87,
+      0.025,
+      -13.15
+     ],
+     "rotationY": 1.2,
+     "scale": 1
+    },
+    {
+     "id": "bag",
+     "position": [
+      -2.18,
+      0.025,
+      -10.85
+     ],
+     "rotationY": 0.1,
+     "scale": 1
+    }
+   ],
+   "facades": [
+    {
+     "cell": "L0_0_1",
+     "position": [
+      -2.08,
+      4.4,
+      2.4
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_1_1",
+     "position": [
+      -2.08,
+      4.4,
+      -0.7
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -2.08,
+      4.4,
+      -3.8
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -2.63,
+      4.4,
+      -6.9
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_4_2",
+     "position": [
+      -2.63,
+      4.4,
+      -10
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_0_3",
+     "position": [
+      2.63,
+      4.25,
+      -13.1
+     ],
+     "rotationY": -1.5707963267948966
+    },
+    {
+     "cell": "L0_1_3",
+     "position": [
+      2.63,
+      4.25,
+      -10
+     ],
+     "rotationY": -1.5707963267948966
+    },
+    {
+     "cell": "L0_2_3",
+     "position": [
+      2.63,
+      4.25,
+      -6.9
+     ],
+     "rotationY": -1.5707963267948966
+    },
+    {
+     "cell": "L0_3_3",
+     "position": [
+      2.63,
+      4.25,
+      -3.8
+     ],
+     "rotationY": -1.5707963267948966
+    },
+    {
+     "cell": "L0_4_3",
+     "position": [
+      2.63,
+      4.25,
+      -0.7
+     ],
+     "rotationY": -1.5707963267948966
+    }
+   ],
+   "shops": [
+    {
+     "id": "shutter",
+     "position": [
+      -2.18,
+      0.02,
+      -14
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "door",
+     "position": [
+      -2.18,
+      0.02,
+      -15.3
+     ],
+     "rotationY": 1.5707963267948966
+    }
+   ]
+  },
+  "vista": {
+   "type": "neon-district",
+   "position": [
+    -14.74,
+    0,
+    -146.88
+   ],
+   "rotationY": 0.15,
+   "detailFocus": [
+    0,
+    1.6,
+    100
+   ]
+  },
   "background": 726564,
   "air": {
    "color": 10136508,
@@ -445,12 +828,12 @@
   },
   "fog": {
    "color": 1121838,
-   "density": 0.012
+   "density": 0.006
   },
   "post": {
    "outline": {
     "color": 660511,
-    "opacity": 0.4,
+    "opacity": 0.13,
     "depthTh": 0.014,
     "normalTh": 0.26
    },
@@ -479,8 +862,8 @@
     "maxOpacity": 0.26
    },
    "paint": {
-    "enabled": true,
-    "strength": 0.26,
+    "enabled": false,
+    "strength": 0,
     "radius": 2
    },
    "grade": {
@@ -560,6 +943,42 @@
     -1.35
    ],
    [
+    -2.6,
+    -9.1,
+    -1.35,
+    -7.4
+   ],
+   [
+    -2.6,
+    -7.25,
+    -1.82,
+    -5.95
+   ],
+   [
+    -2.2,
+    -12.25,
+    -1.61,
+    -11.5
+   ],
+   [
+    1.92,
+    -13.8,
+    2.6,
+    -12.4
+   ],
+   [
+    1.93,
+    -11.45,
+    2.6,
+    -10.75
+   ],
+   [
+    -2.2,
+    -13.5,
+    -1.55,
+    -12.8
+   ],
+   [
     1.35,
     -7.800000000000001,
     2.35,
@@ -594,14 +1013,14 @@
    "object": "toolbox",
    "typed": false,
    "anchor": [
-    -1.313266080473407,
-    0.16549079471230504,
-    -2.4044293516696897
+    -1.3132660804734073,
+    0.1654907953739166,
+    -2.4044293516696893
    ],
    "built": [
-    -1.313266080473407,
-    0.16549079471230504,
-    -2.4044293516696897
+    -1.3132660804734073,
+    0.1654907953739166,
+    -2.4044293516696893
    ],
    "reach": 3.2
   },
@@ -612,14 +1031,14 @@
    "object": "meters",
    "typed": false,
    "anchor": [
-    2.4039999996647237,
-    1.4468078773934394,
-    -4.549999997019768
+    2.404,
+    1.4468078893143685,
+    -4.550000000000001
    ],
    "built": [
-    2.4039999996647237,
-    1.4468078773934394,
-    -4.549999997019768
+    2.404,
+    1.4468078893143685,
+    -4.550000000000001
    ],
    "reach": 3.2
   },
@@ -712,14 +1131,14 @@
    -14
   ],
   "toolbox": [
-   -1.313266080473407,
-   0.16549079471230504,
-   -2.4044293516696897
+   -1.3132660804734073,
+   0.1654907953739166,
+   -2.4044293516696893
   ],
   "meters": [
-   2.4039999996647237,
-   1.4468078773934394,
-   -4.549999997019768
+   2.404,
+   1.4468078893143685,
+   -4.550000000000001
   ],
   "cart": [
    -0.8999999999999999,
@@ -751,36 +1170,36 @@
  "three": "170",
  "key": "alley-2-night",
  "hour": 22,
- "bakedAt": "2026-10-26T05:46:27.590Z",
+ "bakedAt": "2026-10-29T10:59:43.687Z",
  "quantizePosition": 14,
  "source": {
   "family": "Alley2 (N) built at runtime by lab/src/scenes",
-  "exportBytes": 62498340,
-  "triangles": 133826,
-  "drawCalls": 531,
-  "textures": 147,
-  "textureMB": 342.6
+  "exportBytes": 59464340,
+  "triangles": 92434,
+  "drawCalls": 354,
+  "textures": 124,
+  "textureMB": 339.5
  },
  "lods": {
   "lod0": {
    "file": "alley-2-night.glb",
-   "triangles": 119124,
-   "primitives": 429,
-   "materials": 425,
-   "textures": 75,
-   "textureKB": 2625,
-   "bytes": 4020468
+   "triangles": 85462,
+   "primitives": 308,
+   "materials": 305,
+   "textures": 52,
+   "textureKB": 2569,
+   "bytes": 3625180
   },
   "lod1": {
    "file": "alley-2-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 82023,
-   "primitives": 429,
-   "materials": 425,
-   "textures": 75,
-   "textureKB": 840,
-   "bytes": 2072380
+   "triangles": 59196,
+   "primitives": 308,
+   "materials": 305,
+   "textures": 52,
+   "textureKB": 784,
+   "bytes": 1686748
   }
  },
  "parts": {
@@ -797,11 +1216,11 @@
    "spot:door-street",
    "spot:frag-2"
   ],
-  "exportBytes": 942580
+  "exportBytes": 163928
  },
  "live": {
   "file": "alley-2-night.live.json",
-  "bytes": 24346,
+  "bytes": 116085,
   "objects": [
    "skyDome",
    "smokePlume",

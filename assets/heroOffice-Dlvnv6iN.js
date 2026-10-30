@@ -1,0 +1,1 @@
+const i={x:.15,z:6.68,scale:.9651169893226313,width:2,depth:.94721},o={placements:[{id:"desk",position:[i.x,0,i.z],scale:i.scale},{id:"lamp",position:[-.55,.76,6.24]},{id:"binder",position:[-.27,.762,6.53],rotationY:.14}]};export{i as HERO_DESK,o as OFFICE_PROPS};

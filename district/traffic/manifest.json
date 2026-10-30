@@ -1,0 +1,106 @@
+{
+  "revision": "27ad04ef04aa9e1e1366fccc63e15a379b999f01",
+  "channels": {
+    "albedo": "RGB original sRGB, A opacity from original emission alpha",
+    "mr": "R paint, G roughness, B metal, A glass from original albedo alpha",
+    "emissive": "original RGB sRGB encoding, runtime multiplied by source emax; original A retained"
+  },
+  "types": {
+    "taxi": {
+      "size": [
+        2.076,
+        1.698,
+        4.7
+      ],
+      "emax": 1,
+      "lod0": 9000,
+      "lod1": 1628,
+      "paintLum": 0.0959,
+      "sourceSha256": "79f50934ae18d5862af2db8a58384f59cc8a0a4b420b108360afa0db98fc2210",
+      "channels": {
+        "albedoRGB": "f7b68878c81e57008258429c7ec6af61512bc8a2baace5d16384443df41c07d1",
+        "opacity": "5142890d3e9569dae149980a0a30020ec6cdb1c217bcb65901e676073ad949be",
+        "mrRGB": "3d7bc4ecddbf8b7a831445ecd8d797c43868316c1bbd22e0c1601ae99f5b9b7f",
+        "glass": "06c5256d8871ddac2db46e64d5f1d5c094908d52df321abf5994f92b40ea29b2"
+      },
+      "sha256": "21563a2fe54a80ed6383c0da87dd145a2bc51e54aeee628917332ed54e721283",
+      "bytes": 1469888,
+      "triangles": [
+        9000,
+        1628
+      ]
+    },
+    "minibus": {
+      "size": [
+        2.363,
+        2.437,
+        7
+      ],
+      "emax": 0.001,
+      "lod0": 8000,
+      "lod1": 859,
+      "paintLum": 0.4249,
+      "sourceSha256": "45d97168e4640cefb0053b5ab160f6eac814c8de75cdb8819995061882abdb92",
+      "channels": {
+        "albedoRGB": "bad15a38b2ed4d6c47ebf43d67645fc06de778141626c7e8e6337c1fa42081fa",
+        "opacity": "5b3e4cfef83563d6cd2b0c21fd93f1fdad7b85548d27f308c39d703efb03979b",
+        "mrRGB": "72788b219ce658cc28e1d0a2ec2702b56a6d0b63b5e69ac33a4513995f41667f",
+        "glass": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58"
+      },
+      "sha256": "87fb188be476db9c38c7422ac70e8d8d9dc90d39511eea5d75c0ed2f954b3907",
+      "bytes": 1062924,
+      "triangles": [
+        8000,
+        859
+      ]
+    },
+    "bus": {
+      "size": [
+        2.876,
+        4.809,
+        12
+      ],
+      "emax": 0.543,
+      "lod0": 12000,
+      "lod1": 1472,
+      "paintLum": 0,
+      "sourceSha256": "251ed5f10e6a0a951b2dfd5437e42f839c43dbd8c167f2c6b0ad1a87ed51ac2e",
+      "channels": {
+        "albedoRGB": "741e0b5ced9fbc837928a1e4771b2b68cc2312931ab7e1d98ba279fb87fa05b5",
+        "opacity": "25647c63d653119f706a6cfa566cfc17aa154a5399697ddad6da04b85916c87e",
+        "mrRGB": "b59978fd94511d555bfdc561335dc5a6e8dcc64014825ae8dc3955b294110d0b",
+        "glass": "cec8d8202b8b12c25d81792c2163ecab362c12869282052ea59d0ff4c930e3ae"
+      },
+      "sha256": "b16f5cb6685639f5658bec1408310471e4fec3f8fc8ffe8c8b23b8e4a696d1fe",
+      "bytes": 1286500,
+      "triangles": [
+        12000,
+        1472
+      ]
+    },
+    "sedan": {
+      "size": [
+        2.049,
+        1.416,
+        4.6
+      ],
+      "emax": 0.945,
+      "lod0": 6000,
+      "lod1": 796,
+      "paintLum": 0.0503,
+      "sourceSha256": "0c36b1f3942e4ca5ad40c1620e071b67c4ccf09886b0ff04fb993bc6c4e2d677",
+      "channels": {
+        "albedoRGB": "eb68e6f7daf090e622a3a211a744780d013cc81f81dd0167ccc13c5e2cbb7ca1",
+        "opacity": "50c113275f68979dc0202881174c82dc97552d7167189dbde4aad5f70cf9103d",
+        "mrRGB": "ff058c5ba50cece71e31ccf01c53122533ce2993abe10e2f3334df84a50f3743",
+        "glass": "6fa49f4b7fd2fe761490f78027c83bb2680245dee5f7dd127bc240d86e8a9c15"
+      },
+      "sha256": "2b42cd659223d0704008db62dedc1283bfecf69f91ab025dfcbe6fc81046aa5d",
+      "bytes": 524632,
+      "triangles": [
+        6000,
+        796
+      ]
+    }
+  }
+}

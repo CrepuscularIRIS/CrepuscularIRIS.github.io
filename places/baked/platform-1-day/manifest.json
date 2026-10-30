@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 96914,
-  "drawCalls": 482,
-  "textures": 86,
-  "textureMB": 96.4
+  "triangles": 93250,
+  "drawCalls": 593,
+  "textures": 120,
+  "textureMB": 246.7
  },
  "exported": {
-  "triangles": 77546,
-  "drawCalls": 262,
-  "textures": 46,
-  "textureMB": 67
+  "triangles": 73886,
+  "drawCalls": 334,
+  "textures": 78,
+  "textureMB": 197.9
  },
  "lights": [
   {
@@ -321,6 +321,69 @@
     0,
     2.3
    ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-16",
+   "color": 14477790,
+   "intensity": 5.5,
+   "position": [
+    -2.32,
+    2.05,
+    -12.82
+   ],
+   "visible": true,
+   "distance": 2.3,
+   "decay": 1.7,
+   "angle": 0.72,
+   "penumbra": 0.75,
+   "target": [
+    -2.37,
+    1.2,
+    -12.82
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-17",
+   "color": 14477790,
+   "intensity": 7.5,
+   "position": [
+    -2.32,
+    2.43,
+    -8.2
+   ],
+   "visible": true,
+   "distance": 3.2,
+   "decay": 1.7,
+   "angle": 0.8,
+   "penumbra": 0.75,
+   "target": [
+    -2.12,
+    0.45,
+    -8.2
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "light-pool-18",
+   "color": 15068900,
+   "intensity": 16,
+   "position": [
+    7.3,
+    3.3,
+    0.3
+   ],
+   "visible": true,
+   "distance": 5.5,
+   "decay": 1.7,
+   "angle": 1,
+   "penumbra": 0.75,
+   "target": [
+    7.1,
+    0.78,
+    0.3
+   ]
   }
  ],
  "lowDrop": [
@@ -328,43 +391,43 @@
  ],
  "clocks": [
   {
-   "material": "8571a167-f7f5-4667-a260-9bbc2e360861",
+   "material": "8174b379-54e7-45ca-9380-4a914584da20",
    "uniform": "uT",
    "a": 1,
    "b": 0
   },
   {
-   "material": "0570d151-e432-4967-8d58-821016407957",
+   "material": "53bb9695-e25a-4d8f-aa1c-f36f3f0293ce",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "0f77d0aa-f5c8-4fab-a9be-ca888e813f5f",
+   "material": "baff927d-77dc-4215-83a2-25c6de3c00fd",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "e55265bc-8944-496b-bbdd-2a3cf8eaa511",
+   "material": "736a4bca-3aab-44c1-b3ff-e4404a08445e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "3f46ab74-22f6-4c7f-a512-19eb94b3147e",
+   "material": "eb69818b-9f2b-4057-92f4-2cc67c3795be",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "3a94b3d6-1760-42b4-a8db-c67b52588fb3",
+   "material": "02e6e9cc-65f0-45e3-a6d3-0f506bf18bb9",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "56b8a2c0-d812-40ed-81db-1f69f76a0a00",
+   "material": "8c9b241f-bc47-4eed-9b9a-7f087266d0fb",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -458,6 +521,66 @@
      -0.3
     ],
     "fov": 45
+   },
+   {
+    "name": "exit-offset",
+    "label": "Exit B oblique",
+    "position": [
+     -1.8,
+     1.65,
+     -10.7
+    ],
+    "target": [
+     -18.76,
+     2.8,
+     -11
+    ],
+    "fov": 52
+   },
+   {
+    "name": "phone",
+    "label": "Help phone",
+    "position": [
+     -0.85,
+     1.55,
+     -11.9
+    ],
+    "target": [
+     -2.35,
+     1.3,
+     -12.82
+    ],
+    "fov": 48
+   },
+   {
+    "name": "office-detail",
+    "label": "Office work surface",
+    "position": [
+     4.4,
+     1.65,
+     3.9
+    ],
+    "target": [
+     7.1,
+     1.15,
+     0.65
+    ],
+    "fov": 55
+   },
+   {
+    "name": "bench",
+    "label": "Waiting bench",
+    "position": [
+     -0.6,
+     1.55,
+     -6.6
+    ],
+    "target": [
+     -2.24,
+     0.55,
+     -8.2
+    ],
+    "fov": 55
    },
    {
     "name": "office",
@@ -604,6 +727,593 @@
   ]
  },
  "env": {
+  "streetKit": {
+   "version": 1,
+   "catalog": "../platform-rebuild/catalog.json",
+   "placements": [
+    {
+     "id": "pf-phone",
+     "position": [
+      -2.38,
+      0.91,
+      -12.82
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "pf-cabinet",
+     "position": [
+      8.7,
+      0,
+      1.5
+     ],
+     "rotationY": -1.5707963267948966
+    },
+    {
+     "id": "pf-bench",
+     "position": [
+      -2.24,
+      0,
+      -8.2
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "pf-desk",
+     "position": [
+      7.1,
+      0,
+      0.3
+     ],
+     "rotationY": -1.5707963267948966
+    },
+    {
+     "id": "pf-desk",
+     "position": [
+      7.1,
+      0,
+      3
+     ],
+     "rotationY": -1.5707963267948966
+    },
+    {
+     "id": "pf-laptop",
+     "position": [
+      7.05,
+      0.788,
+      0.3
+     ],
+     "rotationY": -1.5707963267948966,
+     "scale": 0.72
+    },
+    {
+     "id": "pf-laptop",
+     "position": [
+      7.05,
+      0.788,
+      3
+     ],
+     "rotationY": -1.5707963267948966,
+     "scale": 0.72
+    },
+    {
+     "id": "pf-binder",
+     "position": [
+      7.16,
+      0.788,
+      -0.35
+     ],
+     "rotationY": -0.2
+    },
+    {
+     "id": "pf-binder",
+     "position": [
+      5.4,
+      1.005,
+      0.35
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "pf-lamp",
+     "position": [
+      7.51,
+      0.788,
+      0.95
+     ],
+     "rotationY": -1.5707963267948966,
+     "scale": 0.85
+    },
+    {
+     "id": "a1-door",
+     "position": [
+      -18.76,
+      0.08,
+      0.9999999999999999
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -18.76,
+      0.08,
+      -2.7500000000000004
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -18.76,
+      0.08,
+      -5.85
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "a1-door",
+     "position": [
+      -18.76,
+      0.08,
+      -8.3
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -18.76,
+      0.08,
+      -12.05
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -18.76,
+      0.08,
+      -15.15
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "a1-door",
+     "position": [
+      -18.76,
+      0.08,
+      -17.6
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -18.76,
+      0.08,
+      -21.35
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -18.76,
+      0.08,
+      -24.450000000000003
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "a1-door",
+     "position": [
+      9.5,
+      -1.28,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      5.75,
+      -1.28,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      2.6500000000000004,
+      -1.28,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-door",
+     "position": [
+      0.1999999999999993,
+      -1.28,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -3.5500000000000007,
+      -1.28,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      -6.65,
+      -1.28,
+      22.059999999999995
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "a1-door",
+     "position": [
+      -9.1,
+      -1.28,
+      22.059999999999995
+     ],
+     "rotationY": 3.141592653589793
+    }
+   ],
+   "facades": [
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -18.76,
+      2.8,
+      1.9
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -18.76,
+      5.9,
+      1.9
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -18.76,
+      2.8,
+      -1.2000000000000002
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -18.76,
+      5.9,
+      -1.2000000000000002
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -18.76,
+      2.8,
+      -4.300000000000001
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -18.76,
+      5.9,
+      -4.300000000000001
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -18.76,
+      9,
+      -4.300000000000001
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -18.76,
+      2.8,
+      -7.4
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -18.76,
+      5.9,
+      -7.4
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -18.76,
+      9,
+      -7.4
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -18.76,
+      2.8,
+      -10.5
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -18.76,
+      5.9,
+      -10.5
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -18.76,
+      2.8,
+      -13.6
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -18.76,
+      5.9,
+      -13.6
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -18.76,
+      2.8,
+      -16.700000000000003
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -18.76,
+      5.9,
+      -16.700000000000003
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -18.76,
+      2.8,
+      -19.8
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -18.76,
+      5.9,
+      -19.8
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -18.76,
+      9,
+      -19.8
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -18.76,
+      2.8,
+      -22.900000000000002
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -18.76,
+      5.9,
+      -22.900000000000002
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -18.76,
+      9,
+      -22.900000000000002
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      10.4,
+      1.4399999999999997,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      10.4,
+      4.54,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      7.300000000000001,
+      1.4399999999999997,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      7.300000000000001,
+      4.54,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      4.2,
+      1.4399999999999997,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      4.2,
+      4.54,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      4.2,
+      7.64,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      1.0999999999999996,
+      1.4399999999999997,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      1.0999999999999996,
+      4.54,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      1.0999999999999996,
+      7.64,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -2,
+      1.4399999999999997,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -2,
+      4.54,
+      22.06
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      -5.1,
+      1.4399999999999997,
+      22.059999999999995
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -5.1,
+      4.54,
+      22.059999999999995
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -8.200000000000001,
+      1.4399999999999997,
+      22.059999999999995
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -8.200000000000001,
+      4.54,
+      22.059999999999995
+     ],
+     "rotationY": 3.141592653589793
+    }
+   ]
+  },
   "background": 4217700,
   "ibl": {
    "top": 9418944,
@@ -670,7 +1380,7 @@
   "post": {
    "outline": {
     "color": 729130,
-    "opacity": 0.32,
+    "opacity": 0.12,
     "depthTh": 0.012,
     "normalTh": 0.25
    },
@@ -730,7 +1440,7 @@
     "guard": 0.04
    },
    "dof": {
-    "enabled": true,
+    "enabled": false,
     "focus": 5,
     "range": 3.4,
     "near": 1,
@@ -809,9 +1519,9 @@
     0.05
    ],
    [
-    0.42999999999999994,
+    0.30999999999999994,
     -1.78,
-    0.77,
+    0.65,
     0.05
    ],
    [
@@ -852,15 +1562,21 @@
    ],
    [
     -2.6,
-    -9.15,
-    -2.1,
-    -7.25
+    -9.44,
+    -1.9,
+    -6.96
    ],
    [
     -2.6,
     -6.8,
     -2.05,
     -6
+   ],
+   [
+    -2.6,
+    -13.03,
+    -2.22,
+    -12.61
    ]
   ],
   "floor": null
@@ -1081,43 +1797,41 @@
  "three": "170",
  "key": "platform-1-day",
  "hour": 13,
- "bakedAt": "2026-10-28T13:48:28.723Z",
+ "bakedAt": "2026-10-29T14:20:33.828Z",
  "quantizePosition": 14,
  "source": {
   "family": "Platform (D) built at runtime by lab/src/scenes",
-  "exportBytes": 16551056,
-  "triangles": 96914,
-  "drawCalls": 482,
-  "textures": 86,
-  "textureMB": 96.4
+  "exportBytes": 61666640,
+  "triangles": 93250,
+  "drawCalls": 593,
+  "textures": 120,
+  "textureMB": 246.7
  },
  "lods": {
   "lod0": {
    "file": "platform-1-day.glb",
-   "triangles": 66636,
-   "primitives": 253,
-   "materials": 247,
-   "textures": 75,
-   "textureKB": 2099,
-   "bytes": 2935124
+   "triangles": 65506,
+   "primitives": 243,
+   "materials": 235,
+   "textures": 80,
+   "textureKB": 3799,
+   "bytes": 4735312
   },
   "lod1": {
    "file": "platform-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 36108,
-   "primitives": 253,
-   "materials": 247,
-   "textures": 75,
-   "textureKB": 544,
-   "bytes": 1224116
+   "triangles": 36328,
+   "primitives": 243,
+   "materials": 235,
+   "textures": 80,
+   "textureKB": 909,
+   "bytes": 1641552
   }
  },
  "parts": {
   "inStatic": true,
   "names": [
-   "time-face",
-   "time-face",
    "exit-a-stair",
    "pf",
    "pf",
@@ -1136,18 +1850,15 @@
    "time-face",
    "fareboard",
    "time-face",
-   "pf",
-   "pf",
-   "pf",
    "spot:kouka-meet",
    "spot:plat-phone",
    "spot:frag-7"
   ],
-  "exportBytes": 16632384
+  "exportBytes": 20047540
  },
  "live": {
   "file": "platform-1-day.live.json",
-  "bytes": 47825,
+  "bytes": 47910,
   "objects": [
    "Mesh",
    "Mesh",

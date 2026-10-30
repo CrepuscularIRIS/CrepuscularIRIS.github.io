@@ -1,0 +1,1133 @@
+{
+ "version": 2,
+ "place": "police-office-1",
+ "family": "PoliceOffice",
+ "variant": "D",
+ "tod": "day",
+ "cost": {
+  "triangles": 162856,
+  "drawCalls": 116,
+  "textures": 37,
+  "textureMB": 76.7
+ },
+ "exported": {
+  "triangles": 160166,
+  "drawCalls": 108,
+  "textures": 34,
+  "textureMB": 74.8
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "color": 11848912,
+   "intensity": 0.62,
+   "position": [
+    0,
+    1,
+    0
+   ],
+   "visible": true,
+   "groundColor": 3815474
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 16773340,
+   "intensity": 2.9,
+   "position": [
+    40.5710615911788,
+    55.897907081179675,
+    -77.70106537412096
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    -20
+   ],
+   "shadow": {
+    "mapSize": [
+     2048,
+     2048
+    ],
+    "bias": -0.0004,
+    "normalBias": 0.025,
+    "radius": 2,
+    "intensity": 1,
+    "autoUpdate": true,
+    "camera": {
+     "near": 1,
+     "far": 200,
+     "left": -45,
+     "right": 45,
+     "top": 45,
+     "bottom": -45
+    }
+   }
+  },
+  {
+   "type": "SpotLight",
+   "name": "police-troffer-0-0.4",
+   "color": 16773344,
+   "intensity": 14.399999999999999,
+   "position": [
+    0,
+    2.6500000000000004,
+    0.4
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.7,
+   "angle": 1.2,
+   "penumbra": 0.8,
+   "target": [
+    0,
+    0,
+    0.4
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "police-troffer--1.05-1.85",
+   "color": 16773344,
+   "intensity": 14.399999999999999,
+   "position": [
+    -1.05,
+    2.6500000000000004,
+    1.85
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.7,
+   "angle": 1.2,
+   "penumbra": 0.8,
+   "target": [
+    -1.05,
+    0,
+    1.85
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "police-troffer--1.85-3.25",
+   "color": 16773344,
+   "intensity": 14.399999999999999,
+   "position": [
+    -1.85,
+    2.6500000000000004,
+    3.25
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.7,
+   "angle": 1.2,
+   "penumbra": 0.8,
+   "target": [
+    -1.85,
+    0,
+    3.25
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "police-troffer--2.95-4.5",
+   "color": 16773344,
+   "intensity": 14.399999999999999,
+   "position": [
+    -2.95,
+    2.6500000000000004,
+    4.5
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.7,
+   "angle": 1.2,
+   "penumbra": 0.8,
+   "target": [
+    -2.95,
+    0,
+    4.5
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "police-troffer-3-3.65",
+   "color": 16773344,
+   "intensity": 14.399999999999999,
+   "position": [
+    3,
+    2.6500000000000004,
+    3.65
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.7,
+   "angle": 1.2,
+   "penumbra": 0.8,
+   "target": [
+    3,
+    0,
+    3.65
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "police-troffer-4.3-2.1",
+   "color": 16773344,
+   "intensity": 14.399999999999999,
+   "position": [
+    4.3,
+    2.6500000000000004,
+    2.1
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.7,
+   "angle": 1.2,
+   "penumbra": 0.8,
+   "target": [
+    4.3,
+    0,
+    2.1
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "police-troffer-1--2.2",
+   "color": 16773344,
+   "intensity": 14.399999999999999,
+   "position": [
+    1,
+    2.6500000000000004,
+    -2.2
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.7,
+   "angle": 1.2,
+   "penumbra": 0.8,
+   "target": [
+    1,
+    0,
+    -2.2
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "police-troffer-4--1.5",
+   "color": 16773344,
+   "intensity": 14.399999999999999,
+   "position": [
+    4,
+    2.6500000000000004,
+    -1.5
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.7,
+   "angle": 1.2,
+   "penumbra": 0.8,
+   "target": [
+    4,
+    0,
+    -1.5
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "police-troffer--0.3-7.2",
+   "color": 16773344,
+   "intensity": 10.8,
+   "position": [
+    -0.3,
+    2.6500000000000004,
+    7.2
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.7,
+   "angle": 0.85,
+   "penumbra": 0.8,
+   "target": [
+    -0.3,
+    0,
+    7.2
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "police-troffer-2.2-8.1",
+   "color": 16773344,
+   "intensity": 10.8,
+   "position": [
+    2.2,
+    2.6500000000000004,
+    8.1
+   ],
+   "visible": true,
+   "distance": 7,
+   "decay": 1.7,
+   "angle": 0.85,
+   "penumbra": 0.8,
+   "target": [
+    2.2,
+    0,
+    8.1
+   ]
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "color": 9086120,
+   "intensity": 0.1,
+   "position": [
+    -2,
+    2,
+    14
+   ],
+   "visible": true,
+   "target": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "police-desk-practical",
+   "color": 16766883,
+   "intensity": 1.8,
+   "position": [
+    -0.55,
+    1.46,
+    6.65
+   ],
+   "visible": true,
+   "distance": 2.5,
+   "decay": 2,
+   "angle": 0.68,
+   "penumbra": 0.65,
+   "target": [
+    -0.3,
+    0.76,
+    6.6
+   ]
+  }
+ ],
+ "lowDrop": [],
+ "clocks": [
+  {
+   "material": "c4aa6547-a444-4b35-80d1-5810dc72e028",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  },
+  {
+   "material": "86e6dee3-cf36-4f1f-b742-517780aafaff",
+   "uniform": "uTime",
+   "a": 1,
+   "b": 0
+  }
+ ],
+ "motions": [],
+ "tracks": [],
+ "tracksUnfitted": [],
+ "hooks": {},
+ "patchClocks": {},
+ "uniformArrays": {},
+ "reflectors": [],
+ "camera": {
+  "ref": {
+   "position": [
+    -0.2,
+    1.45,
+    8.6
+   ],
+   "target": [
+    0.3,
+    1,
+    0.6
+   ],
+   "fov": 52
+  },
+  "views": [
+   {
+    "name": "wide",
+    "label": "Wide",
+    "position": [
+     5.4,
+     2.2,
+     10.3
+    ],
+    "target": [
+     -1,
+     0.8,
+     1
+    ],
+    "fov": 62
+   },
+   {
+    "name": "desk",
+    "label": "Case log",
+    "position": [
+     -0.35,
+     1.42,
+     7.95
+    ],
+    "target": [
+     0.75,
+     1.08,
+     6.85
+    ],
+    "fov": 46
+   },
+   {
+    "name": "windows",
+    "label": "Windows",
+    "position": [
+     1.5,
+     1.5,
+     0.4
+    ],
+    "target": [
+     1.6,
+     1.55,
+     -5.6
+    ],
+    "fov": 55
+   },
+   {
+    "name": "partition",
+    "label": "Interview rooms",
+    "position": [
+     -1.2,
+     1.5,
+     6.8
+    ],
+    "target": [
+     -4.2,
+     1.2,
+     2
+    ],
+    "fov": 55
+   },
+   {
+    "name": "dawn",
+    "label": "Dawn window",
+    "position": [
+     2.6,
+     1.55,
+     -2.4
+    ],
+    "target": [
+     2,
+     1.7,
+     -12
+    ],
+    "fov": 60
+   },
+   {
+    "name": "street",
+    "label": "Street dawn",
+    "position": [
+     1,
+     1.5,
+     -4.6
+    ],
+    "target": [
+     1.6,
+     4.5,
+     -40
+    ],
+    "fov": 52
+   },
+   {
+    "name": "reverse",
+    "label": "Reverse",
+    "position": [
+     2,
+     1.7,
+     -2.5
+    ],
+    "target": [
+     -0.5,
+     1,
+     10.5
+    ],
+    "fov": 62
+   },
+   {
+    "name": "rows",
+    "label": "Workstations",
+    "position": [
+     3,
+     1.6,
+     2.8
+    ],
+    "target": [
+     -0.5,
+     0.8,
+     -1.5
+    ],
+    "fov": 55
+   },
+   {
+    "name": "plate",
+    "label": "Plate",
+    "position": [
+     0,
+     1.3,
+     9
+    ],
+    "target": [
+     0,
+     1.3,
+     0
+    ],
+    "fov": 50.3,
+    "shift": [
+     0.021,
+     -0.056
+    ]
+   }
+  ]
+ },
+ "bounds": {
+  "min": [
+   -4.2,
+   0.2,
+   -5.3999999999999995
+  ],
+  "max": [
+   6,
+   2.85,
+   10.8
+  ]
+ },
+ "env": {
+  "officeProps": {
+   "placements": [
+    {
+     "id": "desk",
+     "position": [
+      0.15,
+      0,
+      6.68
+     ],
+     "scale": 0.9651169893226313
+    },
+    {
+     "id": "lamp",
+     "position": [
+      -0.55,
+      0.76,
+      6.24
+     ]
+    },
+    {
+     "id": "binder",
+     "position": [
+      -0.27,
+      0.762,
+      6.53
+     ],
+     "rotationY": 0.14
+    }
+   ]
+  },
+  "vista": {
+   "type": "neon-district",
+   "position": [
+    -10.5,
+    -4.2,
+    -110
+   ],
+   "rotationY": 0.12,
+   "detailFocus": [
+    0,
+    6,
+    105
+   ],
+   "traffic": [
+    {
+     "id": "police-vista-sedan-near",
+     "type": "sedan",
+     "at": [
+      3.6,
+      0,
+      73
+     ],
+     "heading": 0,
+     "variant": 2
+    },
+    {
+     "id": "police-vista-minibus",
+     "type": "minibus",
+     "at": [
+      -3.6,
+      0,
+      51
+     ],
+     "heading": 180
+    },
+    {
+     "id": "police-vista-sedan-far",
+     "type": "sedan",
+     "at": [
+      3.6,
+      0,
+      25
+     ],
+     "heading": 0,
+     "variant": 1
+    }
+   ]
+  },
+  "background": 1718844,
+  "ibl": {
+   "top": 2373178,
+   "wall": 3821650,
+   "floor": 3025958,
+   "intensity": 0.7,
+   "lights": [
+    {
+     "pos": [
+      0,
+      2,
+      -9
+     ],
+     "size": [
+      14,
+      2.4
+     ],
+     "color": 15003890,
+     "power": 4,
+     "lookAt": [
+      0,
+      1.6,
+      0
+     ]
+    },
+    {
+     "pos": [
+      -1,
+      2.9,
+      1
+     ],
+     "size": [
+      2.5,
+      0.4
+     ],
+     "color": 16773344,
+     "power": 5,
+     "lookAt": [
+      -1,
+      0,
+      1
+     ]
+    },
+    {
+     "pos": [
+      3,
+      2.9,
+      3.6
+     ],
+     "size": [
+      2.5,
+      0.4
+     ],
+     "color": 16773344,
+     "power": 5,
+     "lookAt": [
+      3,
+      0,
+      3.6
+     ]
+    }
+   ]
+  },
+  "post": {
+   "outline": {
+    "color": 399900,
+    "opacity": 0.12,
+    "depthTh": 0.012,
+    "normalTh": 0.28
+   },
+   "ao": {
+    "strength": 0.6,
+    "radius": 0.35
+   },
+   "bloom": {
+    "threshold": 1,
+    "strength": 0.24,
+    "weights": [
+     0.45,
+     0.35,
+     0.3,
+     0.25,
+     0.2
+    ]
+   },
+   "fog": {
+    "enabled": true,
+    "color": 6983310,
+    "density": 0.035,
+    "falloff": 0.5,
+    "base": 0,
+    "near": 18,
+    "maxOpacity": 0.05
+   },
+   "grade": {
+    "exposure": 1.45,
+    "saturation": 0.95,
+    "lift": [
+     0.004,
+     0.006,
+     0.008
+    ],
+    "gain": [
+     0.98,
+     1,
+     0.98
+    ],
+    "vignette": 0.3
+   },
+   "dof": {
+    "enabled": true,
+    "focus": 2.8,
+    "range": 1.5,
+    "near": 0.6,
+    "far": 0.9,
+    "maxRadius": 8
+   }
+  }
+ },
+ "walk": {
+  "bounds": [
+   -3.85,
+   -5.6,
+   6.2,
+   11
+  ],
+  "eye": 1.6,
+  "start": {
+   "position": [
+    0.2,
+    0,
+    9.8
+   ],
+   "target": [
+    0,
+    1.2,
+    0
+   ]
+  },
+  "colliders": [
+   [
+    -0.8151169893226313,
+    6.2229157682718546,
+    1.1151169893226314,
+    7.137084231728145
+   ],
+   [
+    -1.2917722233913542,
+    4.0511211694628715,
+    0.49177222339135407,
+    5.048878830537128
+   ],
+   [
+    -1.191772223391354,
+    3.051121169462872,
+    0.591772223391354,
+    4.048878830537128
+   ],
+   [
+    -2.4496666877203084,
+    0.7994517770511371,
+    -0.8755983050308731,
+    1.6005482229488628
+   ],
+   [
+    -0.5840046046395883,
+    0.8062995411204337,
+    0.983742879806189,
+    1.5937004588795662
+   ],
+   [
+    1.0835750053648674,
+    0.8179563032925384,
+    2.640342239103017,
+    1.5820436967074616
+   ],
+   [
+    -2.2909448291957886,
+    -1.7052738793462798,
+    -0.7125711370408027,
+    -0.8947261206537203
+   ],
+   [
+    -0.5828238791112648,
+    -1.6808024626426468,
+    0.9727580138739989,
+    -0.9191975373573534
+   ],
+   [
+    1.168175958247827,
+    -1.6929794786336165,
+    2.7352523191254865,
+    -0.9070205213663837
+   ],
+   [
+    2.827246245309787,
+    -1.684656528244394,
+    4.386498559325856,
+    -0.9153434717556062
+   ],
+   [
+    -2.3691743680785255,
+    -3.996858146067393,
+    -0.7985001262699408,
+    -3.2031418539326073
+   ],
+   [
+    -0.6653066108914314,
+    -3.9828301463301856,
+    0.8922100616598723,
+    -3.2171698536698146
+   ],
+   [
+    1.124513410953444,
+    -3.976610227106473,
+    2.676069130385655,
+    -3.223389772893527
+   ],
+   [
+    2.8629959834128123,
+    -4.00529855736087,
+    4.4413920358434815,
+    -3.1947014426391305
+   ],
+   [
+    -1.5927838557237304,
+    -0.6659494997596109,
+    -0.4072161442762695,
+    0.2659494997596109
+   ],
+   [
+    -3.9,
+    2,
+    -3,
+    4.8
+   ],
+   [
+    -3.15,
+    3.7,
+    -2.5,
+    4.3
+   ],
+   [
+    5.6,
+    0.6,
+    6.2,
+    2.8
+   ],
+   [
+    4.3,
+    0.10000000000000003,
+    4.8999999999999995,
+    0.7
+   ],
+   [
+    4.9,
+    3.1,
+    5.5,
+    3.6999999999999997
+   ],
+   [
+    3.6,
+    -2.5,
+    4.2,
+    -1.9000000000000001
+   ],
+   [
+    5.3,
+    -1.7,
+    5.8999999999999995,
+    -1.0999999999999999
+   ],
+   [
+    2.5,
+    -4.6,
+    3.0999999999999996,
+    -4
+   ],
+   [
+    5.2,
+    5.3,
+    5.8,
+    5.8999999999999995
+   ],
+   [
+    3.9,
+    4.65,
+    4.7,
+    5.35
+   ],
+   [
+    2.564063301118848,
+    5.722131600571327,
+    4.235936698881152,
+    6.677868399428673
+   ]
+  ],
+  "floor": null
+ },
+ "interactables": [
+  {
+   "id": "case-log",
+   "kind": "terminal",
+   "label": "Case log",
+   "object": "monitor",
+   "typed": false,
+   "anchor": [
+    0.7,
+    0.76,
+    6.9
+   ],
+   "built": [
+    0.7,
+    0.76,
+    6.9
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "evidence-board",
+   "kind": "terminal",
+   "label": "Evidence board",
+   "object": "board",
+   "typed": false,
+   "anchor": [
+    -1,
+    1.2,
+    -0.2
+   ],
+   "built": [
+    -1,
+    1.2,
+    -0.2
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "records-shelf",
+   "kind": "terminal",
+   "label": "Records shelf",
+   "object": "spot:records-shelf",
+   "typed": true,
+   "anchor": [
+    5.8,
+    1.3,
+    1.7
+   ],
+   "built": [
+    5.8,
+    1.3,
+    1.7
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "front-door",
+   "kind": "link",
+   "label": "Street",
+   "object": "spot:front-door",
+   "typed": true,
+   "anchor": [
+    0.1,
+    1.1,
+    10.9
+   ],
+   "built": [
+    0.1,
+    1.1,
+    10.9
+   ],
+   "reach": 3.2
+  },
+  {
+   "id": "po-monitor",
+   "kind": "inspect",
+   "label": "Old monitor",
+   "object": "spot:po-monitor",
+   "typed": true,
+   "anchor": [
+    0.7,
+    1.18,
+    6.9
+   ],
+   "built": [
+    0.7,
+    1.18,
+    6.9
+   ],
+   "reach": 5
+  },
+  {
+   "id": "po-evidence",
+   "kind": "inspect",
+   "label": "Evidence drawer",
+   "object": "spot:po-evidence",
+   "typed": true,
+   "anchor": [
+    -3.55,
+    0.5,
+    4.4
+   ],
+   "built": [
+    -3.55,
+    0.5,
+    4.4
+   ],
+   "reach": 3.2
+  }
+ ],
+ "bind": {
+  "records-shelf": {
+   "object": "spot:records-shelf",
+   "how": "mesh",
+   "on": "furniture < PoliceOffice",
+   "at": [
+    5.8,
+    1.3,
+    1.7
+   ]
+  },
+  "front-door": {
+   "object": "spot:front-door",
+   "how": "node",
+   "on": null,
+   "at": [
+    0.1,
+    1.1,
+    10.9
+   ]
+  },
+  "po-monitor": {
+   "object": "spot:po-monitor",
+   "how": "mesh",
+   "on": "furniture < PoliceOffice",
+   "at": [
+    0.7,
+    1.18,
+    6.9
+   ]
+  },
+  "po-evidence": {
+   "object": "spot:po-evidence",
+   "how": "mesh",
+   "on": "furniture < PoliceOffice",
+   "at": [
+    -3.55,
+    0.5,
+    4.4
+   ]
+  }
+ },
+ "premerge": {
+  "spot:front-door": [
+   0.1,
+   1.1,
+   10.9
+  ],
+  "monitor": [
+   0.7,
+   0.76,
+   6.9
+  ],
+  "board": [
+   -1,
+   1.2,
+   -0.2
+  ]
+ },
+ "doorProps": {},
+ "anchorsBefore": {
+  "named": 2,
+  "typed": 4
+ },
+ "models": {
+  "baked": [],
+  "standIns": []
+ },
+ "dressStats": null,
+ "detailStats": {
+  "meshes": 0,
+  "triangles": 0
+ },
+ "manifestColliders": 0,
+ "manifest": true,
+ "three": "170",
+ "key": "police-office-1-day",
+ "hour": 13,
+ "bakedAt": "2026-10-30T02:43:31.946Z",
+ "quantizePosition": 14,
+ "source": {
+  "family": "PoliceOffice (D) built at runtime by lab/src/scenes",
+  "exportBytes": 22433188,
+  "triangles": 162856,
+  "drawCalls": 116,
+  "textures": 37,
+  "textureMB": 76.7
+ },
+ "lods": {
+  "lod0": {
+   "file": "police-office-1-day.glb",
+   "triangles": 138784,
+   "primitives": 100,
+   "materials": 100,
+   "textures": 32,
+   "textureKB": 1579,
+   "bytes": 2937332
+  },
+  "lod1": {
+   "file": "police-office-1-day.lod1.glb",
+   "ratio": 0.5,
+   "maxTexture": 512,
+   "triangles": 72090,
+   "primitives": 100,
+   "materials": 100,
+   "textures": 32,
+   "textureKB": 381,
+   "bytes": 1220804
+  }
+ },
+ "parts": {
+  "inStatic": true,
+  "names": [
+   "monitor",
+   "board",
+   "spot:po-monitor",
+   "spot:po-evidence",
+   "spot:records-shelf",
+   "spot:front-door"
+  ],
+  "exportBytes": 118756
+ },
+ "live": {
+  "file": "police-office-1-day.live.json",
+  "bytes": 130087,
+  "objects": [
+   "Mesh",
+   "skyDome",
+   "motes",
+   "Mesh",
+   "Mesh"
+  ]
+ },
+ "notes": [
+  "Loaded by src/world/places/baked.js (GLTFLoader + MeshoptDecoder, ObjectLoader for live); ?bake=0 builds the lab scene instead.",
+  "Rebuild with: node tools/bake/bake.mjs police-office-1 --variant day (dev server running, BASE=...)"
+ ]
+}

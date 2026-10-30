@@ -5,16 +5,16 @@
  "variant": "D",
  "tod": "day",
  "cost": {
-  "triangles": 54854,
-  "drawCalls": 348,
-  "textures": 71,
-  "textureMB": 84.9
+  "triangles": 63196,
+  "drawCalls": 347,
+  "textures": 78,
+  "textureMB": 93.1
  },
  "exported": {
-  "triangles": 48740,
-  "drawCalls": 272,
-  "textures": 61,
-  "textureMB": 60
+  "triangles": 54434,
+  "drawCalls": 262,
+  "textures": 65,
+  "textureMB": 79.4
  },
  "lights": [
   {
@@ -49,7 +49,7 @@
    "type": "SpotLight",
    "name": "",
    "color": 16769712,
-   "intensity": 14,
+   "intensity": 3.2,
    "position": [
     -2.46,
     1.22,
@@ -98,7 +98,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16751178,
-   "intensity": 1.2,
+   "intensity": 0.15,
    "position": [
     2.3000000000000003,
     0.2,
@@ -112,7 +112,7 @@
    "type": "PointLight",
    "name": "",
    "color": 16751178,
-   "intensity": 1.2,
+   "intensity": 0.15,
    "position": [
     2.3000000000000003,
     0.2,
@@ -159,6 +159,7 @@
     "bias": -0.0004,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 0.5,
@@ -272,19 +273,19 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "a23fb6ab-4efd-4425-81e1-ec4f039cca61",
+   "material": "ccfbe45d-6f3f-4875-a533-6a3d142a978f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "3a058705-abb5-47b9-bd71-130f5128b65f",
+   "material": "a3a059e9-41b2-4c8e-93e5-98736d93bb03",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "f42b496d-b8ee-4a08-8d0e-2ca010ff0dfb",
+   "material": "a557cf2a-e492-4ed0-ba62-62d28311c38c",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -303,7 +304,7 @@
    "x": 0.03500000000000014,
    "y": 0,
    "z": -1.5499999999999998,
-   "strength": 0.5,
+   "strength": 0.15,
    "blur": 1.6,
    "f0": 0.06,
    "tint": 13623551,
@@ -394,8 +395,8 @@
     "fov": 55,
     "post": {
      "bloom": {
-      "threshold": 0.85,
-      "strength": 0.4
+      "threshold": 1.1,
+      "strength": 0.12
      },
      "rays": {
       "enabled": false
@@ -441,8 +442,8 @@
     "fov": 50,
     "post": {
      "bloom": {
-      "threshold": 0.85,
-      "strength": 0.4
+      "threshold": 1.1,
+      "strength": 0.12
      },
      "rays": {
       "enabled": false
@@ -527,12 +528,188 @@
   ]
  },
  "env": {
+  "streetKit": {
+   "version": 1,
+   "catalog": "../landfill-room-rebuild/manifest.json",
+   "placements": [
+    {
+     "id": "lf-compressor",
+     "position": [
+      -6,
+      0,
+      -6.1
+     ],
+     "rotationY": -0.65,
+     "scale": 1
+    },
+    {
+     "id": "desk",
+     "position": [
+      -2.57,
+      0,
+      0
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 1.1428571082567152
+    },
+    {
+     "id": "drill",
+     "position": [
+      0.49,
+      0.78,
+      -4.69
+     ],
+     "rotationY": 0.08,
+     "scale": 0.85
+    },
+    {
+     "id": "tool-case",
+     "position": [
+      1.2,
+      0.79,
+      0.84
+     ],
+     "rotationY": -0.18,
+     "scale": 1
+    },
+    {
+     "id": "carton",
+     "position": [
+      -2.85,
+      0,
+      -2.7
+     ],
+     "rotationY": -0.18,
+     "scale": 1
+    },
+    {
+     "id": "carton",
+     "position": [
+      -2.8,
+      0,
+      -2.2
+     ],
+     "rotationY": -0.09,
+     "scale": 1
+    },
+    {
+     "id": "carton",
+     "position": [
+      -2.4,
+      0,
+      -2.45
+     ],
+     "rotationY": 0,
+     "scale": 0.8
+    },
+    {
+     "id": "carton",
+     "position": [
+      -2.8,
+      0,
+      -1.5
+     ],
+     "rotationY": 0.09,
+     "scale": 1
+    },
+    {
+     "id": "carton",
+     "position": [
+      -2.35,
+      0,
+      -1.7
+     ],
+     "rotationY": 0.18,
+     "scale": 0.75
+    },
+    {
+     "id": "crate",
+     "position": [
+      -2.8,
+      0.3417934771,
+      -2.2
+     ],
+     "rotationY": 0.1,
+     "scale": 0.8
+    },
+    {
+     "id": "carton",
+     "position": [
+      2.96,
+      0.13,
+      -2.1
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 0.7
+    },
+    {
+     "id": "tool-case",
+     "position": [
+      2.96,
+      0.63,
+      -3
+     ],
+     "rotationY": -1.5707963267948966,
+     "scale": 0.85
+    },
+    {
+     "id": "crate",
+     "position": [
+      2.96,
+      1.13,
+      -2.9
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 0.85
+    },
+    {
+     "id": "carton",
+     "position": [
+      2.96,
+      1.13,
+      -2.15
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 0.7
+    },
+    {
+     "id": "tool-case",
+     "position": [
+      2.96,
+      0.63,
+      -0.5
+     ],
+     "rotationY": -1.5707963267948966,
+     "scale": 0.85
+    },
+    {
+     "id": "crate",
+     "position": [
+      2.96,
+      1.13,
+      -1.25
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 0.85
+    },
+    {
+     "id": "carton",
+     "position": [
+      2.96,
+      0.13,
+      -0.43
+     ],
+     "rotationY": 1.5707963267948966,
+     "scale": 0.65
+    }
+   ]
+  },
   "background": 460812,
   "ibl": {
    "top": 395276,
    "wall": 1581610,
    "floor": 791062,
-   "intensity": 0.1,
+   "intensity": 0.2,
    "lights": [
     {
      "pos": [
@@ -585,7 +762,7 @@
    },
    "bloom": {
     "threshold": 0.7,
-    "strength": 0.75,
+    "strength": 0.26,
     "weights": [
      0.45,
      0.4,
@@ -597,11 +774,11 @@
    "fog": {
     "enabled": true,
     "color": 1582124,
-    "density": 0.02,
+    "density": 0.006,
     "falloff": 0.3,
     "base": 0,
     "near": 1,
-    "maxOpacity": 0.4
+    "maxOpacity": 0.16
    },
    "rays": {
     "enabled": true,
@@ -623,7 +800,7 @@
     ]
    },
    "paint": {
-    "enabled": true,
+    "enabled": false,
     "strength": 0.25,
     "radius": 2
    },
@@ -640,10 +817,10 @@
      1,
      0.9
     ],
-    "vignette": 0.45
+    "vignette": 0.22
    },
    "dof": {
-    "enabled": true,
+    "enabled": false,
     "focus": 5,
     "range": 1.8,
     "near": 0.7,
@@ -777,9 +954,9 @@
    ],
    [
     -3.13,
-    -0.95,
-    -2.3,
-    0.95
+    -1.15,
+    -2,
+    1.15
    ],
    [
     2.75,
@@ -871,13 +1048,13 @@
    "typed": false,
    "anchor": [
     -1.12,
-    0.9425000002235175,
-    -4.777499999999999
+    0.9049999990314246,
+    -4.752000000029801
    ],
    "built": [
     -1.12,
-    0.9425000002235175,
-    -4.777499999999999
+    0.9049999990314246,
+    -4.752000000029801
    ],
    "reach": 5
   },
@@ -888,14 +1065,14 @@
    "object": "workbench",
    "typed": false,
    "anchor": [
-    -2.725,
-    0.6308444261617371,
-    0
+    -2.7112221117155944,
+    1.080515210268882,
+    0.029999999329447746
    ],
    "built": [
-    -2.725,
-    0.6308444261617371,
-    0
+    -2.7112221117155944,
+    1.080515210268882,
+    0.029999999329447746
    ],
    "reach": 5
   },
@@ -927,13 +1104,13 @@
   ],
   "red-cabinet": [
    -1.12,
-   0.9425000002235175,
-   -4.777499999999999
+   0.9049999990314246,
+   -4.752000000029801
   ],
   "workbench": [
-   -2.725,
-   0.6308444261617371,
-   0
+   -2.7112221117155944,
+   1.080515210268882,
+   0.029999999329447746
   ],
   "door": [
    2.075,
@@ -958,7 +1135,7 @@
   "retextured": 0,
   "triangles": 27202,
   "failed": 0,
-  "hidden": 20
+  "hidden": 24
  },
  "detailStats": {
   "meshes": 0,
@@ -969,36 +1146,36 @@
  "three": "170",
  "key": "landfill-room-1",
  "hour": 13,
- "bakedAt": "2026-10-27T09:38:32.490Z",
+ "bakedAt": "2026-10-30T02:53:40.487Z",
  "quantizePosition": 14,
  "source": {
   "family": "LandfillRoom (D) built at runtime by lab/src/scenes",
-  "exportBytes": 19669816,
-  "triangles": 54854,
-  "drawCalls": 348,
-  "textures": 71,
-  "textureMB": 84.9
+  "exportBytes": 22022072,
+  "triangles": 63196,
+  "drawCalls": 347,
+  "textures": 78,
+  "textureMB": 93.1
  },
  "lods": {
   "lod0": {
    "file": "landfill-room-1.glb",
-   "triangles": 42360,
-   "primitives": 256,
-   "materials": 251,
-   "textures": 67,
-   "textureKB": 2940,
-   "bytes": 3684972
+   "triangles": 43110,
+   "primitives": 251,
+   "materials": 239,
+   "textures": 68,
+   "textureKB": 2582,
+   "bytes": 3314268
   },
   "lod1": {
    "file": "landfill-room-1.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 33179,
-   "primitives": 256,
-   "materials": 251,
-   "textures": 67,
-   "textureKB": 918,
-   "bytes": 1579564
+   "triangles": 33355,
+   "primitives": 251,
+   "materials": 239,
+   "textures": 68,
+   "textureKB": 840,
+   "bytes": 1500956
   }
  },
  "parts": {
@@ -1009,7 +1186,7 @@
    "red-cabinet",
    "workbench"
   ],
-  "exportBytes": 8832800
+  "exportBytes": 3889412
  },
  "live": {
   "file": "landfill-room-1.live.json",

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-29-methode-a2ba281f",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-29T11:02:33Z",
+  "title": "llama.cpp b11980 为 SYCL 后端加入量化 KV cache 的 DPAS Flash Attention 内核",
+  "summary": "llama.cpp 新构建 b11980 为 SYCL/XMX 后端加入直接在 q4_0/q8_0 量化 KV 块上跑的 DPAS Flash Attention，Arc Pro B70 上 16K 上下文吞吐从 31.3 提升到 54.2 t/s。",
+  "summary_en": "The brief note reports that llama.cpp build b11980 adds DPAS Flash Attention support for the SYCL/XMX backend, operating directly on q4_0- and q8_0-quantized KV-cache blocks. It says that on Arc Pro B70, throughput at a 16K context rises from 31.3 to 54.2 tokens per second, though no benchmark methodology or supporting details are provided.",
+  "body": "llama.cpp 新构建 b11980 为 SYCL/XMX 后端加入直接在 q4_0/q8_0 量化 KV 块上跑的 DPAS Flash Attention，Arc Pro B70 上 16K 上下文吞吐从 31.3 提升到 54.2 t/s。\n\n论文\n- CausGround: Causal Interaction Grounding for Adaptive Embodied Planning — 把交互经验蒸馏成可复用的动作级因果知识（前置条件与效果），无需参数更新即可提升 MLLM 规划：VirtualHome 成功率 24.9%→53.3%，RoboCasa 闭环规划 43.0%→57.0%。\n  https://arxiv.org/abs/2610.29702\n\nGitHub与基建\n- llama.cpp b11980：SYCL DPAS Flash Attention 支持量化 KV cache — 解码与小批量（1–31 query token）直接对 q4_0/q8_0 KV 块跑 flash attention，不再逐次反量化；B580 + Llama 3.1 8B Q4_K_M 在 16K 上下文下 31.3→54.2 t/s（10-29 15:10）。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11980\n- llama.cpp b11982：Hexagon 后端支持 UPSCALE 算子 — 高通 Hexagon NPU 增加图像放大基础算子与 2x/4x nearest、bilinear 优化，并加入面向 qwen3-vl 图文场景的 permuted UPSCALE 测试（10-29 15:22）。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11982\n- llama.cpp b11981：Hexagon 转置 CONCAT 带宽利用率优化 — 加宽行块、双倍 scratchpad 并用 vgather 打散 gather lanes，提升 Snapdragon NPU 上转置拼接的 DDR 带宽利用（10-29 16:11）。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11981\n- llama.cpp b11979：SYCL 向量化重排布局反量化存储 — Q4_0/Q4_K/Q5_K/MXFP4 的重排布局转换改用向量存储，Arc Pro B70 预填充提升约 6.4%–15.3%（至 27B 稠密模型），结果位级一致（10-29 14:45）。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11979\n- transformers v5.21.1 补丁：修复 v5.21.0 破坏 vLLM 远程代码加载 — 修正初始化期间赋值 rope_scaling 的配置 setter bug——v5.21.0 曾导致 vLLM 的远程代码加载失败，补丁版已发布（10-29 16:35）。\n  https://github.com/huggingface/transformers/releases/tag/v5.21.1\n\n系统\n- AMD 发布 ROCm HRX Loom SDK v0.1 — Loom 是 ROCm HRX 的编译器与 IR 栈，可针对 AMD GPU、NPU 及 CPU 编译异步设备程序并链接模型程序，面向 agentic 工作负载优化（10-29 18:22）。\n  https://www.phoronix.com/news/AMD-ROCm-HRX-Loom-0.1\n- Linux 7.4：FAT32 文件系统最高提升 265 倍 — FALLOC_FL_KEEP_SIZE 预分配路径由逐簇分配改为一次分配多簇，补丁已合入 7.4 合并窗口（10-29 18:06）。\n  https://www.phoronix.com/news/Linux-7.4-Faster-FAT32\n- Linux 7.5 的 DRM/NPU 驱动改动已开始排队 — 两批 drm-misc-next 已进入 DRM-Next：包括 AMDXDNA 的 AIE4 能耗模式与队列管理、Panfrost 的 Mali G68 支持、rockchip HDMI 2.0 等（10-29 17:48）。\n  https://www.phoronix.com/news/Linux-7.5-drm-misc-next\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b11980",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11980",
+    "verified_at": "2026-10-29T11:02:33Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

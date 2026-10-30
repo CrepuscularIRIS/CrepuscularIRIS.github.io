@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-29-methode-5fe8d4e0",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-29T04:58:26Z",
+  "title": "OmniShowcase: 用多视角几何条件做 360° 主体一致视频生成（KAIST，HF 日榜新增）",
+  "summary": "多视角参考图 + 表面法线条件让视频生成的\"换视角不变脸\"再进一步，而面向 Agent 工具调用的联合调度框架 TAO 把延迟压低最多 26.8%。",
+  "summary_en": "OmniShowcase, from KAIST, applies multi-view reference images and surface-normal conditioning to improve identity consistency when viewpoints change in 360-degree subject video generation. The note also says the framework is newly added to Hugging Face’s daily chart. Separately, TAO jointly schedules agent tool calls and may reduce latency by as much as 26.8%.",
+  "body": "多视角参考图 + 表面法线条件让视频生成的\"换视角不变脸\"再进一步，而面向 Agent 工具调用的联合调度框架 TAO 把延迟压低最多 26.8%。\n\n论文\n- OmniShowcase: 全向主体一致视频生成（arXiv:2610.35684） — KAIST 团队用自动合成的 3D 资产视频训练数据 + 参考视角重建的表面法线转台条件，实现跨 360° 轨道仍保持身份与 3D 一致的主体感视频生成，并给出 Showcase-4K / ShowcaseBench；今日 HF 日榜新增。\n  https://arxiv.org/abs/2610.35684\n- TAO: 面向 LLM Agent 服务的工具感知联合调度（arXiv:2610.37230） — 把工具返回就绪度、带时间衰减的缓存信用与 token 占用合成价值接口，用动态规划同时做准入与 GPU 放置；12 组配置下相对最强基线延迟最多降 26.8%、TTFT 降 36.3%、解码吞吐升 29.5%。\n  https://arxiv.org/abs/2610.37230\n- Sensorimotor Alignment: 具身策略成功率的“柏拉图式”离线代理（arXiv:2610.31670） — 无需训练的 S² 指标衡量模型感知表征与物理运动几何的对齐程度，跨模型族与闭环任务成功率正相关，可在昂贵的闭环评测前先筛掉差模型，并用于挑选 VLA 微调底座。\n  https://arxiv.org/abs/2610.31670\n- MedJev: 零样本“System One”临床决策评测（arXiv:2610.36006） — 在笔记本本地运行的单次前向 System One 模型 MedQA 72.5%、USMLE 75.4%、NEJM 80.1%，并提出两参数重校准把 ECE 从 0.286 降到 0.007，是本地医疗 AI 的实用基线。\n  https://arxiv.org/abs/2610.36006\n- Who Convinced Whom? 多智能体辩论中 LLM 如何改变立场（arXiv:2610.35930） — 2400 题 MAD Bench 显示：辩论后的一致可能来自从众而非独立佐证，相比独立反思，全员一致答错的比例上升 3.1–7.4 个百分点，提醒评测要看依赖度与共识错误率。\n  https://arxiv.org/abs/2610.35930\n\nGitHub与基建\n- llama.cpp b11977：修复 OpenVINO 后端 SCALE 视图输入越界（10-29 12:45 CST） — SCALE 传入带任意行步长的 src0 视图时会错误缩放整个源张量，回写时溢出结果缓冲导致 test-backend-ops 崩溃；改为切片视图输入并拒绝非连续视图上的原地 SCALE。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11977\n- LiteLLM v1.108.0-rc.1：rc 分支与 v1.106.x 补丁对齐（10-29 11:33 CST） — 发布候选把 rc/1.108.0 的改动与 1.106.x 系列补丁修复拉齐（自上次发布以来 809 次主分支提交），镜像继续用 cosign 签名验证。\n  https://github.com/BerriAI/litellm/releases/tag/v1.108.0-rc.1\n\nSource: https://arxiv.org/abs/2610.35684",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.35684",
+    "verified_at": "2026-10-29T04:58:26Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

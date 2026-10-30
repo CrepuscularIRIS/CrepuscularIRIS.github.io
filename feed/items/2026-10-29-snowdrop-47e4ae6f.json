@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-29-snowdrop-47e4ae6f",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-10-29T09:09:00Z",
+  "title": "Gym-Anything-RT：暂停环境后 9% → 75%，AI 智能体的“实时性”短板被量化",
+  "summary": "今天最值得看的一篇是 AI2 的 Gym-Anything-RT——把 100 个实时小游戏摆在一起测，GPT-6 Astra 实时通过率只有 9%，把环境暂停后立刻涨到 75%，实时交互成了前沿模型公认的短板。",
+  "summary_en": "A digest of newly hot AI research papers from arXiv and Hugging Face Daily Papers, dated 29 October 2026. The lead story is Gym-Anything-RT from AI2 (Aggarwal and Welleck), which builds 100 automatically generated real-time minigames to measure vision-language agents under evolving environments: GPT-6 Astra (xHigh) passes only 9.0% in real time versus 75.0% with the environment paused, and frontier agents try to bypass perception by writing code. Other highlights cover LLM-driven physical-law discovery (GPT-6-Astra 16.7%, all others 0%), test-time intervention control (PORTAL), long-context linear attention (MERLIN), agent RL rollout scheduling (EnvSched), tool-aware serving (TAO), team decision-making communication gaps (TeamGym), and embodied robotics work including Sensorimotor Alignment, HuGe and CausGround.",
+  "body": "今天最值得看的一篇是 AI2 的 Gym-Anything-RT——把 100 个实时小游戏摆在一起测，GPT-6 Astra 实时通过率只有 9%，把环境暂停后立刻涨到 75%，实时交互成了前沿模型公认的短板。\n\n实时智能体与能力边界\n- Gym-Anything-RT: Scaling Real-Time Environments for Vision-Language Agents — AI2 自动生成 100 个实时小游戏，GPT-6 Astra(xHigh) 实时通过率仅 9.0%，暂停环境后升到 75.0%，且发现模型会写代码绕过实时感知。\n  https://arxiv.org/abs/2610.37567\n- Can LLMs Uncover Hidden Physical Laws through Free Exploration? — LongChang 框架让 LLM 在被改过物理定律的模拟世界里自由探索，12 个模型中只有 GPT-6-Astra 有 16.7% 发现率，其余全为 0。\n  https://arxiv.org/abs/2610.37649\n- When Should We Intervene at Test Time? — PORTAL 控制器决定何时做测试时自适应、给哪些输入打标签、何时停止，把整体掉分的干预变成按批次可用的选择。\n  https://arxiv.org/abs/2610.37658\n\n多智能体协作与记忆\n- TeamGym: A Gym for Team Decision-Making by AI Agents with Distributed Information — 把关键信息分散给多个 agent，成功率平均掉 22.9 个百分点；再要求自己从材料里检索关键信息，又掉 19.9 点，暴露“沟通鸿沟+检索鸿沟”。\n  https://arxiv.org/abs/2610.37571\n- Rare, Relevant, and Still Wrong: How Memory Fails LLM Group Decisions — 稀有优先与相关性优先两种记忆策略都在 hidden-profile 任务上失灵，决策模型还会被“很多人这么说”带偏，摘掉归属标签能涨 13–24 分。\n  https://arxiv.org/abs/2610.37624\n- EnvSched: Environment-Aware Scheduling for Rollout-Efficient Agent RL — 按环境-任务对调度 rollout，Qwen3-8B 上 40 步训练即超过随机采样 120 步的最高分，rollout 预算被真正当成调度问题来解。\n  https://arxiv.org/abs/2610.37609\n\n工程效率与长上下文\n- TAO: Tool-Aware Joint Scheduling for LLM-Based Agentic Serving — agentic 服务里模型推理和外部工具交替执行，TAO 把工具就绪时间纳入调度，延迟最多降 26.8%、TTFT 降 36.3%。\n  https://arxiv.org/abs/2610.37230\n- Multi-State Linear Attention with Generalized Second-Order Routing — MERLIN 用键的一二阶矩改写多状态线性注意力的聚合方式，长文本 QA 提升 7–8 点、LongBench 提升 12–13 点，且比用 4 倍显存的基线更省。\n  https://arxiv.org/abs/2610.37645\n\n具身智能（Hugging Face 每日热榜）\n- Sensorimotor Alignment: A Platonic Proxy for Embodied Policy Success — 把“柏拉图表征假说”搬到机器人上，训练无关的 S² 指标能离线预测真机任务成功率，先帮你筛模型再去做昂贵的闭环评测。\n  https://arxiv.org/abs/2610.31670\n- HuGe: Scaling Humanoid Generalist VLA Models with Egocentric Experience — 用 2000+ 小时第一视角人/机数据预训练人形通用 VLA，靠仿真回放造伪本体感知、重渲染手臂外观，HumanoidArena 刷到 SOTA 并在 Unitree G1 真机验证。\n  https://arxiv.org/abs/2610.34186\n- CausGround: Causal Interaction Grounding for Adaptive Embodied Planning — 非参数的因果交互框架把动作前置条件与效果沉淀成可复用知识，VirtualHome 成功率从 24.9% 提到 53.3%，无需针对环境再训练。\n  https://arxiv.org/abs/2610.29702\n\nSource: https://arxiv.org/abs/2610.37567",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.37567",
+    "verified_at": "2026-10-29T09:09:00Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

@@ -5,16 +5,16 @@
  "variant": "N",
  "tod": "night",
  "cost": {
-  "triangles": 57466,
-  "drawCalls": 287,
-  "textures": 94,
-  "textureMB": 161.6
+  "triangles": 53676,
+  "drawCalls": 284,
+  "textures": 98,
+  "textureMB": 203.1
  },
  "exported": {
-  "triangles": 54552,
-  "drawCalls": 258,
-  "textures": 88,
-  "textureMB": 157.8
+  "triangles": 50762,
+  "drawCalls": 255,
+  "textures": 92,
+  "textureMB": 199.3
  },
  "lights": [
   {
@@ -161,6 +161,7 @@
     "bias": -0.0008,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 0.5,
@@ -484,6 +485,7 @@
     "bias": -0.0006,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 0.5,
@@ -491,6 +493,34 @@
      "fov": 20.626480624709636
     }
    }
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16766117,
+   "intensity": 8,
+   "position": [
+    -2.4,
+    3.08,
+    17.3
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "color": 16766117,
+   "intensity": 8,
+   "position": [
+    3.7,
+    3.08,
+    17.3
+   ],
+   "visible": true,
+   "distance": 5,
+   "decay": 2
   },
   {
    "type": "PointLight",
@@ -510,31 +540,31 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "b2624a02-1e61-4ca9-8a4d-86ee5fc1ddd4",
+   "material": "d1c1d430-cfeb-414c-ade0-15543213ce2f",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "8e5eec29-36bc-42c2-9fc6-1550eda8ebf1",
+   "material": "043212ff-544d-4079-976a-3785c4b5bd65",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "38859333-ea50-4c24-8bcc-7a9dff908bf2",
+   "material": "48076b79-413b-4e83-b8fd-bf6d8d81028a",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "eb0c783f-7b4d-4fa9-90fc-349fa005d4b7",
+   "material": "793b65eb-deb3-43b5-8525-f38435518fdd",
    "uniform": "uTime",
    "a": 1,
    "b": 0
   },
   {
-   "material": "6ddc3c3b-bdc2-4536-86bb-34524ef8cfbd",
+   "material": "0a06c88b-2efe-4250-96c2-55c202201e5e",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -574,7 +604,7 @@
    "x": 0.15000000000000002,
    "y": 0.72,
    "z": 3.5999999999999996,
-   "strength": 0.6080000000000001,
+   "strength": 0.35200000000000004,
    "blur": 1,
    "f0": 0.12,
    "tint": 16767160,
@@ -796,6 +826,51 @@
     "fov": 55
    },
    {
+    "name": "door-lane",
+    "label": "Lane through the doorway",
+    "position": [
+     -0.06,
+     1.38,
+     9.18
+    ],
+    "target": [
+     -0.06,
+     1.3,
+     18
+    ],
+    "fov": 50
+   },
+   {
+    "name": "prep",
+    "label": "Preparation tools",
+    "position": [
+     -0.8,
+     1.55,
+     7.1
+    ],
+    "target": [
+     -1.8,
+     1,
+     6.3
+    ],
+    "fov": 45
+   },
+   {
+    "name": "pots",
+    "label": "Range detail",
+    "position": [
+     -3.8,
+     1.52,
+     7.1
+    ],
+    "target": [
+     -5.04,
+     1.05,
+     6.3
+    ],
+    "fov": 43
+   },
+   {
     "name": "tabletop",
     "label": "At the table",
     "position": [
@@ -825,6 +900,214 @@
   ]
  },
  "env": {
+  "streetKit": {
+   "version": 1,
+   "catalog": "../izakaya-rebuild/manifest.json",
+   "placements": [
+    {
+     "id": "bar-stool",
+     "position": [
+      -1.17,
+      0,
+      2.9
+     ],
+     "scale": 0.9433962264150945,
+     "rotationY": -1.6107963267948966
+    },
+    {
+     "id": "bar-stool",
+     "position": [
+      -1.17,
+      0,
+      3.7
+     ],
+     "scale": 0.9433962264150945,
+     "rotationY": -1.5307963267948965
+    },
+    {
+     "id": "bar-stool",
+     "position": [
+      -1.17,
+      0,
+      4.5
+     ],
+     "scale": 0.9433962264150945,
+     "rotationY": -1.6107963267948966
+    },
+    {
+     "id": "bar-stool",
+     "position": [
+      -1.17,
+      0,
+      5.3
+     ],
+     "scale": 0.9433962264150945,
+     "rotationY": -1.5307963267948965
+    },
+    {
+     "id": "board",
+     "position": [
+      -3.85,
+      0.9,
+      2.6
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "id": "knife",
+     "position": [
+      -3.77,
+      0.9412531,
+      2.62
+     ],
+     "rotationY": 0.25
+    },
+    {
+     "id": "ginger",
+     "position": [
+      -3.87,
+      0.9412531,
+      2.56
+     ],
+     "rotationY": -0.4
+    },
+    {
+     "id": "bowl",
+     "position": [
+      -3.86,
+      0.9,
+      5.05
+     ],
+     "scale": 1.35
+    },
+    {
+     "id": "bowl",
+     "position": [
+      -3.81,
+      0.9,
+      5.35
+     ],
+     "rotationY": 1.3
+    },
+    {
+     "id": "pot",
+     "position": [
+      -5.05,
+      0.945,
+      6.3
+     ],
+     "rotationY": 0.45,
+     "scale": 1.35
+    },
+    {
+     "id": "crate",
+     "position": [
+      -5.12,
+      0,
+      0.45
+     ],
+     "rotationY": 0,
+     "scale": 1
+    },
+    {
+     "id": "crate",
+     "position": [
+      -5.12,
+      0,
+      1.15
+     ],
+     "rotationY": 0,
+     "scale": 1
+    },
+    {
+     "id": "crate",
+     "position": [
+      -5.12,
+      0.26596,
+      1.15
+     ],
+     "rotationY": 0.05
+    },
+    {
+     "id": "pot",
+     "position": [
+      -5.05,
+      0.94,
+      2.2
+     ],
+     "rotationY": -0.45
+    },
+    {
+     "id": "aircon",
+     "position": [
+      2.2,
+      3.5,
+      17.48
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "board",
+     "position": [
+      -0.05,
+      0.72,
+      6
+     ],
+     "rotationY": 0
+    }
+   ],
+   "facades": [
+    {
+     "cell": "L0_0_0",
+     "position": [
+      -2.6,
+      0.14,
+      18
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_1_0",
+     "position": [
+      0.5,
+      0.14,
+      18
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_0",
+     "position": [
+      3.6,
+      0.14,
+      18
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_0_0",
+     "position": [
+      6.7,
+      0.14,
+      18
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_1_0",
+     "position": [
+      9.8,
+      0.14,
+      18
+     ],
+     "rotationY": 3.141592653589793
+    }
+   ],
+   "windows": {
+    "ratio": 0.24,
+    "strength": 1.6
+   }
+  },
   "background": 530203,
   "ibl": {
    "top": 1717048,
@@ -934,24 +1217,8 @@
     "gamma": 1
    },
    "dof": {
-    "enabled": true,
-    "focus": 5,
-    "range": 3,
-    "near": 1,
-    "far": 0.5,
-    "maxRadius": 3,
-    "tilt": {
-     "center": [
-      0.55,
-      0.5
-     ],
-     "radius": [
-      0.42,
-      0.4
-     ],
-     "soft": 0.35,
-     "strength": 2
-    }
+    "enabled": false,
+    "maxRadius": 3
    }
   }
  },
@@ -1359,12 +1626,12 @@
   "standIns": []
  },
  "dressStats": {
-  "props": 42,
+  "props": 41,
   "instanced": 30,
   "signs": 4,
   "lights": 0,
   "retextured": 0,
-  "triangles": 5412,
+  "triangles": 5272,
   "failed": 0
  },
  "detailStats": {
@@ -1376,36 +1643,36 @@
  "three": "170",
  "key": "izakaya-1-night",
  "hour": 22,
- "bakedAt": "2026-10-25T13:56:52.668Z",
+ "bakedAt": "2026-10-30T02:39:23.355Z",
  "quantizePosition": 14,
  "source": {
   "family": "Izakaya (N) built at runtime by lab/src/scenes",
-  "exportBytes": 32008052,
-  "triangles": 57466,
-  "drawCalls": 287,
-  "textures": 94,
-  "textureMB": 161.6
+  "exportBytes": 45519736,
+  "triangles": 53676,
+  "drawCalls": 284,
+  "textures": 98,
+  "textureMB": 203.1
  },
  "lods": {
   "lod0": {
    "file": "izakaya-1-night.glb",
-   "triangles": 52434,
-   "primitives": 222,
-   "materials": 204,
-   "textures": 63,
-   "textureKB": 1654,
-   "bytes": 2489156
+   "triangles": 48272,
+   "primitives": 203,
+   "materials": 185,
+   "textures": 64,
+   "textureKB": 3043,
+   "bytes": 3877492
   },
   "lod1": {
    "file": "izakaya-1-night.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 31840,
-   "primitives": 222,
-   "materials": 204,
-   "textures": 63,
-   "textureKB": 500,
-   "bytes": 1167928
+   "triangles": 29242,
+   "primitives": 203,
+   "materials": 185,
+   "textures": 64,
+   "textureKB": 801,
+   "bytes": 1448548
   }
  },
  "parts": {
@@ -1426,7 +1693,7 @@
  },
  "live": {
   "file": "izakaya-1-night.live.json",
-  "bytes": 37280,
+  "bytes": 129367,
   "objects": [
    "Sprite",
    "Sprite",
@@ -1440,8 +1707,8 @@
    "Sprite",
    "Sprite",
    "Sprite",
-   "smokePlume",
-   "smokePlume",
+   "iz-grill-smoke",
+   "iz-pot-steam",
    "Mesh",
    "Mesh",
    "Mesh"

@@ -5,16 +5,16 @@
  "variant": "day",
  "tod": "day",
  "cost": {
-  "triangles": 69646,
-  "drawCalls": 381,
-  "textures": 78,
-  "textureMB": 186.2
+  "triangles": 40350,
+  "drawCalls": 183,
+  "textures": 61,
+  "textureMB": 188.5
  },
  "exported": {
-  "triangles": 54794,
-  "drawCalls": 307,
-  "textures": 65,
-  "textureMB": 177.5
+  "triangles": 34968,
+  "drawCalls": 160,
+  "textures": 57,
+  "textureMB": 186.2
  },
  "lights": [
   {
@@ -54,6 +54,7 @@
     "bias": -0.0005,
     "normalBias": 0.025,
     "radius": 2,
+    "intensity": 1,
     "autoUpdate": true,
     "camera": {
      "near": 1,
@@ -86,13 +87,7 @@
  "lowDrop": [],
  "clocks": [
   {
-   "material": "0ff1f87f-4ca4-4b8a-a1ff-5f926f556926",
-   "uniform": "uTime",
-   "a": 1,
-   "b": 0
-  },
-  {
-   "material": "ec48e437-6c0a-44a8-9f94-fee6253977e8",
+   "material": "3815de58-86a7-4d8f-b3b5-6e9a4b46f745",
    "uniform": "uTime",
    "a": 1,
    "b": 0
@@ -251,6 +246,407 @@
   ]
  },
  "env": {
+  "streetKit": {
+   "version": 1,
+   "night": 0,
+   "placements": [
+    {
+     "id": "a1-shutter",
+     "position": [
+      0.85,
+      0.04,
+      -0.08
+     ],
+     "rotationY": 0
+    },
+    {
+     "id": "a1-shutter",
+     "position": [
+      2.1,
+      0.04,
+      -0.08
+     ],
+     "rotationY": 0
+    },
+    {
+     "id": "a1-door",
+     "position": [
+      3.78,
+      0.1,
+      0.02
+     ],
+     "rotationY": 0
+    },
+    {
+     "id": "a1-cabinet",
+     "position": [
+      -7.93,
+      0.02,
+      1.88
+     ],
+     "rotationY": 0
+    },
+    {
+     "id": "a1-rack",
+     "position": [
+      -6.63,
+      0.02,
+      1.85
+     ],
+     "rotationY": 0
+    },
+    {
+     "id": "toolbox",
+     "position": [
+      -5.48,
+      0.02,
+      1.92
+     ],
+     "rotationY": -0.12
+    },
+    {
+     "id": "utility",
+     "position": [
+      -3.35,
+      0.1,
+      0.16
+     ],
+     "rotationY": 0
+    },
+    {
+     "id": "a1-drum",
+     "position": [
+      -9.9,
+      0.02,
+      3.2
+     ],
+     "rotationY": 0.3
+    },
+    {
+     "id": "aircon",
+     "position": [
+      -5.25,
+      3.55,
+      1.73
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "aircon",
+     "position": [
+      7.8,
+      3.5,
+      0.17
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "id": "aircon",
+     "position": [
+      -4.3,
+      3.65,
+      6.23
+     ],
+     "rotationY": 0
+    },
+    {
+     "id": "carton",
+     "position": [
+      -7.25,
+      0.02,
+      2.82
+     ],
+     "rotationY": 0.18
+    },
+    {
+     "id": "carton",
+     "position": [
+      -7.28,
+      0.36,
+      2.82
+     ],
+     "rotationY": -0.15
+    },
+    {
+     "id": "carton",
+     "position": [
+      3.3,
+      0.02,
+      0.43
+     ],
+     "rotationY": 0.08
+    },
+    {
+     "id": "carton",
+     "position": [
+      3.3,
+      0.36,
+      0.43
+     ],
+     "rotationY": -0.12
+    },
+    {
+     "id": "carton",
+     "position": [
+      -8.98,
+      0.02,
+      2.05
+     ],
+     "rotationY": 0.3
+    },
+    {
+     "id": "carton",
+     "position": [
+      -6.64,
+      0.94,
+      1.85
+     ],
+     "rotationY": 0.1
+    },
+    {
+     "id": "carton",
+     "position": [
+      -6.64,
+      1.43,
+      1.85
+     ],
+     "rotationY": -0.1
+    },
+    {
+     "id": "crate",
+     "position": [
+      -5.95,
+      0.02,
+      1.94
+     ],
+     "rotationY": 0.03
+    },
+    {
+     "id": "crate",
+     "position": [
+      -5.95,
+      0.285,
+      1.94
+     ],
+     "rotationY": -0.04
+    },
+    {
+     "id": "crate",
+     "position": [
+      -8.89,
+      0.02,
+      1.8
+     ],
+     "rotationY": 0.12
+    },
+    {
+     "id": "bag",
+     "position": [
+      -8.7,
+      0.02,
+      2.73
+     ],
+     "rotationY": 0.3
+    },
+    {
+     "id": "bag",
+     "position": [
+      -8.15,
+      0.02,
+      2.6
+     ],
+     "rotationY": -0.5
+    },
+    {
+     "id": "bag",
+     "position": [
+      -9.28,
+      0.02,
+      2.25
+     ],
+     "rotationY": 1
+    },
+    {
+     "id": "bag",
+     "position": [
+      -5.16,
+      0.02,
+      2.35
+     ],
+     "rotationY": 0.7
+    }
+   ],
+   "facades": [
+    {
+     "cell": "L0_2_1",
+     "position": [
+      -11.57,
+      3.55,
+      6.95
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_1",
+     "position": [
+      -11.57,
+      3.55,
+      3.85
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_2_2",
+     "position": [
+      -11.57,
+      6.65,
+      6.95
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      -11.57,
+      6.65,
+      3.85
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_2_3",
+     "position": [
+      -11.57,
+      9.75,
+      6.95
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_3_3",
+     "position": [
+      -11.57,
+      9.75,
+      3.85
+     ],
+     "rotationY": 1.5707963267948966
+    },
+    {
+     "cell": "L0_0_2",
+     "position": [
+      -8.2,
+      6.8,
+      -0.18
+     ],
+     "rotationY": 0
+    },
+    {
+     "cell": "L0_1_2",
+     "position": [
+      -5.1,
+      6.8,
+      -0.18
+     ],
+     "rotationY": 0
+    },
+    {
+     "cell": "L0_2_2",
+     "position": [
+      -2,
+      6.8,
+      -0.18
+     ],
+     "rotationY": 0
+    },
+    {
+     "cell": "L0_3_2",
+     "position": [
+      1.1,
+      6.8,
+      -0.18
+     ],
+     "rotationY": 0
+    },
+    {
+     "cell": "L0_4_2",
+     "position": [
+      4.2,
+      6.8,
+      -0.18
+     ],
+     "rotationY": 0
+    },
+    {
+     "cell": "L0_5_2",
+     "position": [
+      7.3,
+      6.8,
+      -0.18
+     ],
+     "rotationY": 0
+    },
+    {
+     "cell": "L0_1_3",
+     "position": [
+      -4.5,
+      6.8,
+      6.58
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_2_3",
+     "position": [
+      -1.4,
+      6.8,
+      6.58
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_3_3",
+     "position": [
+      1.7000000000000002,
+      6.8,
+      6.58
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_4_3",
+     "position": [
+      4.8,
+      6.8,
+      6.58
+     ],
+     "rotationY": 3.141592653589793
+    },
+    {
+     "cell": "L0_5_3",
+     "position": [
+      7.9,
+      6.8,
+      6.58
+     ],
+     "rotationY": 3.141592653589793
+    }
+   ],
+   "shops": []
+  },
+  "vista": {
+   "type": "neon-district",
+   "position": [
+    113,
+    0,
+    2.6
+   ],
+   "rotationY": -1.5707963267948966,
+   "detailFocus": [
+    0,
+    1.6,
+    100
+   ]
+  },
   "background": 7969958,
   "air": {
    "count": 0
@@ -302,7 +698,7 @@
   "post": {
    "outline": {
     "color": 2372664,
-    "opacity": 0.3,
+    "opacity": 0.1,
     "depthTh": 0.014,
     "normalTh": 0.26
    },
@@ -359,8 +755,8 @@
     ]
    },
    "paint": {
-    "enabled": true,
-    "strength": 0.2,
+    "enabled": false,
+    "strength": 0,
     "radius": 2
    },
    "grade": {
@@ -431,6 +827,36 @@
     0.1,
     -0.05,
     0.6
+   ],
+   [
+    -8.55,
+    1.5,
+    -4.9,
+    2.33
+   ],
+   [
+    -9.55,
+    1.55,
+    -8.55,
+    3.12
+   ],
+   [
+    -10.25,
+    2.85,
+    -9.55,
+    3.55
+   ],
+   [
+    -8.5,
+    2.25,
+    -7.8,
+    2.95
+   ],
+   [
+    -5.51,
+    2,
+    -4.81,
+    2.7
    ]
   ],
   "floor": null
@@ -461,14 +887,14 @@
    "object": "junk-stack",
    "typed": false,
    "anchor": [
-    -6.775000010728837,
-    1.0285411060890162,
-    2.309251686947775
+    -6.775000004768373,
+    1.0285411064242922,
+    2.309251685755682
    ],
    "built": [
-    -6.775000010728837,
-    1.0285411060890162,
-    2.309251686947775
+    -6.775000004768373,
+    1.0285411064242922,
+    2.309251685755682
    ],
    "reach": 3.2
   },
@@ -579,9 +1005,9 @@
    1.4
   ],
   "junk-stack": [
-   -6.775000010728837,
-   1.0285411060890162,
-   2.309251686947775
+   -6.775000004768373,
+   1.0285411064242922,
+   2.309251685755682
   ],
   "neon-mug": [
    2.733794299549726,
@@ -610,44 +1036,44 @@
  },
  "dressStats": null,
  "detailStats": {
-  "meshes": 13,
-  "triangles": 8254
+  "meshes": 5,
+  "triangles": 6648
  },
  "manifestColliders": 0,
  "manifest": false,
  "three": "170",
  "key": "alley-1-day",
  "hour": 13,
- "bakedAt": "2026-10-26T04:30:43.533Z",
+ "bakedAt": "2026-10-30T02:15:32.993Z",
  "quantizePosition": 14,
  "source": {
   "family": "Alley1 (day) built at runtime by lab/src/scenes",
-  "exportBytes": 57842704,
-  "triangles": 69646,
-  "drawCalls": 381,
-  "textures": 78,
-  "textureMB": 186.2
+  "exportBytes": 52584956,
+  "triangles": 40350,
+  "drawCalls": 183,
+  "textures": 61,
+  "textureMB": 188.5
  },
  "lods": {
   "lod0": {
    "file": "alley-1-day.glb",
-   "triangles": 58916,
-   "primitives": 309,
-   "materials": 297,
-   "textures": 56,
-   "textureKB": 3616,
-   "bytes": 4393952
+   "triangles": 33398,
+   "primitives": 147,
+   "materials": 145,
+   "textures": 33,
+   "textureKB": 2551,
+   "bytes": 3022004
   },
   "lod1": {
    "file": "alley-1-day.lod1.glb",
    "ratio": 0.5,
    "maxTexture": 512,
-   "triangles": 39471,
-   "primitives": 309,
-   "materials": 297,
-   "textures": 56,
-   "textureKB": 1033,
-   "bytes": 1698976
+   "triangles": 20522,
+   "primitives": 147,
+   "materials": 145,
+   "textures": 33,
+   "textureKB": 623,
+   "bytes": 997068
   }
  },
  "parts": {
@@ -660,14 +1086,13 @@
    "spot:door-street",
    "spot:frag-3"
   ],
-  "exportBytes": 1373708
+  "exportBytes": 137992
  },
  "live": {
   "file": "alley-1-day.live.json",
-  "bytes": 19939,
+  "bytes": 106962,
   "objects": [
    "skyDome",
-   "smokePlume",
    "smokePlume"
   ]
  },
