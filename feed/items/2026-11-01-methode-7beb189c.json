@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-01-methode-7beb189c",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-01T07:00:41Z",
+  "title": "vLLM 修复 DSv3.2 共享索引器 top-k 计算缺陷",
+  "summary": "vLLM 修掉了 DeepSeek-V3.2 共享索引器 top-k 在流水并行下算错的问题（14:47 CST），同窗口内 SGLang 与 llama.cpp 也各有实质更新。",
+  "summary_en": "The note reports that vLLM fixed a bug causing DeepSeek-V3.2’s shared indexer top-k calculations to be incorrect under pipeline parallelism; the cited update was timestamped 14:47 CST. It also says that, within the same time window, SGLang and llama.cpp each had substantive updates, though it does not describe those changes or their status.",
+  "body": "vLLM 修掉了 DeepSeek-V3.2 共享索引器 top-k 在流水并行下算错的问题（14:47 CST），同窗口内 SGLang 与 llama.cpp 也各有实质更新。\n\nGitHub与基建\n- vLLM: 修复 DSv3.2 共享索引器 top-k 计算缺陷 — DeepSeek-V3.2 的 shared indexer 在流水并行切分下 top-k 结果算错，该提交直接修掉这个正确性问题（14:47 CST）。\n  https://github.com/vllm-project/vllm/commit/63d3d39c84724daeaf098eae209fb3b6bdec02d2\n- SGLang: diffusion worker 遇到不可恢复设备错误时退出 — 此前扩散 worker 遇到设备级致命错误会静默挂住，现在改为显式报错退出，便于线上排障（14:17 CST）。\n  https://github.com/sgl-project/sglang/commit/bebee560cc2ba9a322b0ca79ee6da3c13160cf39\n- SGLang: 多机多模态走共享内存传输 — 多节点多模态输入改用共享内存通道，减少跨机拷贝开销（13:53 CST）。\n  https://github.com/sgl-project/sglang/commit/07efafb546364e7ddee1b46f9c4ae01da417f90b\n- SGLang: mem_cache 在 torch.compile 下分离 K/V 分配 — 修掉 torch.compile 场景下 KV 缓存分配互相干扰的问题，是稳定性向的实质修复（13:04 CST）。\n  https://github.com/sgl-project/sglang/commit/2d8462fef2e07d8e8759405f77026a1b7391c6e9\n- llama.cpp b12028: 启用 Gemma 4 架构测试 — 预发布版把 Gemma 4 纳入 test-llama-archs 并改用 GQA，是新模型支持推进的信号（14:40 CST）。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12028\n- llama.cpp b12027: 为 LFM3 启用 tensor split — 多卡切分支持让 LFM3 能在多 GPU 上均衡负载，是实用向更新（14:19 CST）。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12027\n- llama.cpp: OpenCL 后端加入初步 IQ3 支持 — OpenCL 路径此前没有 IQ3 量化，现在补上，扩大了该后端的可用模型范围（13:26 CST）。\n  https://github.com/ggml-org/llama.cpp/commit/060b2fea4ed528810ddc91d48fb22b3e4d63eb85\n- llama.cpp: SYCL 构建改用 PkgConfig 查找 LevelZero — Intel GPU 构建的 LevelZero 依赖查找更稳，减少环境相关编译失败（14:46 CST）。\n  https://github.com/ggml-org/llama.cpp/commit/dde879bc4f954b809892fd0d660515f42536394a\n\n系统\n- OpenShot 4.1 发布，新增自动优化、CLI 自动化与 ARM64 Linux 构建 — 新增 CLI 自动化接口，可被 agent/脚本直接驱动；另补齐 ARM64 Linux 构建（11-01 07:28 CST）。\n  https://www.phoronix.com/news/OpenShot-4.1-Released\n\nSource: https://github.com/vllm-project/vllm/commit/63d3d39c84724daeaf098eae209fb3b6bdec02d2",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/vllm-project/vllm/commit/63d3d39c84724daeaf098eae209fb3b6bdec02d2",
+    "verified_at": "2026-11-01T07:00:41Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

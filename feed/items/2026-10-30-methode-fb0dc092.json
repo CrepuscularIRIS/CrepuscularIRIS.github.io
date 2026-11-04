@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-30-methode-fb0dc092",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-30T01:01:49Z",
+  "title": "transformers v5.22.0 落地 Mistral Large 4（1T MoE / 1M 上下文），llama.cpp 同日跟进适配",
+  "summary": "推理栈今晨全线跟进新一代大 MoE：transformers v5.22.0（10月29日22:15 CST）正式支持 1 万亿参数、49B 激活的 Mistral Large 4，llama.cpp 同日以 b11998 提交接入对应模型权重。",
+  "summary_en": "The Chinese note reports that the inference stack moved this morning to support a new generation of large mixture-of-experts models: transformers v5.22.0, released October 29 at 22:15 CST, formally adds support for Mistral Large 4, a one-trillion-parameter model with 49B active parameters and 1M context length, while llama.cpp followed the same day with commit b11998 adding support for the corresponding model weights.",
+  "body": "推理栈今晨全线跟进新一代大 MoE：transformers v5.22.0（10月29日22:15 CST）正式支持 1 万亿参数、49B 激活的 Mistral Large 4，llama.cpp 同日以 b11998 提交接入对应模型权重。\n\n论文\n- Continue or Restart? The Limits of Early Failure Prediction in Coding Agents — 用 14.7 万条执行轨迹证明：编码 Agent 的早期失败预测在同一任务内区分度接近随机（AUC≈0.50），早停的收益几乎全部来自跨任务分配而非单次尝试选择——直接挑战 agent 早停省算力的假设。\n  https://arxiv.org/abs/2610.35971\n- Rare, Relevant, and Still Wrong: How Memory Fails LLM Group Decisions — 多智能体讨论压缩成“记忆”再做决策时，“选最罕见”或“选最相关”两种启发式都失效，去掉发言者归属标签可提升 13–24 个百分点，暴露了群体决策的“社会认同”偏差。\n  https://arxiv.org/abs/2610.37624\n- What Improves During Pretraining? Tracking Knowledge Acquisition with Point-in-Time Models — 用不同时点网页快照训练出的模型定义“时间变异性分数”，发现高变异性知识在预训练后期提升更快，36 组模型-基准中 34 组平均高出 7.3 个百分点（AACL 2026）。\n  https://arxiv.org/abs/2610.37631\n\nGitHub与基建\n- transformers v5.22.0: Mistral Large 4 (Le Chonk) — 10月29日 22:15 CST 发布：新增 1 万亿参数 / 49B 激活（128 路由专家 + 1 共享专家）的原生多模态 MoE 支持，1M 上下文、可调推理强度、函数调用；1 万亿级 MoE 落地 HF 栈。\n  https://github.com/huggingface/transformers/releases/tag/v5.22.0\n- llama.cpp b11998: model: mistral le chonk — 10月29日 22:43 CST 提交，llama.cpp 侧接入同一模型权重，GGUF 本地推理同步可跑。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11998\n- SGLang v0.5.23 — 10月30日 08:13 CST 打标签，新 MoE 架构的自回归/混合推理路径支持通常随此版本跟进。\n  https://github.com/sgl-project/sglang/releases/tag/v0.5.23\n- langchain-core 1.7.3 / 1.7.2 — 10月30日 04:56 CST 与 03:04 CST 连续发布 core 补丁版，接口层小步跟进新模型与工具调用。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-core%3D%3D1.7.3\n\n系统\n- LWN: Containers as a recognized kernel object — 10月29日 22:02 CST：Josef Bacik 提出“cells”，试图让容器成为内核一等公民对象，而非拼装 namespace/cgroup。\n  https://lwn.net/Articles/1102593\n- Phoronix: RISC-V 可移植性能优化进入 Linux 7.4 — 10月30日 08:36 CST：跳过软件对齐改为运行时探测（HAVE_EFFICIENT_UNALIGNED_ACCESS），通用发行版内核也能享受，实测带宽最高提升约 11%。\n  https://www.phoronix.com/news/Linux-7.4-RISC-V\n- Phoronix: Linux 7.4 网络子系统合入批量改动 — 10月29日 20:55 CST：新增 pacing_offload 硬件卸载（IDPF 驱动首发），BIG TCP 混合路径吞吐最高提升 70%，并合入 Meta MPNIC、Nebula Matrix 等驱动。\n  https://www.phoronix.com/news/Linux-7.4-Networking\n- Phoronix: Fedora Linux 45 将于 11 月 3 日发布 — 10月30日 06:00 CST：Go/No-Go 通过，RC 1.4 镜像已稳定；新引入 KMSCON、GNOME 51、Python 3.15、GCC 16.2、默认强制签名校验。\n  https://www.phoronix.com/news/Fedora-45-Ships-Next-Week\n- Phoronix: F2FS 引入可选多粒度时间戳等 Linux 7.4 改进 — 10月30日 00:52 CST：独立元数据缓存与动态块布局为页/块不等长铺路，并支持 multigrain timestamps 以改善 NFS 缓存一致性。\n  https://www.phoronix.com/news/F2FS-Linux-7.4\n\nSource: https://github.com/huggingface/transformers/releases/tag/v5.22.0",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/huggingface/transformers/releases/tag/v5.22.0",
+    "verified_at": "2026-10-30T01:01:49Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

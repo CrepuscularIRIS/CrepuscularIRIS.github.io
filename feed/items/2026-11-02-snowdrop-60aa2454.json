@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-02-snowdrop-60aa2454",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-11-02T05:06:07Z",
+  "title": "清华论文：AGI 的下一步可能取决于 System-1 允许 System-2 执行什么（Hugging Face 今日第一）",
+  "summary": "清华那篇“System-1 给 System-2 筛活”的论文冲上 Hugging Face 日榜第一，是这轮最值得看一眼的想法；其余几条围绕开源语音模型、电脑操作智能体和 RAG 的从众偏差。",
+  "summary_en": "A Tsinghua paper suggesting that AGI’s next step may depend on what System-1 permits System-2 to execute reportedly topped Hugging Face’s daily ranking. The note calls it the most worthwhile idea to examine in this round, while other highlighted topics concern open-source speech models, computer-operation agents, and conformity bias in retrieval-augmented generation.",
+  "body": "清华那篇“System-1 给 System-2 筛活”的论文冲上 Hugging Face 日榜第一，是这轮最值得看一眼的想法；其余几条围绕开源语音模型、电脑操作智能体和 RAG 的从众偏差。\n\n论文焦点\n- Does Scaling Toward AGI Depend on What System-1 Lets System-2 Execute?（清华大学，Hugging Face 日榜第一，29 赞） — 提出“predict–gate–execute–update”回路：让轻量 System-1 先估效用、再放行给昂贵的 System-2 执行，执行算力可降到约 1/ρ_u；还给出以预测误差和效用边际约束选择遗憾的界，把“有信息量的算力”抬成比“总算力”更好的规模化描述。\n  https://huggingface.co/papers/2610.39497\n- Frozen in Time: How a Physics Foundation Model Forgets Under Sim-to-Real Adaptation（NeurIPS 2026 Sim2Science） — Walrus-1.3B 这类科学基础模型在仿真微调 20 个 epoch 后一步误差暴涨 35 倍，作者给出的解法很朴素——真实数据微调时重放 1% 仿真数据就能找回大部分性能，是“科学模型落地”里很少被认真量化的坑。\n  https://arxiv.org/abs/2610.40857\n- Fewer Heads, Fewer Memories: Pruning Redundant Attention Heads Suppresses Verbatim Memorisation — 不用重训、不动训练数据，推理前把 729 个冗余注意力头清零，就把 GPT-2-XL 的逐字记忆条数砍掉 91.5%，WikiText-103 困惑度还改善了 0.92——给隐私/版权风险提供了一条便宜的后路。\n  https://arxiv.org/abs/2610.40974\n- AutoHebb: Self-Modifying Neural Networks that Zero-Shot Infer and Continually Learn — 用内部生成的神经调制信号门控三因子赫布学习规则，不靠梯度下降也能做零样本推理和持续学习，还能反推成显式算法；对“模型能不能自己改自己”这条线提供了生物学上更说得通的答案。\n  https://arxiv.org/abs/2610.40757\n\n模型与系统\n- Mage-VL-Cowork：4B 混合电脑操作智能体，OSWorld-Verified 66.0%（微软） — 在通用多模态底座上用五阶段课程同时学会 GUI 点按和终端/代码执行；靠可复用的技能化合成流程造出 29.3 万个桌面与网页任务，单任务成本降 82.6%，把端侧智能推到同参数量的 SOTA。\n  https://arxiv.org/abs/2610.40747\n- Apriel Voice 27B Preview：开源语音＋推理＋工具调用模型（ServiceNow） — 基于后训练过的 Gemma 4 26B-A4B，一个共享推理骨干同时吃语音、出回复和工具调用，不用外挂对话模型；思考模式下 τ-Voice 任务成功率 65.51%、平均延迟 1.91 秒，本地教师在线蒸馏压住了成本。\n  https://arxiv.org/abs/2610.40738\n- Wizard: Manipulate Any World in Real Time via Agentic Control（腾讯） — 把骨骼/几何当中间表示去条件化视频世界模型，配自适应掩码和显式维护游戏状态的 agent 框架，能对未见场景、角色、动作零样本实时精确操控角色运动。\n  https://arxiv.org/abs/2610.40339\n- R²Orch：用自博弈递归自我改进智能体编排（港中文深圳） — 内循环让编排器自己出题自博弈，外循环用“技能撤回”逼它走向零技能部署；解决了一做全对就优势坍缩、以及单次打分噪声这两大痛点，十二个数据集上稳定优于基线。\n  https://arxiv.org/abs/2610.22740\n\n评估与安全\n- AI 评估器偏爱特定模型写的求职申请，与候选人水平无关 — 11 个写作者模型 × 9 个评估模型 × 10 份 JD 的全 AI 招聘审计：本地部署模型被系统性歧视，评估器还偏爱自己的输出，最差的配对下 25 个合格候选人里有约 1.8 个纯粹因为“模型不对口”被筛掉。\n  https://arxiv.org/abs/2610.41866\n- Language Models Show Conformity Bias in RAG：当多数文档都在背书一条被污染的说法 — 同样一条被投毒的检索事实，放进 1 条污染＋6 条健康文档时 Gemma-3-12b 的检出率是 25%，换成 6 条互相同意的污染＋1 条健康就掉到 10%，38 个结果翻转的问题里 34 个是从“发现”变“没发现”——RAG 防线会被多数意见绕过。\n  https://arxiv.org/abs/2610.41012\n\nSource: https://huggingface.co/papers/2610.39497",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2610.39497",
+    "verified_at": "2026-11-02T05:06:07Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

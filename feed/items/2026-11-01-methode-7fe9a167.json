@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-01-methode-7fe9a167",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-01T08:59:31Z",
+  "title": "SGLang 用精确 FA3 上下文注意力把 Wan-Animate-2 去噪提速 1.7 倍",
+  "summary": "SGLang 提交用精确 FA3 上下文注意力 + 可选 FP8 参考 K/V，把 Wan-Animate-2 去噪速度提升 1.7 倍（15:17 北京时间），vLLM 同窗口也在推进 MoE 路由与 KV Offload。",
+  "summary_en": "According to the note, SGLang submitted exact FA3 context attention with optional FP8 reference K/V, reportedly speeding Wan-Animate-2 denoising by 1.7x as stated at 15:17 Beijing time. The note does not specify draft or automatic status. During the same window, vLLM was also said to be advancing MoE routing and KV offloading.",
+  "body": "SGLang 提交用精确 FA3 上下文注意力 + 可选 FP8 参考 K/V，把 Wan-Animate-2 去噪速度提升 1.7 倍（15:17 北京时间），vLLM 同窗口也在推进 MoE 路由与 KV Offload。\n\nGitHub与基建\n- SGLang: Wan-Animate-2 去噪用精确 FA3 上下文注意力提速 1.7 倍（15:17） — 视频扩散推理性能大跃升，并支持可选 FP8 参考 K/V 缓存量化。\n  https://github.com/sgl-project/sglang/commit/4f45b15e74effb079dc998ed16d31c2956a0ec15\n- vLLM: 融合 grouped 与 Muse prepared 路由中的 padding 跳过（15:06） — Woosuk Kwon 提交的 MoE 路由性能优化，减少专家路由前的冗余 padding 计算。\n  https://github.com/vllm-project/vllm/commit/2a4792ddcc4ba2091aaf743358866c86bc53bf75\n- vLLM: KV Offload 让原始存储事件携带请求上下文（15:34） — KV 卸载链路继续迭代，为请求级缓存追踪打基础。\n  https://github.com/vllm-project/vllm/commit/17e675965d54bef8a3eb77ea92c6bae195ef793c\n- vLLM: 清理 CachePolicy 与 OffloadingManager 中无用的 touch（16:02） — 同窗口的 KV Offload 收尾提交，减少无意义的状态触碰。\n  https://github.com/vllm-project/vllm/commit/5d55ef1590c92213e3893dc8e8712f7f2e0bc508\n- SGLang: 修复分离式部署下 bootstrap 服务器初始化顺序（15:57） — 在 server 线程启动前初始化 bootstrap 循环与 runner，修掉启动竞态。\n  https://github.com/sgl-project/sglang/commit/76066d6908411bf9afcd740cfac61fdf0d5d8050\n- SGLang: 驱逐死掉的 prefill 连接时匹配完整 bootstrap 地址（15:22） — PD 分离场景下的连接清理正确性修复。\n  https://github.com/sgl-project/sglang/commit/3edea93cbc0d857026253df0535a4d89791032a3\n- SGLang: 把 finalize_bootstrap 移出 assert 语句（16:17） — 避免 assert 关闭时 bootstrap 收尾逻辑被跳过。\n  https://github.com/sgl-project/sglang/commit/43881a719e42165ff987fb0273a6bf12eaeb7662\n- llama.cpp b12031: OpenCL 初步支持 iq3/iq3_xxs 并针对 Adreno 优化（15:41） — 高通贡献者带来 iq3_s/iq3_xxs 的 AOS/SOA 矩阵内核与 dp4a 内核，移动端 GPU 量化推理提速。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12031\n- SGLang: Nomas 相机注意力在 camera_chunk_size=1 时直读每帧 value（16:56） — 刚合入的扩散路径微优化，减少一次不必要的访存。\n  https://github.com/sgl-project/sglang/commit/1ad0149814bfbe0cdcc22fca3d757dd23d0fbe11\n\nSource: https://github.com/sgl-project/sglang/commit/4f45b15e74effb079dc998ed16d31c2956a0ec15",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/sgl-project/sglang/commit/4f45b15e74effb079dc998ed16d31c2956a0ec15",
+    "verified_at": "2026-11-01T08:59:31Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

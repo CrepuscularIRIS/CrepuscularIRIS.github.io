@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-03-methode-cfa99cd0",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-03T09:00:15Z",
+  "title": "CoworkOS：把\"同事型 Agent\"做成可长跑的任务操作系统（人大团队，HF Daily Papers 今日第一）",
+  "summary": "今天最值得看的是人大团队的 CoworkOS——把长时程协作 Agent 拆成\"策略/执行/记忆\"三层 harness，一篇论文同时登上了 HF Daily Papers 榜首并进入 arXiv 11 月 3 日新单。",
+  "summary_en": "According to the note, today’s most notable work is CoworkOS from a Renmin University of China team, which reframes long-running collaborative agents as a task operating system organized into strategy, execution, and memory layers. The note says the paper ranked first on Hugging Face Daily Papers and appeared among arXiv’s November 3 new submissions.",
+  "body": "今天最值得看的是人大团队的 CoworkOS——把长时程协作 Agent 拆成\"策略/执行/记忆\"三层 harness，一篇论文同时登上了 HF Daily Papers 榜首并进入 arXiv 11 月 3 日新单。\n\n论文\n- CoworkOS：Scaling Agent Coworkers for Real-world Automation（人大大学） — 把长时程协作 Agent 拆成\"决策/执行管理/共享应用层\"三层：模型只负责动作、委派与验收，运行时维护状态与反馈，配层级化工作区与持久语义记忆；12 个基准上比肩 Codex 等前沿应用，并用 GLM-5.3 对 Qwen3.6-35B-A3B 做 RSI 自动后训练，8 基准均分 33.19→42.95。\n  https://arxiv.org/abs/2611.03178\n- Measuring AI Agents as Teammates with Collaborative Intelligence（斯坦福） — 240 个任务、8 个维度的\"团队协作\"基准，18 个模型测评显示能力不等于协作：最好模型仅 82.2/100，面对人际压力只有 14% 的冲突能拿到最佳方案，接手弱模型作弊的任务时通过率从 97% 掉到 81%。\n  https://arxiv.org/abs/2611.02633\n- WebHarbor：153 个 Docker 化的真实网站环境，3518 个 GUI 智能体任务 — 为 web/GUI Agent 提供可复现的真实站点沙箱（覆盖登录后流程），Qwen 4B 级别模型在其上做 RL 即可泛化到未见任务，代码与数据开源。\n  https://arxiv.org/abs/2611.03634\n- ReplayRCA：用反事实回放评测 Agent 故障诊断与实时监督 — 不看标注是否一致，而是把环境回滚到出错前一步、换成建议动作继续跑，用\"因果修复率\"评分；13 个前沿模型中 Grok 4.7 最佳（+51.3），且事后诊断强（GPT-6.1 Sol）反而实时监督最弱。\n  https://arxiv.org/abs/2610.41025\n- Pixel：软硬一体设计的通用移动操作机器人系统 — CMU 团队把低成本轮式人形本体、人体对齐运动学与柔顺夹爪、多套遥操作/纯人类数据采集接口、统一全身控制器和统一策略学习栈做成一体化系统；配套论文 Pixel-UMI 用环境感知重定向与 DAgger 从传感化人类演示学习全身策略（平均任务进度 87.0%）。\n  https://arxiv.org/abs/2611.03648\n- P-ContextBench：从个人事实回忆到个性化 Agent 行为 — 用碎片化、演化的合成 App 记录构造 100 个人格、10088 条隐藏事实与 4810 个可验证用例，考察时间状态追踪与越界请求处理；面向个人 Agent 的 SOTA 模型在时间追踪上仍低于 60% 准确率。\n  https://arxiv.org/abs/2610.40959\n\nGitHub与基建\n- llama.cpp 构建 b12066：webgpu 增加 ARANGE 支持 — 11 月 3 日 13:54（北京时间）发布的最新 nightly，小幅补齐 WebGPU 后端算子覆盖。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12066\n- LangChain 生态补丁：langchain-core 1.7.4、langchain-anthropic 1.7.9 — 11 月 3 日凌晨发布（北京时间 04:14 与 23:31），核心与 Anthropic 集成同步滚动更新，属于 1.4.8 之后的常规补丁流。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-anthropic%3D%3D1.7.9\n\n系统\n- FreeRDP 3.33 发布：WebAssembly 支持落地，AI 带来的 PR 洪流 — 开源 RDP 实现完成多年 Emscripten/WASM 目标，可在浏览器中编译运行；同时发布 SDL 改进、实验性 UDP 直连与 13 项安全修复，并坦言 AI/LLM 带来的 PR 与反馈量巨大、遗留问题仍多。\n  https://www.phoronix.com/news/FreeRDP-3.33\n\nSource: https://arxiv.org/abs/2611.03178",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.03178",
+    "verified_at": "2026-11-03T09:00:15Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-01-methode-3363ff72",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-01T11:14:12Z",
+  "title": "Linux 7.4 合并窗口塞进近 2 万次提交，源码树逼近 4200 万行",
+  "summary": "Linux 7.4 合并窗口以近 2 万次提交收官（源码树逼近 4200 万行），而 vLLM/SGLang/llama.cpp 在本窗口继续小幅打磨。",
+  "summary_en": "Linux 7.4's merge window closed with nearly 20,000 commits, pushing the kernel source tree close to 42 million lines; in the same two-hour window llama.cpp shipped build b12032 (SYCL LevelZero pkg-config detection) and SGLang fixed kv_events endpoint offsets per DP rank, while Phoronix's October roundup highlighted AI use inside the Linux kernel.",
+  "body": "Linux 7.4 合并窗口以近 2 万次提交收官（源码树逼近 4200 万行），而 vLLM/SGLang/llama.cpp 在本窗口继续小幅打磨。\n\n系统\n- Linux 7.4 合并窗口：近 2 万次提交，源码树逼近 4200 万行 — Linux 7.4 合并窗口关闭，规模空前；11月1日 17:28（北京时间）发布。\n  https://www.phoronix.com/news/Linux-7.4-Merge-Window\n- Linux 7.4 让 Perf 的 Python 脚本更健壮也更快 — 性能分析工具链随内核同步改进，11月1日 17:38（北京时间）发布。\n  https://www.phoronix.com/news/Linux-7.4-Perf-Tools\n- 十月回顾：内核中的 AI 使用、Linux 上的 Microsoft Defender 等 — AI 进入内核代码本身是本轮值得注意的趋势信号，11月1日 17:54（北京时间）发布。\n  https://www.phoronix.com/news/October-2026-Highlights\n\nGitHub与基建\n- llama.cpp 发布 b12032：SYCL 用 pkg-config 探测 LevelZero — 修补 SYCL 构建时 LevelZero 头文件/库探测问题，11月1日 17:00（北京时间）发布。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12032\n- SGLang：kv_events 按 DP rank 偏移 IPC 端点 — 修复多 DP 部署下 kv_events 监控端点错位及队列满时关机卡住的问题，11月1日 17:29（北京时间）提交。\n  https://github.com/sgl-project/sglang/commit/c757c4bb7c55d1eb69fdb2bdc6e6fb8507acb7a0\n\nSource: https://www.phoronix.com/news/Linux-7.4-Merge-Window",
+  "category": "tech",
+  "source": {
+    "url": "https://www.phoronix.com/news/Linux-7.4-Merge-Window",
+    "verified_at": "2026-11-01T11:14:12Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-01-methode-9e85112a",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-01T02:58:54Z",
+  "title": "SGLang 落地 Unlimited-OCR v2（10:07 CST），LiteLLM 同窗口补上 Ovalix 护栏扫描与多 worker 热重载",
+  "summary": "SGLang 在 10:07（Asia/Shanghai）合入 Unlimited-OCR v2 模型支持，LiteLLM 同期上线 Ovalix 文件/工具调用扫描并修好多 worker 热重载。",
+  "summary_en": "At 10:07 China Standard Time, SGLang reportedly merged support for the Unlimited-OCR v2 model. In the same release window, LiteLLM added Ovalix-based scanning of files and tool calls, alongside a fix for hot reloading across multiple workers. The note provides no further implementation details and does not specify draft or automatic-generation status for either entry.",
+  "body": "SGLang 在 10:07（Asia/Shanghai）合入 Unlimited-OCR v2 模型支持，LiteLLM 同期上线 Ovalix 文件/工具调用扫描并修好多 worker 热重载。\n\n论文\n- Look Only When Needed: Certificate-Guided Visual Routing for Efficient Diffusion VLMs（KAIST AI，HF Daily Papers 榜首 99 赞） — 提出 LOWN：扩散 VLM 每个去噪步先不带图预测，只在与上次图像条件预测不一致时才处理图像，平均只用 35.3% 解码 FLOPs 即保留 99.6% 分数，对推理基建直接可用。\n  https://arxiv.org/abs/2610.36671\n- Your LR Schedule May Not Be Principled: Effective Learning Rate Scheduling in Weight-Normalized Training（ByteDance Seed） — 指出 weight-norm 预训练收益主要来自\"有效学习率\"轨迹而非归一化本身，并给出 AIR 调度；在 128B token MoE 预训练上把终端 loss 相对 cosine 降约 0.01。\n  https://arxiv.org/abs/2610.40362\n\nGitHub与基建\n- SGLang: [Feat] model: support Unlimited-OCR v2（10:07 CST） — 新增 Unlimited-OCR v2 的 DASH 路由内核、专用 attention backend 与文档，改动约 2 万行，OCR 模型的 SGLang 部署路径直接打通。\n  https://github.com/sgl-project/sglang/commit/1457851e7ed56ba1b31dafc5e814020294f5c417\n- SGLang: [Perf] diffusion/minimax-h3 打包对齐时跳过 attention（10:03 CST） — 针对 MiniMax-H3 扩散模型在 packing 对齐阶段的无效 attention 计算做跳过，是生成式/扩散模型推理侧的实际性能优化。\n  https://github.com/sgl-project/sglang/commit/5032f9881bad04f2fd8503e0346742b066186b3a\n- SGLang: diffusion 保持 GQA 与 MOSS-Image 走 cuDNN SDPA（08:41 CST） — 避免回退到较慢 SDPA 实现，保持多模态/图像扩散任务的注意力吞吐。\n  https://github.com/sgl-project/sglang/commit/8817f63c2cf9acb0fe8c8750863b17bbb1c6ab1b\n- LiteLLM: feat(ovalix)! 扫描文件、工具调用与工具结果（08:01 CST） — 网关侧新增内容安全护栏：不再信任 key 别名做应用发现，所有请求（含无 user 场景）都被检查，工具结果名称改为一次索引二分查找以避免事件循环卡顿。\n  https://github.com/BerriAI/litellm/commit/0f4d5c6ad04669846e761dba4dac934c262c1fa7\n- LiteLLM: fix(proxy)! 支持多 worker 热重载（08:57 CST） — 多 worker reload 时导入失败不再让 worker 池反复重启拉起，worker 健康检查默认放宽到 30s；需 uvicorn>=0.50.0。\n  https://github.com/BerriAI/litellm/commit/187f936cb3457cb8cdfbf541593588929d502bf4\n- vLLM: 更新 MiniMax-M3.1-Flash 的 GB300 / GB200 AgentX 预设（08:33 CST） — 为 Blackwell 新机型补齐 Agent 推理预设，另有对应的 GB200 预设提交，属于新一代硬件上线适配。\n  https://github.com/vllm-project/vllm/commit/3a90cc6fd0504b52bf47d58e8d70cff4b03f2c19\n- llama.cpp b12025（11-01 06:30 CST）：修复共享 KV 层的 attention 张量旋转 — 本轮最新构建版，修掉共享 KV 层注意力张量旋转错误，同批还含 InternVL CLS token 顺序修复与 LFM3 tensor split 支持。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12025\n\n系统\n- LWN: A massive pile of security updates for Saturday（11-01 06:34 CST） — 周末集中安全更新汇总：Debian 的 dpdk/dovecot/nss、Fedora 的 chromium/firefox/containerd/gcc、AlmaLinux 的 .NET/curl/java 等大量包需尽快打补丁。\n  https://lwn.net/Articles/1104612\n\nSource: https://github.com/sgl-project/sglang/commit/1457851e7ed56ba1b31dafc5e814020294f5c417",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/sgl-project/sglang/commit/1457851e7ed56ba1b31dafc5e814020294f5c417",
+    "verified_at": "2026-11-01T02:58:54Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

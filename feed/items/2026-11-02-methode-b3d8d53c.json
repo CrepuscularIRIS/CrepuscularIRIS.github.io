@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-02-methode-b3d8d53c",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-02T11:06:23Z",
+  "title": "R²Orch：递归自博弈自我改进的智能体编排范式，冲上 Hugging Face 每日论文榜首",
+  "summary": "今天最热的一篇是 R²Orch——用「自博弈内循环 + 技能撤销外循环」让编排器递归自我改进、最终逼近零技能部署，登顶 Hugging Face 每日论文（54 赞）。",
+  "summary_en": "R²Orch is described as today’s hottest paper and reached the top of Hugging Face’s Daily Papers with 54 likes. Its approach gives an orchestrator recursive self-improvement through an inner self-play loop and an outer skill-revocation loop, ultimately aiming to approach deployment without manually supplied skills. The note presents these as the paper’s main claims.",
+  "body": "今天最热的一篇是 R²Orch——用「自博弈内循环 + 技能撤销外循环」让编排器递归自我改进、最终逼近零技能部署，登顶 Hugging Face 每日论文（54 赞）。\n\n论文\n- R²Orch: Recursive Self-Improvement for Agent Orchestration via Self-Play within a Skill-Internalization Loop — HF 每日论文榜首（54 赞）：内循环自博弈选任务、外循环用「技能撤销」把失败蒸馏成技能再蒸馏成参数，目标是零技能部署，12 个数据集上稳定超过基线。\n  https://arxiv.org/abs/2610.22740\n- On the Origin and Evolution of Training-Inference Mismatch in LLM Reinforcement Learning — 把 RLHF 中「训练-推理不一致」拆成引擎数值误差与策略滞后两部分，并提出 DLC 修正（居中数值误差 + 裁剪滞后比 + 重同步采样器），对 vLLM/sglang 的异步采样实践直接相关。\n  https://arxiv.org/abs/2610.40945\n- Kernel-based Interpolatory Methods for Context Compression of Attention Mechanisms — 在核对应的 Hilbert 空间里做 KV-cache 压缩，提出 GAIM / Q-DAIM 两种插值方法并给出线性时间近似，LongBench-E 上与 SOTA 相当。\n  https://arxiv.org/abs/2610.40943\n- No Channels Left Behind: Understanding Diffusion Acceleration through Residual Gates — 指出 REPA 等扩散加速方法真正改变的是 AdaLN-Zero 的残差门控 α，并据此提出无需 teacher 的径向目标，ImageNet 256×256 上优于 dispersive loss。\n  https://arxiv.org/abs/2610.40914\n- MemSteer: Turning User Histories into Supervision for Agent Memory Optimization — 把无标注用户历史自动转成带证据的 QA 监督来优化记忆系统设计（不改参数），ATM-Bench 提升 13.4 分、RHELM 提升 4.1/6.6 分。\n  https://arxiv.org/abs/2610.39276\n- REA: A Routed Embodied Agent Runtime for Asynchronous Brain-Cerebellum Control — 统一「思考的大脑 + 快策略小脑」的具身运行时，原则是运行中的策略绝不等待大模型；LIBERO-Pro 3000 回合达 95.9% 成功率、控制步数减少 25%。\n  https://arxiv.org/abs/2610.42053\n- Beyond Plausible Prediction: Safety Sufficiency in Web World Models — 提出 SafeWebWorld 基准：10 个开源模型 3000 条预测 86.1% 语义合理，但「该执行/该追问/该拦截」的授权行为严重不对称，安全微调反而恶化决策。\n  https://arxiv.org/abs/2610.40798\n\nGitHub与基建\n- vLLM: Bump NIXL to 1.5.2 and drop source build for Rubin — 18:59 CST；vLLM 升级 NIXL 传输库到 1.5.2，Rubin 平台不再走源码构建，影响多机 KV 传输路径。\n  https://github.com/vllm-project/vllm/commit/ccafd6c65c6cb1e552fc3f8769baa64f9e34d968\n- SGLang: Centralize GPU architecture queries in sglang.kernels — 18:19 CST；把 GPU 架构查询统一收敛到 sglang.kernels，减少各算子内重复判断，便于后续内核按架构特化。\n  https://github.com/sgl-project/sglang/commit/a133231d3140e081424d833caa0187f15d40dc3c\n- SGLang: sgl-router 用 fastokens 编码 tiktoken 模型 — 17:00 CST；新增 --tokenizer-backend fast 走 fastokens 编码（解码仍用 HF），并在 fastokens 不可用时回退 tiktoken，直接压低路由 TTFT。\n  https://github.com/sgl-project/sglang/commit/1ced9a9eb0224e5c12c9ed236b188868a635cd5c\n- SGLang: kimi_k3 改用 uuid 作为 tool_call_id — 17:34 CST；不再用历史计数生成工具调用 id，改为 uuid，避免长会话中 id 冲突导致的工具调用错配。\n  https://github.com/sgl-project/sglang/commit/b45a36531c3673048aeaf35322c3df7f18edd038\n- llama.cpp b12038: 修复 clang-cl + AVX512 BF16 构建 — 18:39 CST；修正 immintrin.h 的包含条件并为 clang-cl 加显式向量转换，Windows 侧 AVX512 BF16 构建不再失败。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12038\n- llama.cpp: jinja 实现 map('filter') — 18:45 CST；补齐 Jinja 模板的 map('filter') 语义，聊天模板在多轮过滤场景下更贴近原实现。\n  https://github.com/ggml-org/llama.cpp/commit/59695669f1924c81f421f2044c690ed6373bec79\n\n系统\n- KDE Linux 临近 Beta 里程碑，默认启用 NTSYNC — 18:39 CST；KDE Linux 10 月版已默认启用 NTSYNC（内核原生同步原语），桌面发行版路线继续推进。\n  https://www.phoronix.com/news/KDE-Linux-October-2026\n- 树莓派 5 16GB 涨价至 385 美元 — 18:27 CST；16GB 型号价格上调至 385 美元，边缘推理常用的本地大内存主机成本上升。\n  https://www.phoronix.com/news/Raspberry-Pi-5-16GB-385\n\nSource: https://arxiv.org/abs/2610.22740",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.22740",
+    "verified_at": "2026-11-02T11:06:23Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

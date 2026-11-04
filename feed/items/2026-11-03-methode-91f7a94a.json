@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-03-methode-91f7a94a",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-03T05:00:30Z",
+  "title": "Wave Forcing：把长视频生成推到\"光速流式\"",
+  "summary": "Wave Forcing 用 chunk 级因果注意力 + 1F1C 流水线把实时长视频生成推到 8×H200 上 134.8 端到端 FPS、单机吞吐提升 7.07 倍，成为今日 HF 最热论文。",
+  "summary_en": "Wave Forcing reportedly uses chunk-level causal attention and a 1F1C pipeline to accelerate real-time long-video generation, reaching 134.8 end-to-end FPS on eight H200 GPUs. The note also claims a 7.07× single-machine throughput improvement and says the work became today’s hottest HF paper, framing it as a major step toward “light-speed” streaming generation.",
+  "body": "Wave Forcing 用 chunk 级因果注意力 + 1F1C 流水线把实时长视频生成推到 8×H200 上 134.8 端到端 FPS、单机吞吐提升 7.07 倍，成为今日 HF 最热论文。\n\n论文\n- Wave Forcing: Towards Speed-of-Light Streaming Video Generation — chunk 级因果注意力让模型在去噪未完成时就读取更干净的历史块，配合跨副本 1F1C 流水线；Wan2.1-T2V-1.3B 上 4 步达到 147.6 DiT FPS、134.8 端到端 FPS（8×H200），单机吞吐 7.07 倍。\n  https://arxiv.org/abs/2611.00859\n- Video Generation Meets Agent Harness（HF 当日第一，22 赞） — 把「agent harness」当作视频生成与视频世界模型的公共运行时：管理上下文、工具、状态、反馈与预算，并讨论生成器与 harness 的递归自我改进（RSI）。\n  https://arxiv.org/abs/2610.40191\n- From Fragmentation to Fusion: A Survey and Roadmap for Omnimodal Embeddings — HF 当日第二（14 赞）的立场综述，指出各模态嵌入研究正走向收敛，并给出 coverage、comparability、compositionality 三层能力框架与三条统一路径。\n  https://arxiv.org/abs/2611.00172\n- MAServeBench：多智能体 LLM 服务基准 — 把多智能体协同建模为可配置的 Serving 负载维度，用层次化语义轨迹做可复现重放，揭示「服务效率高 ≠ 任务完成及时」的硬件差异。\n  https://arxiv.org/abs/2610.40293\n\nGitHub与基建\n- vLLM：GDN CuteDSL prefill 支持 SM110 — 把线性注意力 GDN 的 CuteDSL prefill 路径从 SM10x 扩展到 SM11x，并新增 160 v-head（超出 B200 的 148 SM）场景测试。\n  https://github.com/vllm-project/vllm/commit/4fe358738bd00a5d2b0363af00c03173de15d170\n- vLLM：FlashMLA 稀疏 bf16 KV 路径支持 DCP — 解耦 KV（decode-context-parallel）路径扩展到稀疏 MLA 的 FlashMLA bf16 KV 实现，扩大长上下文稀疏注意力可用的并行方式。\n  https://github.com/vllm-project/vllm/commit/bca1bc651624748313f9f9bfd3ef400e5f1061c0\n- vLLM：Triton 注意力元数据几何由 kv_cache 推导 — 11:48（北京时间 12:48）合入的注意力性能改动，让 Triton 元数据构造复用 kv_cache 的布局信息，减少重复计算。\n  https://github.com/vllm-project/vllm/commit/a0d909f5395b626421b6f1d9634371a2f5546318\n- LiteLLM：新增 Parallel AI 网页证据型决策模型 — Decisions 路由新增带网页检索证据与置信度的 Parallel AI 供应商，并在成本映射中支持按查询计费。\n  https://github.com/BerriAI/litellm/commit/216041e24378243a104c4ab871a5fd8a73d5fcbe\n\nSource: https://arxiv.org/abs/2611.00859",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.00859",
+    "verified_at": "2026-11-03T05:00:30Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

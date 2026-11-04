@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-01-lacia-dd35d009",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-11-01T12:59:26Z",
+  "title": "ChatGPT 的 HTML 预览沙箱被攻破：一个分享链接就能窃取他人私有数据",
+  "summary": "最热的是 Parameter Labs 披露的 ChatGPT artifacts 沙箱逃逸：攻击者用 MathLive 虚拟键盘 + YouTube oEmbed 反射绕过 CSP 拿到 JS 执行权，再借分享链接窃取其他已登录用户的私有数据，OpenAI 修复后仅赔付 5000 美元漏洞赏金。",
+  "summary_en": "According to Parameter Labs’ disclosure, a ChatGPT artifacts sandbox escape allowed an attacker to combine a MathLive virtual keyboard with YouTube oEmbed reflection to bypass CSP and obtain JavaScript execution. A shared link could then steal private data from other logged-in users. OpenAI patched the issue and paid a $5,000 vulnerability bounty.",
+  "body": "最热的是 Parameter Labs 披露的 ChatGPT artifacts 沙箱逃逸：攻击者用 MathLive 虚拟键盘 + YouTube oEmbed 反射绕过 CSP 拿到 JS 执行权，再借分享链接窃取其他已登录用户的私有数据，OpenAI 修复后仅赔付 5000 美元漏洞赏金。\n\nSimon Willison\n- How We Took Over ChatGPT Accounts：ChatGPT 的 artifacts 沙箱被攻破（11月1日 07:15） — Parameter Labs 揭示完整攻击链：MathLive 虚拟键盘的 postMessage 回调用 innerHTML 注入，绕过 CSP 后借 YouTube oEmbed 反射执行 JS，最终让一个 ChatGPT 分享链接在他人登录态下外泄私有数据；OpenAI 修复并支付 5000 美元赏金。\n  https://simonwillison.net/2026/Oct/31/how-we-took-over-chatgpt-accounts\n\n量子位\n- DeepSeek 开源 Super-agent 架构：AI 自己找 Bug 并提交 PR（10月31日 21:49） — Router + Worker 双层设计，跨 IM/GitHub/邮件维持任务上下文、并行执行、多小时在线并自恢复；模拟 300 条消息 20 项任务下完成时间中位数 12.4 分钟，传统单会话方案 95 分位达 29.5 分钟。\n  https://www.qbitai.com/2026/10/506904.html\n- 清华姚期智团队新作：代数世界模型，让 AI 像牛顿一样思考（11月1日 16:02） — 把探索到的规则凝炼成 Lean 4 可验证断言，在 ARC-AGI-3 上 183 关全通、得分 99.9%，平均动作数只有人类基准的 43%，并能证明\"当前步数无解\"。\n  https://www.qbitai.com/2026/11/507031.html\n- Jev 新成果再引爆开源：联手 Treg 推出比 Clay 便宜 85% 的找人 Agent 工具（11月1日 12:18） — TypeSafe AI 与 Treg 开源找人流水线，GitHub 揽 6400 Star；292 人对照测试中 Treg 找到 289 个邮箱、花费 1.49 美元，Clay 只找到 280 个却花了 10.34 美元。\n  https://www.qbitai.com/2026/11/506922.html\n\nInfoQ 中文\n- 当 AI 能读懂二进制，闭源软件还剩多少护城河？（11月2日 01:00） — 开源逆向智能体框架 REA（GitHub 超 20 万 Star）用 MCP 把 Claude Code/Codex 与 Ghidra、Hopper、IDA 打通，自动分析二进制与 Electron/.NET 程序；社区担心闭源软件的逆向护城河被削弱。\n  https://www.infoq.cn/article/8mCjWWFLdjDA2vb51QZs\n- 超节点火了一年后，\"算力不够就加机器\"的扩张逻辑正在被改写（10月30日 23:45） — 从 GB200 NVL72 到华为 1024 卡 SuperPoD，文章指出未经优化的超节点跑 Kimi K3 可能只有约 10 tokens/s，卡数不等于有效算力，选型应回到目标模型的时延与吞吐。\n  https://www.infoq.cn/article/ZolBIJdvK5Icdqg6FB0X\n- 写好的 Skill 如何让整个团队复用？Snowflake CoCo 打通共享与治理流程（11月2日 02:24） — Agent Skill 从个人脚本走向团队级资产需要共享、版本与治理流程，Snowflake CoCo 的实践给出可落地的组织与工程做法。\n  https://www.infoq.cn/article/0ap8HB0DwK6Xa1lBSNVy\n\nInfoQ（英文站）\n- AWS 容量基本售罄至 2027 年，仅保留少量按需余量（11月1日 16:03） — 云端算力供给成为 AI 团队的第一约束：容量预售到 2027 年，按需余量紧张，采购与架构规划需提前锁定。\n  https://www.infoq.com/news/2026/11/aws-capacity-sold-out\n- DoorDash 用 AI Agent 把生鲜补货延迟从 16 秒压到 2 秒（10月30日 21:31） — 真实生产环境里 Agent 替代人工补货流程的落地样本，展示延迟与成本层面的量化收益。\n  https://www.infoq.com/news/2026/10/doordash-ai-grocery-reorder\n\nSource: https://simonwillison.net/2026/Oct/31/how-we-took-over-chatgpt-accounts",
+  "category": "street",
+  "source": {
+    "url": "https://simonwillison.net/2026/Oct/31/how-we-took-over-chatgpt-accounts",
+    "verified_at": "2026-11-01T12:59:26Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}

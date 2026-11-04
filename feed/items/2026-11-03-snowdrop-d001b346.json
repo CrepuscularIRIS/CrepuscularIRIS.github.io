@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-03-snowdrop-d001b346",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-11-03T01:05:35Z",
+  "title": "FrameForge：把视频生成模型的先验搬来做统一图像生成，登上 HF 当日第一",
+  "summary": "FrameForge 拿下 Hugging Face 当日论文第一（112 赞）：用动态时间 RoPE 专家和\"时序推理链\"把视频模型的先验迁移到图像生成，同时另有两篇做安全数据过滤和连续空间推理的工作值得看。",
+  "summary_en": "FrameForge tops Hugging Face Daily Papers with 112 upvotes: it reuses priors of pretrained video foundation models for unified conditional image generation via a Mixture of Temporal Experts and a Chain of Temporal Reasoning bottleneck. Also notable: SimpleLoRIF/SafeTulu for tracing safety degradation to training data, LARC reasoning in continuous latent space for unified multimodal models, agentic soft-token context compression, steering vectors as a post-training signal, TraceSpec for speculative decoding in agents, and HyperRepair for restoring general capabilities after fine-tuning.",
+  "body": "FrameForge 拿下 Hugging Face 当日论文第一（112 赞）：用动态时间 RoPE 专家和\"时序推理链\"把视频模型的先验迁移到图像生成，同时另有两篇做安全数据过滤和连续空间推理的工作值得看。\n\nHugging Face 当日热门\n- FrameForge: Harnessing Priors of Video Foundation Models for Unified Image Generation — 当日榜第一（112 赞，+104）。把视频模型当作条件图生成的底座，用 MoTE 动态挑时间 RoPE 专家、CoTR 中间态推理链解决\"条件与目标之间时间距离不固定\"的问题，DreamBench / GEdit-Bench 上领先。\n  https://huggingface.co/papers/2610.36545\n- Follow the Gradient: Tracing Safety Degradation Back to Training Data — DatologyAI 提出 SimpleLoRIF，把梯度嵌入做成百万级数据的实用安全过滤器，定位出\"看起来无害却毁安全\"的微调样本；由此产出的 SafeTulu 让 GCG 攻击成功率最多降 22%。\n  https://arxiv.org/abs/2610.37481\n- Latent Reasoning in Continuous Space for Unified Multimodal Models — KAIST 的 LARC 直指多模态大模型的痛点：CoT 在离散 token 空间、图像在连续空间，模态错配让测试时扩展失效；改在隐状态里推理后 GenEval 涨 7 个百分点并出现 test-time scaling。\n  https://arxiv.org/abs/2610.42149\n- MemSteer: Turning User Histories into Supervision for Agent Memory Optimization — 微软研究院把无标注用户历史自动转成带证据的 QA 监督信号，用来优化 agent 记忆系统（不改模型参数），ATM-Bench 上比 BMBM25 提 13.4 分，解决了\"新用户没标签\"的冷启动问题。\n  https://arxiv.org/abs/2610.39276\n\narXiv 新论文\n- Steering Vectors as a Training Signal in LLM Post-Training — 把 steering vector 从\"推理期手动干预\"变成\"训练期梯度信号\"：SFT/蒸馏最高提 12%，在 GRPO 全错零梯度时用正确性对比方向修复 advantage，能叠加在熵整形等现有补救手段上；NeurIPS 2026 录用。\n  https://arxiv.org/abs/2610.40998\n- In-Model Context Compression with Agentic Soft Tokens for Long-Horizon LLM Agents — ASTC 免训练地用模型自身 GDN 递归动力学判断\"已吸收信息\"，再用软 token 带着往前走，端到端注意力对数最多省 50.68%，而训练式压缩器每任务多花 15–104 倍。\n  https://arxiv.org/abs/2610.41291\n- TraceSpec: Understanding and Improving Speculative Decoding for LLM Agents — 指出 agent 场景下整体接受率会骗人——上下文变长时总体接受率上升，但同阶段的浏览动作接受率反而在跌；据此按轨迹状态分配草稿预算，replay 吞吐提升 12.5%–22.6%。\n  https://arxiv.org/abs/2610.41177\n- HyperRepair: Recovering Forgotten General Capabilities of Fine-Tuned Language Models — 微调后通用能力退化是老大难；用超网络从\"修复\"中学出 Repairing Side Net，靠激活指纹在推理期选择性修补，跨模型可迁移，保留基座 93.4% 通用分同时留住 99.5% 领域分。\n  https://arxiv.org/abs/2610.41147\n- Better Retrievers, Worse Labels: How Incomplete Relevance Judgments Distort Abstention Evaluation in Conversational RAG — 拆穿了对话式 RAG 评测的偷懒做法：拿\"没有金标文档\"当不可答。检索器越强，这个捷径越错（精度从 .68 掉到 .10），最好用的\"可答性检测器\"竟是压根不看文档的检索分数。\n  https://arxiv.org/abs/2610.40966\n- On the Origin and Evolution of Training-Inference Mismatch in LLM Reinforcement Learning — 把 on-policy RL 的训练-推理不一致拆成引擎数值误差与策略滞后两路，前者居中即可消偏，后者会自我放大形成反馈环；由此得 DLC 修正，在陈旧采样器下把 KL 控制在两次 on-policy 训练之间。\n  https://arxiv.org/abs/2610.40945\n\nSource: https://huggingface.co/papers/2610.36545",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2610.36545",
+    "verified_at": "2026-11-03T01:05:35Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

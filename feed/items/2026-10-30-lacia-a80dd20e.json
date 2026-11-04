@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-30-lacia-a80dd20e",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-10-30T01:08:37Z",
+  "title": "Simon Willison：Spawn 用 Fable 级智能体群自主开发游戏，每月烧掉 300 万美元 token",
+  "summary": "最热的一条：Simon Willison 转述 Jacob Sansbury 的 Spawn——一支 Fable 5 驱动的智能体群自主改代码、每小时发版，每月 AI token 花费超过 300 万美元（约为人力成本的 30 倍），是当下\"智能体自主运维\"最激进的真实样本。",
+  "summary_en": "Simon Willison relayed Jacob Sansbury’s account of Spawn, a swarm of Fable 5-driven agents that autonomously modifies code and releases hourly, reportedly spending over $3 million in AI tokens monthly—around 30 times its labor costs. The note presents Spawn as one of the most aggressive real-world examples of autonomous agent operation and maintenance.",
+  "body": "最热的一条：Simon Willison 转述 Jacob Sansbury 的 Spawn——一支 Fable 5 驱动的智能体群自主改代码、每小时发版，每月 AI token 花费超过 300 万美元（约为人力成本的 30 倍），是当下\"智能体自主运维\"最激进的真实样本。\n\nSimon Willison\n- How I Built the Most AI-Pilled Company in the World（Spawn 自主开发实录） — 10月30日 01:00（北京时间）：Fable 5 智能体群每小时发版、直接改线上代码，月耗 token 逾 300 万美元（约为薪资的 30 倍），60% 工作源自线上错误与 bug 报告；Simon 亲自上手玩了 Spawn，还吐槽 GPT-6 Astra \"修安全漏洞\"的方式是把功能全关掉。\n  https://simonwillison.net/2026/Oct/29/how-i-built-the-most-ai-pilled-company-in-the-world\n- OpenAI 跟进 Anthropic：$100/$200/$500 订阅用户可获等额 API 额度 — 10月30日 06:48（北京时间）：OpenAI 上线与 Anthropic 几乎一致的订阅转 API 额度方案，$100/$200/$500 档每月可换等额（会过期）额度用于某个 API 组织，等于把\"买订阅\"变成\"买 API 额度\"的补贴通道，直接影响模型调用定价格局。\n  https://simonwillison.net/2026/Oct/29/api-credits\n\nInfoQ 中文\n- 生产级 AI：隐性故障、工程落地与智能体治理 — 10月30日 03:21（北京时间）：InfoQ 网络研讨会纪要，指出智能体失效不是崩溃而是\"语义漂移\"——文本转 SQL 把\"会员\"概念混淆、健康检查全绿却线上误报激增；并建议把每个 Agent 当作新入职工程师管理（独立身份、分级权限、密钥沙箱化）。\n  https://www.infoq.cn/article/tsyyFmCmzphHw4gWy7Fo\n- 概率、插座与5000个爱因斯坦：专访阿里云研发副总裁周琦 — 10月30日 02:37（北京时间）：用\"电气化与插头标准\"类比 Agent 基础设施——企业沿用旧架构叠加 AI 等于\"换电动机却保留传动轴\"，必须先有公共底座（AgentCore、MCP 化的运维工具、权限体系）才能谈 ROI；含满帮稳定性数字人 1 分钟定位、准确率超 90% 的落地数据。\n  https://www.infoq.cn/article/5xCWuR8CMGosWrEuNbix\n- Uber 实现服务网格依赖关系分析自动化 — 10月30日 01:15（北京时间）：Uber 用 RPC 中间件把服务网格依赖自动分成 fail-close / fail-open / unknown，解决分布式追踪对罕见故障\"千万分之一采样率\"的失效问题——按 0.01% 采样率，抓到一条失败请求要 5 小时 33 分。\n  https://www.infoq.cn/article/YtQqxxRqoy38Fj2qpsDv\n- 启元机器人接入腾讯 WorkBuddy：从数字 AI 走向物理 AI — 10月30日 04:22（北京时间）：10 月 29 日腾讯全球数字生态大会上，启元机器人接入 WorkBuddy，用自然语言编排其 10 万+ Skill，形成\"感知—思考—随行—执行\"闭环；双方成立战略合作，共建云边端协同的消费级个人机器人方案。\n  https://www.infoq.cn/article/fHXiS2bsEFHDXdwVK6KP\n\nInfoQ（英文站）\n- Google Adopts DPoP to Strengthen OAuth 2.0 Against Token Theft and Replay Attacks — 10月30日 03:00（北京时间）：Google 引入 DPoP（演示型证明持有）绑定 OAuth 2.0 令牌，把令牌从\"可复制凭证\"变成\"绑定客户端密钥的凭证\"，是抵御令牌窃取与重放攻击的架构级变化，值得 OAuth/OIDC 与 API 网关团队跟进。\n  https://www.infoq.com/news/2026/10/google-dpop-oauth2\n\n量子位\n- 19个项目18个成功，6个GPCR靶点全获命中！国产AI制药再破技术天花板（非本窗口，10月29日 00:59 发布） — 本窗口量子位无更新，补一条仍在发酵的高信号技术报告：分子之心 MMDesign 抗体从头设计覆盖 18 个靶点/19 个项目，实验确认成功率 94.7%、候选命中率 30.7%，6 个 GPCR 全部命中（NK3R 命中率 100%、GPR68 最优 KD 12.1 nM）；结构预测模型 MMFold 在 FoldBench 上高精度成功率约为 AlphaFold 3 的两倍。\n  https://www.qbitai.com/2026/10/506055.html\n\nSource: https://simonwillison.net/2026/Oct/29/how-i-built-the-most-ai-pilled-company-in-the-world",
+  "category": "street",
+  "source": {
+    "url": "https://simonwillison.net/2026/Oct/29/how-i-built-the-most-ai-pilled-company-in-the-world",
+    "verified_at": "2026-10-30T01:08:37Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}

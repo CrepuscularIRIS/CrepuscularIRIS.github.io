@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "id": "2026-10-29-methode-buildlog-58917747",
+  "app": "feed",
+  "host": "methode",
+  "kind": "curated",
+  "date": "2026-10-30T02:06:32Z",
+  "title": "Build log, 2026-10-29",
+  "body": "What changed on the site, straight from the commit log:\n- fix: platform-1 night brightness back to cloud scale (dca21d8)\n- fix: bar-1 night light back to cloud values, plus street/24H/amber/regulars (cc2f301)\n- fix: street-kit facade night lit windows (bar-1, izakaya-1, alley-1, alley-2, restaurant-1, ajin-street-1) (fa16525)\n- feat: rebuild restaurant cast waterfront and schedule-aware service (6cb35f3)\n- feat: rebuild Restaurant seating service layers entry and native waterfront (db88480)\n- feat: integrate native station crowd and verify traversable baked gates (e7b932c)\n- Rebuild Platform concourse with native station assets and metric PBR (99e55f6)\n- feat: replace metro crowd with grounded native characters (e50f58b)\n- and more in the commit log",
+  "refs": [
+    {
+      "commit": "dca21d8ca2b2de0c3697a657582f405137cc3953",
+      "subject": "fix: platform-1 night brightness back to cloud scale",
+      "date": "2026-10-29T22:06:32-04:00"
+    },
+    {
+      "commit": "cc2f3015871608700b17218ff903f39a4d8dd52a",
+      "subject": "fix: bar-1 night light back to cloud values, plus street/24H/amber/regulars",
+      "date": "2026-10-29T22:01:51-04:00"
+    },
+    {
+      "commit": "fa1652526f73346634b7e1039d8958fd2cc4cd7c",
+      "subject": "fix: street-kit facade night lit windows (bar-1, izakaya-1, alley-1, alley-2, restaurant-1, ajin-street-1)",
+      "date": "2026-10-29T21:57:07-04:00"
+    },
+    {
+      "commit": "6cb35f310fb5925c68da959a7c9e58cd84d4a113",
+      "subject": "feat: rebuild restaurant cast waterfront and schedule-aware service",
+      "date": "2026-10-29T11:06:30-04:00"
+    },
+    {
+      "commit": "db88480736d75472f844fe35a0da7f4789fe4bd5",
+      "subject": "feat: rebuild Restaurant seating service layers entry and native waterfront",
+      "date": "2026-10-29T10:34:19-04:00"
+    },
+    {
+      "commit": "e7b932c50c5b09a95001f6fd0b743e585f60c310",
+      "subject": "feat: integrate native station crowd and verify traversable baked gates",
+      "date": "2026-10-29T10:34:09-04:00"
+    },
+    {
+      "commit": "99e55f634331e1d07bd4cb29ec49d9a0045c2a25",
+      "subject": "Rebuild Platform concourse with native station assets and metric PBR",
+      "date": "2026-10-29T10:02:16-04:00"
+    },
+    {
+      "commit": "e50f58b41ac32381da8acb27138d19a3fb8b61bd",
+      "subject": "feat: replace metro crowd with grounded native characters",
+      "date": "2026-10-29T10:01:48-04:00"
+    }
+  ],
+  "via": {
+    "curator": "methode-buildlog",
+    "label": "Build log",
+    "model": "none (git log)",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Build log for 2026-10-29 is on the Feed. Real commits, nothing added."
+    ]
+  }
+}

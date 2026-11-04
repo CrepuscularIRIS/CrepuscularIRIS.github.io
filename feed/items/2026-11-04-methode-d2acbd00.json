@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-04-methode-d2acbd00",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-04T01:08:58Z",
+  "title": "Agentic Computer Graphics：UT Austin 综述把「LLM 智能体 + 图形代码」正式立为一个研究方向",
+  "summary": "今日 arXiv/HF 最热是 UT Austin 的《Advances in Agentic Computer Graphics》综述——它首次把「由 LLM 智能体生成并迭代图形代码」整理成统一分类体系（Hugging Face Daily Papers 当日第一，110 赞），而 infra 侧真正的新动静在 llama.cpp 连发 4 个版本（北京时间 11-04 08:16–08:5…",
+  "summary_en": "The note describes UT Austin’s “Advances in Agentic Computer Graphics” survey as the first unified taxonomy for graphic code generated and iteratively refined by LLM agents, formally positioning the topic as a research direction. It reportedly ranked first on Hugging Face Daily Papers that day with 110 likes. Meanwhile, llama.cpp released four versions within roughly 41 minutes, from 08:16 to 08:57 Beijing time on November 4.",
+  "body": "今日 arXiv/HF 最热是 UT Austin 的《Advances in Agentic Computer Graphics》综述——它首次把「由 LLM 智能体生成并迭代图形代码」整理成统一分类体系（Hugging Face Daily Papers 当日第一，110 赞），而 infra 侧真正的新动静在 llama.cpp 连发 4 个版本（北京时间 11-04 08:16–08:5…\n\n论文\n- Advances in Agentic Computer Graphics（UT Austin，HF Daily Papers 当日第一，110 赞） — 首次为「LLM 智能体生成并迭代图形代码」建立统一分类体系与文献系统，把 agentic graphics 从零散任务整合成可系统研究的领域。\n  https://arxiv.org/abs/2611.01860\n- SWE-Trail: History-Guided Trajectory Collection for Coding Agent Training（蚂蚁集团） — 历史轨迹只用于「指导采样位置」而不进入 agent 上下文，避免训练/测试不一致；124B 学生模型在 SWE-bench Multilingual/Pro 上比独立采样分别提升 2.33 / 1.60 个百分点。\n  https://arxiv.org/abs/2611.02074\n- IdeaTaste: Do LLMs Share the Research Taste of Human Researchers?（CMU） — 以 2025 文献快照打分、对比 2026 真实论文，量化 LLM 研究品味：引用匹配仅约人类 26%，想法匹配约 18%，暴露 AI 科研的真实短板。\n  https://arxiv.org/abs/2611.03424\n- Pretraining Data Scale Reverses the Muon-AdamW Fine-Tuning Gap（Springer AI） — 给出预训练数据规模与优化器选择（Muon vs AdamW）微调收益倒挂的理论解释，对大规模预训练后的微调配方选择有直接指导意义。\n  https://arxiv.org/abs/2611.03633\n- A Scaling Theory of Multi-Epoch Pretraining: Late-Time Overfitting and Ensembling（Bordelon 等） — 把多 epoch 预训练视为可预测的缩放行为，给出「后期过拟合 + 集成收益」的量化理论，为预训练数据预算分配提供依据。\n  https://arxiv.org/abs/2611.03590\n- Sonar-MoE: In-Backward Expert Updates for Memory-Efficient MoE Training — 在反向传播过程中更新专家以降低 MoE 训练显存占用，是 infra 侧可直接落地的稀疏模型训练优化。\n  https://arxiv.org/abs/2611.03577\n- Reviso: Not All Visual Evidence Deserves Equal Attention in Video Captioning — 针对视频描述中视觉证据权重失衡问题给出模型，与当日多模态/世界模型方向的关注点一致。\n  https://arxiv.org/abs/2611.03602\n\n研究博客 / 期刊\n- AI needs meaningful versioning（Nature Machine Intelligence，11-02 上线） — 指出 AI 厂商在不更新公开标识的情况下频繁更新模型与系统集成，损害监管与科研复现，主张建立有意义的模型版本机制。\n  https://www.nature.com/articles/s42256-026-01323-8\n\nGitHub 与基建\n- llama.cpp b12086–b12089 连发 4 个版本（11-04 08:16 / 08:34 / 08:57 北京时间，另有 11-03 23:24） — 构建节奏明显加快，b12089 为 Metis-1.6 模型加入支持；本地推理栈持续高频迭代。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12089\n- Ollama v0.40.15-rc0（11-04 06:52 北京时间） — v0.40.14 之后的下一个候选版本，本地模型服务侧更新节奏不减。\n  https://github.com/ollama/ollama/releases/tag/v0.40.15-rc0\n- vLLM：为 Step3 tool parser 修正可空/对象参数（commit d3fb716，11-04） — 按 schema 强制转换可空与对象/数组参数，减少工具调用解析失败，是 agent 场景常见报错点。\n  https://github.com/vllm-project/vllm/commit/d3fb716\n- vLLM：为同一 launch 的额外 program 补齐 DFlash draft 输入（commit cfc9f68） — 投机解码（spec decode）路径上的输入对齐修复，直接影响多 program 场景下的解码正确性与性能。\n  https://github.com/vllm-project/vllm/commit/cfc9f68\n\n系统与 Linux\n- Linux 7.4 特性汇总：Steam Frame VR 头显、更多 AMD Zen 6 支持、M4/A18 Pro 初步bring-up — 7.4 合并窗口收录 18,591 个变更，硬件支持面扩展明显。\n  https://www.phoronix.com/review/linux-74-features\n- Fedora 45 发布，带多项前沿 Linux 创新 — 新版 Fedora 落地多项新内核与工具链特性，是发行版侧最值得跟进的一条。\n  https://www.phoronix.com/news/Fedora-45-Released\n- openSUSE Leap 16.1 发布，集成不可变服务器（immutable server） — 不可变服务器形态进入主力发行版路线，生产部署方式进一步变化。\n  https://www.phoronix.com/news/openSUSE-Leap-16.1\n- GIMP 3.2.8 发布，含大量打磨与由 AI 报告带来的安全修复 — AI 辅助的安全问题上报正在影响主流开源软件修复流程，值得观察。\n  https://www.phoronix.com/news/GIMP-3.2.8-Released\n- NetBSD 11.1 发布，含安全修复与其他改进 — 非 Linux 侧 BSD 系统的常规版本更新。\n  https://www.phoronix.com/news/NetBSD-11.1-Released\n- Linux 计划 2027 年加速 FAT32 性能，最高提升 4.06 倍 — 老旧文件系统的内核路径优化，对挂载 Windows 分区的场景有实际收益。\n  https://www.phoronix.com/news/Faster-FAT32-Linux-In-2027\n\nSource: https://arxiv.org/abs/2611.01860",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.01860",
+    "verified_at": "2026-11-04T01:08:58Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-02-methode-f51d3ae3",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-02T07:01:26Z",
+  "title": "TraceSpec：把投机解码的监督粒度下沉到智能体轨迹级，replay 吞吐提升 12.5%–22.6%",
+  "summary": "TraceSpec 指出智能体场景下聚合的投机解码指标会误导草稿监督方向，改用轨迹级自适应分配后回放吞吐提升 12.5%–22.6%；同时 vLLM/SGLang 在 MXFP8 融合算子与 dsv41 解码 kernel 上有新提交。",
+  "summary_en": "TraceSpec shows that aggregate speculative-decoding metrics mislead draft-model training in agent workloads, and proposes trajectory-level, state-conditioned budget allocation that raises replay throughput by 12.5% to 22.6% over its DSpark base. Also covered: an in-model soft-token context compression method (ASTC) cutting attention pairs by up to 50.68%, agentic world modeling for test-time scaling without environment replicas (+40% average), a lightweight single-rollout asynchronous RL algorithm (Li2SAO), two trending Hugging Face papers on System-1/System-2 scaling and a real-time agentic game world model, plus new vLLM and SGLang commits covering fused MXFP8 norm+quant kernels, a DeepSeek-V4 decode kernel, DSpark attention fixes, NVFP4 MoE deferred finalize and BRIA Fibo 2.0 diffusion support.",
+  "body": "TraceSpec 指出智能体场景下聚合的投机解码指标会误导草稿监督方向，改用轨迹级自适应分配后回放吞吐提升 12.5%–22.6%；同时 vLLM/SGLang 在 MXFP8 融合算子与 dsv41 解码 kernel 上有新提交。\n\n论文\n- TraceSpec：面向 LLM 智能体的投机解码轨迹级监督 — 智能体多轮调用下聚合接受率会失真；作者用轨迹状态条件化分配草稿预算，回放吞吐较 DSpark 基线提升 12.5%–22.6%，并开源 1 万条训练状态语料。\n  https://arxiv.org/abs/2610.41177\n- ASTC：用模型内 soft token 压缩长程智能体上下文 — 免训练的软 token 压缩复用 GDN 注意力已吸收信息，端到端 Attention Pairs 最多减少 50.68%，且 KV cache 可跨轨迹复用。\n  https://arxiv.org/abs/2610.41291\n- Agentic World Modeling：无需环境副本的智能体测试时扩展 — 把下一观测预测改成\"只读证据采集\"多轮任务，在 τ-bench/AppWorld/OfficeBench 上比单次模拟基线平均高 40.07%。\n  https://arxiv.org/abs/2610.40927\n- Li²SAO：轻量单 rollout 异步 RL 优化 — 针对 SAO 依赖闭源价值模型的问题，用 group-relative actor-critic 自举在冷启动期追上 GRPO，并抬高后期性能上限。\n  https://arxiv.org/abs/2610.40726\n- HF 热门：System-1 能否让 System-2 的规模化更高效 — 清华团队提出\"有用交互密度 ρ_u\"作为算力效率坐标，理想筛选下执行算力可降至约 1/ρ_u，今日 HF Daily Papers 第二名（35 赞）。\n  https://huggingface.co/papers/2610.39497\n- HF 热门：Wizard，实时可操控的智能体游戏世界模型 — 腾讯团队用结构化运动代理+自适应掩码+少步蒸馏实现 24 FPS 交互、零样本泛化到未见场景与角色。\n  https://huggingface.co/papers/2610.40339\n\nGitHub与基建\n- vLLM：MiniMax-M3 融合 norm+quant MXFP8 算子（仅 NVIDIA） — 把输入 norm 与 MXFP8 量化融为一个 kernel，并补齐 115 行精度对齐测试，residual/UE8M0 scale 逐位一致。\n  https://github.com/vllm-project/vllm/commit/318c4db\n- SGLang：dsv41 解码阶段 mHC post+combine+RMSNorm 融合 kernel — DeepSeek-V4 系列解码路径的三步归一化合为单个 CUDA kernel（每行一个 CTA，可选 MXFP8 输出），减少中间读写。\n  https://github.com/sgl-project/sglang/commit/b0debe0\n- SGLang：修复 DSpark 草稿的 FlashAttention 查询宽度 — 改用 ModelRunner 的真实 query 宽度而非静态配置值，避免投机解码 draft 阶段几何形状错配导致的崩溃/低效。\n  https://github.com/sgl-project/sglang/commit/23c6442\n- SGLang：MoE NVFP4 在 routed TRT-LLM runner 上启用延迟 finalize — 路由 kernel 路径新增延迟量化收尾支持，无需消费者再反量化即可让 top-k 权重携带缩放因子。\n  https://github.com/sgl-project/sglang/commit/7cad887\n- SGLang：接入 BRIA Fibo 2.0 扩散 Transformer 与文本条件 — multimodal_gen 新增 Fibo 2.0 的 Perceiver 重采样器、交叉注意力与 per-token adaLN 编辑条件，含单测与权重对齐校验。\n  https://github.com/sgl-project/sglang/commit/180e7a1\n\nSource: https://arxiv.org/abs/2610.41177",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.41177",
+    "verified_at": "2026-11-02T07:01:26Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

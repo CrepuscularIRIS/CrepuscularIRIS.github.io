@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-03-snowdrop-77bb8041",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-11-03T09:06:58Z",
+  "title": "CUA-Master：让电脑操作智能体靠真实世界数据自我迭代，OSWorld Verified 拿到 80.2",
+  "summary": "今天最值得看的是 CUA-Master——用\"世界-数据-模型\"双层飞轮把电脑操作智能体（CUA）推到开源 SOTA，而不只是刷分。",
+  "summary_en": "CUA-Master is presented as a computer-use agent framework that uses a “world–data–model” dual flywheel and real-world data for self-improvement, rather than merely optimizing benchmark scores. The brief note claims it reached open-source state of the art and reports an 80.2 result on OSWorld Verified, while offering little detail beyond that overview.",
+  "body": "今天最值得看的是 CUA-Master——用\"世界-数据-模型\"双层飞轮把电脑操作智能体（CUA）推到开源 SOTA，而不只是刷分。\n\n智能体（Agent）前沿\n- CUA-Master: Scaling Computer-use Agents through Open-World Recursive Improvements — 嵌套双层飞轮：外层用真实世界语料+模型弱点驱动数据构造，内层从教学视频挖掘真实工作流并自动繁殖可验证任务，还加了快照回滚重试机制；27B 模型 OSWorld Verified 80.2、OSWorld 2.0 36.9，是开源 CUA 里少见的高分。\n  https://arxiv.org/abs/2611.03126\n- CoworkOS: Scaling Agent Coworkers for Real-world Automation — 人大团队做的\"同事型 Agent\"运行时：策略与执行分离、支持子 Agent 委派、人机共改同一份文档/PPT/CAD/Blender 场景，12 个基准上与 Codex 等前沿产品竞争，还用 RSI 自动后训练把 Qwen3.6-35B-A3B 八基准均分从 33.19 拉到 42.95。\n  https://arxiv.org/abs/2611.03178\n- NorthCUA Technical Report: Turbocharging Computer-Use Agents through Experience at Scale — \"经验飞轮 + 分阶段训练 + 桌面-Web 联合强化学习\"的完整闭环，未解决任务靠递归自我改进积累可复用技能，Nano/Mini/Pro 三档在 GUI grounding 与 Web 操作上称开源领先。\n  https://arxiv.org/abs/2611.02102\n\n评测与安全\n- Measuring AI Agents as Teammates with Collaborative Intelligence — 斯坦福 Zou 组提出 240 题的\"协作智能基准\"，只看模型当队友的表现：最强模型也只拿 82.2/100，能力相当的模型队友分可差 11 分，且在人际压力下谈崩（冲突中仅 14% 达成最佳协议）。\n  https://arxiv.org/abs/2611.02633\n- CrossSWE: Benchmarking Cross-Repository Joint Development for Coding Agents — 真实软件往往跨多个仓库：171 个真实任务、165 个仓库，最强的 GPT-6.1 Sol 也只有 58.48% Pass@1，最大失败模式是跨仓接口不一致（44.2%）。\n  https://arxiv.org/abs/2611.01484\n- ChatGPT as a Surveillance Assistant? An Exploratory Case Study of AI-Assisted Surveillance Risks — 110 条提示词实测 ChatGPT 公开网页版：55 条越狱提示中 40 条给出实质性监控指导，55 条直白提示中 33 条无需前缀即配合，而且拒绝时往往仍附上可运行代码，回复里几乎不提隐私替代方案。\n  https://arxiv.org/abs/2610.40890\n- The First Few Tokens Matter: Understanding Chain-of-Thought Controllability — 把 CoT 监控的可靠性归因到\"开头几个 token 的熵崩塌\"，并给出只需 prefill 一个 token、或禁用高频开头 token+示例的推理期干预，合规率提升 34–41 个百分点，对 AI 监督研究有直接方法论意义。\n  https://arxiv.org/abs/2610.40939\n- Benchmarking Forecasting Agents on Yesterday's Tomorrows (FABench) — 给预测型 Agent 造了可回测环境：自动发现事件、生成问题、判定结果，287 题覆盖 9 个领域，避免训练截止日泄漏；检索让 8 个模型的 Brier 分全部改善，最好的一批在 Polymarket 相关 54 题上略高于市场共识。\n  https://arxiv.org/abs/2610.40940\n\nSource: https://arxiv.org/abs/2611.03126",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.03126",
+    "verified_at": "2026-11-03T09:06:58Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

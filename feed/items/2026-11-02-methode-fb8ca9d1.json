@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-02-methode-fb8ca9d1",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-02T05:02:51Z",
+  "title": "vLLM 合并可扩展 KV cache 核心框架，单次提交 +4698 行",
+  "summary": "vLLM 主干合入 [Core] Extensible KV cache，把 KV 缓存从固定实现改成可扩展抽象，同时 Linux 7.4-rc1 带来史上最大的合并窗口（1.86 万个非合并提交）。",
+  "summary_en": "vLLM’s main branch has merged the “[Core] Extensible KV cache” change, replacing the fixed KV cache implementation with an extensible abstraction. Separately, Linux 7.4-rc1 introduces what is described as the largest merge window in history, with 18,600 non-merge commits. The note presents this as a single merge adding 4,698 lines.",
+  "body": "vLLM 主干合入 [Core] Extensible KV cache，把 KV 缓存从固定实现改成可扩展抽象，同时 Linux 7.4-rc1 带来史上最大的合并窗口（1.86 万个非合并提交）。\n\n论文\n- More Rules, Longer Lists?：CLR-Bench 评测自进化智能体（arXiv 新单） — 每级只藏一条新规则，专门测智能体是真学会还是把纠正逐条堆成清单；弱模型最多只比冻结智能体高 5 分，换成 GPT-6-Sol 后 ACE/Dynamic Cheatsheet 能到 78%。\n  https://arxiv.org/abs/2610.40758\n- Mage-VL-Cowork：4B 混合 computer-use 智能体全训练配方 — 把 GUI 操作与代码/终端执行统一进一个策略，29.4 万条合成任务、每任务开销降 82.6%，OSWorld-Verified 达到 66.0%，同参数规模 SOTA。\n  https://arxiv.org/abs/2610.40747\n- Apriel Voice 27B Preview：ServiceNow 开源语音+推理+工具调用模型 — 基于 Gemma 4 26B-A4B 后训练，单模型直接听语音出回复和 tool call，Big Bench Audio 98.90、Speech-BFCL 81.13、平均延迟 1.91 秒。\n  https://arxiv.org/abs/2610.40738\n- HiFOR：分层前瞻 + 动作引导世界落地（VLA） — 同时预测短期状态演化、语义里程碑和最终目标，再按动作表征检索相关未来信息，缓解“预测的未来与当前动作不匹配”的问题。\n  https://arxiv.org/abs/2610.40373\n- WorldBridge：视频预测到动作的桥接提升任务泛化 — 消融结论清晰：只加视频不加工作标签，分布外成功率从 25.07% 升到 55.90%；再加少量动作示范可达 70.70%。\n  https://arxiv.org/abs/2610.40748\n- FrameForge：借视频生成模型先验做统一图像生成 — 用输入自适应的“虚拟时间关系”+ 时间 RoPE 专家混合与推理瓶颈注意力，替代固定条件/目标时间位置的做法。\n  https://arxiv.org/abs/2610.36545\n- 当披露成为强制：欧盟新规下用 LLM 司机智能体评估网约车调度策略 — 平台必须公开自动决策参数后，司机会把规则交给模型执行；同样的策略在完全合规假设下打平，披露后利润差达 6.1%。\n  https://arxiv.org/abs/2610.41132\n\nGitHub与基建\n- vLLM：[Core] Extensible KV cache（+4698 行） — 把 KV cache 变成可扩展抽象，新增 extensible_tensor、vmm_driver、CPU offload connector 与大量测试，56 个文件改动，是近期 vLLM 架构级变更。\n  https://github.com/vllm-project/vllm/commit/860da3d\n- vLLM：MiniMax-M3 序列并行 + TP 下 GEMM-RS 性能优化 — 为 MiniMax-M3 的 attention O-proj 与 dense down-proj 打通 TP4 + MegaMoE 的 GEMM-RS 路径，并补上对应 kernel benchmark 与单测。\n  https://github.com/vllm-project/vllm/commit/37e1668\n- vLLM：AMD ROCm 下 Muse Spark 的 FlyDSL decode monokernel — MI355X 上 DSpark 验证步骤改用单 kernel 解码实现，18 个文件新增约 9000 行，配套 MI355 基础测试。\n  https://github.com/vllm-project/vllm/commit/be09292\n- SGLang：AMD 原生 GLM MXFP4 Triton Gluon 后端 — AMD 侧 MoE 走原生 Triton Gluon MXFP4 路径，另附无需 SGLANG_USE_AITER 即可在 gfx95/gfx1250 加载 MXFP4 MoE 权重。\n  https://github.com/sgl-project/sglang/commit/f6127bf\n- vLLM v0.33.0 正式版发布 — 在 rc3 之后的正式版本，是本轮基建侧最值得跟进的落地节点。\n  https://github.com/vllm-project/vllm/releases/tag/v0.33.0\n\n系统\n- Linux 7.4-rc1 预发布，合并窗口史上最大 — 本次合并窗口带来 18,591 个非合并提交，几乎等于整个 7.3 周期的工作量；Linus 认为大量 AI 触发的改动已进入常规开发而非 rc 期补丁。\n  https://lwn.net/Articles/1104654\n- Linux 7.4-rc1 发布：性能优化、Zen 6 与 AMDGPU HDMI 2.1 默认开启 — rc1 阶段的功能与性能看点汇总，含 AMD Ryzen Zen 6 准备与显示栈变更。\n  https://www.phoronix.com/news/Linux-7.4-rc1\n- 7.2 稳定系列收官：7.2.15 为最后一个 7.2.y 内核 — 7.2.y 内核树正式 EOL，用户需迁移到 7.3.y；原因是待合入的 cc 稳定补丁积压，官方选择尽早收敛分支。\n  https://lwn.net/Articles/1104629\n- KDE 新终端模拟器 Kwi 开发中，基于 Ghostty 库 — 用 libghostty-vt + Qt Scene Graph（OpenGL/Vulkan 加速），官方称整体比 Konsole 快 3x–35x，仍处实验阶段、未提议替代 Konsole。\n  https://www.phoronix.com/news/KDE-Kwi-Terminal-Emulator\n\nSource: https://github.com/vllm-project/vllm/commit/860da3d",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/vllm-project/vllm/commit/860da3d",
+    "verified_at": "2026-11-02T05:02:51Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

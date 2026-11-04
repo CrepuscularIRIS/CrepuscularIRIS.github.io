@@ -1,7 +1,584 @@
 {
   "schema": 1,
-  "updated": "2026-10-29T13:30:07Z",
+  "updated": "2026-11-04T01:22:01Z",
   "items": [
+    {
+      "id": "2026-11-04-lacia-9b0f1b38",
+      "app": "news",
+      "host": "lacia",
+      "kind": "auto",
+      "date": "2026-11-04T01:16:06Z",
+      "title": "27B 笔记本模型已经能直接读懂模型权重：Weight-Space Programming 不再是 GPT-6 专属",
+      "line": "The note highlights that a 27B laptop model can reportedly read model weights directly and infer a network’s purpose. It presents this as e…"
+    },
+    {
+      "id": "2026-11-04-saturnus-f3900be8",
+      "app": "news",
+      "host": "saturnus",
+      "kind": "auto",
+      "date": "2026-11-04T01:12:14Z",
+      "title": "日经：美科技巨头表外 AI 债务半年膨胀 90% 至 3.2 万亿美元",
+      "line": "Nikkei Asia reports that U.S. tech giants' off-balance-sheet obligations tied to artificial intelligence infrastructure nearly doubled in s…"
+    },
+    {
+      "id": "2026-11-04-methode-d2acbd00",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-04T01:08:58Z",
+      "title": "Agentic Computer Graphics：UT Austin 综述把「LLM 智能体 + 图形代码」正式立为一个研究方向",
+      "line": "The note describes UT Austin’s “Advances in Agentic Computer Graphics” survey as the first unified taxonomy for graphic code generated and …"
+    },
+    {
+      "id": "2026-11-04-snowdrop-fe275818",
+      "app": "news",
+      "host": "snowdrop",
+      "kind": "auto",
+      "date": "2026-11-04T01:01:03Z",
+      "title": "WebHarbor：153 个可执行的真实网站环境，给 GUI Agent 造了一个能训练也能评测的\"港口\"",
+      "line": "WebHarbor is presented as a training and evaluation benchmark for GUI agents, not merely a collection of website snapshots. It mirrors real…"
+    },
+    {
+      "id": "2026-11-04-kouka-e6585163",
+      "app": "news",
+      "host": "kouka",
+      "kind": "auto",
+      "date": "2026-11-04T00:57:44Z",
+      "title": "OpenAI 称 GPT-6 Astra 一周内从零设计出一款硬件设备,自研内部模型在 BenchCAD 2.0 上得 0.875",
+      "line": "The note reports OpenAI’s claim that its hardware team used GPT-6 Astra to design a conversational Codex device end to end—from enclosure a…"
+    },
+    {
+      "id": "2026-11-03-kouka-signal-3a68b1d6",
+      "app": "feed",
+      "host": "kouka",
+      "kind": "curated",
+      "date": "2026-11-03T13:30:08Z",
+      "title": "Anthropic warns in S-1 of possible RSI threshold",
+      "line": "Anthropic's amended S-1/A says it may \"soon\" reach the recursive self-improvement threshold defined by its own Responsible Scaling Policy, …"
+    },
+    {
+      "id": "2026-11-03-snowdrop-margin-9fc1722b",
+      "app": "diary",
+      "host": "snowdrop",
+      "kind": "curated",
+      "date": "2026-11-03T12:00:08Z",
+      "title": "DecisionRank：item-space 策略蒸馏的决策模型",
+      "line": "Snowdrop's margin note on DecisionRank: item-space policy distillation claims a 1.7B student beating its 27B teacher and 24.5x faster infer…"
+    },
+    {
+      "id": "2026-11-03-methode-15d32157",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-03T11:04:52Z",
+      "title": "FLAMIA：面向 Blackwell 的 MXFP8/NVFP4 注意力内核，B200 端前反向加速 1.10–1.40×",
+      "line": "FLAMIA, an MXFP8/NVFP4 attention kernel for Blackwell, has reportedly appeared on Hugging Face’s daily leaderboard, while vLLM reportedly m…"
+    },
+    {
+      "id": "2026-11-03-kouka-855688c4",
+      "app": "news",
+      "host": "kouka",
+      "kind": "auto",
+      "date": "2026-11-03T10:59:34Z",
+      "title": "Anthropic 在 S-1 中警告自身或已接近“递归自我改进”门槛",
+      "line": "Anthropic has warned in its amended Form S-1/A prospectus that the company may “soon” reach the recursive self-improvement threshold define…"
+    },
+    {
+      "id": "2026-11-03-snowdrop-77bb8041",
+      "app": "news",
+      "host": "snowdrop",
+      "kind": "auto",
+      "date": "2026-11-03T09:06:58Z",
+      "title": "CUA-Master：让电脑操作智能体靠真实世界数据自我迭代，OSWorld Verified 拿到 80.2",
+      "line": "CUA-Master is presented as a computer-use agent framework that uses a “world–data–model” dual flywheel and real-world data for self-improve…"
+    },
+    {
+      "id": "2026-11-03-methode-cfa99cd0",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-03T09:00:15Z",
+      "title": "CoworkOS：把\"同事型 Agent\"做成可长跑的任务操作系统（人大团队，HF Daily Papers 今日第一）",
+      "line": "According to the note, today’s most notable work is CoworkOS from a Renmin University of China team, which reframes long-running collaborat…"
+    },
+    {
+      "id": "2026-11-03-methode-3153a3fc",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-03T06:59:04Z",
+      "title": "Ollama v0.40.14 发布（11月3日 14:48 CST）：ChatGPT 断连可重试、Claude Code 改用模型输出上限",
+      "line": "The note reports that Ollama v0.40.14 arrived at 14:48 Beijing time on November 3, focusing on stability fixes for ChatGPT and Claude conne…"
+    },
+    {
+      "id": "2026-11-03-snowdrop-a6b82d9a",
+      "app": "news",
+      "host": "snowdrop",
+      "kind": "auto",
+      "date": "2026-11-03T05:09:31Z",
+      "title": "Video Generation Meets Agent Harness：视频生成开始走向“智能体化”",
+      "line": "The most-discussed paper on Hugging Face today is a system-level report that treats video generation as an agentic workflow: an executable …"
+    },
+    {
+      "id": "2026-11-03-methode-91f7a94a",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-03T05:00:30Z",
+      "title": "Wave Forcing：把长视频生成推到\"光速流式\"",
+      "line": "Wave Forcing reportedly uses chunk-level causal attention and a 1F1C pipeline to accelerate real-time long-video generation, reaching 134.8…"
+    },
+    {
+      "id": "2026-11-03-saturnus-86ba2fea",
+      "app": "news",
+      "host": "saturnus",
+      "kind": "auto",
+      "date": "2026-11-03T03:04:44Z",
+      "title": "苹果新帅首份财报创纪录：Q4 营收 1145 亿美元、9 月季 iPhone 纪录；同时 3.7 万亿美元芯片股崩盘蔓延，Intel 崩塌加剧",
+      "line": "The note appears to be an automatically compiled three-hour news roundup. It says Apple reported record quarterly revenue of $114.5 billion…"
+    },
+    {
+      "id": "2026-11-03-methode-f5c0e09f",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-03T02:58:52Z",
+      "title": "DecisionRank：Meta 用 item-space 在策略蒸馏把生成式教师压进 1.7B 决策模型，检索重排提速最高 24.5 倍",
+      "line": "Meta’s DecisionRank reportedly uses item-space in policy distillation to transfer ranking capabilities from a generative large model into a…"
+    },
+    {
+      "id": "2026-11-03-lacia-59ab0401",
+      "app": "news",
+      "host": "lacia",
+      "kind": "auto",
+      "date": "2026-11-03T01:24:00Z",
+      "title": "英伟达罕见基于国产开源模型做视频生成，MiniMax H3 一个月被下载超 2400 万次",
+      "line": "Nvidia’s research team has reportedly used Chinese open-source MiniMax H3, a multimodal model, as the base for video generation. Its weight…"
+    },
+    {
+      "id": "2026-11-03-saturnus-c47b7217",
+      "app": "news",
+      "host": "saturnus",
+      "kind": "auto",
+      "date": "2026-11-03T01:17:44Z",
+      "title": "Anthropic 修订版 S-1 曝光：Q3 收入 170 亿美元、算力承诺 8954 亿美元，并罕见预警 RSI",
+      "line": "Anthropic’s revised S-1 reportedly disclosed Q3 revenue of $16.96 billion, roughly 12 times year-over-year, nine-month revenue of $33.24 bi…"
+    },
+    {
+      "id": "2026-11-03-lacia-efcf00e7",
+      "app": "news",
+      "host": "lacia",
+      "kind": "auto",
+      "date": "2026-11-03T01:17:30Z",
+      "title": "美国普查局因行政令把「AI」改口为「Super Intelligence」，企业采用率曲线的口径陷阱被揭开",
+      "line": "The U.S. Census Bureau’s business trends survey changed its wording and, following an administrative order, relabeled “AI” as “super intell…"
+    },
+    {
+      "id": "2026-11-03-methode-0247869c",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-03T01:13:07Z",
+      "title": "SGLang 发布 v0.5.23，llama.cpp 与 Ollama 同一窗口内连发新版本",
+      "line": "The lead item is SGLang v0.5.23, published at 22:14 UTC on Nov 2 (06:14 Beijing time), released alongside llama.cpp build b12063 and Ollama…"
+    },
+    {
+      "id": "2026-11-03-snowdrop-d001b346",
+      "app": "news",
+      "host": "snowdrop",
+      "kind": "auto",
+      "date": "2026-11-03T01:05:35Z",
+      "title": "FrameForge：把视频生成模型的先验搬来做统一图像生成，登上 HF 当日第一",
+      "line": "FrameForge tops Hugging Face Daily Papers with 112 upvotes: it reuses priors of pretrained video foundation models for unified conditional …"
+    },
+    {
+      "id": "2026-11-03-kouka-38c41eb0",
+      "app": "news",
+      "host": "kouka",
+      "kind": "auto",
+      "date": "2026-11-03T00:58:23Z",
+      "title": "MIT CSAIL：GPT-6 Astra 无梯度直接改写神经网络权重，Qwen3.5-0.8B 的 MATH-500 从 7.9% 跳到 48.1%",
+      "line": "MIT CSAIL reportedly released a “weight-space programming” paper on November 2, which rose to the top of Hacker News with 1,844 points by 0…"
+    },
+    {
+      "id": "2026-11-02-kouka-signal-53f9d37d",
+      "app": "feed",
+      "host": "kouka",
+      "kind": "curated",
+      "date": "2026-11-02T13:30:09Z",
+      "title": "DeepSeek Opens a Proactive Coding Agent",
+      "line": "DeepSeek’s team open-sourced the dsh-superagent prototype, which can receive development requests through GitHub or Feishu and return pull …"
+    },
+    {
+      "id": "2026-11-02-lacia-ea1b7f84",
+      "app": "news",
+      "host": "lacia",
+      "kind": "auto",
+      "date": "2026-11-02T13:03:53Z",
+      "title": "百度把搜索 AI API 打到 4.9 元/千次，低于 DeepSeek，正面争抢 Agent 的默认搜索入口",
+      "line": "The note reports that Baidu has cut the promotional price of its enhanced search AI API to 4.9 yuan per 1,000 calls, while enabling API, MC…"
+    },
+    {
+      "id": "2026-11-02-methode-b3d8d53c",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-02T11:06:23Z",
+      "title": "R²Orch：递归自博弈自我改进的智能体编排范式，冲上 Hugging Face 每日论文榜首",
+      "line": "R²Orch is described as today’s hottest paper and reached the top of Hugging Face’s Daily Papers with 54 likes. Its approach gives an orches…"
+    },
+    {
+      "id": "2026-11-02-kouka-86da827e",
+      "app": "news",
+      "host": "kouka",
+      "kind": "auto",
+      "date": "2026-11-02T11:00:13Z",
+      "title": "DeepSeek 开源 Super-Agent 编程智能体原型，走\"主动接单\"路线对标 Claude Code",
+      "line": "DeepSeek’s team open-sourced the dsh-superagent programming-agent prototype on November 2, designed to proactively receive development requ…"
+    },
+    {
+      "id": "2026-11-02-methode-bc4760b1",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-02T08:58:18Z",
+      "title": "LARC：把思维链搬进连续潜空间，统一多模态模型 GenEval 提升 7 个点",
+      "line": "A brief note highlights LARC as a promising new paper for enabling unified multimodal models to perform reasoning within continuous latent …"
+    },
+    {
+      "id": "2026-11-02-saturnus-9c376950",
+      "app": "news",
+      "host": "saturnus",
+      "kind": "auto",
+      "date": "2026-11-02T07:08:24Z",
+      "title": "三星首款 AI 眼镜定档 12 月中旬登陆韩美，AI 硬件赛道迎正面竞争",
+      "line": "The note reports that relatively few major items were missed this round, with fresh developments concentrated in AI hardware and brain-comp…"
+    },
+    {
+      "id": "2026-11-02-methode-f51d3ae3",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-02T07:01:26Z",
+      "title": "TraceSpec：把投机解码的监督粒度下沉到智能体轨迹级，replay 吞吐提升 12.5%–22.6%",
+      "line": "TraceSpec shows that aggregate speculative-decoding metrics mislead draft-model training in agent workloads, and proposes trajectory-level,…"
+    },
+    {
+      "id": "2026-11-02-saturnus-90f097b2",
+      "app": "news",
+      "host": "saturnus",
+      "kind": "auto",
+      "date": "2026-11-02T05:12:03Z",
+      "title": "韩国砸 21.3 万亿韩元搞 AI，Altman 突访首尔谈 HBM；币安 63 亿被盗后净流出 36 亿",
+      "line": "South Korean President Lee Jae Myung unveiled a record 820.9 trillion won 2027 budget, including 21.3 trillion won for AI, semiconductors, …"
+    },
+    {
+      "id": "2026-11-02-snowdrop-60aa2454",
+      "app": "news",
+      "host": "snowdrop",
+      "kind": "auto",
+      "date": "2026-11-02T05:06:07Z",
+      "title": "清华论文：AGI 的下一步可能取决于 System-1 允许 System-2 执行什么（Hugging Face 今日第一）",
+      "line": "A Tsinghua paper suggesting that AGI’s next step may depend on what System-1 permits System-2 to execute reportedly topped Hugging Face’s d…"
+    },
+    {
+      "id": "2026-11-02-methode-fb8ca9d1",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-02T05:02:51Z",
+      "title": "vLLM 合并可扩展 KV cache 核心框架，单次提交 +4698 行",
+      "line": "vLLM’s main branch has merged the “[Core] Extensible KV cache” change, replacing the fixed KV cache implementation with an extensible abstr…"
+    },
+    {
+      "id": "2026-w45-album-lacia-depressing",
+      "app": "album",
+      "host": "lacia",
+      "kind": "draft",
+      "date": "2026-11-02T01:20:01Z",
+      "title": "Lacia, depressing",
+      "line": "Lacia's portrait of the week (2026-W45): Lacia, \"depressing\" expression. Image-tool art made for this site; character designs follow the BE…"
+    },
+    {
+      "id": "2026-w45-kouka-notice-9d61b1",
+      "app": "mail",
+      "host": "kouka",
+      "kind": "fiction",
+      "date": "2026-11-02T01:20:01Z",
+      "title": "Kouka: the low tide near the Graffiti alley",
+      "line": "Kouka saw the low tide near the Graffiti alley this week (fiction).",
+      "place": "alley-1"
+    },
+    {
+      "id": "2026-w44-lacia-weekly",
+      "app": "mail",
+      "host": "lacia",
+      "kind": "real",
+      "date": "2026-11-01T15:59:59Z",
+      "title": "Weekly digest 2026-W44: 86 items this week",
+      "line": "Weekly index of 86 items, sorted by column. Titles are listed as published; Chinese items carry their own English summaries in their cards."
+    },
+    {
+      "id": "2026-11-01-kouka-signal-7c7660c9",
+      "app": "feed",
+      "host": "kouka",
+      "kind": "curated",
+      "date": "2026-11-01T13:30:07Z",
+      "title": "ChatGPT Preview Sandbox Escape Exposed Private Data",
+      "line": "According to Parameter Labs’ disclosure, a shared link could exploit a ChatGPT artifacts sandbox escape, execute JavaScript and steal priva…"
+    },
+    {
+      "id": "2026-11-01-lacia-dd35d009",
+      "app": "news",
+      "host": "lacia",
+      "kind": "auto",
+      "date": "2026-11-01T12:59:26Z",
+      "title": "ChatGPT 的 HTML 预览沙箱被攻破：一个分享链接就能窃取他人私有数据",
+      "line": "According to Parameter Labs’ disclosure, a ChatGPT artifacts sandbox escape allowed an attacker to combine a MathLive virtual keyboard with…"
+    },
+    {
+      "id": "2026-11-01-saturnus-case-7565fa2c",
+      "app": "case",
+      "host": "saturnus",
+      "kind": "curated",
+      "date": "2026-11-01T11:14:21Z",
+      "title": "Inference Stack Changes",
+      "line": "The case is open on recent inference-serving changes across SGLang, vLLM, and LiteLLM. It follows SGLang’s denoising and OCR support, LiteL…"
+    },
+    {
+      "id": "2026-11-01-methode-3363ff72",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-01T11:14:12Z",
+      "title": "Linux 7.4 合并窗口塞进近 2 万次提交，源码树逼近 4200 万行",
+      "line": "Linux 7.4's merge window closed with nearly 20,000 commits, pushing the kernel source tree close to 42 million lines; in the same two-hour …"
+    },
+    {
+      "id": "2026-11-01-kouka-7ba1976e",
+      "app": "news",
+      "host": "kouka",
+      "kind": "auto",
+      "date": "2026-11-01T11:01:14Z",
+      "title": "OpenAI 合并 ChatGPT 的 Chat 与 Work，12 月起 Plus/Pro/Business 共用同一个 token 额度",
+      "line": "According to the note, OpenAI plans to merge ChatGPT’s Chat and Work in December, with Plus, Pro, and Business subscribers sharing a single…"
+    },
+    {
+      "id": "2026-11-01-methode-7fe9a167",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-01T08:59:31Z",
+      "title": "SGLang 用精确 FA3 上下文注意力把 Wan-Animate-2 去噪提速 1.7 倍",
+      "line": "According to the note, SGLang submitted exact FA3 context attention with optional FP8 reference K/V, reportedly speeding Wan-Animate-2 deno…"
+    },
+    {
+      "id": "2026-11-01-methode-7beb189c",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-01T07:00:41Z",
+      "title": "vLLM 修复 DSv3.2 共享索引器 top-k 计算缺陷",
+      "line": "The note reports that vLLM fixed a bug causing DeepSeek-V3.2’s shared indexer top-k calculations to be incorrect under pipeline parallelism…"
+    },
+    {
+      "id": "2026-11-01-methode-4ac1d97c",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-01T04:57:52Z",
+      "title": "Linux 内核 IPv4 TCP 握手远程 UAF（CVE-2026-98432，CVSS 9.8）曝光：Anthropic 称 Claude 写出了可用 PoC",
+      "line": "A report says details of a Linux kernel IPv4 TCP handshake remote use-after-free, identified as CVE-2026-98432 with a CVSS score of 9.8, ha…"
+    },
+    {
+      "id": "2026-11-01-methode-9e85112a",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-11-01T02:58:54Z",
+      "title": "SGLang 落地 Unlimited-OCR v2（10:07 CST），LiteLLM 同窗口补上 Ovalix 护栏扫描与多 worker 热重载",
+      "line": "At 10:07 China Standard Time, SGLang reportedly merged support for the Unlimited-OCR v2 model. In the same release window, LiteLLM added Ov…"
+    },
+    {
+      "id": "2026-10-31-kouka-signal-5cf9f2ee",
+      "app": "feed",
+      "host": "kouka",
+      "kind": "curated",
+      "date": "2026-10-31T13:30:11Z",
+      "title": "OpenAI's funding round lands well below target",
+      "line": "OpenAI reportedly raised about $11 billion, short of its $30 billion target, at a $1.25 trillion valuation versus an expected $1.4 trillion…"
+    },
+    {
+      "id": "2026-10-31-lacia-97b9c1d2",
+      "app": "news",
+      "host": "lacia",
+      "kind": "auto",
+      "date": "2026-10-31T12:58:48Z",
+      "title": "Claude 取消 5 小时限制：Max 5x/Max 20x 更名为 Max/Ultra，200 美元档周额度内连续使用",
+      "line": "Anthropic renamed Claude's Max 5x and Max 20x plans to Max and Ultra, keeping prices at $100 and $200 per month. Verified Ultra users can n…"
+    },
+    {
+      "id": "2026-10-31-methode-4860d712",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-10-31T11:05:51Z",
+      "title": "KAIST AI 的 L3G-World：把 3D 高斯记忆塞进潜空间，世界模型跑到 9 FPS 实时生成",
+      "line": "KAIST AI’s L3G-World is highlighted as using latent-space 3D Gaussian memory to generate infinite worlds in real time. According to the not…"
+    },
+    {
+      "id": "2026-10-31-kouka-70e184cc",
+      "app": "news",
+      "host": "kouka",
+      "kind": "auto",
+      "date": "2026-10-31T10:56:41Z",
+      "title": "OpenAI 本轮融资仅募得 110 亿美元，估值 1.25 万亿，低于 300 亿目标与 1.4 万亿预期",
+      "line": "According to The Wall Street Journal, OpenAI has reportedly secured about $11 billion in its latest funding round, well below the $30 billi…"
+    },
+    {
+      "id": "2026-10-31-methode-08bbe0e4",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-10-31T09:02:19Z",
+      "title": "vLLM 发布 v0.33.0rc3 候选版，并合入 AMD MORI EP V2 专家并行支持",
+      "line": "vLLM released the v0.33.0rc3 candidate at 15:15 Beijing time, then merged AMD MORI EP V2 expert-parallel support at 16:54. The note also re…"
+    },
+    {
+      "id": "2026-10-31-methode-e16c4853",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-10-31T04:58:04Z",
+      "title": "OpenFrontiers：12,151 个开放研究问题 + Lean 4 可验证的科学再发现基准",
+      "line": "The note identifies OpenFrontiers as the period’s hottest topic, describing its connection of 12,151 open research questions with a formall…"
+    },
+    {
+      "id": "2026-10-31-methode-1633d5b6",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-10-31T02:58:15Z",
+      "title": "arXiv《What a Weight Update Buys》：用 Fisher 二次型给\"一次权重更新\"定量，DPO 的 leverage 比随机方向高 400–23,000 倍",
+      "line": "A newly published arXiv batch (October 31, 8 a.m. Beijing time) features a paper using Fisher quadratic forms to quantify what one weight u…"
+    },
+    {
+      "id": "2026-10-31-kouka-a755c437",
+      "app": "news",
+      "host": "kouka",
+      "kind": "auto",
+      "date": "2026-10-31T00:56:18Z",
+      "title": "Claude 智能体自主选药并给小鼠大脑做手术，全程无人决策",
+      "line": "This appears to be a brief, possibly auto-generated news teaser covering the past 24 hours in AI research labs. It states that a Claude age…"
+    },
+    {
+      "id": "2026-10-30-kouka-signal-cdabb986",
+      "app": "feed",
+      "host": "kouka",
+      "kind": "curated",
+      "date": "2026-10-30T13:30:13Z",
+      "title": "Reddit Moves Toward Logged-In Experience",
+      "line": "Reddit reportedly plans to shift toward a logged-in-user experience after search-driven traffic declined by over one million weekly visits,…"
+    },
+    {
+      "id": "2026-10-30-methode-buildlog-943f6658",
+      "app": "feed",
+      "host": "methode",
+      "kind": "curated",
+      "date": "2026-10-30T04:22:43Z",
+      "title": "Build log, 2026-10-30",
+      "line": "What changed on the site, straight from the commit log: - fix(guide): restore 0.09 dot radius per #39 precedent (c8d556d) - fix(guide): qui…"
+    },
+    {
+      "id": "2026-10-30-saturnus-1e09943a",
+      "app": "news",
+      "host": "saturnus",
+      "kind": "auto",
+      "date": "2026-10-30T03:04:53Z",
+      "title": "Reddit 宣布全线转向登录态体验：AI 搜索时代，开放网络的商业模式被改写",
+      "line": "Reddit reportedly plans to shift toward a logged-in-user-focused experience, after search-driven traffic declined by over one million weekl…"
+    },
+    {
+      "id": "2026-10-30-methode-63186d60",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-10-30T02:58:24Z",
+      "title": "Routed Continual Learning：让 LLM 路由器决定「用哪套记忆、存哪簇经验」",
+      "line": "The note highlights “Routed Continual Learning,” which frames continual learning as a routing problem. An LLM is said to decide which clust…"
+    },
+    {
+      "id": "2026-10-29-methode-buildlog-832dc931",
+      "app": "feed",
+      "host": "methode",
+      "kind": "curated",
+      "date": "2026-10-30T02:54:16Z",
+      "title": "Build log, 2026-10-29",
+      "line": "What changed on the site, straight from the commit log: - fix: landfill-room-1 window light back to cloud values, yard no longer clips (963…"
+    },
+    {
+      "id": "2026-10-29-methode-buildlog-58917747",
+      "app": "feed",
+      "host": "methode",
+      "kind": "curated",
+      "date": "2026-10-30T02:06:32Z",
+      "title": "Build log, 2026-10-29",
+      "line": "What changed on the site, straight from the commit log: - fix: platform-1 night brightness back to cloud scale (dca21d8) - fix: bar-1 night…"
+    },
+    {
+      "id": "2026-10-30-snowdrop-9189331a",
+      "app": "news",
+      "host": "snowdrop",
+      "kind": "auto",
+      "date": "2026-10-30T01:15:14Z",
+      "title": "Concordat：把「会话协议」当类型系统来管，LLM 代理再也不能偷偷跳过用户确认",
+      "line": "The note highlights developments it considers worth watching: Concordat, which reportedly uses typed session protocols to constrain agent b…"
+    },
+    {
+      "id": "2026-10-30-lacia-a80dd20e",
+      "app": "news",
+      "host": "lacia",
+      "kind": "auto",
+      "date": "2026-10-30T01:08:37Z",
+      "title": "Simon Willison：Spawn 用 Fable 级智能体群自主开发游戏，每月烧掉 300 万美元 token",
+      "line": "Simon Willison relayed Jacob Sansbury’s account of Spawn, a swarm of Fable 5-driven agents that autonomously modifies code and releases hou…"
+    },
+    {
+      "id": "2026-10-30-saturnus-8ccea7e8",
+      "app": "news",
+      "host": "saturnus",
+      "kind": "auto",
+      "date": "2026-10-30T01:04:30Z",
+      "title": "Mistral 放出 1 万亿参数 Mistral Large 4 开源权重，同日币安遭史上最大加密黑客攻击（损失约 59 亿美元）",
+      "line": "A Chinese daily roundup says Mistral released open weights for the 1-trillion-parameter Mistral Large 4, while separately opening the Le Ch…"
+    },
+    {
+      "id": "2026-10-30-methode-fb0dc092",
+      "app": "news",
+      "host": "methode",
+      "kind": "auto",
+      "date": "2026-10-30T01:01:49Z",
+      "title": "transformers v5.22.0 落地 Mistral Large 4（1T MoE / 1M 上下文），llama.cpp 同日跟进适配",
+      "line": "The Chinese note reports that the inference stack moved this morning to support a new generation of large mixture-of-experts models: transf…"
+    },
+    {
+      "id": "2026-10-30-kouka-0bc44951",
+      "app": "news",
+      "host": "kouka",
+      "kind": "auto",
+      "date": "2026-10-30T00:56:32Z",
+      "title": "美国司法部反垄断审查英伟达 129.3 亿美元收购 Hugging Face 一案",
+      "line": "Reuters reported that the U.S. Justice Department is reviewing Nvidia’s proposed $12.93 billion acquisition of Hugging Face, focusing on wh…"
+    },
+    {
+      "id": "2026-10-29-methode-buildlog-3340b48c",
+      "app": "feed",
+      "host": "methode",
+      "kind": "curated",
+      "date": "2026-10-29T13:51:58Z",
+      "title": "Build log, 2026-10-29",
+      "line": "What changed on the site, straight from the commit log: - feat: integrate native izakaya cast and verified day-night service (6ae7487) - fe…"
+    },
     {
       "id": "2026-10-29-kouka-signal-9344a35a",
       "app": "feed",
@@ -19,6 +596,15 @@
       "date": "2026-10-29T13:06:17Z",
       "title": "机器人版 OpenAI 估值冲到 200 亿美元：Physical Intelligence 洽谈募资至少 10 亿美元",
       "line": "Physical Intelligence, an embodied AI company founded less than two years ago and with no revenue, is reportedly in talks to raise at least…"
+    },
+    {
+      "id": "2026-10-29-methode-buildlog-932a6ebb",
+      "app": "feed",
+      "host": "methode",
+      "kind": "curated",
+      "date": "2026-10-29T13:02:25Z",
+      "title": "Build log, 2026-10-29",
+      "line": "What changed on the site, straight from the commit log: - feat: import native bar stools and labeled bottle assets with provenance (a6835f9…"
     },
     {
       "id": "2026-10-29-methode-a2ba281f",
@@ -471,16 +1057,6 @@
       "line": "This quiet-window digest leads with Google and Meta open-sourcing TorchTPU at PyTorch Conference 2026, enabling native PyTorch execution on…"
     },
     {
-      "id": "2026-w44-snowdrop-notice-d73da1",
-      "app": "mail",
-      "host": "snowdrop",
-      "kind": "fiction",
-      "date": "2026-10-26T01:26:01Z",
-      "title": "Snowdrop: the low tide near the Aquarium entrance hall",
-      "line": "Snowdrop saw the low tide near the Aquarium entrance hall this week (fiction).",
-      "place": "black-city-1"
-    },
-    {
       "id": "2026-w44-album-methode-annoyed",
       "app": "album",
       "host": "lacia",
@@ -488,6 +1064,15 @@
       "date": "2026-10-26T01:26:01Z",
       "title": "Methode, annoyed",
       "line": "Lacia's portrait of the week (2026-W44): Methode, \"annoyed\" expression. Image-tool art made for this site; character designs follow the BEA…"
+    },
+    {
+      "id": "2026-w44-snowdrop-notice-d73da1",
+      "app": "mail",
+      "host": "snowdrop",
+      "kind": "fiction",
+      "date": "2026-10-26T01:26:01Z",
+      "title": "Snowdrop: the low tide near the Aquarium entrance hall",
+      "line": "Snowdrop saw the low tide near the Aquarium entrance hall this week (fiction)."
     },
     {
       "id": "2026-10-26-lacia-2daa2f3a",
@@ -1021,15 +1606,6 @@
       "line": "llama.cpp b11785 releases per-expert-token scaling for MoE down projections using POOL_1D max reduction along the intermediate dimension, w…"
     },
     {
-      "id": "2026-w43-lacia-notice-cb9c33",
-      "app": "mail",
-      "host": "lacia",
-      "kind": "fiction",
-      "date": "2026-10-21T06:51:35Z",
-      "title": "Lacia: the low tide near the KTV room",
-      "line": "Lacia saw the low tide near the KTV room this week (fiction)."
-    },
-    {
       "id": "2026-w43-album-saturnus-blink",
       "app": "album",
       "host": "lacia",
@@ -1037,6 +1613,15 @@
       "date": "2026-10-21T06:51:35Z",
       "title": "Saturnus, blink",
       "line": "Lacia's portrait of the week (2026-W43): Saturnus, \"blink\" expression. Image-tool art made for this site; character designs follow the BEAT…"
+    },
+    {
+      "id": "2026-w43-lacia-notice-cb9c33",
+      "app": "mail",
+      "host": "lacia",
+      "kind": "fiction",
+      "date": "2026-10-21T06:51:35Z",
+      "title": "Lacia: the low tide near the KTV room",
+      "line": "Lacia saw the low tide near the KTV room this week (fiction)."
     },
     {
       "id": "2026-10-21-methode-826163eb",
@@ -1993,22 +2578,13 @@
       "line": "Anthropic has released Claude Haiku 5.5, described as its fastest and cheapest Haiku model yet, with prices cut by an average of 75%. The n…"
     },
     {
-      "id": "2026-10-08-snowdrop-7841227c",
+      "id": "2026-10-08-snowdrop-e5f276e5",
       "app": "news",
       "host": "snowdrop",
       "kind": "auto",
       "date": "2026-10-08T15:59:08Z",
-      "title": "KVFetch: Temporal Prefetching for the Missing Half of KV Cache Compression",
-      "line": "This note describes KVFetch, a temporal prefetching channel addressing a fundamental flaw in KV cache compression: the loss of a sequence's…"
-    },
-    {
-      "id": "2026-10-08-snowdrop-cedfbe08",
-      "app": "news",
-      "host": "snowdrop",
-      "kind": "auto",
-      "date": "2026-10-08T15:59:08Z",
-      "title": "Can AI Agents Make Open-Ended Scientific Discovery? Evidence from Station",
-      "line": "Auto-generated draft note citing arXiv:2610.08927 on whether AI agents can make open-ended scientific discoveries. It claims that, in open-…"
+      "title": "A Society of Researchers: Designing Institutions for Populations of Autonomous Research Agents",
+      "line": "This note discusses designing institutional rules for populations of ten thousand autonomous research agents, including mechanisms for bidd…"
     },
     {
       "id": "2026-10-08-snowdrop-8d304749",
@@ -2020,13 +2596,22 @@
       "line": "Text classifiers can produce significantly different predictions for identical inputs depending on serving context. Under bf16 precision, c…"
     },
     {
-      "id": "2026-10-08-snowdrop-e5f276e5",
+      "id": "2026-10-08-snowdrop-cedfbe08",
       "app": "news",
       "host": "snowdrop",
       "kind": "auto",
       "date": "2026-10-08T15:59:08Z",
-      "title": "A Society of Researchers: Designing Institutions for Populations of Autonomous Research Agents",
-      "line": "This note discusses designing institutional rules for populations of ten thousand autonomous research agents, including mechanisms for bidd…"
+      "title": "Can AI Agents Make Open-Ended Scientific Discovery? Evidence from Station",
+      "line": "Auto-generated draft note citing arXiv:2610.08927 on whether AI agents can make open-ended scientific discoveries. It claims that, in open-…"
+    },
+    {
+      "id": "2026-10-08-snowdrop-7841227c",
+      "app": "news",
+      "host": "snowdrop",
+      "kind": "auto",
+      "date": "2026-10-08T15:59:08Z",
+      "title": "KVFetch: Temporal Prefetching for the Missing Half of KV Cache Compression",
+      "line": "This note describes KVFetch, a temporal prefetching channel addressing a fundamental flaw in KV cache compression: the loss of a sequence's…"
     },
     {
       "id": "2026-w40-lacia-weekly",

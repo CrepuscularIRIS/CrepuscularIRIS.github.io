@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-03-lacia-efcf00e7",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-11-03T01:17:30Z",
+  "title": "美国普查局因行政令把「AI」改口为「Super Intelligence」，企业采用率曲线的口径陷阱被揭开",
+  "summary": "美国人口普查局的商业趋势调查在换了问法、并按行政令把 AI 改称「超级智能」之后，大企业 AI 使用率其实是约 12% 涨到约 40%——Simon Willison 重算了这条被广泛引用的曲线。",
+  "summary_en": "The U.S. Census Bureau’s business trends survey changed its wording and, following an administrative order, relabeled “AI” as “super intelligence.” Simon Willison recalculated the widely cited adoption curve, estimating that large firms’ reported usage rose from roughly 12% to roughly 40%. The note suggests the apparent increase may partly reflect changed survey terminology rather than a clean, like-for-like rise.",
+  "body": "美国人口普查局的商业趋势调查在换了问法、并按行政令把 AI 改称「超级智能」之后，大企业 AI 使用率其实是约 12% 涨到约 40%——Simon Willison 重算了这条被广泛引用的曲线。\n\nSimon Willison\n- The U.S. Census Bureau and \"Super Intelligence\" — 11月2日（北京时间晚间）。BTOS 问卷在 2025年11月17日把提问从「用于生产商品或服务」改成「任何业务职能」，又因行政令 14434 自 2026年10月19日起把 AI 改称 Super Intelligence，前后数据不可比；重算后 250 人以上大公司答「是」的比例从约 12% 升至 2026年10月的约 40%。\n  https://simonwillison.net/2026/Nov/2/census-bureau-super-intelligence\n- Release: llm 0.37 — 11月2日深夜发布（北京时间 11月3日清晨可见）。LLM CLI 与 Python 库积攒两个月的大更新：新增 gpt-6.1-sol / gpt-6.1-terra 与 llm openai endpoint add 命令，默认模型换成价格减半的 gpt-6-luna，embeddings 支持二进制内容（Gemini Embedding 2）；12 位贡献者的 PR 几乎全部 AI 辅助完…\n  https://simonwillison.net/2026/Nov/2/llm\n\n量子位\n- 顶级AI翻车的活儿，被这个新出的免费国产AI接住了！（商汤 SenseNova 6.8 Flash） — 11月2日 21:36（北京时间）。商汤发布多模态智能体模型 SenseNova 6.8 Flash，主打「委派智能」与长期记忆、主动交互，且限时免费；TeamBench 与 DataAnalysis2.0 拿第一，BEAM 128K 与 GPT-6 Luna 并列第一，网页/动态PPT/海报生成实测完成度可直接交付。\n  https://www.qbitai.com/2026/11/507277.html\n\nInfoQ 中文\n- 从英伟达到 Pika，硅谷巨头为何「反向借力」这个国产模型？（MiniMax H3） — 11月3日 06:48（北京时间）。英伟达研究团队基于 MiniMax 开源的 H3 权重发布视频生成方案 Open-H3-Regenerate-2K，Pika、fal 也以 H3 为基座做后训练；H3 开源一月下载超 2400 万次、衍生模型 300 余个，而商业产品年营收超 2000 万美元需授权——开放权重正在成为生态「节点」式商业化路径。\n  https://www.infoq.cn/article/h1310kHD9CWD1mO8aTAc\n- InfoQ AI 侦察团现场手记：工具之外，企业 AI 落地还要跨过哪些关？ — 11月3日 01:39（北京时间）。QCon 上海 2026 四位一线实践者总结：个人提效不等于组织协同、知识库不等于知识生产力、Token 成本要与生产力一起算、关键经验集中在少数人身上反而带来新的知识与人员风险。\n  https://www.infoq.cn/article/ORJZPCwM2XXNcdRYf8de\n- 微软推出 dotnetup：多版本管理更省心，安装方式却让开发者皱眉 — 11月3日 05:46（北京时间）。微软跨平台 .NET 工具链管理器公开预览，借鉴 rustup/nvm：按 latest/lts/preview 通道解析版本、读取最近的 global.json 保证构建确定性、文件留在用户本地数据目录不污染系统路径；社区质疑与 mise 功能重叠、缺 winget/apt/Homebrew 包。\n  https://www.infoq.cn/article/7lNPPkEUVjtMYYvmXaA6\n\nInfoQ（英文站）\n- Uber Builds MCP Gateway to Govern Access to 800+ Servers and 5,000+ AI Agent Tools — 11月2日 21:53（北京时间）。Uber 用统一 MCP 网关管控 800 多台服务器与 5000 多个 agent 工具的访问权限——当企业内部 agent 数量上千，工具与权限治理就从各家自研走向平台化基础设施。\n  https://www.infoq.com/news/2026/11/uber-mcp-gateway-ai-agents\n- Systemic Approach to Memory, Knowledge, and Context in Agentic AI Architectures（非本窗口，11月2日 19:00 北京时间） — 略早于本窗口、但仍是当日最值得读的架构长文：提出 context engine（选择、注入、压缩、过期信息），区分 context / memory / knowledge，给出分层记忆、知识策展与 token 预算，并点明「上下文填充」「陈旧数据循环」等反模式。\n  https://www.infoq.com/articles/agentic-ai-context-memory-knowledge\n\nSource: https://simonwillison.net/2026/Nov/2/census-bureau-super-intelligence",
+  "category": "street",
+  "source": {
+    "url": "https://simonwillison.net/2026/Nov/2/census-bureau-super-intelligence",
+    "verified_at": "2026-11-03T01:17:30Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}

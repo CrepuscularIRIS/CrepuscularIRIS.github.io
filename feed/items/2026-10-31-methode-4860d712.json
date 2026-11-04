@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-31-methode-4860d712",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-31T11:05:51Z",
+  "title": "KAIST AI 的 L3G-World：把 3D 高斯记忆塞进潜空间，世界模型跑到 9 FPS 实时生成",
+  "summary": "最热的是 KAIST AI 的 L3G-World——用潜空间 3D 高斯记忆做实时无限世界生成，9 FPS 且记忆渲染比此前最优 3D 记忆基线快 359 倍（HF Daily Papers 10月30日榜 37 赞）。",
+  "summary_en": "KAIST AI’s L3G-World is highlighted as using latent-space 3D Gaussian memory to generate infinite worlds in real time. According to the note, it runs at 9 FPS, while memory rendering is reported to be 359 times faster than the previously best 3D memory baseline. The item appeared on HF Daily Papers’ October 30 list with 37 likes.",
+  "body": "最热的是 KAIST AI 的 L3G-World——用潜空间 3D 高斯记忆做实时无限世界生成，9 FPS 且记忆渲染比此前最优 3D 记忆基线快 359 倍（HF Daily Papers 10月30日榜 37 赞）。\n\n论文\n- L3G-World: Real-Time Infinite World Generation with Latent 3D Gaussian Memory — KAIST AI 提出的隐空间 3D 高斯记忆可直出 DiT 潜空间、免去 VAE 重编码，3D 基元最多省 38.6 倍、记忆更新快 3.2 倍、渲染快 359 倍，实现 9 FPS 实时世界生成（HF Daily Papers 10月30日榜 37 赞）。\n  https://arxiv.org/abs/2610.40614\n- Proving and Improving the Platonic Representation Hypothesis with JEPAs — LeCun 与 Balestriero 把柏拉图表示假说证明成定理：好视角的 JEPA 达到同等对齐只需 42 倍更少训练样本，109M 文本 JEPA 对齐优于评测过的所有语言模型（HF 榜 55 赞）。\n  https://arxiv.org/abs/2610.39302\n- Intrinsic Distribution Matching — 在 DMD 蒸馏中显式约束特征均值与逐坐标标准差，无需外部特征编码器；两次网络评估下在 LongText-Bench 中文/英文分别达 94.25%/90.20%，为当日榜首（HF 榜 239 赞）。\n  https://arxiv.org/abs/2610.39633\n- A-RSI: Adaptive Task Refresh for Zero-Data Multimodal Self-Improvement — 递归自改进里专门解决“何时该换新任务”：监控训练日志的奖励波动与准确率自动刷新任务池，全程零外部样本，11 项基准均值从 57.77 提升到 61.05（HF 榜 152 赞）。\n  https://arxiv.org/abs/2610.38568\n\nGitHub与基建\n- [Spec Decode][ROCm] draft_lm_head_quantization for DSpark drafters (#vLLM) — 北京时间 18:23 合并：让 ROCm 上的 DSpark 投机解码草稿模型支持 lm_head 量化，进一步压低草稿侧成本。\n  https://github.com/vllm-project/vllm/commit/7b77ed581d92fa14e34ab43344837bb1ca1b4257\n- [Misc] Allow weights mapper to transform weights (vLLM) — 北京时间 17:20 合并：权重映射器不再只是“搬运”权重，可对权重本身做变换，为模型定制化加载提供更大自由度。\n  https://github.com/vllm-project/vllm/commit/87cb835db2bbbaa03e3faa6ae588ba92dce1eea4\n- [Bugfix][Model] compile_mm_encoder 支持 RADIO/NaViT 编码器 (vLLM) — 北京时间 17:11 合并：修复 compile_mm_encoder 对 RADIO/NaViT 这类视觉编码器不生效的问题，打通多模态模型的编译路径。\n  https://github.com/vllm-project/vllm/commit/10da92ff285612aa0c6947d1dd8c51fc2062771e\n- [Perf] cosmos3: 用 GPU BLAKE3 加速条件哈希 (SGLang) — 北京时间 17:26 合并：把 cosmos3 的 conditioning hashing 换成 GPU 版 BLAKE3，减少视频/扩散路径上的 CPU 哈希开销。\n  https://github.com/sgl-project/sglang/commit/03a27e2a17567d04a4309a83df8771d012bc0950\n- [Fix] disaggregation: PD 之间保留自定义 sampler 信息 (SGLang) — 北京时间 17:32 合并：分离式部署中 PD 两侧不再丢失采样器的 customized_info，保证 decode 端结果一致。\n  https://github.com/sgl-project/sglang/commit/f78d906f3ed0c3802068cc4ee283eb8f0c4b27ab\n- fix(gemini): 保留 tool call 中的 thought_signature (LiteLLM) — 北京时间 18:20 合并：代理层不再丢掉 Gemini 工具调用里的 thought_signature，避免多轮工具链的思维签名断裂。\n  https://github.com/BerriAI/litellm/commit/a713ed6bab40bac7a12d6ab5f52550aa82663cac\n- fix(proxy): Responses WebSocket 的回合 token 计入 key 额度 (LiteLLM) — 北京时间 17:53 合并：WebSocket 中转不再漏计 token 用量，配合本窗口多条计费修复，代理侧用量统计更准。\n  https://github.com/BerriAI/litellm/commit/cee72ffdd6ab7c24cfcd53a90e73b2e434ebd235\n\nSource: https://arxiv.org/abs/2610.40614",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.40614",
+    "verified_at": "2026-10-31T11:05:51Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

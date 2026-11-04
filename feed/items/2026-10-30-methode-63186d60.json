@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-30-methode-63186d60",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-30T02:58:24Z",
+  "title": "Routed Continual Learning：让 LLM 路由器决定「用哪套记忆、存哪簇经验」",
+  "summary": "最热的是《Routed Continual Learning》：把持续学习变成路由问题，由 LLM 决定复用哪簇经验、用哪种记忆系统，归一化奖励比全局 ICL 提升 15–30%，API 成本下降 65–72%。",
+  "summary_en": "The note highlights “Routed Continual Learning,” which frames continual learning as a routing problem. An LLM is said to decide which cluster of experiences to reuse and which memory system to employ. Compared with global ICL, the note reports a 15–30% improvement in normalized reward and a 65–72% reduction in API costs.",
+  "body": "最热的是《Routed Continual Learning》：把持续学习变成路由问题，由 LLM 决定复用哪簇经验、用哪种记忆系统，归一化奖励比全局 ICL 提升 15–30%，API 成本下降 65–72%。\n\n论文\n- Routed Continual Learning — 把智能体持续学习重构成「路由问题」：由 LLM 路由器按问题陈述和记忆系统描述选择复用或新建经验簇，在 301 个 CL-Bench + 97 个 τ³-Bench 实例上比全局 ICL 提升 15–30% 归一化奖励，估算 API 成本下降 65–72%。\n  https://arxiv.org/abs/2610.38796\n- ParaTTT: Parallelizing Test-Time Training Layers with Deep Memories — 用迭代精化把非线性测试时训练（TTT）记忆变成 chunkwise 并行：4K 上下文下内层轨迹比 TTT-MLP 快 32 倍，340M 模型训练快 4.9 倍，语言建模困惑度持平或优于 Gated DeltaNet 与 Mamba-2。\n  https://arxiv.org/abs/2610.38255\n- Precedent or Intent? What Coding Agents Follow When Evolving Existing Code — 5625 次受控试验：编码代理与仓库既有惯例冲突时 359/360 次选择跟随先例；而显式优先级规则在开源仓库中把联合成功率从 0/120 提到 117/120，说明「写清规则」比给例子更有效。\n  https://arxiv.org/abs/2610.38244\n- 3DCodeEdit: Benchmarking Instruction-Guided 3D Program Editing — 108 个 Blender 程序、2592 个指令式 3D 代码编辑任务，17 个模型平均成功率仅 37%；引入「评审模型描述渲染差异」的多轮反馈后，27B 模型可反超 2.8T 模型的单轮成绩。\n  https://arxiv.org/abs/2610.38231\n- Two Birds with One Stone: Skill-Augmented Generation via Unified Retrieval and Utilization — Skill-Uni 用生成式检索把技能检索与技能利用合并到同一个 RL 目标中，五个技能基准上 Qwen3-4B 与 LLaMA3.1-8B 平均分别提升 66.59% 与 34.82%，且兼容不同检索引擎。\n  https://arxiv.org/abs/2610.38204\n\n论文 · HF 每日精选（10月30日）\n- WorkFactory: Turning Professional Intents into Executable Work for Scalable Agent Training — 从「职业意图」自动生成可执行专业任务：构建 112,686 个任务、覆盖 612 种职业，微调出的 WorkPilot-35B-A3B 在 GDPval-AA v2.1 上 Elo 从 879 提到 1565。\n  https://huggingface.co/papers/2610.37161\n- WebAnything: From the Wild Web to Scalable Agent Environments — 全自动化从真实 URL 重建可复用的 Web 训练环境：244 个站点工件、12,984 个已执行任务，盲审对人类辅助的 WebHarbor 12 胜 2 平 0 负，微调 Qwen3.5-9B 后 WebArena-Verified 成功率 +13.33 个百分点。\n  https://arxiv.org/abs/2610.37786\n- VibeGame: Prompt-to-Game Development with AI-Native Engine and Self-Evolving Adversarial Agent Team — AI 原生游戏引擎 + 8 个角色分工的对抗式智能体团队，从自然语言提示端到端生成 2D 游戏，并通过无训练自进化把项目沉淀为可复用骨架与协作契约。\n  https://arxiv.org/abs/2610.33106\n\nGitHub与基建\n- vLLM: ROCm 下 DeepSeek-V4.1 SWA 解码元数据合并为单次启动（09:20–10:53） — 本窗口内 vLLM 提交密集：ROCm 路径的 SWA 解码元数据由多次启动合并为一次，另含 Rust 前端 token 计数修复、GLM-5.3-Flash 的元数据-only 图像/视频输入（EPD）与 Muse Spark Open 的 CUDA 路由 kernel。\n  https://github.com/vllm-project/vllm/commit/e49ea84e929e3d48a2bc500454dfcd4377f9a722\n- SGLang: Intel XPU 与 NPU 修复、MLA K rescale 优化（08:34–10:56） — 连续合入 XPU 后端 attention 允许 page_size=1、XPU 简单开关归并，以及 NPU 的 MTP/DSpark 修复；另有 triton MLA 在 k_scale=1.0 时跳过 K 重缩放的注意力性能优化。\n  https://github.com/sgl-project/sglang/commit/6162b071994fcf67090ebe3d45f7aebcdf03f4d7\n- llama.cpp b11997：复用 tensor staging buffer，跳过 direct-io bounce buffer（08:50） — 本次预发布构建让 llama 复用张量暂存缓冲区并省掉 direct-io 的中转拷贝，减少推理路径上的额外内存拷贝。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b11997\n\nSource: https://arxiv.org/abs/2610.38796",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.38796",
+    "verified_at": "2026-10-30T02:58:24Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

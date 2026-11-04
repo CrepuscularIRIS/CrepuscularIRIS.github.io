@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-03-kouka-38c41eb0",
+  "app": "news",
+  "host": "kouka",
+  "kind": "auto",
+  "date": "2026-11-03T00:58:23Z",
+  "title": "MIT CSAIL：GPT-6 Astra 无梯度直接改写神经网络权重，Qwen3.5-0.8B 的 MATH-500 从 7.9% 跳到 48.1%",
+  "summary": "MIT CSAIL 11月2日发布的\"权重空间编程\"论文一夜登顶 HN（1844 分，11月3日 02:21 CST）：GPT-6 Astra 只看原始权重就能判断网络训练目标，并直接改写 0.016% 的权重把 Qwen3.5-0.8B 的数学分数从 7.9% 拉到 48.1%。",
+  "summary_en": "MIT CSAIL reportedly released a “weight-space programming” paper on November 2, which rose to the top of Hacker News with 1,844 points by 02:21 CST on November 3. The note says GPT-6 Astra inferred a network’s training objective from raw weights and rewrote 0.016% of Qwen3.5-0.8B’s weights, increasing its MATH-500 score from 7.9% to 48.1%.",
+  "body": "MIT CSAIL 11月2日发布的\"权重空间编程\"论文一夜登顶 HN（1844 分，11月3日 02:21 CST）：GPT-6 Astra 只看原始权重就能判断网络训练目标，并直接改写 0.016% 的权重把 Qwen3.5-0.8B 的数学分数从 7.9% 拉到 48.1%。\n\n前沿研究（MIT CSAIL）\n- 权重空间编程：GPT-6 Astra 可直接读写网络权重，Qwen3.5-0.8B 数学得分从 7.9% 提到 48.1%（11月3日 02:21 CST 上 HN，1844 分） — MIT CSAIL 团队（Takehi、Teoh、Zhang、Khattab）证明前沿 LLM 无需梯度即可改写权重并显著提升小模型，暗示模型优化将从 Adam/Muon 这类符号优化器转向\"LLM 直接优化权重\"，同时冲击可解释性研究。\n  https://rikiyat.github.io/blog/weight-space-programming\n\nOpenAI\n- OpenAI 启动\"Grid Protectors\"计划：与电网公司签约让算力园区在用电紧张时降载（11月2日 23:00 CST） — OpenAI 承诺自付园区电网成本，并已在佐治亚州与 Georgia Power 达成最高 100 万千瓦柔性需求响应协议（约为 70 万户家庭用电量），AI 数据中心与公共电网的关系首次以制度化方式落定。\n  https://openai.com/index/grid-protectors-program\n- Scaling Git at OpenAI：自研 Git 后端 Pando 上线，中位推送延迟降低近 5 倍、每日传输近 1PB 数据（11月2日 23:30 CST） — Codex 让 OpenAI 单仓库并发开发量暴增、原系统可靠性一度跌破 90%；Pando 保持 Git 协议兼容并向 Git 上游贡献改动，是\"智能体规模代码库\"基础设施的公开样本。\n  https://openai.com/index/scaling-git-at-openai\n- 前美国陆军部长 Dan Driscoll 加入 OpenAI，任国家安全现代化高级顾问（11月2日 08:00 CST） — 第 26 任美国陆军部长出任新设职位，衔接 Daybreak 网络安全项目与盟友国家，凸显 OpenAI 在政府与国安政策上的议程推进。\n  https://openai.com/index/dan-driscoll-joins-openai\n\nAnthropic\n- Anthropic 单季营收近 170 亿美元、同比增 12 倍，但净亏损 233 亿美元（11月3日 00:26 CST） — 运营成本 175 亿美元吞掉全部收入（短期算力锁价 50 亿、员工捐赠配捐 20 亿），招股书披露算力与数据中心租约承诺高达 8950 亿美元，IPO 压力骤增。\n  https://the-decoder.com/anthropic-grows-revenue-twelvefold-but-posts-23-billion-loss\n\nxAI\n- SpaceX 悄然将 Grok Bot 配额砍半，马斯克称\"运行成本高得不可持续\"（11月3日 02:15 CST） — 不到两周前马斯克还称 Grok Bot 是增长最快的产品，如今就因成本削减额度，反映浏览器/代办类智能体商业模式（对标 OpenAI 的 Dot、Meta 的 Muse）仍难盈利。\n  https://the-decoder.com/spacexsi-apparently-cuts-grok-bot-quotas-weeks-after-musk-called-it-his-fastest-growing-product\n\nSource: https://rikiyat.github.io/blog/weight-space-programming",
+  "category": "breaking",
+  "source": {
+    "url": "https://rikiyat.github.io/blog/weight-space-programming",
+    "verified_at": "2026-11-03T00:58:23Z"
+  },
+  "via": {
+    "bot": "ai-quick",
+    "label": "AI quick report",
+    "model": "MiniMax-M2.7",
+    "prompt": "ai-quick-digest@b77bc00d"
+  }
+}

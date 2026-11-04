@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-01-methode-4ac1d97c",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-01T04:57:52Z",
+  "title": "Linux 内核 IPv4 TCP 握手远程 UAF（CVE-2026-98432，CVSS 9.8）曝光：Anthropic 称 Claude 写出了可用 PoC",
+  "summary": "Linux 内核 IPv4 TCP 握手远程 use-after-free（CVE-2026-98432，CVSS 9.8）细节流出：Anthropic 称 Claude 写出了能以 root 执行命令的 PoC，而 Go 程序默认开启 multipath TCP，Ubuntu/RHEL 至今仍未发布修复内核。",
+  "summary_en": "A report says details of a Linux kernel IPv4 TCP handshake remote use-after-free, identified as CVE-2026-98432 with a CVSS score of 9.8, have leaked. Anthropic reportedly stated that Claude produced a proof-of-concept capable of executing commands as root. The note also says Go enables multipath TCP by default, while Ubuntu and RHEL had not yet released fixed kernels.",
+  "body": "Linux 内核 IPv4 TCP 握手远程 use-after-free（CVE-2026-98432，CVSS 9.8）细节流出：Anthropic 称 Claude 写出了能以 root 执行命令的 PoC，而 Go 程序默认开启 multipath TCP，Ubuntu/RHEL 至今仍未发布修复内核。\n\n系统\n- Remote code execution on Linux systems with multipath TCP（LWN） — 10 月 30 日 LWN 报道：重传 SYN 的响应与另一线程建连同时发生，会访问已被释放的连接 options 结构，可泄露内核内存或写入攻击者载荷；修复为把释放推迟到 RCU grace period 之后。\n  https://lwn.net/Articles/1104192\n- CVE-2026-98432 完整披露与发行版修复状态 — 安全公告列出修复版本（5.10.272 / 6.6.159 / 6.12.113 / 6.18.56 / 7.2.10 / 7.3 等），Red Hat 已升为 Critical，但截至 11 月 1 日 06:15（北京时间）Ubuntu 全部版本仍标记为易受攻击、RHEL 8/9/10 无修复；未打补丁可临时丢弃带 IPv4 options 的 TCP 包。\n  https://atlasum.net/blog/cve-2026-98432-linux-ipv4-tcp-uaf\n- How We Could Have Backdoored Bash（LWN 转 Hacktron 博客） — 攻击者通过注册邮箱地址在后端触发命令执行，攻陷 GNU Savannah forge，并一度获得 Bash 上游仓库 push 权限；FSF 已于 2026 年 5 月 11 日收到报告。\n  https://lwn.net/Articles/1104262\n\nGitHub与基建\n- llama.cpp b12030：修复 Hexagon DMA 大 stride 传输错误 — 11 月 1 日 07:49（北京时间）发布：v75+ 的 2D DMA 描述符 row_size/stride 只有 24 位，超过 16MB 的 stride 会被截断导致地址错误，改为逐行回退传输并补了两条大 stride 测试。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12030\n\n研究博客\n- It's the memory latency, stupid（Pivot blog） — 周末在 HN 走热的性能长文：解释为何 CPU 显示 100% 也可能是饿死在 DRAM 访问上（每次内存访问要浪费 400–800 条指令的预算），并用 ClickBench 的 9900 万行 GROUP BY 对比朴素 HashTable 与其自有引擎的缓存利用率优化。\n  https://pivotlake.io/blog/its-the-memory-latency-stupid\n\nSource: https://lwn.net/Articles/1104192",
+  "category": "tech",
+  "source": {
+    "url": "https://lwn.net/Articles/1104192",
+    "verified_at": "2026-11-01T04:57:52Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

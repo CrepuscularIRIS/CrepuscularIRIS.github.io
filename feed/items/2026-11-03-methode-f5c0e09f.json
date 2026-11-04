@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-03-methode-f5c0e09f",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-03T02:58:52Z",
+  "title": "DecisionRank：Meta 用 item-space 在策略蒸馏把生成式教师压进 1.7B 决策模型，检索重排提速最高 24.5 倍",
+  "summary": "Meta 的 DecisionRank 用 item-space 在策略蒸馏把生成式大模型的排序能力迁移到决策模型，1.7B 就超过 27B 教师、推理快 24.5 倍，是今天 Hugging Face Daily Papers 的头名。",
+  "summary_en": "Meta’s DecisionRank reportedly uses item-space in policy distillation to transfer ranking capabilities from a generative large model into a decision model. The note claims the 1.7B model surpasses a 27B teacher while running inference up to 24.5 times faster, and that the work ranked first among Hugging Face Daily Papers that day. These performance and ranking claims are presented without further verification in the brief note.",
+  "body": "Meta 的 DecisionRank 用 item-space 在策略蒸馏把生成式大模型的排序能力迁移到决策模型，1.7B 就超过 27B 教师、推理快 24.5 倍，是今天 Hugging Face Daily Papers 的头名。\n\n论文\n- DecisionRank: On-Policy Distillation for Decision-Model Rerankers（Meta，HF Daily Papers 11月3日头名） — 把生成式教师的排序知识用 item-space 在策略蒸馏直接监督学生模型的分数；1.7B 模型在 TREC DL 上超过 27B 教师，8B 版本比生成式 listwise 基线快 24.5 倍（TREC DL）/16.7 倍（BRIGHT）。\n  https://arxiv.org/abs/2610.42128\n- DeFT-RAG：把多跳问题拆成自包含子问题并复用答案 — 一次只生成一个具名实体的子问题，QA 表与是否决策交给规则和轻量模型；在 MuSiQue/2Wiki/HotpotQA 上优于 13 个基线，跨 1000 题共享缓存可少 12.9% 的 LLM 调用。\n  https://arxiv.org/abs/2610.37826\n- ProVe: Proposer-Verifier Decoding — 把投机解码的角色反过来：大模型一次前向生成整块 token，再由小模型或自身校验；32B proposer 无损模式平均 2.5 倍吞吐，3B verifier 可达 2.7 倍并给出速度/精度旋钮。\n  https://arxiv.org/abs/2610.27815\n- Self-Improvement with Auxiliary Rewards（Georgia Tech，HF 11月3日新上榜） — 在答案奖励之外用熵/置信度等轨迹偏好做辅助奖励，Qwen3-1.7B 在 AIME 上自改进并迁移到三个迁移基准，比原始 TTRL 提升 2.08 个百分点。\n  https://arxiv.org/abs/2610.41296\n- The Generative Gap Between Speculative Drafter and Continuous Diffusion Language Model — 在同预算下公平比较扩散语言模型与投机 drafter（LangFlow vs DSpark），长序列上迭代式整序列精修仍占优，为扩散 LM 的加速路线给出判断依据。\n  https://arxiv.org/abs/2610.40847\n- Frozen in Time: 物理基础模型在 sim-to-real 适配中如何遗忘 — Walrus-1.3B 仅 20 个 epoch 微调后一步误差最多恶化 35 倍；真实数据微调时回放 1% 模拟数据即可恢复大部分模拟性能。\n  https://arxiv.org/abs/2610.40857\n\nGitHub与基建\n- langchain==1.4.8 / langchain-core==1.7.4 / langchain-anthropic==1.7.9 — 11月3日凌晨集中发布新版本（core 1.7.4、anthropic 1.7.9），agent 应用框架侧的一次常规批量更新。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain%3D%3D1.4.8\n\n系统\n- Intel 把 Raptor Lake M/P 的 SoundWire 支持推入上游 Linux（11月3日 09:22） — 面向汽车 SDV 平台的音频流支持首次进入主线，将进入 2027 年内核版本。\n  https://www.phoronix.com/news/Intel-SoundWire-Raptor-Lake\n- LWN：Linux 7.4 合并窗口的第二部分（11月3日 01:51） — 史上最大合并窗口的后续细节，7.4-rc1 已发布。\n  https://lwn.net/Articles/1102739\n- LWN：XCPE 僵尸网络关闭复盘（11月2日 22:29） — 威胁情报视角复盘该僵尸网络的封堵过程，涉及大规模设备的 IoT 基础设施攻防。\n  https://lwn.net/Articles/1104847\n\nSource: https://arxiv.org/abs/2610.42128",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.42128",
+    "verified_at": "2026-11-03T02:58:52Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

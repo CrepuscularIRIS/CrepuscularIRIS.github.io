@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-31-methode-e16c4853",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-31T04:58:04Z",
+  "title": "OpenFrontiers：12,151 个开放研究问题 + Lean 4 可验证的科学再发现基准",
+  "summary": "本时段最热是 arXiv 12:00（北京时间）新批次中的 OpenFrontiers——把 12,151 个开放研究问题与形式化可校验的\"科学再发现\"基准连了起来。",
+  "summary_en": "The note identifies OpenFrontiers as the period’s hottest topic, describing its connection of 12,151 open research questions with a formally verifiable benchmark for “scientific rediscovery.” It appears in the arXiv 12:00 batch, Beijing time, and is presented as the current focal point of discussion, though the note offers no further details about its methodology, evaluation criteria, or results.",
+  "body": "本时段最热是 arXiv 12:00（北京时间）新批次中的 OpenFrontiers——把 12,151 个开放研究问题与形式化可校验的\"科学再发现\"基准连了起来。\n\n论文\n- OpenFrontiers：开放研究问题库与科学再发现基准 — 汇集 12,151 个开放研究问题，并给出 200 道带 Lean 4 形式化陈述的基准；七个 LLM 智能体在闭卷下最多只解出 40 道已解决题中的 7 道，开卷成功多半只是检索到已发表答案。\n  https://arxiv.org/abs/2610.37739\n- Seq@K：在序列化反馈下评测语言模型 — 针对 Pass@K 无法衡量\"从失败反馈中迭代改进\"的问题，提出 Seq@K 协议，在 7 个基准、16 个前沿模型上显示模型排序与 Pareto 前沿都会明显改变。\n  https://arxiv.org/abs/2610.37859\n- VerifiedLab：用已知反推未知的多智能体科研框架 — PI、图书管理员、专家、门控与批评者分工，按字段核验记录可靠性再决定是否放行；在钙钛矿太阳能电池实验中恢复已知物理趋势并提前一年预测出后续器件。\n  https://arxiv.org/abs/2610.37923\n- 把大模型当作数值优化器：能力与边界 — 区分解的质量与执行失败后评估，结论是 LLM 在高维下可靠性显著下降，需与确定性求解器组成混合方案。\n  https://arxiv.org/abs/2610.37932\n- PoPLi：检测 AI 智能体之间的隐蔽串谋 — 用\"同伴-局外人正向倾听\"行为测试，在五种市场条件下对私隐代码的检出差异稳定在 0.48–0.59，而只看消息的监控器完全无法区分。\n  https://arxiv.org/abs/2610.37849\n\nGitHub与基建\n- vLLM：DeepSeek-V4.1 的 PCP 可与 PP 或 DP 组合 — 10-31 12:41（北京时间）合入，PCP 预填充不再排斥流水并行与数据并行，并配套 8 卡分布式测试。\n  https://github.com/vllm-project/vllm/commit/2b009fc6d1493a9a1ad19f4d0c7230b7e6b7e63a\n- SGLang：DSv4.1 SM90 paged decode indexer 分块均衡 — 10-31 12:40（北京时间）合入 +278 行，避免单个超长上下文决定整步耗时，长上下文解码不再被最慢请求拖住。\n  https://github.com/sgl-project/sglang/commit/2ccbdab65fb1fb4dab302f823b78cc575723d19b\n- LiteLLM：有界事务化用量持久化 — 10-31 12:08（北京时间）合入，新增 accounting_ledger 与批量落盘（5 秒间隔），并处理批量拒绝与部分关闭时的恢复。\n  https://github.com/BerriAI/litellm/commit/02a6a96decd5b1c3bec3bab07ae68dc3fcde55c3\n- llama.cpp b12019 构建发布 — 10-31 11:38（北京时间）发布，小修：qwen3-coder 在 reasoning_format 下去掉 think 块前缀。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12019\n\nSource: https://arxiv.org/abs/2610.37739",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.37739",
+    "verified_at": "2026-10-31T04:58:04Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

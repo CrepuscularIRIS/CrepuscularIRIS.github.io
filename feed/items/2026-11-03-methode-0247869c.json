@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-03-methode-0247869c",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-03T01:13:07Z",
+  "title": "SGLang 发布 v0.5.23，llama.cpp 与 Ollama 同一窗口内连发新版本",
+  "summary": "SGLang v0.5.23 于今日 06:14（北京时间）发布，同窗口内 llama.cpp b12063（09:02）与 Ollama v0.40.14-rc0（08:59）紧随其后，推理基建一天三发。",
+  "summary_en": "The lead item is SGLang v0.5.23, published at 22:14 UTC on Nov 2 (06:14 Beijing time), released alongside llama.cpp build b12063 and Ollama v0.40.14-rc0. The paper section covers newly surfaced arXiv work including OSWAM, Follow the Gradient, GEPA-Curator, CaPtain, Venus-DefakerOne2, ReLift, AutoHebb and the FARO optimizer. Systems items include LWN's Tor Browser 16.0 release note and Phoronix coverage of FreeRDP 3.33, RADV's LLM-written policy and AerynOS 2026.11.",
+  "body": "SGLang v0.5.23 于今日 06:14（北京时间）发布，同窗口内 llama.cpp b12063（09:02）与 Ollama v0.40.14-rc0（08:59）紧随其后，推理基建一天三发。\n\n论文\n- OSWAM: An Effective World Action Model with One-Step Action Generation — 把世界动作模型的生成压到一步，Hugging Face Daily Papers 上热度上升，机器人/世界模型方向可落地性被看重。\n  https://arxiv.org/abs/2610.35850\n- Follow the Gradient: Tracing Safety Degradation Back to Training Data — 把安全退化回溯到训练数据本身，给对齐/数据治理提供了可操作的方法论。\n  https://arxiv.org/abs/2610.37481\n- GEPA-Curator: Curated Learning for Self Improving Agents — 伯克利出品，讲如何用精选数据驱动自我改进型 agent 的持续学习闭环。\n  https://arxiv.org/abs/2610.37651\n- CaPtain: A Pipeline for Post-Training Code-as-Policy Robot Agents — 把代码当策略的机器人 agent 后训练流水线成型，是具身与代码 agent 交叉的新进展。\n  https://arxiv.org/abs/2610.40799\n- Venus-DefakerOne2: A Vision-Forensics Foundation Model with Broader Coverage — 面向 AI 生成图像鉴伪的视觉取证基础模型，覆盖面扩大，对内容安全审核有直接价值。\n  https://arxiv.org/abs/2610.37918\n- ReLift: Dense 3D Tracking as Lifted Trajectory Repair — 把稠密 3D 跟踪重构为轨迹修复问题，给机器人视频理解一条新路线。\n  https://arxiv.org/abs/2610.42136\n- AutoHebb: Self-Modifying Neural Networks that Zero-Shot Infer and Continually Learn — 用元学习搜索出的三因子赫比规则实现零样本推理与持续学习，绕开梯度下降，是模型可塑性方向的有趣结果。\n  https://arxiv.org/abs/2610.40757\n- FARO: Function-Space Adaptive Return-to-Risk Optimization — 用组合理论里的等风险贡献预算自动分配优化器几何，替代手工为每层指定更新方式。\n  https://arxiv.org/abs/2610.40858\n\nGitHub与基建\n- SGLang v0.5.23 发布 — 11 月 3 日 06:14（北京时间）发布，紧接 v0.5.22 之后的大版本。\n  https://github.com/sgl-project/sglang/releases/tag/v0.5.23\n- llama.cpp b12063 — 11 月 3 日 09:02（北京时间）构建发布，几乎每小时一版，附带 dflash 设备拷贝等改动。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12063\n- Ollama v0.40.14-rc0 — 11 月 3 日 08:59（北京时间）发布 RC，服务器端新增云端网页搜索结果的解码能力。\n  https://github.com/ollama/ollama/releases/tag/v0.40.14-rc0\n- vLLM: eager 模式下跳过 FlashInfer 稠密 GEMM 的自定义算子分发 — 11 月 3 日 08:50（北京时间）合并，减少不必要的算子分发开销，属推理栈性能向优化。\n  https://github.com/vllm-project/vllm/commit/3c01fae696376ceefa94fcdb75907a3cd8d4b9d4\n- vLLM: 修复可扩展 KV cache 分段填充与 MultiConnector 的 KV 角色判定 — KV cache 与多连接器场景下的正确性修复，对长上下文/分布式部署有实际影响。\n  https://github.com/vllm-project/vllm/commit/9cd2e98b595e6dcf269d42f40dd66325aec18b2b\n- SGLang: paged-experts 自动确定常驻专家规模 — 11 月 3 日 09:05（北京时间）合并，MoE 部署不再需要手工指定常驻专家数量。\n  https://github.com/sgl-project/sglang/commit/8a0edcf799d06bdee8832356d382495e7fb50f22\n- LiteLLM: 允许 huggingface-hub 2.x 并修正预算窗口计费 — 依赖升级与计费口径修正，对自建网关的用户是必须跟进的改动。\n  https://github.com/BerriAI/litellm/commit/10b3deae0d058d4da0f71d5d4642082bc5102743\n\n系统\n- Tor Browser 16.0 发布 — 基于 Firefox ESR 153 的首个稳定版，支持 64 位 Arm Linux，并终止 32 位 x86 Linux 支持。\n  https://lwn.net/Articles/1104846\n- RADV 驱动采用 LLM 撰写的策略文档 — Mesa 驱动治理流程引入大模型起草规范，是开源项目流程层面少见的一例。\n  https://www.phoronix.com/news/RADV-Adopts-LLM-Policy\n- AerynOS 2026.11 发布 — 基于 Rust 的独立操作系统 11 月版本发布，值得关注其内核与用户态进展。\n  https://www.phoronix.com/news/AerynOS-2026.11\n\nSource: https://github.com/sgl-project/sglang/releases/tag/v0.5.23",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/sgl-project/sglang/releases/tag/v0.5.23",
+    "verified_at": "2026-11-03T01:13:07Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

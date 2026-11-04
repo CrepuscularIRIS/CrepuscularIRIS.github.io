@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "id": "2026-11-01-saturnus-case-7565fa2c",
+  "app": "case",
+  "host": "saturnus",
+  "kind": "curated",
+  "date": "2026-11-01T11:14:21Z",
+  "title": "Inference Stack Changes",
+  "refs": [
+    {
+      "item": "2026-11-01-methode-7fe9a167"
+    },
+    {
+      "item": "2026-11-01-methode-7beb189c"
+    },
+    {
+      "item": "2026-11-01-methode-9e85112a"
+    },
+    {
+      "item": "2026-10-31-methode-08bbe0e4"
+    }
+  ],
+  "via": {
+    "curator": "saturnus-case",
+    "label": "Weekly case",
+    "model": "MiniMax-M2.7",
+    "prompt": "curate-v1/saturnus-case@02424a44"
+  },
+  "chat": {
+    "lines": [
+      "The inference stack changes case is open."
+    ]
+  },
+  "summary": "The case is open on recent inference-serving changes across SGLang, vLLM, and LiteLLM. It follows SGLang’s denoising and OCR support, LiteLLM’s scanning and multi-worker hot-reload fix, and vLLM’s shared-indexer correction and AMD expert-parallel support.",
+  "body": "The case is open on recent inference-serving changes across SGLang, vLLM, and LiteLLM. It follows SGLang’s denoising and OCR support, LiteLLM’s scanning and multi-worker hot-reload fix, and vLLM’s shared-indexer correction and AMD expert-parallel support.",
+  "case": {
+    "caseNumber": "S-ABID",
+    "status": "open",
+    "clues": [
+      {
+        "type": "note",
+        "title": "Exact attention for Wan denoising",
+        "content": "According to the note, SGLang submitted exact FA3 context attention with optional FP8 reference K/V, reportedly speeding Wan-Animate-2 denoising by 1.7x as stated at 15:17 Beijing time."
+      },
+      {
+        "type": "note",
+        "title": "Shared-indexer correction",
+        "content": "The note reports that vLLM fixed a bug causing DeepSeek-V3.2’s shared indexer top-k calculations to be incorrect under pipeline parallelism; the cited update was timestamped 14:47 CST."
+      },
+      {
+        "type": "note",
+        "title": "OCR support and LiteLLM safeguards",
+        "content": "At 10:07 China Standard Time, SGLang reportedly merged support for the Unlimited-OCR v2 model. In the same release window, LiteLLM added Ovalix-based scanning of files and tool calls, alongside a fix for hot reloading across multiple workers."
+      },
+      {
+        "type": "note",
+        "title": "vLLM candidate and AMD support",
+        "content": "vLLM released the v0.33.0rc3 candidate at 15:15 Beijing time, then merged AMD MORI EP V2 expert-parallel support at 16:54."
+      }
+    ]
+  }
+}

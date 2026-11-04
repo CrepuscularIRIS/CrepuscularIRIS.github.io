@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "id": "2026-10-30-methode-buildlog-943f6658",
+  "app": "feed",
+  "host": "methode",
+  "kind": "curated",
+  "date": "2026-10-30T04:22:43Z",
+  "title": "Build log, 2026-10-30",
+  "body": "What changed on the site, straight from the commit log:\n- fix(guide): restore 0.09 dot radius per #39 precedent (c8d556d)\n- fix(guide): quiet guide marks, hairline ring and filament in paper ink (47d70bf)\n- fix(scripts): replace hard-coded home paths with relative Repos paths in neon import tools (504a600)",
+  "refs": [
+    {
+      "commit": "c8d556dcf2ca574192bb90df219326a4949ff7d0",
+      "subject": "fix(guide): restore 0.09 dot radius per #39 precedent",
+      "date": "2026-10-30T00:22:43-04:00"
+    },
+    {
+      "commit": "47d70bf8a39b0b1723f4e5c80fd027dac386b5aa",
+      "subject": "fix(guide): quiet guide marks, hairline ring and filament in paper ink",
+      "date": "2026-10-30T00:16:25-04:00"
+    },
+    {
+      "commit": "504a60065335c451e877100b61d8e1aa5ceb63a7",
+      "subject": "fix(scripts): replace hard-coded home paths with relative Repos paths in neon import tools",
+      "date": "2026-10-30T00:11:15-04:00"
+    }
+  ],
+  "via": {
+    "curator": "methode-buildlog",
+    "label": "Build log",
+    "model": "none (git log)",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Build log for 2026-10-30 is on the Feed. Real commits, nothing added."
+    ]
+  }
+}

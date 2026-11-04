@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-10-31-methode-08bbe0e4",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-10-31T09:02:19Z",
+  "title": "vLLM 发布 v0.33.0rc3 候选版，并合入 AMD MORI EP V2 专家并行支持",
+  "summary": "vLLM 在本窗口连发动作：15:15（北京时间）打出 v0.33.0rc3 候选版，16:54 合入 AMD MORI EP V2 专家并行支持，SGLang 与 llama.cpp 同期也有 MoE 性能与 OpenCL 内核更新。",
+  "summary_en": "vLLM released the v0.33.0rc3 candidate at 15:15 Beijing time, then merged AMD MORI EP V2 expert-parallel support at 16:54. The note also reports concurrent SGLang and llama.cpp updates, including MoE performance improvements and an OpenCL kernel update. Overall, the entry presents v0.33.0rc3 as a release candidate rather than a final general-availability release.",
+  "body": "vLLM 在本窗口连发动作：15:15（北京时间）打出 v0.33.0rc3 候选版，16:54 合入 AMD MORI EP V2 专家并行支持，SGLang 与 llama.cpp 同期也有 MoE 性能与 OpenCL 内核更新。\n\nGitHub 与基建\n- vLLM v0.33.0rc3 候选版发布（10-31 15:15 北京时间） — 0.33 系列的第三个 RC 标签，本轮仅含 CI/修复类改动（ColUltraVBERT 测试权重固定到指定 revision），距离正式版还有一步。\n  https://github.com/vllm-project/vllm/releases/tag/v0.33.0rc3\n- vLLM：新增 AMD MORI EP V2 专家并行支持（10-31 16:54 北京时间） — 新增 mori_epv2 的 prepare/finalize 与 ROCm/AITER MoE 路径，覆盖 DeepSeek v3.2/v4、MiniMax M3 的 AMD 专用解码，属本窗口体量最大的功能提交。\n  https://github.com/vllm-project/vllm/commit/d5301a4f5487db1d7e8d87daf7828225b95b1774\n- vLLM：为 Qwen3.8 补齐 SM103 skinny GEMM 计划（TP=1） — 为 GB300/DGX Station 单卡场景调优 GDN/QSA 输出投影与融合 QKV 的低延迟 GEMM 配置，服务于新一档自研架构模型部署。\n  https://github.com/vllm-project/vllm/commit/900b8b08e2552c28a004e075866b5e1a39b99ac3\n- SGLang：Muse Spark Open 的 MoE finalize 与 two-shot push all-reduce 融合 — 把 MoE 收尾与集合通信融合（+504/-134），减少一次全归约往返，直接影响多卡 MoE 吞吐与延迟。\n  https://github.com/sgl-project/sglang/commit/1c1166ad04b877f56ab358e016530cfd9969fd96\n- SGLang：AMD 侧统一 MoRI dispatch 与 AITER 激活格式契约 — 新增 FP8/MXFP8/MXFP4 派发格式契约与选择逻辑，让 AMD MoE 路径在量化方案间正确协商，修正此前的分歧。\n  https://github.com/sgl-project/sglang/commit/ef4f3f1151f16a5cc67ed1d6601a4b8292810e01\n- llama.cpp b12020：OpenCL 后端加入 FWHT 内核 — 高通提交的 fast Walsh-Hadamard 变换 OpenCL 实现，为 OpenCL 设备上的相关运算提供内核支持。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12020\n\nSource: https://github.com/vllm-project/vllm/releases/tag/v0.33.0rc3",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/vllm-project/vllm/releases/tag/v0.33.0rc3",
+    "verified_at": "2026-10-31T09:02:19Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

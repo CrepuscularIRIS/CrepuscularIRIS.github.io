@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-03-methode-15d32157",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-03T11:04:52Z",
+  "title": "FLAMIA：面向 Blackwell 的 MXFP8/NVFP4 注意力内核，B200 端前反向加速 1.10–1.40×",
+  "summary": "Blackwell 上的 MXFP8/NVFP4 注意力内核 FLAMIA 刚登上 HF 日榜，vLLM 同日合入 DeepSeek V4.1 的 LoRA 适配支持。",
+  "summary_en": "FLAMIA, an MXFP8/NVFP4 attention kernel for Blackwell, has reportedly appeared on Hugging Face’s daily leaderboard, while vLLM reportedly merged same-day LoRA adapter support for DeepSeek V4.1. The title says the kernel delivers 1.10–1.40× forward and backward acceleration on B200. The note provides no further technical details, benchmark methodology, independent verification, or indication of draft or automatic status.",
+  "body": "Blackwell 上的 MXFP8/NVFP4 注意力内核 FLAMIA 刚登上 HF 日榜，vLLM 同日合入 DeepSeek V4.1 的 LoRA 适配支持。\n\n论文\n- FLAMIA: FLAsh MIcroscaling Attention for Fast and Causally Safe Training on Blackwell — Yandex Research 用 MXFP8 与混合 NVFP4/FP8 路径重写 Blackwell 注意力内核，解决共享 scale 带来的因果泄漏问题，B200 上含量化的前后向注意力调用加速 1.10–1.40×，B300 加速 1.06–1.42×，并直接在打包变长文档上工作。今日 HF 日榜新帖。\n  https://arxiv.org/abs/2611.03344\n- Democratizing Robot-Use Agents: A Unified Harness with Open Models — uni-robot-agent 统一 harness 让开源权重模型可继续训练：未经特权输入的 Qwen3.8-Flash-Next 在 RoboDojo 拿到 31.39，超过已发表的 GPT-6 Astra-RoboProbe 28.97；HF 上投票仍在快速上涨。\n  https://arxiv.org/abs/2611.01560\n\nGitHub与基建\n- llama.cpp b12068 — 18:48（北京时间）发布，允许在 gpt-oss 的 final channel 之后再追加 constraint 类型，修复对话式模板约束顺序问题。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12068\n- llama.cpp b12069: opencl 初步支持 iq4_xs 量化 — OpenCL 后端首次加入 iq4_xs 量化类型支持，让低比特权重在 OpenCL 设备上可直接推理。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12069\n- vLLM: 新增 DeepSeek V4.1 语言模型 LoRA 适配器支持 — 提交 a5d8174 落地 DeepSeek V4.1 的 LoRA 层实现与测试（新增 562 行），让该模型的 LoRA 微调可在 vLLM 上部署。\n  https://github.com/vllm-project/vllm/commit/a5d8174\n\n系统\n- Intel Compute Runtime 26.40.40196.8 发布 — 18:52（北京时间）发布：Crescent Island（Intel GPU D 系列）默认开启共享 USM 与延迟回退，Nova Lake P 默认启用 OpenCL LEO，并优化多队列与本地内存环形缓冲。\n  https://www.phoronix.com/news/Intel-Compute-26.40.40196.8\n- GCC 17 合入 AVX10V1AUX 指令集支持 — 18:22（北京时间）：AMD 主导的补丁落地，新增原生 VNNI INT8/INT16 与指令借用，编译器开关为 -mavx10v1aux，衔接早期 AVX10 与 AVX10.2。\n  https://www.phoronix.com/news/GCC-17-Merges-AVX10V1AUX\n- SUSE 因 AI 与自动化裁减 10% 员工 — 18:31（北京时间）：企业软件厂商把 10% 裁员直接归因于 AI 与自动化替代，是本轮企业侧 AI 落地压力的又一个信号。\n  https://www.phoronix.com/news/SUSE-Layoffs-10p-AI\n\nSource: https://arxiv.org/abs/2611.03344",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.03344",
+    "verified_at": "2026-11-03T11:04:52Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-02-methode-bc4760b1",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-02T08:58:18Z",
+  "title": "LARC：把思维链搬进连续潜空间，统一多模态模型 GenEval 提升 7 个点",
+  "summary": "今日新论文里最值得看的是 LARC——让统一多模态模型在连续隐状态中\"推理\"，GenEval 上比 BAGEL 高 7 个百分点并出现测试时 scaling 曲线。",
+  "summary_en": "A brief note highlights LARC as a promising new paper for enabling unified multimodal models to perform reasoning within continuous latent states. According to the note, LARC outperforms BAGEL by seven percentage points on GenEval and exhibits a test-time scaling curve. This is presented as an initial highlight among today’s papers rather than a fully detailed or independently verified assessment.",
+  "body": "今日新论文里最值得看的是 LARC——让统一多模态模型在连续隐状态中\"推理\"，GenEval 上比 BAGEL 高 7 个百分点并出现测试时 scaling 曲线。\n\n论文\n- LARC：连续潜空间中的隐式推理，统一多模态模型 GenEval 提升 7 个点 — KAIST AI 提出在连续隐状态而非离散 token 上做推理，课程 SFT + 信息增益 RL 两阶段训练，GenEval 达 SOTA（较 BAGEL +7%p），并出现清晰的测试时 scaling 行为\n  https://arxiv.org/abs/2610.42149\n- Steering Vectors as a Training Signal in LLM 后训练 — 把残差流方向从\"推理期后门\"变成训练信号：SFT/蒸馏中注入可提升最高 12%，GRPO 里用正确性对比方向做 advantage repair 救回全错零梯度组（NeurIPS 2026）\n  https://arxiv.org/abs/2610.40998\n- HyperRepair：找回微调后被遗忘的通用能力 — 用超网络从激活指纹生成修复侧网络，仅付推理成本即可恢复通用能力：默认划分下保住基座 93.4% 的通用分，同时保留微调模型 99.5% 的领域分\n  https://arxiv.org/abs/2610.41147\n- Fewer Heads, Fewer Memories：剪掉冗余注意力头抑制逐字记忆 — GPT-2-XL(1.5B) 上剪掉 729 个冗余头，记忆序列复现数下降 91.5%，WikiText-103 困惑度还改善 0.92——无需重训即可缓解隐私泄漏\n  https://arxiv.org/abs/2610.40974\n- AI 评审偏好某些模型写的求职信，与候选人水平无关 — 11 个写作模型 × 9 个评审模型的全 AI 审计：本地部署模型被系统性歧视、评审存在自我偏好，最差配对下 25 名合格候选人中约 1.8 人纯因模型错配被刷掉\n  https://arxiv.org/abs/2610.41866\n- 从转写到重述：定义并评测 Grounded 生成式语音识别（GSR-Bench） — 把 ASR 从\"单一 ground-truth 转写\"改写为语义接地的文本生成，提出四级重述能力层级与首个综合基准，并暴露声学幻觉、无据生成、指令漂移三类失效模式\n  https://arxiv.org/abs/2610.41292\n- LLM 辅助同行评审五种范式的对比评测 — 在 232 篇 ICLR 2025 投稿及 11,513 篇全量上比较绝对打分/对比排序等范式：绝对打分排序相当但把绝大多数预测压到接收线以上，直接打分校准后以 24% API 调用量超过 Elo\n  https://arxiv.org/abs/2610.41391\n\nGitHub与基建\n- vLLM [ROCm][Perf][Kimi-K3] 专用 decode K2 路径 — 15:06（北京时间）为 Kimi-K3 在 ROCm 上做 sentinel all-reduce 等 decode 优化，是该窗口内 vLLM 侧最实质的性能提交\n  https://github.com/vllm-project/vllm/commit/51c6dfd8c86cebc3ede6f8f15207d0bbd2b1f1fd\n- vLLM Muse Spark ROCm 权重加载后处理合并 — 15:57（北京时间）合入的 ROCm 修复，合并两段 process_weights_after_loading 逻辑\n  https://github.com/vllm-project/vllm/commit/5689c2790c911a55c75825aac5166305df0b591d\n- SGLang [NPU] Ascend 动态专家负载均衡（eplb） — 16:15（北京时间）为昇腾 NPU 打开动态专家负载均衡，改善 MoE 部署下的专家倾斜\n  https://github.com/sgl-project/sglang/commit/d74749b0b63ed3373a0a34205ec635437d05ffc5\n- SGLang Intel XPU 分离式部署：Mooncake / NIXL 的 P/D nightly — 16:19（北京时间）为 XPU 引入 Mooncake 与 NIXL 的 prefill/decode 分离 nightly 流水线\n  https://github.com/sgl-project/sglang/commit/1599b166ac856f4fd192feb2c16304fae7860a72\n- SGLang Hunyuan3D：GPU 侧网格生成加速 shape 导出 — 15:22（北京时间）的性能提交，用 GPU 侧生成网格替代 CPU 端 shape 导出开销\n  https://github.com/sgl-project/sglang/commit/d2d3632ae0934022cd449fc29a8f72afaf4a7a35\n\nSource: https://arxiv.org/abs/2610.42149",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2610.42149",
+    "verified_at": "2026-11-02T08:58:18Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
