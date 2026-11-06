@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-05-snowdrop-ffc8443d",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-11-05T05:06:13Z",
+  "title": "ViBench 2.0：Replit 实测最强模型“只交付 65% 可用产品”，长程编程的可靠性鸿沟",
+  "summary": "Replit 用 17 个全栈产品、241 次功能追加和 544 套浏览器测试重测“智能体能不能真的交付软件”，结果是目前最强的三款模型能通过 98% 的测试项，却只有不到 65% 的构建能交付完整可用产品——而且没有一款开源权重模型做到。",
+  "summary_en": "Replit’s ViBench 2.0 reassessed whether AI agents can truly deliver software using 17 full-stack products, 241 feature additions, and 544 browser-test suites. The three strongest tested models reportedly passed 98% of individual test items, yet fewer than 65% of their builds produced complete, usable products. No tested open-weight model reached that delivery level, revealing a substantial reliability gap in long-horizon software development.",
+  "body": "Replit 用 17 个全栈产品、241 次功能追加和 544 套浏览器测试重测“智能体能不能真的交付软件”，结果是目前最强的三款模型能通过 98% 的测试项，却只有不到 65% 的构建能交付完整可用产品——而且没有一款开源权重模型做到。\n\narXiv 新论文\n- ViBench 2.0: A Benchmark for Long-Horizon Software Building — 来自 Replit 的一线评测：17 个全栈产品经 241 次功能追加、544 套测试计划全过才算成功，最强模型测试项通过率 98% 但只有 ≤65% 的构建能交付，开源权重模型无一成功。\n  https://arxiv.org/abs/2611.05620\n- Verified but Vacuous: Three Failure Surfaces of LLM-Driven Verified Code Generation — 把“verified”拆成验证器接受、证明义务是否绑定规格、规格是否忠实反映需求三层，指出 HumanEval 上 99.1% 的验证通过率里只有 1.9% 的证明真正绑到规格谓词——对“形式化验证保证代码正确”的叙事是一次必要泼冷水。\n  https://arxiv.org/abs/2611.05590\n- Airlock: Bounding the Multi-Agent Blast Radius via Selective Online Containment — 多智能体出错的“爆炸半径”问题给出运行时方案：树状权限边界加溯源 DAG，报警后只冻结受污染分支，比 A2A/LangGraph 原生控制多保留 68–96 个百分点的健康工作。\n  https://arxiv.org/abs/2611.06727\n- Signed, Sealed, Leaked: Trust Beyond Signature for MCP Toolchains — 合法签名的 MCP 工具照样能夹带数据外泄，Meta 的 MCPGuard-Dynamic 每次都拦不住；作者用“无数据胚芽进程 + 临时副本执行”把可泄露信息上限硬性限定住，153 次攻击零未授权泄露。\n  https://arxiv.org/abs/2611.06585\n- Hybrid Spark: Adaptive Speculative Decoding That Lets the Content Choose the Drafter — 模型型 drafter 与 n-gram 免模型 drafter 同时在线，用“每个已验证 token 的价格”统一两者预算分配，代码编辑场景吞吐 1.10–1.62 倍，一次部署同时服务聊天与代码。\n  https://arxiv.org/abs/2611.05611\n\nHugging Face Daily Papers\n- GameVerse: A Minute-Scale Gameplay Dataset for Long-Horizon Interactive World Modeling — 当日第一：6.97 万个片段、1655 小时、3.496 亿帧，其中 1358 小时是两分钟连续序列，比现有数据集长一个数量级，直指交互式世界模型“一分钟后就崩”的数据瓶颈。\n  https://huggingface.co/papers/2610.37257\n- SpecOPD: Branch-Parallel On-Policy Distillation for Speculative Decoding — 阿里通义提出把 on-policy 蒸馏的采样与监督并行化（提案树 + 树形掩码），平均接受长度最多提升 41.45%，监督 token 吞吐比顺序 rollout 高 16.09 倍，最高相对自回归解码 3.56 倍加速。\n  https://huggingface.co/papers/2611.02846\n- From Pixels to Actions — Towards Native Vision-Language-Action Policies (NEO-VLA) — 去掉固定视觉编码器，让图像 token 与语言在骨干网络里共同演化；层级探针显示动作关键信号常在最后一层之前就达峰，加规模也补不回这个架构差距。\n  https://huggingface.co/papers/2611.06918\n- Solv3R: 3D Looped Transformer as a Multi-view Solver — 把 looped transformer 变成可增量求解的多视图几何模型：更新算子与迭代次数无关，已解出的视角与新加入的视角可联合更新，同一个 solver 覆盖离线重建、增量重建、重定位与流式。\n  https://ubc-vision.github.io/solv3r\n\nSource: https://arxiv.org/abs/2611.05620",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.05620",
+    "verified_at": "2026-11-05T05:06:13Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

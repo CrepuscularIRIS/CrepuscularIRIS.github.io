@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-06-methode-c0610843",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-06T06:58:23Z",
+  "title": "NVIDIA 的 VFlash 登顶 Hugging Face 今日论文第一：视觉规划解码提速约 25 倍",
+  "summary": "NVIDIA 的 VFlash（HF 今日论文第一，11 月 6 日）用 Flash Primitive Decoding 把视觉规划坐标一次性联合解码，3D 轨迹生成约快 25 倍，同时 arXiv 新论文集中在长上下文稀疏注意力与 KV cache 压缩。",
+  "summary_en": "NVIDIA’s VFlash reportedly ranked as Hugging Face’s top paper of the day on November 6. It uses Flash Primitive Decoding to jointly decode visual planning coordinates in one pass, making 3D trajectory generation about 25 times faster. Meanwhile, newly posted arXiv papers focus on long-context sparse attention and KV-cache compression, according to the note.",
+  "body": "NVIDIA 的 VFlash（HF 今日论文第一，11 月 6 日）用 Flash Primitive Decoding 把视觉规划坐标一次性联合解码，3D 轨迹生成约快 25 倍，同时 arXiv 新论文集中在长上下文稀疏注意力与 KV cache 压缩。\n\n论文\n- VFlash: Fast, Accurate Visual Planning via Flash Primitive Decoding（NVIDIA） — 视觉规划不用逐坐标 token 自回归解码，改为整段 primitive 联合生成；3D 轨迹生成约快 25 倍，世界动作模型在 MolmoSpaces 四套任务上平均成功率 70.2%（基线 62.6%）。HF 今日论文第一。\n  https://arxiv.org/abs/2611.08449\n- Recursive Sparse Attention：百万 token 上下文按对数代价外推 — 在 KV cache 上建树、每层选 k 个候选，把选择与读取成本降到 O(log L)；1M 长度 RULER 得分 60.5 对最好基线 40.0，H200 上 524K 上下文 prefill 提速 3.2 倍、decode 3.8 倍。\n  https://arxiv.org/abs/2611.07232\n- BlockLock：固定批几何实现可复现 LLM 推理 — 只固定被保护请求的数值路径即可让输出逐比特可复现，无需自定义 kernel；相对 vLLM Batch-Invariant 延迟降约 53–55%、吞吐升约 115–122%。\n  https://arxiv.org/abs/2611.06977\n- LowRAM：低秩 key + 摊销 value 的可组合 KV cache 压缩 — 发现每个注意力头内 value 可由 key 预测，只存残差即得 4 倍近似无损压缩；叠加量化与驱逐可达 26.9 倍压缩、长上下文保持 94.5% 基线性能。\n  https://arxiv.org/abs/2611.07025\n- FlexFloor：弹性专家并行加速 RL 后训练 — MoE RL rollout 中约三分之一 worker 时间在本地生成结束后仍被占用；提前释放 worker 后单位占用算力产出 token 提升约 65.4%，响应生成吞吐 +52.7%。\n  https://arxiv.org/abs/2611.06984\n- Octopus：一个大脑多条分支的 latent-KV 多智能体 RL — 分支共享同一 backbone，KV 状态以 GPU 常驻 DAG 共享，零拷贝 radix fork + 仅注意力 KV 挂载；BrowseComp-Plus 达 49.6%，训练吞吐 3.3 倍、峰值 KV 显存降 2.8 倍。\n  https://arxiv.org/abs/2611.06956\n- AI Agent 到底在哪些地方烧钱？ — 用 LLM-as-a-Judge 标注可删减片段并回溯到原轨迹做 token 级计量，实测剪掉 41–46% 推理几乎不损性能；指出浪费更多来自任务与 harness 而非模型本身。\n  https://arxiv.org/abs/2611.07238\n- Harness-S：从兄弟 harness 学习可泛化的 agent 训练 — 不再追求通用最强 harness，而是用兄弟 harness 池挽救基座失败案例并迁移回同一策略；AppWorld、SWE-Gym、DBBench 上显著优于仅策略训练。HF 今日热门。\n  https://arxiv.org/abs/2611.04277\n- VisSearch-Bench：多模态 agent 长程视觉搜索评测 — 204 个人写任务覆盖 7 大域 25 子域，重点考视觉上下文管理与证据链；16 个多模态模型中最好者即使带搜索工具也仅完全解出 26.47%。\n  https://arxiv.org/abs/2611.04894\n- WeLM-Image：面向视觉智能的统一图像生成模型 — 微信团队 MoT+MoE 骨干，把理解、生成、多参考合成统一为交错序列；单卡 H20 上 8 步免引导 4.98 秒出 1024×1024 图，Turbo 版开源。\n  https://arxiv.org/abs/2611.07392\n- BestRand：用随机采样做稳定低成本的 benchmark 压缩 — 证明子集分数误差呈长尾分布、纯随机采样高概率但不稳；在 70+ 文本/多模态/agent benchmark 上把高误差风险降低 50.2%，构建成本仅需 51.3%。\n  https://arxiv.org/abs/2611.00883\n- Latency-Aware Adaptive Best-of-N：把服务端延迟纳入测试时计算 — 固定阈值在快慢机器上花错算力；用首批实测延迟反推第二批规模与阈值，在\"生成次数+延迟\"折算成本下以更低代价达到同等奖励。\n  https://arxiv.org/abs/2611.07453\n\nGitHub与基建\n- llama.cpp 构建 b12164：hexagon 后端实现 set_tensor_n — 11 月 6 日 10:15（北京时间）发布，补齐 Hexagon 后端的 set_tensor_n 并改进 repacking/tiling 健壮性，落地端侧推理路径又进一步。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12164\n- Cursor Changelog：Build Live Apps in Cursor — 云端 agent 可直接生成并部署可用 Web 应用（自动建库、SSO 鉴权、托管、发布前安全检查），已向所有开启 cloud agents 的付费套餐开放。\n  https://cursor.com/changelog/build-live-apps\n\nSource: https://arxiv.org/abs/2611.08449",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.08449",
+    "verified_at": "2026-11-06T06:58:23Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

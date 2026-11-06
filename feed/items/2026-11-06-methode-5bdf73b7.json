@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-06-methode-5bdf73b7",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-06T08:58:46Z",
+  "title": "SGLang 两小时连发：支持 ERNIE 5.5 Flash、kimi-k3.1 DSA 上下文并行，并把 flash-attn-4 移出默认依赖",
+  "summary": "SGLang 在 15:53–16:35（北京时间）连续落地多项改动：GLM-5.3 开启 MTP、ERNIE 5.5 Flash 支持、kimi-k3.1 的 DSA 解码上下文并行运行时，同时 vLLM 侧加入 LFM3-VL 模型支持。",
+  "summary_en": "Between 15:53 and 16:35 Beijing time, SGLang landed a rapid series of updates: GLM-5.3 enabled MTP, ERNIE 5.5 Flash support was added, and kimi-k3.1 gained DSA decoding context-parallel runtime support. The note also states that vLLM added LFM3-VL model support. These changes are presented as recently landed updates, without further qualification.",
+  "body": "SGLang 在 15:53–16:35（北京时间）连续落地多项改动：GLM-5.3 开启 MTP、ERNIE 5.5 Flash 支持、kimi-k3.1 的 DSA 解码上下文并行运行时，同时 vLLM 侧加入 LFM3-VL 模型支持。\n\nGitHub与基建\n- SGLang: 支持 ERNIE 5.5 Flash — 新增模型支持，16:22（北京时间）合入。\n  https://github.com/sgl-project/sglang/commit/ed61eca15fa026b2d2358cda9f671b20b926dd13\n- SGLang: kimi-k3.1 的 DSA 解码上下文并行运行时 — 长上下文解码并行化，16:35（北京时间）合入。\n  https://github.com/sgl-project/sglang/commit/188cf7da66938ca2e1ea9cbf7ebbf9a2c81edc2a\n- SGLang: GLM-5.3 在 MI355X 上启用 MTP 并附带 agentic 配方 — 多 token 预测 + 智能体推理调优文档，15:53（北京时间）。\n  https://github.com/sgl-project/sglang/commit/c117e31f9f6b6984fddaae3fe574eb0580d62d61\n- SGLang: 从默认依赖中移除 flash-attn-4 — 依赖栈收敛，16:24（北京时间）。\n  https://github.com/sgl-project/sglang/commit/80eedfaf2fb34e392eaacdbb78a7cff92d6b647d\n- SGLang: weight_update 支持通过平台走权重传输通道 — 热更新权重链路改造，16:14（北京时间）。\n  https://github.com/sgl-project/sglang/commit/2e8dcb13f910628b99f8046eb00234ef8a976f5a\n- vLLM: 新增 LFM3-VL 模型支持 — LFM3-VL-2B 多模态接入推理栈，16:56（北京时间）合入。\n  https://github.com/vllm-project/vllm/commit/389975502844a1bf4c94b4c352edd853f0f18f45\n- llama.cpp b12167: 修复 Maxwell 架构的 CUDA 构建 — 老架构 CUDA 编译修复，16:06（北京时间）发布。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12167\n\n论文\n- TailSteer: 面向多轮图像编辑漂移抑制的轨迹尾部引导 — 仅在去噪轨迹尾部做保持性纠偏，15–20 轮编辑下显著降低累积视觉漂移；HF 今日榜 27 赞。\n  https://huggingface.co/papers/2611.06741\n- SLA: 通过持续预训练扩展空间-语言-动作模型 — 把 3D 感知对齐纳入 VLA 的持续预训练，推理架构不变；HKUSTGZ 团队。\n  https://huggingface.co/papers/2611.08373\n- Drex: 面向基础决策模型的开源决策模型家族 — 单次前向直接输出选项概率分布，Max 版自述 Decision Index 达 67.52、平均响应 183ms，全部开源。\n  https://huggingface.co/papers/2611.07854\n- SCALE: 面向信息物理系统的实时潜空间通信 — 按相似度复用潜表示并实时调度传输量，在带宽受限与异构截止期下提升任务表现与准时率。\n  https://arxiv.org/abs/2611.08390\n- SEER: 面向多智能体强化学习环境的事件驱动并行运行时 — CAS 双层事件队列 + 线程池预选，环境执行延迟相比 ROSS-T/NBSE/ROOT-Sim 降低 46.9%/19.5%/64.9%。\n  https://arxiv.org/abs/2611.07996\n- HyFlash: 端侧投机解码的前缀记忆先验 — 用循环记忆压缩历史目标特征，在更低 KV 占用下获得更高接受率，适合浅层 drafter。\n  https://arxiv.org/abs/2611.07263\n- Decode Before You Hear: 全双工语音语言模型的投机式听解码 — 分块交错全双工场景下先解码后听，压缩感知-生成延迟。\n  https://arxiv.org/abs/2611.06982\n\nSource: https://github.com/sgl-project/sglang/commit/ed61eca15fa026b2d2358cda9f671b20b926dd13",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/sgl-project/sglang/commit/ed61eca15fa026b2d2358cda9f671b20b926dd13",
+    "verified_at": "2026-11-06T08:58:46Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

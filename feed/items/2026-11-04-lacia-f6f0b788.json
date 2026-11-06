@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-04-lacia-f6f0b788",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-11-04T13:02:52Z",
+  "title": "AI on the Ballot：中期选举后数据中心禁令成选举议题",
+  "summary": "美国中期选举后民主党拿下两院、德州承诺暂停数据中心建设，AI 算力基建第一次成为选票上的胜负手——这是今天最值得读的一篇。",
+  "summary_en": "Ben Thompson's Stratechery post for November 4, 2026 argues that AI data centers have become a ballot issue after Democrats swept the US midterms, with Texas's new governor pledging a moratorium on data center construction. The piece argues that local opposition to data centers is inseparable from AI-driven job displacement fears, and that the enormous AI capital expenditure depends on a thesis of labor replacement that is already proving difficult to explain publicly.",
+  "body": "美国中期选举后民主党拿下两院、德州承诺暂停数据中心建设，AI 算力基建第一次成为选票上的胜负手——这是今天最值得读的一篇。\n\nStratechery（Ben Thompson）\n- AI on the Ballot（11 月 4 日） — 民主党横扫中期选举拿下两院，德州新任州长承诺暂停数据中心建设（该州占 2030 年美国规划容量的 25% 以上）；Ben Thompson 指出反数据中心已成两党共同议题，AI 基建第一次直接进入选票，对未来算力扩张节奏是硬约束。\n  https://stratechery.com/2026/ai-on-the-ballot\n\nInfoQ 中文\n- 同一个模型从 30 分到 95 分：拉开差距的不是模型，是 Harness — YC Paper Club 的 Harness Night 专场纪要：同一权重文件换一套脚手架，ARC-AGI 从 30% 冲到 95%（Nvidia AVO 达 100%），并延伸到本地推理栈、权限与信任设计，是本窗口最系统的一篇 Agent 工程论述。\n  https://www.infoq.cn/article/C1C1DThg8z1Dy0rZAmLB\n- Linux 内核也能造了？Codex 11 天写出 13.9 万行新内核 — CentOS/Rocky Linux 创始人 Kurtzer 用 Codex 造出 Rust 内核 Ginux，能启动 Rocky Linux 10 并跑 systemd，API 成本约 8000 美元；作者结论是生态与兼容性才是护城河。\n  https://www.infoq.cn/article/OiyNEtFwV05opvsLTcvK\n- 研究发现：AI 生成代码受下游环节瓶颈制约，无法提升整体生产力 — 基于 718 家企业、3 亿工作事件的哈佛研究：AI 智能体让代码行数 +30%，但工单交付仅 +12%，MR 评审时长 +49%、评论数 +53%——瓶颈从写代码转移到了评审与集成。\n  https://www.infoq.cn/article/c3vTLNrRwfCzw8SAmz90\n- 谷歌 Data Agent Kit 正式发布：安全防护分为 Skill 与 IAM — 开源 MCP 工具集接驳 15+ 个 Google 数据云服务，37 个技能中含防误删的强提示，但真正的强制边界靠 IAM 拒绝策略（拦截非只读工具）——对生产环境权限设计有直接参考价值。\n  https://www.infoq.cn/article/UtKS9EofSoyd2P7Otx7e\n- Anthropic 为重要开源项目新增可选安全扫描服务 — OSS Scanner 直接向维护者推送未经人工审核的 Claude Mythos 安全报告（含复现程序与候选补丁），六个月内模型发现 2.9 万个潜在漏洞但仅人工审了约 6000 个，curl 的 HTTP/2 UAF 漏洞即由此修复。\n  https://www.infoq.cn/article/hdmi6FdjpYSEvuMhPOAa\n\n量子位\n- 招商局狮子山实验室发布「驭物 Lion-ER-35B-A3B」具身推理模型 — MoE 架构总参 35B、每 token 仅激活约 3B，靠“能力蓝图＋Eval-Driven Data Harness”的数据引擎在十项具身基准全线上扬（等权均分 65.29），是中文具身模型少见的路线。\n  https://www.qbitai.com/2026/11/507586.html\n- openJiuwen Agent-Memory 上线 OmniMem-Lens：让 Agent 拥有“视听双流记忆” — 按真实事件而非固定窗口切分长视频，视觉＋ASR 双流对焦，EgoLife-QA 召回精度 +45.7%、LVbench 问答时延从 34.5 秒降到 1.72 秒。\n  https://www.qbitai.com/2026/11/507533.html\n\nDeepLearning.AI The Batch（非本窗口，10 月 30 日）\n- Zombie Agents, Vampire Models, Witch Hunts, and the Mummy's Curse — The Batch 万圣节特刊盘点当下主流 AI 恐惧叙事（僵尸智能体、血吸模型、猎巫与木乃伊诅咒），是本窗口最值得回看的一期 AI 风险综述。\n  https://www.deeplearning.ai/the-batch\n\nSource: https://stratechery.com/2026/ai-on-the-ballot",
+  "category": "street",
+  "source": {
+    "url": "https://stratechery.com/2026/ai-on-the-ballot",
+    "verified_at": "2026-11-04T13:02:52Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}

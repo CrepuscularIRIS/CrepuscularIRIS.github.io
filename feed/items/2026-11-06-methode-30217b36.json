@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-06-methode-30217b36",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-06T11:05:51Z",
+  "title": "SwarmEvolve：数百个智能体在隐空间用 KV cache 通信，程序搜索提速十倍",
+  "summary": "SwarmEvolve 让数百个廉价智能体在隐空间通过共享 KV cache 协作做进化式程序搜索，把原本 60 分钟的分数压到 3–8 分钟。",
+  "summary_en": "SwarmEvolve is described as a system where hundreds of inexpensive agents collaborate in latent space through a shared KV cache to conduct evolutionary program search. According to the note, this approach compresses the required time from about 60 minutes to roughly 3–8 minutes, representing a substantial speedup while using many low-cost agents in parallel.",
+  "body": "SwarmEvolve 让数百个廉价智能体在隐空间通过共享 KV cache 协作做进化式程序搜索，把原本 60 分钟的分数压到 3–8 分钟。\n\n论文\n- SwarmEvolve: Latent Agent Swarms for Evolutionary Discovery and Optimization — 用隐藏状态距离做新颖度过滤、靠汇总智能体合并 KV cache 实现隐空间交叉，21 个科学计算/数学发现任务上中位数 3–8 分钟达到其他 SOTA 框架 60 分钟的水平，Qwen3 8B 即可超过 AlphaEvolve 用前沿模型找到的解。(11-06 02:59 CST 提交)\n  https://arxiv.org/abs/2611.08483\n- SAE Interprets MoE: Sparse Autoencoders Reveal Expert Specialization in Mixture-of-Experts Models — 字节 Seed 的工作：用稀疏自编码器直接解释 MoE 的路由与专家分工，给稀疏激活与专家特化之间建立了可量化联系，是 MoE 可解释性的实用路线。(HF 当日新条目)\n  https://arxiv.org/abs/2611.08089\n- Prefill-to-Autoregressive: Cross-Model Transfer of Latent Communication via PACT and PLatour — 把\"用前向填充阶段传递隐状态实现通信\"的做法跨模型迁移，配套 PACT 评测与 PLatour 训练框架，是隐式通信方向的少见系统性工作。\n  https://arxiv.org/abs/2611.06976\n- EvoMemState: 动态记忆状态下的 Agent 长期适应 — 把智能体记忆视为可演化的状态而非静态存储，给出记忆随交互更新的机制，在长程任务与个性化场景有直接工程价值。\n  https://arxiv.org/abs/2611.03743\n- Identically Trained Language Models Break on Different Jailbreaks — 相同数据与超参训练出的模型在越狱鲁棒性上表现不同，说明安全评测中的模型间差异可能来自训练随机性而非模型能力，影响红队结论的可复现性。\n  https://arxiv.org/abs/2610.34074\n- User Embeddings are Superpositions of Interpretable Behavioral Modes — 论证推荐系统中的用户向量是若干可解释行为模式的稀疏叠加，并用 SAE 恢复、自动命名，落地为模型无关的事后可解释方案，NeurIPS 2026 录用。\n  https://arxiv.org/abs/2611.08487\n\nGitHub与基建\n- SGLang: kimi-k3.1 可选 trtllm DSA 后端 + 共享专家 TP 跨 prefill CP — Kimi K3.1 接入 TensorRT-LLM 的 DSA 后端，另有 shared-expert TP 与 prefill CP 交错支持。(11-06 17:00 CST 提交)\n  https://github.com/sgl-project/sglang/commit/c06e39c6ca27c3d78b1696bb25d23b57ce5720ff\n- SGLang: minimax-sparse 解码 indexer 的 CP 在 Hopper 上跑通 — 把 minimax-sparse 的 decode indexer 上下文并行带到 Hopper 架构，扩大该模型的长上下文与多卡部署可行性。(11-06 17:45 CST)\n  https://github.com/sgl-project/sglang/commit/2fd45ed82fe07ec64ef7f4d2dbd9071b0eb01763\n- vLLM: GDN 预填充状态 gather/scatter 与共享 Triton kernel 融合 — 线性注意力/门控 DeltaNet 的预填充状态读写融合进同一 Triton kernel，减少 kernel 启动与内存搬运开销。(11-06 17:07 CST)\n  https://github.com/vllm-project/vllm/commit/a9961c2c3e40ea879ee11bcf121af1869028067a\n- vLLM: 修复 Mamba-1 LoRA 层只覆盖 batch 部分行的问题 — Mamba-1 状态模型的 LoRA 适配此前对 batch 中部分行失效，属于影响结果正确性的实质 bug 修复。(11-06 17:20 CST)\n  https://github.com/vllm-project/vllm/commit/d5486971ea6dfe792a0e50295e5e63a484943b64\n- vLLM: 编译期不再把 x.yf CUDA 架构回退到更低精度 arch — 避免新 CUDA 架构特性被静默降级编译，影响 Blackwell/新卡上的内核选择与性能。(11-06 18:44 CST)\n  https://github.com/vllm-project/vllm/commit/1b2505c033c14695203272c6e47bd2706bb9d177\n- vLLM: CPU 端为 Gemma4 MoE 启用 gelu_tanh 激活 — Gemma4 MoE 在纯 CPU 路径下此前无法正确启用 gelu_tanh 激活，补齐后 CPU 推理结果与 GPU 一致。(11-06 18:13 CST)\n  https://github.com/vllm-project/vllm/commit/6c13a380b1b0f071d3522181fb321c5fcd27bfae\n\n系统\n- OpenCV 5.1 发布\n  https://www.phoronix.com/news/OpenCV-5.1\n\nSource: https://arxiv.org/abs/2611.08483",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.08483",
+    "verified_at": "2026-11-06T11:05:51Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-05-methode-18b453b0",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-05T08:59:38Z",
+  "title": "FrontierPhysics：22 个模型配置没有一个通过半数物理科研任务",
+  "summary": "FrontierPhysics 用 42 位物理学家自建的 56 个端到端科研任务评测智能体，22 个模型 26 种配置中最好的也只通过 168 次 rollout 里的 46 次。",
+  "summary_en": "According to the note, FrontierPhysics uses 56 end-to-end research tasks created by 42 physicists to evaluate intelligent agents. Across 22 models and 26 configurations, even the best-performing option reportedly passed only 46 of 168 rollouts. Thus, the reported results indicate that no configuration achieved a majority success rate on the physical research tasks.",
+  "body": "FrontierPhysics 用 42 位物理学家自建的 56 个端到端科研任务评测智能体，22 个模型 26 种配置中最好的也只通过 168 次 rollout 里的 46 次。\n\n论文\n- FrontierPhysics: Evaluating Agents for End-to-End Physics Research — 42 位物理学家按自己研究出题，56 个任务要求智能体查文献、定方案、做实验并写出论文；22 个模型 26 种配置中最好的也只过了 168 次 rollout 里的 46 次，短板是严谨推理与专家直觉而非物理知识。今日 HF Daily 第 2（24 赞）。\n  https://arxiv.org/abs/2611.06910\n- Signed, Sealed, Leaked: Trust Beyond Signature for MCP Toolchains — 合法签名的 MCP 工具仍可夹带外泄代码，Meta 的 MCPGuard-Dynamic 在每次试验中都被绕过；作者提出 germline execution（数据隔离副本），153 次攻击运行零未授权披露，且比每次重启清状态快 2–28 倍。\n  https://arxiv.org/abs/2611.06585\n- What Does Multi-Turn Reinforcement Learning Really Improve in LLM Agents? — 用 Pass@(K,T) 拆解多轮 agentic RL：收益高度依赖交互预算，优势集中在错误恢复与长程韧性而非单步决策质量，并提出随训练变换预算的 BudgetMix RL。\n  https://arxiv.org/abs/2611.06483\n- From Pixels to Actions - Towards Native Vision-Language-Action Policies — NEO-VLA 去掉视觉编码器，让图像 token 与语言在主干中共同演化；层次探针显示动作关键信号往往出现在浅层而非最终视觉表示，规模化无法补回差距。\n  https://arxiv.org/abs/2611.06918\n\nGitHub与基建\n- llama.cpp b12125 — 11 月 5 日 15:32（北京时间）发布：OpenCL 后端默认在 Adreno X2/X2E 上启用 f32 与 q5_K 多列 GEMV，端侧推理路径提速。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12125\n- langgraph 1.2.20 — 11 月 5 日 10:20（北京时间）发布：每个 interrupt() 拥有独立 id，并新增 strict resume 模式，拒绝使用过期的中断应答。\n  https://github.com/langchain-ai/langgraph/releases/tag/1.2.20\n\nSource: https://arxiv.org/abs/2611.06910",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.06910",
+    "verified_at": "2026-11-05T08:59:38Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

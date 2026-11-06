@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-05-methode-fadde9a0",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-05T05:01:10Z",
+  "title": "SEED：把混合模型的 prefill 变浅、把循环状态压低秩，Qwen3.8-Flash-Next 在 GB300 上吞吐提升 1.2–1.4×",
+  "summary": "今天最值得看的是 SEED：它证明混合线性注意力模型可以“浅层写深层记忆”，配合低秩循环状态压缩，让 300B 级生产模型几乎无损地把单卡吞吐再提 1.2–1.4×。",
+  "summary_en": "SEED is presented as a method for hybrid linear-attention models: enabling shallow layers to write into deeper memory while compressing recurrent states to low rank. The note claims that, for a 300B-scale production model such as Qwen3.8-Flash-Next running on GB300, this combination can nearly preserve model quality while increasing single-GPU throughput by 1.2–1.4×.",
+  "body": "今天最值得看的是 SEED：它证明混合线性注意力模型可以“浅层写深层记忆”，配合低秩循环状态压缩，让 300B 级生产模型几乎无损地把单卡吞吐再提 1.2–1.4×。\n\n论文\n- SEED: Shallow Encoding Emits Deep Memories（arXiv:2611.06084，cs.LG，11月5日新投） — 混合线性注意力/SSM 模型的循环状态内存开销超过输出所需；SEED 让深层\"写入\"从浅层锚点发出（prefill 最多只跑 63% 的层），并把每个循环状态存为 sink + 低秩因子，权重冻结下近乎无损，五个 30B–300B+ 生产模型上官方考试几乎不掉分，配合 SGLang 在 GB300 上把 Qwen3.8-Flash-Next 单卡吞吐提升 1.2–1.4×。\n  https://arxiv.org/abs/2611.06084\n- VAR-Q：面向视觉自回归生成的免调优 KV Cache 量化（arXiv:2611.05380，cs.CV，11月5日新投） — 分析发现视觉自回归生成的 KV cache 中少量超大值通道承担主要功能，量化后 KV 内存最多砍 78.5%、质量几乎无损，batch 可放大 6×，对图像/视频扩散式推理的部署很有参考价值。\n  https://arxiv.org/abs/2611.05380\n- Agent Harness Awareness：把已验证的运行时遥测变成工具型 Agent 的操作控制（arXiv:2611.05391） — 宿主在关键动作前提供\"工具健康状态\"快照，在 GPT-5.6 Sol / Claude Sonnet 5 / Gemini 3.7 Flash 上把可观测策略遗憾降低 96.9%，单次派发完成率从 69.4% 升到 95.8%，是 agent harness 设计的可复用结论。\n  https://arxiv.org/abs/2611.05391\n- Who May Overrule the Agent? LLM 评审机构的证据门控权威（arXiv:2611.05390） — 把\"评审模型能否推翻上游决策\"当作管辖权问题：要求评审者给出机械可验证的约束违规记录后才允许替换，可大幅减少对正确提案的破坏，但也指出接口设计不是模型无关的安全保证。\n  https://arxiv.org/abs/2611.05390\n- VITAL：学会\"何时把思考说出来\"的隐式推理框架（arXiv:2611.06108） — 用轻量门控头在显式生成 token 与直接回传隐状态之间切换，只把重要 token 口语化；相比全隐式方法在 GPT-2 上平均准确率相对提升 9.6%、Llama-3.2-1B 上 5.1%，推理长度相当。\n  https://arxiv.org/abs/2611.06108\n\nGitHub与基建\n- llama.cpp b12122：CUDA 侧融合 NVFP4 的 gate/up matmul 与 GLU（11月5日 10:47 北京时间） — MMQ 路径上把 NVFP4 的 gate/up 矩阵乘与 GLU 融合，属于量化推理内核层的实打实优化，利好本地低比特部署。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12122\n- llama.cpp b12124：OpenCL 后端支持非连续 sigmoid（11月5日 11:18 北京时间） — 为 OpenCL/移动与 AMD 后端补上非连续内存布局下 sigmoid 的支持，是小步但实打实的兼容性修复。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12124\n\nSource: https://arxiv.org/abs/2611.06084",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.06084",
+    "verified_at": "2026-11-05T05:01:10Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

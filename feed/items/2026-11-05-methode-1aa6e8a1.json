@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-05-methode-1aa6e8a1",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-05T11:00:21Z",
+  "title": "vLLM 合入 MLA 跨层 KV Cache 共享，DeepSeek 式注意力层显存可跨层复用",
+  "summary": "vLLM 在 18:07（北京时间）合入 MLA 跨层 KV Cache 共享，这是本轮最值得关注的基建改动；同期 Mesa 也并入了通用 Vulkan 兼容层。",
+  "summary_en": "vLLM merged support for cross-layer KV Cache sharing in MLA at 18:07 Beijing time, described as the most notable infrastructure change of this round. The note also states that Mesa concurrently merged a general Vulkan compatibility layer, while the title says this sharing allows DeepSeek-style attention-layer memory to be reused across layers.",
+  "body": "vLLM 在 18:07（北京时间）合入 MLA 跨层 KV Cache 共享，这是本轮最值得关注的基建改动；同期 Mesa 也并入了通用 Vulkan 兼容层。\n\n论文\n- Hybrid Spark: 让内容自己挑选草稿器的自适应投机解码 — 在 vLLM 中同时跑模型草稿器与 n-gram 免模型草稿器并按\"每个已验证草稿 token 的价格\"竞价，代码编辑场景吞吐 1.10–1.62x，聊天场景基本无损，单部署即可兼顾两类负载。\n  https://arxiv.org/abs/2611.05611\n- Can Large Language Models Review the Scientific Literature?（102 篇文章基准） — 用一份 102 篇文献的既有综述做端到端评测：检索阶段发现量能靠机构权限提升，但综合阶段频繁出现无依据论断与引文错误，说明 LLM 只能辅助、不能替代专家判断。\n  https://arxiv.org/abs/2611.05459\n- Hybrid Computer Use：程序化+语义+视觉三通道统一智能体接口 — 微软研究院把命令行/代码、无障碍树(AX)与 GUI 三种通道统一暴露给模型并允许自选组合，OSWorld 2.0 上取得最高 Partial/Binary 分数，可减少屏幕解析往返。\n  https://arxiv.org/abs/2610.41432\n- Beyond Accuracy: 潜在意图下的信息论解码器评估 — 把脑机控制建模为 POMDP 并证明 regret 相变边界，给出可从混淆矩阵 O(K²) 算出的预测量；EEG 上两个同为 35.1% 准确率的解码器，held-out regret 相差 9.6 倍。\n  https://arxiv.org/abs/2611.05658\n\nGitHub与基建\n- vLLM [Core][MLA] 注意力层跨层 KV Cache 共享 (#64095) — 18:07（北京时间）合入，MLA 层可跨层复用 KV Cache，对 DeepSeek 式架构的长上下文服务是直接的显存优化。\n  https://github.com/vllm-project/vllm/commit/b02e2287b24d3ddd15ef71a2b0992194f2276a0c\n- vLLM 默认 --block-size 从 16 改为 64 (#63231) — 17:29 落地的内核级默认调整，影响 KV Cache 分块与调度粒度，升级后建议复核吞吐/显存表现。\n  https://github.com/vllm-project/vllm/commit/732e49d4420448a88dbdbbdb80a765bf51981e51\n- vLLM Rust 前端：Responses API 支持 namespace 工具 (#65853) — 18:45 合入，Rust 前端补齐命名空间工具调用，OpenAI Responses API 兼容度进一步提升。\n  https://github.com/vllm-project/vllm/commit/29f7e701327bd79fc5771e51639104433f7822c4\n- SGLang DSA：DCP decode 的精确 multicast top-k 合并 (#48588) — 约 16:54 合入，新增 CUDA kernel 与单测，稀疏注意力解码路径的分布式合并精度提升。\n  https://github.com/sgl-project/sglang/commit/f3532057e15fb8ede90ce1aeddfb5bd20dfbd4b6\n\n系统\n- Mesa 并入通用 Vulkan 层，统一处理跨驱动游戏兼容性 bug — 18:47（北京时间）报道：Mesa 27.0-devel 新增公共 Vulkan layer，RADV 与 NVK 可共用非驱动特定的绕过方案，并首个用于 Metro Exodus 的 pWaitSemaphores 非法传参规避。\n  https://www.phoronix.com/news/Mesa-Common-Layer-Game-Bugs\n- Omarchy 4.5 发布：支持 Apple Silicon 与更多桌面定制 — 18:23 报道：基于 Asahi Linux 的工作首次扩展到 AArch64，覆盖 M1/M2/M3 与 Neo MacBook，并新增浮动工作区与五个默认应用。\n  https://www.phoronix.com/news/Omarchy-4.5-Released\n- AMD 背书的 Lemonade 本地 AI 服务器重做桌面端与 Web UI — 18:34 报道：2026.45.3 版本换用 route-class 架构的 HTTP 服务、新模型管理器与可视化路由策略头，并支持 2-Horizon 与 Flint 模型系列。\n  https://www.phoronix.com/news/Lemonade-2026.45.3\n\nSource: https://github.com/vllm-project/vllm/commit/b02e2287b24d3ddd15ef71a2b0992194f2276a0c",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/vllm-project/vllm/commit/b02e2287b24d3ddd15ef71a2b0992194f2276a0c",
+    "verified_at": "2026-11-05T11:00:21Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

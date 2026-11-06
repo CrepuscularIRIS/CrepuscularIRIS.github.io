@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-05-saturnus-0f35e299",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-11-05T03:01:17Z",
+  "title": "Ripple-65B Preview 发布：美国开源权重 Agentic Coding 新 SOTA，训练成本仅 3200 万美元",
+  "summary": "Ricursive 放出 Ripple-65B Preview，TerminalBench 2.1 拿下 80.52 分登顶美国开源权重第一，同期 Moonshot 开放 Kimi K3.1 Pro 权重，Meta 收编 Conductor，OpenAI 买下 Pierre。",
+  "summary_en": "Recursive Intelligence released Ripple-65B Preview, an open-weight 65B dense model trained from scratch for $32M, claiming U.S. open-weight state of the art on agentic coding (80.52 on TerminalBench 2.1) with 1M context. Moonshot opened Kimi K3.1 Pro weights on Hugging Face, Conductor said it is joining Meta with its cloud shutting down in November, Qualcomm's 150W Cloud AI 100 Ultra inference card reached the Hacker News front page, and SpaceX posted Starfall for routine microgravity access.",
+  "body": "Ricursive 放出 Ripple-65B Preview，TerminalBench 2.1 拿下 80.52 分登顶美国开源权重第一，同期 Moonshot 开放 Kimi K3.1 Pro 权重，Meta 收编 Conductor，OpenAI 买下 Pierre。\n\n开源模型（官方 agent 名单外，最可能漏报）\n- Ripple-65B Preview：美国开源权重 Agentic Coding SOTA，训练成本仅 3200 万美元 — 11月5日 02:53（北京时间）发布，HN 234 分。新实验室 Ricursive 自研稠密架构、12T token 预训练、1M 上下文，TerminalBench 2.1 得分 80.52，超过 Reflection Beam 501B（80.1）、Meta Muse Spark 816B、Thinking Machines Inkling 975B 与 NVIDIA Nemotron …\n  https://www.ricursive.com/ripple\n- Moonshot 开放 Kimi K3.1 Pro 权重（HF 上线） — 11月4日 23:30 发布，HN 401 分。Kimi K3.1 Pro（10月23日发布时 HN 1096 分）的模型权重终于在 Hugging Face 开放，image-text-to-text 多模态架构、compressed-tensors 量化、8-bit 精度，vLLM/SGLang/Ollama/LM Studio 均可直接跑。月之暗面不在其他四个 agent 的官方源名单里，…\n  https://huggingface.co/moonshotai/Kimi-K3.1-Pro\n\n并购与公司动态\n- Conductor 被 Meta 收购，Conductor Cloud 将于 11 月 20 日关停 — 11月5日 02:22 公布，HN 129 分。知名 AI 编码工具 Conductor（2025年7月上线）宣布加入 Meta，Cloud 服务 11月13日只读、11月20日下线并开始删数据，本地版撑到 2027 年初，明年年初将放出新产品，属于创业团队被巨头收编的典型事件。\n  https://www.conductor.build/announcement\n- OpenAI 将收购 Pierre Computer Company — 11月4日 23:21 官方发布（HN 198 分，Axios 当天跟进）。OpenAI 少见的公开收购动作，指向 GitHub 时代的开发者工具/编程产品线，金额与条款未披露。\n  https://openai.com/index/openai-to-acquire-pierre\n\n硬件与太空\n- Qualcomm Cloud AI 100 Ultra 推理卡登上 HN 首页：150W、128GB、548GB/s — 11月5日 03:55 登上 HN 首页（108 分）。四颗 Cloud AI 100 SoC、64 个 AI 核心、576MB 片上 SRAM、128GB LPDDR4X（548GB/s），单卡可承载百亿级参数模型，被视作 A100 的高性价比替代，官方博客也已上架。\n  https://www.qualcomm.com/data-center/products/cloud-ai-100-ultra\n- SpaceX 上线 Starfall：面向大众的常态化微重力服务 — 11月5日 08:18 上 HN 首页（97 分）。SpaceX 首次把微重力飞行从一次性载人飞行做成可预约的常规服务，是商业航天里程碑式产品发布，其他 agent 均无此类信源。\n  https://www.spacex.com/starfall\n\n开发者与其他\n- Go 1.27 正式引入 encoding/json/v2 与 jsontext 新 JSON API — 11月5日 01:52 官方博客发布。历时一年实验后转正：修复无效 UTF-8 静默损坏、重复键歧义等长期争议问题，并提供 jsontext 低层接口，是 Go 生态十多年来最大的标准库变更之一。\n  https://go.dev/blog/jsonv2\n- 白宫网络被发现存在住宅代理节点 — 11月5日 04:45 登上 HN 首页。Layer 3 Intel 披露在白宫网络流量中检测到住宅代理（residential proxy）节点，涉及官方网络被滥用为流量中转的攻防议题（原文站点拒绝抓取，仅据标题与 HN 首页收录）。\n  https://layer3intel.com/blog/residential-proxies-white-house-network\n\n也许已被官方源 agent 覆盖，但太大不宜等下一轮\n- OpenAI 发布 Images 2.6 图像模型 — 11月5日 07:35 官方博客发布并登 HN 首页（136 分），属本窗口内最大发布；OpenAI 官方源 agent 当天大概率已覆盖，故不列为头条。\n  https://openai.com/index/introducing-images-2-6\n\nSource: https://www.ricursive.com/ripple",
+  "category": "breaking",
+  "source": {
+    "url": "https://www.ricursive.com/ripple",
+    "verified_at": "2026-11-05T03:01:17Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-05-methode-cb3455a8",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-05T02:58:54Z",
+  "title": "SpecOPD：分支并行在线策略蒸馏把推测解码的接受长度再推高 41%（Hugging Face 今日第 3）",
+  "summary": "Qwen 团队的 SpecOPD 用分支并行替代串行 rollout，在线策略蒸馏把推测解码平均接受长度最多提升 41.45%、监督吞吐提升 16.09 倍，成今日 Hugging Face 第 3 热门论文。",
+  "summary_en": "The note reports that Qwen’s SpecOPD replaces serial rollout with branch-parallel processing and uses online policy distillation to improve speculative decoding. According to the cited results, average acceptance length rises by as much as 41.45%, while supervised throughput improves 16.09-fold. The paper reportedly ranked third among Hugging Face’s most popular papers that day.",
+  "body": "Qwen 团队的 SpecOPD 用分支并行替代串行 rollout，在线策略蒸馏把推测解码平均接受长度最多提升 41.45%、监督吞吐提升 16.09 倍，成今日 Hugging Face 第 3 热门论文。\n\n论文\n- GameVerse：分钟级游戏实录数据集，支撑长时程交互式世界建模 — Alaya Lab 出品，Hugging Face 今日第 1 热门论文（7 赞）。6.97 万片段、1655 小时、3.496 亿帧，含 1358 小时连续两分钟序列，比既有数据集长一个数量级；训练后世界模型的时间一致性显著延长。\n  https://huggingface.co/papers/2610.37257\n- SpecOPD：分支并行的在线策略推测解码蒸馏 — Qwen 团队，今日第 3。放弃串行 draft-and-verify rollout，改在参考锚点并行采样分支、共享目标前缀计算（tree mask / 分支一致的 indexer / indexed state replay），直接以接受长度为优化目标；覆盖 8B/27B/125B 与三种并行 drafter。\n  https://huggingface.co/papers/2611.02846\n- Human-to-Robot Transfer via Bridging Representation and Action Space in VLAs（H2RB） — KAIST AI，今日第 2。用几何锚定对齐 + 解耦解码器 token 化器，让未配对的人类演示与机器人数据共同微调预训练 VLA，物体迁移 8.0→51.8，分布外迁移 6.0→45.3。\n  https://huggingface.co/papers/2611.04391\n- VeriSpoof：一个音频 LLM 同时做深伪检测、溯源与取证 — 墨尔本大学。共享权重统一五项语音取证任务并给出可核验的推理依据，Speech-DF-Arena 上 2.14% 池化 EER、开源第一（28 个系统中第三）；仅训练 29.7M/2.85B 参数，单卡 24GB 可跑。\n  https://huggingface.co/papers/2611.04634\n\nGitHub与基建\n- llama.cpp b12121：修复量化 KV Cache 的端上状态拷贝长度 — 11月5日 10:31（北京时间）发布。q8_0/q4_0 等量化类型按块而非元素计数，导致只拷贝部分区间、恢复状态错误甚至崩溃；改为 size/ggml_type_size()*ggml_blck_size() 并加整块断言。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12121\n- LiteLLM v1.107.0-rc.3 — 11月5日 10:06（北京时间）。为仍在 1.107 RC 分支的用户回补两个 GitHub Copilot 按用户凭证修复（GHE.com 租户的 github_copilot_host 支持等）；稳定版仍是 1.108.0。\n  https://github.com/BerriAI/litellm/releases/tag/v1.107.0-rc.3\n- Ollama v0.40.15-rc1 — 11月5日 09:31（北京时间）。升级内置 llama.cpp 到 b12111，并移除已被上游修复取代的 002-metal-unary-cast-constexpr 补丁。\n  https://github.com/ollama/ollama/releases/tag/v0.40.15-rc1\n\n系统\n- MPV 0.42 发布：Wayland 改进与更好的 HDR 支持 — 11月5日 09:44（北京时间）发布，新版播放器在 Wayland 与 HDR 表现上有明显提升。\n  https://www.phoronix.com/news/MPV-0.42-Released\n- LXQt 2.5 发布：QTerminal 增强，移除最后的 LXDE 依赖 — 11月5日 09:21（北京时间）发布，LXDE 遗留依赖被彻底清除。\n  https://www.phoronix.com/news/LXQt-2.5-Released\n\nSource: https://huggingface.co/papers/2611.02846",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2611.02846",
+    "verified_at": "2026-11-05T02:58:54Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

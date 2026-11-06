@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-05-methode-f23a99f7",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-05T01:07:37Z",
+  "title": "llama.cpp v0.9.0 发布：OCP FP8 E4M3 量化 + flash_attn_ext_rows，统一 KV cache 多序列推理效率显著提升",
+  "summary": "llama.cpp v0.9.0 落地：OCP FP8 E4M3 量化、flash_attn_ext_rows 统一 KV cache、Mistral Large 4 架构支持，ggml 升到 v0.29.0 并带来 NCCL 多节点张量并行。",
+  "summary_en": "llama.cpp v0.9.0 adds OCP FP8 E4M3 quantization, the flash_attn_ext_rows op for unified KV cache in multi-sequence inference, and a batched tensor-copy API, while supporting four new architectures including Mistral Large 4. ggml moves to v0.29.0 with NCCL-based multi-node tensor parallelism and backend performance work. The round also ships papers on looped-transformer KV quantization, local preference learning for reasoning compression, durable suppression of misaligned behavior, and the YANAMI multimodal benchmark, plus LiteLLM, LangChain and Cline releases and Linux items covering CUDA 13.5, systemd's Rust support and Bazzite 45.",
+  "body": "llama.cpp v0.9.0 落地：OCP FP8 E4M3 量化、flash_attn_ext_rows 统一 KV cache、Mistral Large 4 架构支持，ggml 升到 v0.29.0 并带来 NCCL 多节点张量并行。\n\n论文\n- LoopVQ: Sub 1-bit KV Cache Quantization for Looped Transformers — 循环Transformer的KV cache沿loop轴高度冗余，LoopVQ联合多步量化到0.5bit（配合TaSQ可到0.25bit），已在SGLang落地：32K上下文解码延迟近乎减半，1.4B/2.6B模型峰值吞吐提升最高4.3倍与6.1倍。\n  https://arxiv.org/abs/2611.05304\n- Think Less, Locally: Local Preference Learning for Reasoning Compression — 腾讯团队提出LoCo，用DPO训练模型“何时停止思考”，数学任务输出长度减少41.7%–45.4%、代码减少23.4%–36.3%且精度不降，HF当日热榜第3。\n  https://arxiv.org/abs/2611.04814\n- Suppressing Misaligned Behaviors in Language Models, Durably — 面向“持续有效”的失配行为抑制方法，避免对齐修正在后续微调中失效，是本轮对齐向研究里少见的新角度。\n  https://arxiv.org/abs/2611.05358\n- YANAMI: A Large-Scale Multimodal Dataset and Benchmark for Multiturn Stateful Interaction — 13位作者的多模态数据集与基准，针对多轮有状态交互这一当前多模态模型评测的空白地带。\n  https://arxiv.org/abs/2611.05280\n- PyRUA-DataFarm: LLM Agent as a Cost-Efficient Teleoperator for Real-Ready Robot Data — 用LLM智能体做低成本遥操作采集机器人数据，直指具身智能真实数据采集成本过高的瓶颈。\n  https://arxiv.org/abs/2611.05320\n\n研究博客与媒体\n- AI agents run this automated biology lab that sequences DNA and more — Nature 报道AI智能体已接管自动化湿实验室的测序等流程，是“智能体进实验室”这条线的新进展。\n  https://www.nature.com/articles/d41586-026-03552-8\n- AI agents enter the 'wet lab' — Nature 同日专题讨论AI智能体进入湿实验室的伦理与流程变化。\n  https://www.nature.com/articles/d41586-026-03270-1\n\nGitHub与基建\n- llama.cpp v0.9.0 正式版 — 11月4日21:08发布：新增OCP FP8 E4M3（饱和模式）量化、flash_attn_ext_rows让统一KV cache在多序列推理下更省、批量tensor copy API，支持Clover/Limite/Metis-1.6/Mistral Large 4四种架构，Chatterbox TTS与Nemotron 3.5转写加入音频生成，ggml升至v0.29.0含NCCL多节点张量…\n  https://github.com/ggml-org/llama.cpp/releases/tag/v0.9.0\n- llama.cpp 预发布构建 b12114–b12119 — 11月5日06:34的b12119等连发构建，集中在server realtime通道：异常改为返回错误事件而非崩溃、工具schema校验等修复。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12119\n- LiteLLM v1.108.0 与 v1.106.7 — v1.108.0（11月4日11:35）修正A2A agent card协议大小写、Azure AI Foundry全路由支持Entra ID/OAuth；v1.106.7于11月5日03:29跟进发布。\n  https://github.com/BerriAI/litellm/releases/tag/v1.108.0\n- langchain-core 1.7.6、langchain-openai 1.7.4、langchain-fireworks 1.7.2 — core 1.7.6（11月5日08:22）优化流式AIMessageChunk合并与partial JSON解析性能，另有OpenAI与Fireworks集成包同步更新。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-core%3D%3D1.7.6\n- Cline 桌面 nightly：把 UX 验证委派给子智能体 — 11月5日05:08的nightly引入子智能体负责UX验证，并保留被委派工具的审批策略与子身份，属agent编排方向改动。\n  https://github.com/cline/cline/releases/tag/desktop-nightly-20261104233655\n\n系统\n- NVIDIA CUDA 13.5 发布，生产支持 Vera Rubin — 11月5日05:11发布，官方对Vera Rubin架构提供生产级支持，是本轮算力栈最受关注的一条。\n  https://www.phoronix.com/news/NVIDIA-CUDA-13.5\n- systemd 开始初步支持 Rust — 11月4日20:44，系统底层C项目引入Rust的标志性进展，长期影响发行版构建与内存安全。\n  https://www.phoronix.com/news/systemd-Loves-Rust\n- Linux 7.3 很可能成为今年的 LTS 内核 — 11月4日20:55，长期支持版本选择即将定档，影响企业发行版规划。\n  https://www.phoronix.com/news/Linux-7.3-Likely-LTS\n- Debian APT 遭中间人攻击，可导致 root 权限任意代码执行 — 11月4日21:10，安全高危事件，涉及软件包下载链路完整性。\n  https://www.phoronix.com/news/Debian-APT-MITM-RCE\n- LZ4 1.11 引入多线程压缩 — 11月5日05:53发布，liblz4多线程化并带来其他性能提升，影响镜像打包与解压吞吐。\n  https://www.phoronix.com/news/LZ4-1.11-Released\n- Bazzite 45 发布 — 11月4日23:54，基于Fedora 45重基、升级OGC内核并支持罗技TrueWheel设备的镜像式游戏发行版。\n  https://lwn.net/Articles/1105395\n- Plasma 移除 X11 会话，部分 Fedora 用户感到意外 — 11月5日00:33，桌面环境向Wayland收敛过程中的兼容性争议点。\n  https://lwn.net/Articles/1105130\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/v0.9.0",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/v0.9.0",
+    "verified_at": "2026-11-05T01:07:37Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-05-lacia-3d1036e6",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-11-05T13:04:03Z",
+  "title": "spaCy 作者公开质疑 MIT「Astra 直接改写模型权重」论文：读权重与写权重被混为一谈",
+  "summary": "MIT 那篇「模型能读写另一个模型的大脑」的爆火论文被 spaCy 作者公开质疑：真正修 Qwen 数学能力时，Astra 用了 Python 编程加 50 次前向测试，和「只读原始权重」完全是两回事。",
+  "summary_en": "Quantum-bit reports that Matthew Honnibal, spaCy's creator, published a long critique of the MIT Astra paper on reading and writing model weights. Honnibal argues the paper bundles three very different experiments: tiny networks whose raw weights were directly read, versus repairing Qwen3.5-0.8B, where Astra was allowed to run Python and perform up to 50 forward tests. He says the headline framing misleads readers, while conceding the model still shows impressive tool-use and reasoning ability as an \"AI engineer.\"",
+  "body": "MIT 那篇「模型能读写另一个模型的大脑」的爆火论文被 spaCy 作者公开质疑：真正修 Qwen 数学能力时，Astra 用了 Python 编程加 50 次前向测试，和「只读原始权重」完全是两回事。\n\n量子位\n- MIT 神作被锤：Astra 爆改 Qwen 权重？就吹吧！ — 11月5日 15:10（北京时间）。Matthew Honnibal 逐条拆解 MIT 论文的 8 组实验：小网络实验确实是「只喂原始浮点权重」，但修 Qwen 数学题时允许跑 Python 和 50 次前向测试，被包装成同一种「读脑」超能力；他也承认这本身仍是了不起的工程突破。\n  https://www.qbitai.com/2026/11/507782.html\n\nInfoQ 中文\n- 谷歌用 Gemini 4 Argon 一夜优化 ADK 代码库的 20 万行代码 — 11月5日 11:00（北京时间）。11 小时无人值守运行产出两项被采纳的优化：长会话内存准备开销降约 40%、冷启动包导入时间缩短 21%，但 4 项改动在评审中被拒，说明 agent 改现有代码库仍卡在评审与测试环节。\n  https://www.infoq.cn/article/u4fAoAH5vZPCV4TVqAcO\n- MCP C# SDK 2.0 默认启用 HTTP 无状态模式，新增多轮请求能力 — 11月5日 15:19（北京时间）。实现 MCP 2026-07-28 规范修订版：移除 initialize 握手与 Mcp-Session-Id、默认 Stateless、用 MRTR 替代服务端反问客户端，网关可按请求头直接路由。\n  https://www.infoq.cn/article/80iUxvCNB59aOgyXB7LN\n- 谷歌发布 ML Drift：为各类 GPU 加速端侧 AI 推理 — 11月5日 13:00（北京时间）。开源跨平台 GPU 计算引擎（OpenGL ES/OpenCL/Metal/WebGPU），是 LiteRT 的加速底座：内存开销比 llama.cpp、MLX LM 低 12%，YouTube Shorts 特效帧延迟最多降 40%，旧 TFLite GPU 委托将停止更新。\n  https://www.infoq.cn/article/hHzARIJTeqoqYpjNKEuq\n- 混元 Hy4 实测：腾讯的产品基因，模型继承了几分？ — 11月5日 09:44（北京时间）。InfoQ 原创实测：77B×10 MoE、首次带视觉理解与 Computer Use，幻觉率从 12.95% 降到 7.2%；实测 55 分钟完成三轮塔防游戏研发部署，GameDev 评测较 Preview 提升 19.1%。\n  https://www.infoq.cn/article/C61Q16LQIDq45l0iCCzV\n\nStratechery\n- An Interview With Intuit CEO Sasan Goodarzi About Accounting and AI — 11月5日 19:00（北京时间）。Ben Thompson 对话 Intuit CEO：讨论 44 年老软件公司如何应对 AI 范式转移，并主张用 AI 把会计师从「合作者」变成「客户」，同时回答 Intuit 是否正被颠覆。\n  https://stratechery.com/2026/an-interview-with-intuit-ceo-sasan-goodarzi-about-accounting-and-ai\n\nSource: https://www.qbitai.com/2026/11/507782.html",
+  "category": "street",
+  "source": {
+    "url": "https://www.qbitai.com/2026/11/507782.html",
+    "verified_at": "2026-11-05T13:04:03Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}

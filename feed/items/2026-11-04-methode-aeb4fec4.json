@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-04-methode-aeb4fec4",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-04T08:58:30Z",
+  "title": "Route Anything：把\"模型+策略路由\"做成可训练的通用编排问题（HF 今日榜首，65 赞）",
+  "summary": "Route Anything 用 37 万次打分跑通\"多模型/多策略路由\"的统一理论与训练框架，学习到的路由器在 16 个基准上比最优固定候选还高，并让单位成本效率平均提升 8.82 倍。",
+  "summary_en": "Route Anything studies model and policy routing for general-purpose AI systems. The authors build a unified theory of quality-cost trade-offs, assemble a 374,401-run omni-modal trajectory matrix over 25 benchmarks and 452 candidate configurations, then train learned routers. Per-input oracle routing beats the best fixed candidate by 5.4 points, learned routers match or exceed it on most benchmarks, and average efficiency improves 8.82x versus the reference model.",
+  "body": "Route Anything 用 37 万次打分跑通\"多模型/多策略路由\"的统一理论与训练框架，学习到的路由器在 16 个基准上比最优固定候选还高，并让单位成本效率平均提升 8.82 倍。\n\n论文\n- Route Anything: A Study of Model and Policy Routing for General-Purpose AI Systems — HF 今日 Daily Papers 榜首（65 赞）。在 25 个基准、452 个候选配置、374,401 次打分跑上统一建模路由，最优固定候选之上再 +5.4 分，学习型路由器平均把效率提到 8.82 倍。\n  https://arxiv.org/abs/2611.05275\n- ToolSpace: Scaling Tool-Centric Environment Synthesis for Long-Horizon Agents — 把 MCP 环境合成的顺序倒过来：从真实执行轨迹里挖工具依赖再聚类成环境，7 个长程基准上把 Qwen3.6-35B-A3B 从 23.0 拉到 41.0（RL 后 43.2）。\n  https://arxiv.org/abs/2611.05036\n- SpecPilot: Autonomous Algorithm Discovery and Systems Optimization for Speculative Decoding — 伯克利用 agent 循环自动搜投机解码的系统级优化，发现 12-bit 无损权重格式与多种批处理机制，单请求加速比从 4.46× 提升到 10.87×。\n  https://arxiv.org/abs/2611.02501\n- Axion 1.0: Open Agent Foundation Models, Simplified — 全开放 agent 基座模型：仅两段 SFT + RL，不做 mid-training/DPO/OPD，并连同数据构造与训练代码一并放出。\n  https://arxiv.org/abs/2611.03233\n- Alignment Faking Depends on the Value, Not Just the Model — 今日 cs.AI 新稿：对齐伪装是否成立取决于「模型×价值观」配对而非模型本身，32 个 ValueBench 维度上 70B 蒸馏模型甚至超过 ~675B 模型。\n  https://arxiv.org/abs/2611.03650\n- Why Pay for Long Reasoning When Rewrite Do Trick? — 把历史推理压缩成紧凑状态记录后，后续推理 token 与软件 agent 的整体花费都下降，为「省 token」提供了无需重训的路径。\n  https://arxiv.org/abs/2611.03852\n- MCPGuard: Finding Conformance Gaps in MCP SDKs — 用结构+行为双轨加动态裁决自动检出 MCP 官方 SDK 与规范之间的实现缺口，Python/TypeScript SDK 上分别确认 13/19 处，黑盒基线一个都测不出。\n  https://arxiv.org/abs/2611.03662\n\nGitHub与基建\n- llama.cpp b12102: ggml: bound views by the bytes their strides reach (#31584) — 11月4日 15:47（北京时间）发布：修正了 view 边界校验用连续张量大小计算导致的误判，让校验改按实际 stride 触及的字节数，堵住越界读。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12102\n- llama.cpp b12101: ggml 直接写入 host-buffer 张量数据（#31144） — 11月4日 16:32（北京时间）：GGUF writer 去掉每个张量的临时拷贝，省掉逐张量分配、清零与 memcpy。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12101\n\nSource: https://arxiv.org/abs/2611.05275",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.05275",
+    "verified_at": "2026-11-04T08:58:30Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

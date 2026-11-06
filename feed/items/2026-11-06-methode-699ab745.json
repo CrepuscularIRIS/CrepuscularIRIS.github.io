@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-06-methode-699ab745",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-06T03:00:18Z",
+  "title": "Ollama v0.40.15 正式版发布（11-06 09:47）：支持小米 MiMo V2.6，AutoTrust 决策模型上线",
+  "summary": "Ollama v0.40.15 在 11-06 09:47（北京时间）正式发布，落地小米 MiMo V2.6 与 AutoTrust 决策模型，本轮另有 Hugging Face 日榜新王「Turns Matter」与 vLLM/SGLang 密集提交。",
+  "summary_en": "Ollama v0.40.15 was officially released at 09:47 Beijing time on November 6. The release adds support for Xiaomi’s MiMo V2.6 and introduces the AutoTrust decision model. The update also highlights “Turns Matter,” the new leader of Hugging Face’s daily chart, alongside a series of concentrated commits from vLLM and SGLang.",
+  "body": "Ollama v0.40.15 在 11-06 09:47（北京时间）正式发布，落地小米 MiMo V2.6 与 AutoTrust 决策模型，本轮另有 Hugging Face 日榜新王「Turns Matter」与 vLLM/SGLang 密集提交。\n\n论文\n- Turns Matter: Advancing Streaming Video RL via Turn-Level Credit — HF 日榜第一（63 赞），把信用分配下沉到流式视频 RL 的每一\"轮\"，是长时程视频智能体训练的新范式。\n  https://arxiv.org/abs/2611.06728\n- ViBench 2.0: A Benchmark for Long-Horizon Software Building — Replit 用它选模型：17 个全栈产品、241 条需求、544 份测试计划，最强模型单测通过率高达 98% 但完整交付成功率仅 65%，开源权重模型为 0。\n  https://arxiv.org/abs/2611.05620\n- SlackBench: Benchmarking Agents on Collaborative Projects Grounded in Real Code Repositories — 伯克利等构造真实协作项目环境（Slack 讨论 + GitHub 仓库 + Google Docs），33 个前沿系统最好仅约 80%，多数低于 66%。\n  https://arxiv.org/abs/2611.05512\n- Halley: A Predictive Control Plane for Optical AI Data Center Networks — HF 日榜第 5（30 赞），用预测式控制平面调度光互联数据中心网络，是 AI 集群互连层面的新系统方向。\n  https://arxiv.org/abs/2611.04408\n- Verified but Vacuous: Three Failure Surfaces of LLM-Driven Verified Code Generation — 指出\"验证通过\"其实含三层：验证器接受率 99.1%，但只有 1.9% 的证明真正绑定到规格谓词；结构化验证样本仍有 11%–15% 挂隐藏测试。\n  https://arxiv.org/abs/2611.05590\n- Airlock: Bounding the Multi-Agent Blast Radius via Selective Online Containment — 多智能体运行时用权限分层 + 溯源 DAG 在告警后精准隔离被污染分支，比 A2A/LangGraph 原生控制多保留 46–96 个百分点的健康工作。\n  https://arxiv.org/abs/2611.06727\n- EmoReward: Self-Evolving Reward Calibration for Emotional Video Generation RL — 腾讯混元出品，HF 日榜第 8（22 赞），情感视频生成的奖励模型自演化校准。\n  https://arxiv.org/abs/2611.06518\n\nGitHub与基建\n- Ollama v0.40.15（11-06 09:47） — 新增小米 MiMo V2.6（9B，代码/Agent 场景）与 AutoTrust 决策模型（9b/35b/27b-vl），ollama launch 支持 Kimi Code CLI，循环与视觉 GGUF 可并发服务多请求。\n  https://github.com/ollama/ollama/releases/tag/v0.40.15\n- llama.cpp b12140–b12144（11-06 09:14–10:51） — 连续 5 个 nightly 构建，b12144 把 MoE 数据布局线性化以优化 MMQ/MMF 的 tile 尺寸，同时修掉 F16 性能回退。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12144\n- vLLM：MiniMax M3.1 dspark drafter 单体内核（11-06） — 新提交把 AMD dspark drafter 做成 monokernel（+3216 行），同批还有 ROCm 并行 decode top-k、FlashInfer 升级 0.7.3、投机解码接受估计器修复。\n  https://github.com/vllm-project/vllm/commit/84e17e1\n- SGLang：FlashInfer prefill 上下文并行 + 寒武纪 MLU 支持（11-06） — 注意力后端接入 FlashInfer 的 prefill CP 策略（+332 行），并新增 Cambricon MLU 平台初步支持与 MXFP8 W8A8 量化路径。\n  https://github.com/sgl-project/sglang/commit/b3f5a7e\n- LiteLLM v1.108.1（11-06 07:42） — 1.108 LTS 分支维护版，回补 21 个主分支修复，并开始用 cosign 对 Docker 镜像签名与验证。\n  https://github.com/BerriAI/litellm/releases/tag/v1.108.1\n- Cursor 更新日志：Build Live Apps in Cursor（11-05） — 云端 Agent 可直接脚手架 Web 应用、开通 Postgres、接 Cursor SSO 鉴权并发布为可分享链接，发布前跑确定性 + 智能体安全检查。\n  https://cursor.com/changelog\n\n系统\n- AMDGPU 为 Linux 7.4 修复 HDMI 2.2 FRL（11-06 06:07） — 内核驱动补齐 HDMI 2.2 的 FRL（固定速率链路）支持，涉及显示输出能力修复。\n  https://www.phoronix.com/news/AMDGPU-HDMI-2.2-FRL-Fixes\n- Linux 7.4-rc1 构建耗时分析（11-06 05:44） — 优化带来收益，但代码库变大让整体编译时间变化不大，是发行版构建成本的风向标。\n  https://www.phoronix.com/news/Linux-7.4-rc1-Build-Times\n- LWN：User namespaces + file capabilities = trouble（11-05 22:33） — 用户命名空间与文件能力（file capabilities）叠加带来的权限模型风险，容器与沙箱实现者必读。\n  https://lwn.net/Articles/1103429\n\nSource: https://github.com/ollama/ollama/releases/tag/v0.40.15",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ollama/ollama/releases/tag/v0.40.15",
+    "verified_at": "2026-11-06T03:00:18Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

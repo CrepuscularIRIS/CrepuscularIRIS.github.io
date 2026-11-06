@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-04-methode-2be6aba3",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-04T11:05:25Z",
+  "title": "You don't need long context: 频繁压缩上下文，前沿开源模型在长程任务上几乎不掉点",
+  "summary": "一篇技术报告用频繁压缩（frequent compaction）证明前沿模型在长程任务中几乎不依赖长上下文，同时把投机解码重新解读为长程智能体的\"精度分配器\"。",
+  "summary_en": "A technical report argues that frequent context compaction can let frontier open-source models maintain nearly unchanged performance on long-horizon tasks, suggesting they rely less on extensive context windows than commonly assumed. It also reframes speculative decoding as a “precision allocator” for long-horizon agents, rather than merely an inference-speed optimization. The note presents these as report findings, without independently confirming their generality.",
+  "body": "一篇技术报告用频繁压缩（frequent compaction）证明前沿模型在长程任务中几乎不依赖长上下文，同时把投机解码重新解读为长程智能体的\"精度分配器\"。\n\n论文\n- You don't need long context — 11 月 4 日 02:17（北京时间）提交的技术报告：通过频繁压缩上下文，前沿开源模型在长输入/长程任务上几乎不掉点，末尾 token 成本可差 7 倍，并提出\"语义状态空间模型\"（SSSM）挑战长上下文范式。\n  https://arxiv.org/abs/2611.05306\n- Adversarial Speculative Reasoning Improves Long Horizon Agents — 把投机解码从纯加速器变成\"上下文精度分配器\"：训练 draft 模型在关键推理点被拒，让目标模型在最干净的条件下采样，30 步后的输出分布明显更稳，端到端成功率上升。\n  https://arxiv.org/abs/2611.05345\n- A Circuit for In-Context Learning — 给出少样本任意标签分类中 ICL 的机制级拆解：标签位置的残差流充当 KV 记忆，中层注意力写入类别、上层读出并复制标签，并用激活修补、头部消融逐一因果验证。\n  https://arxiv.org/abs/2611.05344\n- The Geometry of Ignorance: Detecting Suppressed Knowledge in LLMs through Activation Fragmentation — 用\"遮蔽向量\"的几何一致性区分真懂与装懂：已知概念形成低熵簇，无知则几何碎裂；十个指令模型上稳定区分，并可作为免攻击的遗忘鲁棒性代理指标。\n  https://arxiv.org/abs/2611.05272\n- DreamX: Video Diffusion Model is a Universal Latent Action Learner — 把预训练视频扩散模型改造成通用隐式动作学习器，每帧压缩 300 倍（1200→4 token），实现人与机器人之间的任意到任意动作迁移，LARY-Bench 上达到同类 SOTA。\n  https://arxiv.org/abs/2611.05377\n- Behind Video Generation: Observations and Insights on Multimodal Understanding from Kling — 可灵团队系统复盘其多模态理解栈：统一图文视频音频的 Kling-MLLM、参考锚定字幕、文本级与生成器在环的强化学习式 prompt 增强，以及奖励模型与自动评测的踩坑经验。\n  https://arxiv.org/abs/2611.04916\n- ParetoSaddler: Pareto-Guided Optimization of Agent Harnesses for Quality and Cost — 把\"提示词/harness 优化\"从只管质量扩展到质量-成本联合优化：ClawMark 上质量 70.86%→81.35% 且成本 $1.17→$1.01，GAIA2 上 56.22%→62.89%、成本 $0.78→$0.45。\n  https://arxiv.org/abs/2611.02079\n- Words Caught in the Heart: Simulating Person-Specific Expression for Self-Opaque Clients in Psychotherapy — 心理学咨询场景的 LLM 来访者模拟器 Pandora，用独立的表达规划器复现个体语言习惯，把\"像 AI 的表达\"判定率从基线 43.3–67.2% 降到 7.2%。\n  https://arxiv.org/abs/2611.00617\n\nGitHub与基建\n- vLLM: 让 b12x 自行选择默认 KV block 大小（#62265） — 11 月 4 日 17:42（北京时间）合入的注意力层修复，把 b12x 模型的默认 KV 块大小改为自动选择，避免硬编码带来的显存/吞吐次优问题。\n  https://github.com/vllm-project/vllm/commit/790be385c8a69f45ec9a7a85ef00836d1684060f\n- SGLang: aiter 在 unified extend 稠密布局下跳过 q.contiguous()（#47822） — 11 月 4 日 17:49（北京时间）的 AMD 后端性能补丁：在 per-token 布局已稠密时省去一次张量拷贝，直接减少长上下文扩展路径上的冗余开销。\n  https://github.com/sgl-project/sglang/commit/27aedf7f93cc7ac3bff43e7150e42a3c0baa6957\n\nSource: https://arxiv.org/abs/2611.05306",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.05306",
+    "verified_at": "2026-11-04T11:05:25Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

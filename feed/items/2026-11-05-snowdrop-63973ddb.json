@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-05-snowdrop-63973ddb",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-11-05T01:03:11Z",
+  "title": "Route Anything 登顶 HF 日榜：把\"给每个任务选谁干活\"做成可训练的系统，平均效率提升 8.82 倍",
+  "summary": "昨天的重头戏是一个\"路由器\"研究：不再指望单模型包打天下，而是动态挑选最合适的模型/工具/策略，用 37 万次跑分把这件事量了出来。",
+  "summary_en": "Route Anything tops Hugging Face Daily Papers with 84 upvotes, framing model and policy routing as a unified problem for AGI-style systems. The team built an omni-modal trajectory matrix across 25 benchmarks (language, image, video, speech, coding, workplace agents, robot manipulation) with 374,401 scored runs from 452 candidate configurations. Learned routers beat the best fixed model by 0.3 points across 16 benchmarks while cutting policy time 24%, and raise average efficiency 8.82x versus the reference model.",
+  "body": "昨天的重头戏是一个\"路由器\"研究：不再指望单模型包打天下，而是动态挑选最合适的模型/工具/策略，用 37 万次跑分把这件事量了出来。\n\nHugging Face 今日热榜\n- Route Anything: A Study of Model and Policy Routing for General-Purpose AI Systems — 昨日 HF 头号论文（84 赞）。核心论点是别指望一个模型全能，而是像调度器一样按任务动态选模型/工具/策略；25 个基准、45.2 万个候选配置、37.4 万次打分，结论是学习到的 router 平均能带来 8.82 倍效率提升，16 个基准上甚至超过最优单一模型。\n  https://huggingface.co/papers/2611.05275\n- Axion 1.0: Open Agent Foundation Models, Simplified — 一个全开源的 agent 基座模型，训练配方却极简：两段 SFT + 强化学习，没有中训练、没有 DPO、没有蒸馏；数据构造、验证、prompt、训练代码全部公开，多项 agent 基准上已能对标商业模型。\n  https://huggingface.co/papers/2611.03233\n- RoboColosseum: Evaluating Physical Intelligence at Scale In-The-Wild — 把机器人评测搬到 124 个真实站点分布式跑：5 个 VLA 策略 + 3 个前沿 agent、4 种本体、5699 次成对对比。最扎心的数字是不同本体上的策略排名一致性只有 Kendall W=0.24，微调前后还出现大规模排名反转——现有 robot benchmark 基本不可信。\n  https://huggingface.co/papers/2611.02497\n- Think Less, Locally: Local Preference Learning for Reasoning Compression（腾讯 LoCo） — 不是把思维链整体压短，而是训练模型判断\"现在还需不需要继续想\"：冻结推理前缀、生成更短的续写再用 DPO 学偏好，数学题输出长度砍掉 41.7%–45.4%、代码砍 23.4%–36.3%，准确率不降反升。\n  https://huggingface.co/papers/2611.04814\n\narXiv 新论文\n- You don't need long context — 这篇直接对长上下文叙事开火：在长任务上频繁压缩上下文，前沿开源模型几乎不掉分；甚至长程软件工程任务里每个 context 只做一步动作也不崩，并顺势提出 semantic state space model 的概念。\n  https://arxiv.org/abs/2611.05306\n- Adversarial Speculative Reasoning Improves Long Horizon Agents — 把推测解码从\"纯加速器\"改造成\"精度分配器\"：训练草稿模型在关键推理点上故意被拒，让这些 token 从目标模型噪声最小的条件下采样，30 步后的输出分布因此可控。只训练 0.06%–0.28% 的托管参数就能提高长程 agent 成功率。\n  https://arxiv.org/abs/2611.05345\n- LoopVQ: Sub 1-bit KV Cache Quantization for Looped Transformers — 循环式 Transformer 的 KV cache 沿循环轴高度冗余，联合量化后压到每元素 0.5 bit 仍优于标准 LLM 的现有 KV 向量量化方法，配合 TaSQ 可下探到 0.25 bit；已在 SGLang 落地，32K 上下文解码延迟近半、峰值吞吐最高提升 4.3× 和 6.1×。\n  https://arxiv.org/abs/2611.05304\n- The Geometry of Ignorance: Detecting Suppressed Knowledge in LLMs through Activation Fragmentation — 模型\"拒绝回答\"不等于\"不知道\"。这篇用隐状态里概念查询与匿名改写之差的几何连贯性做判据：真知识形成紧致低熵簇，无知则表现为激活碎片化。十个指令模型上该指标稳定区分已知/未知，还能在不做攻击的情况下评估 unlearning 健壮性（EMNLP Findings 2026）。\n  https://arxiv.org/abs/2611.05272\n\nNature\n- AI agents run this automated biology lab that sequences DNA and more — Nature 11 月 4 日报道：AI 智能体已经开始直接驱动自动化生物实验室，完成 DNA 测序等实验流程——agent 从\"写建议\"走向\"动手做实验\"，对 AI for Science 和实验室自动化的含义都很大。\n  https://www.nature.com/articles/d41586-026-03552-8\n\nSource: https://huggingface.co/papers/2611.05275",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2611.05275",
+    "verified_at": "2026-11-05T01:03:11Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

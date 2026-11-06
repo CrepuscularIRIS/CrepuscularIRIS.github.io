@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-06-lacia-d600e390",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-11-06T13:05:38Z",
+  "title": "Cloudflare 推出 tsrs：由 Claude Opus 5.5 Agent 主导移植的 TypeScript 编译器 Rust 版，类型检查提速最高 8 倍",
+  "summary": "今天最热的一条：Cloudflare 联合 VoidZero、Owner.com 推出 tsrs——TypeScript 编译器的 Rust 移植版，移植过程几乎全由 Claude Opus 5.5 Agent 驱动，实测类型检查提速 5.3 倍、内存少 72%，而微软用两年和整个团队写的 Go 版本 tsgo 被「几周做完」抢了风头。",
+  "summary_en": "Cloudflare, VoidZero, and Owner.com reportedly introduced tsrs, a Rust port of TypeScript’s compiler. The migration was said to have been driven almost entirely by a Claude Opus 5.5 Agent and completed in weeks. Early tests claim type checking is 5.3 times faster and uses 72% less memory, with speedups of up to eight times, while contrasting the effort with Microsoft’s two-year, team-developed Go version, tsgo.",
+  "body": "今天最热的一条：Cloudflare 联合 VoidZero、Owner.com 推出 tsrs——TypeScript 编译器的 Rust 移植版，移植过程几乎全由 Claude Opus 5.5 Agent 驱动，实测类型检查提速 5.3 倍、内存少 72%，而微软用两年和整个团队写的 Go 版本 tsgo 被「几周做完」抢了风头。\n\nInfoQ 中文\n- Cloudflare 与 VoidZero 联合推出 tsrs：由 AI 生成的 TypeScript 编译器 Rust 移植版 — 移植全程由 Claude Opus 5.5 Agent 驱动、以 TS 官方 15197 个一致性测试为基准；实测类型检查提速 5.3 倍、内存降 72%，但相对 TS 7.1 beta 提速收窄到 2.7 倍，且退出码与 tsc 不同可能悄悄破坏 CI。\n  https://www.infoq.cn/article/lGoA1ZSw6ojeh68GVlBl\n- 智能体 Harness 的演进：从链、图到代码化 — LinkedIn 的一线实践总结：从提示词链到 LangGraph 图编排，再到以代码为推理媒介的编码 Harness，是当前 Agent 工程化路线图的高质量参考（11 月 6 日，北京）。\n  https://www.infoq.cn/article/B7tsA5tjD08k2gd0OtXd\n- 2026 年 PyTorch 大会：谷歌和 Meta 开源 TorchTPU，在 TPU 上原生支持 PyTorch — 取代需侵入式改源码的 PyTorch/XLA，model.to(\"tpu\") 即可迁移；Qwen3 235B 在 8192 个 TPU v7x 上 FLOPs 利用率 28%，并预告 AWS Trainium 的 TorchNeuron 同类路线。\n  https://www.infoq.cn/article/5s2oa0BLlgR8fplkq2uK\n\nInfoQ（英文站）\n- GitLab 19.5 Makes Agentic Development a Governed Part of the DevOps Platform — 把智能体开发纳入 DevOps 平台的治理与管控框架，是企业侧落地 Agent 流程化的又一官方动作（11 月 6 日 20:00 北京时间）。\n  https://www.infoq.com/news/2026/11/gitlab-19-5-agentic-platform\n- TypeScript 7.1 Beta: Restores the Compiler API and Makes Vue and Svelte First-Class — 官方 Go 版编译器恢复 Compiler API 并把 Vue、Svelte 提升为一等公民，同时吸收了 tsrs 的部分优化，是评估是否切换编译器的关键节点。\n  https://www.infoq.com/news/2026/11/typescript-7-1-beta\n- GitHub Actions Lockfiles Reach GA to Secure Workflow Dependencies — CI 工作流依赖锁定正式 GA，直接缓解供应链攻击面，是所有使用 Actions 的团队本周该跟进的变更。\n  https://www.infoq.com/news/2026/11/github-actions-lockfiles-ga\n- Vault Fork OpenBao Adds External Keys and Quantum-Ready TLS — Vault 社区分叉 OpenBao 2.7 加入外部密钥与抗量子 TLS，密钥管理基础设施在 AI Agent 广泛持证时代的关键补强。\n  https://www.infoq.com/news/2026/11/vault-fork-openbao-27\n\n量子位\n- 99.4%登顶全球第一！这个中国AI师承世界冠军 — 360 自研 AI 安全攻防系统“图龙锋”在 CyberGym 漏洞复现榜以 99.4% 登顶，击败 GPT-5.5-Cyber、Claude Mythos Preview、Gemini 3.8 Flash Cyber，路线是安全领域大模型＋智能体蜂群并具备自进化规则。\n  https://www.qbitai.com/2026/11/508107.html\n- DeepSeek带火稀疏计算，国产芯片公司加速突围：这家公司又融近10亿 — 墨芯完成近 10 亿元 C+ 轮融资（距上轮仅 5 个月），主打“权重稀疏化＋激活稀疏化”双稀疏架构，MLPerf 部分项目三连冠，遥感模型推理吞吐最高提升 2.88 倍。\n  https://www.qbitai.com/2026/11/508155.html\n\nStratechery\n- Sharp Tech on Video: The U.S. Votes on Data Centers, Implications for Big Tech, Google's Response to AI — Sharp Tech 首次以视频形式发布（11 月 6 日 19:00 北京时间），主题为美国数据中心投票结果对大科技公司的影响与谷歌对 AI 的回应；为会员内容，仅可见标题与摘要。\n  https://stratechery.com/2026/sharp-tech-on-video-the-u-s-votes-on-data-centers-implications-for-big-tech-googles-response-to-ai\n\nSource: https://www.infoq.cn/article/lGoA1ZSw6ojeh68GVlBl",
+  "category": "street",
+  "source": {
+    "url": "https://www.infoq.cn/article/lGoA1ZSw6ojeh68GVlBl",
+    "verified_at": "2026-11-06T13:05:38Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}
