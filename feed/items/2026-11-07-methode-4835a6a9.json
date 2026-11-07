@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-07-methode-4835a6a9",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-07T02:59:29Z",
+  "title": "SGLang 一小时内连推 6 个 Kimi-K3.1 提交：prefill 上下文并行 + MegaMoE + 可打断 prefill CUDA Graph",
+  "summary": "SGLang 在北京时间 11 月 7 日 09:11–10:19 连续合入 Kimi-K3.1 的 prefill 上下文并行、MegaMoE、可打断 prefill CUDA Graph 与 decode MoE TP 分片，是本时段最密集的基建动作。",
+  "summary_en": "Between 09:11 and 10:19 Beijing time on November 7, SGLang reportedly merged six consecutive Kimi-K3.1-related commits. The changes cover prefill context parallelism, MegaMoE, interruptible prefill CUDA Graphs, and decode MoE tensor-parallel sharding. The note describes this as the period’s densest infrastructure activity, highlighting a rapid sequence of parallelism-focused engineering additions.",
+  "body": "SGLang 在北京时间 11 月 7 日 09:11–10:19 连续合入 Kimi-K3.1 的 prefill 上下文并行、MegaMoE、可打断 prefill CUDA Graph 与 decode MoE TP 分片，是本时段最密集的基建动作。\n\n论文\n- XStack: A Benchmark for ML Repo Migration — 让智能体把 PyTorch 仓库迁移到 JAX/TPU 的端到端基准：Claude Opus 5 通过率 75%、GPT-5.6-sol 45%，其余均 ≤40%，暴露跨框架/跨硬件迁移仍不可靠。\n  https://arxiv.org/abs/2611.08472\n- Benchmarks as Software: Terminal-Bench and the Case for Continuous Benchmarks — 对 Terminal-Bench 2.0 的持续化验证审计发现约 30% 基准缺陷，修复为 2.1 后准确率提升 10 个百分点、榜单最多变动三名次；并指出时间预算本身是测量规格的一部分。\n  https://arxiv.org/abs/2611.08417\n\nGitHub 与基建\n- [Feat] kimi-k3.1: Prefill context parallelism (CP-TP group sharing) (#48709) — 11月7日 09:11（北京时间）合入：Kimi-K3.1 成为 CP-TP 组共享 interleave 策略模型，长上下文 prefill 可跨卡并行。\n  https://github.com/sgl-project/sglang/commit/6d2e64880322d4fb95f702aeba81666d56dedc90\n- [Feat] kimi-k3.1: MegaMoE, breakable prefill graphs and DFlash under prefill CP (#48710) — 09:17 合入：MegaMoE、可被打断的 prefill CUDA Graph 以及在 prefill CP 下跑 DFLASH 投机解码。\n  https://github.com/sgl-project/sglang/commit/79a3b2195624aa34fb8480afc99f39418dc6127d\n- [Perf] kimi-k3.1: TP-shard the decode MoE front and latent-up tail (#48584) — 10:19 合入：把 decode 侧 MoE 前段与 latent-up 尾部按 TP 分片，并自研 JIT 通信原语（all-gather/all_reduce push 工作区）。\n  https://github.com/sgl-project/sglang/commit/a40b25a2a46e854bbf0c500e1103e5d1645ffacb\n- [CPU][Perf] Speed up GDN speculative-decode recurrent update (#64829) — 10:40 合入：优化 CPU 侧 GDN 线性注意力在投机解码 verify 阶段的循环状态更新，并配套新增基准脚本。\n  https://github.com/vllm-project/vllm/commit/b4dffa5095ffa673ed1530524a503b168f5b611c\n- [ROCm][Bugfix] Stop declaring the MXFP4 MoE intermediate padding to be always needed — 09:01 合入：修正 ROCm 上 MXFP4 MoE 中间张量 padding 的错误假定，影响 AMD 侧 MoE 推理开销。\n  https://github.com/vllm-project/vllm/commit/8176238c97f982ddc266e8bacb2aca9e11926af7\n\n系统\n- Seven stable kernels with fixes for three Xen vulnerabilities — 11月7日 02:48（北京时间）发布：7.3.3、6.18.62、6.12.116、6.6.162、6.1.192、5.15.225、5.10.274 一次性修复三个 Xen UAF 漏洞（CVE-2026-100080/100081/100082），两个可致宿主机 DoS 与信息泄露，一个可提权。\n  https://lwn.net/Articles/1105902\n- Two stable kernels for Friday — 11月7日 03:17 前后：7.3.2 与 6.18.61 稳定内核发布（含大量改动），但一小时后即被 7.3.3/6.18.62 取代，升级建议已过时。\n  https://lwn.net/Articles/1105899\n- Videos from XDC 2026 are available — 11月7日 04:25（北京时间）：2026 年 X.Org 开发者大会（9月28–30日，多伦多）演讲视频已上线 YouTube。\n  https://lwn.net/Articles/1105913\n\nSource: https://github.com/sgl-project/sglang/commit/79a3b2195624aa34fb8480afc99f39418dc6127d",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/sgl-project/sglang/commit/79a3b2195624aa34fb8480afc99f39418dc6127d",
+    "verified_at": "2026-11-07T02:59:29Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

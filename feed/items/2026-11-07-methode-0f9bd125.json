@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-07-methode-0f9bd125",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-07T01:07:53Z",
+  "title": "llama.cpp 合并 Kimi-K3.1-Pro 支持：全注意力层换成 DSA 闪电索引器",
+  "summary": "llama.cpp 在 11月7日 07:18（北京时间）合入 Kimi-K3.1-Pro 文本模型支持，93 层中 24 层改用 DSA 稀疏索引器，沿用 K3 的 MoE/MLA 骨架；同一晚 08:06 又落地 hexagon 的 RMS_NORM_MUL 融合优化。",
+  "summary_en": "According to the note, on November 7 at 07:18 Beijing time, llama.cpp merged support for the Kimi-K3.1-Pro text model. Its implementation retains K3’s MoE/MLA architecture, while the title says attention layers are replaced with a DSA sparse indexer and the body specifies 24 of 93 layers. Later that evening, at 08:06, a hexagon RMS_NORM_MUL fused optimization was also reportedly added.",
+  "body": "llama.cpp 在 11月7日 07:18（北京时间）合入 Kimi-K3.1-Pro 文本模型支持，93 层中 24 层改用 DSA 稀疏索引器，沿用 K3 的 MoE/MLA 骨架；同一晚 08:06 又落地 hexagon 的 RMS_NORM_MUL 融合优化。\n\n论文\n- Muir: Linear Attention with Sensitivity-Allocated Gating and Matched-Filter Readout（Google，arXiv:2611.08376） — 把线性注意力的擦除/写入门融合成低秩敏感度投影，1.34B 模型上比 GDN-2 低困惑度 1.8-2.0%、训练比 Transformer 快 2.7 倍，并从 4K 训练长度外推 2560 倍到 1000 万 token 仍不漂移。\n  https://arxiv.org/abs/2611.08376\n- TailSteer: Trajectory-Tail Steering for Drift-Resistant Multi-turn Image Editing（MMLab-CUHK，arXiv:2611.06741） — 只做末段去噪校正的训练框架，在 FLUX/SenseNova/Qwen 系列上把 15-20 轮编辑的累积视觉漂移显著压下去，且不改动基座生成与编辑能力。\n  https://arxiv.org/abs/2611.06741\n\nGitHub与基建\n- llama.cpp b12180：加入 Kimi-K3.1-Pro 文本模型（11月7日 07:18 北京时间） — 该 checkpoint 93 层中有 24 层换成 DSA 闪电索引器（32 heads x 128、top_k 2048、无 RoPE），选择逻辑是全缓存上的加性掩码而非 top-k 聚集，因此可直接复用已有的稀疏 flash attention 路径；KDA 线性注意力层与 latent MoE 保持 K3 原样。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12180\n- llama.cpp b12181：hexagon 把 post-norm 残差加法融合进 RMS_NORM_MUL（11月7日 08:06 北京时间） — 新增 RMS_NORM_MUL_ADD 指令，把后处理留在 HVX 寄存器里完成，同时重构了 RMS_NORM 融合逻辑与日志。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12181\n- LiteLLM v1.108.2（LTS，11月7日 06:07 北京时间） — 12 个 PR：修复 openai/ 空 api_key 误发 OPENAI_ADMIN_KEY、Bedrock Converse service_tier 校验、Vertex 语音转写忽略 vertex_location、Responses API /compact 在 during_call 护栏下 500，以及 Claude 的 base64 PDF 被当 image_url 报 400。\n  https://github.com/BerriAI/litellm/releases/tag/v1.108.2\n- Cursor 更新：Voice Chat with Agents（11月6日） — 可与智能体实时语音通话：口述改动、追问正在做什么，边跑边听进度更新；覆盖 Agents 窗口、IDE、网页与 iOS，基于 Grok Voice，隐私模式下不留存数据。\n  https://cursor.com/changelog/voice-chat\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b12180",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b12180",
+    "verified_at": "2026-11-07T01:07:53Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

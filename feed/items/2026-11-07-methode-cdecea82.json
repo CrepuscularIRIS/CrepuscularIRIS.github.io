@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-07-methode-cdecea82",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-07T09:04:32Z",
+  "title": "vLLM 合并 RL 稀疏权重补丁单遍校验，sglang rust-server 加固启动期配置校验",
+  "summary": "vLLM 把 RL 稀疏权重补丁的校验合并为单遍扫描（16:41 CST），sglang 同窗口内落地 rust-server 启动期 GenerateValidator 与敏感信息脱敏。",
+  "summary_en": "According to the note, vLLM consolidated validation of RL sparse weight patches into a single-pass scan at 16:41 CST. During the same window, sglang reportedly added startup-time GenerateValidator checks to its rust-server and implemented sensitive-information redaction. The note presents these as landed changes, while offering no further details about implementation scope, testing, verification results, or readiness.",
+  "body": "vLLM 把 RL 稀疏权重补丁的校验合并为单遍扫描（16:41 CST），sglang 同窗口内落地 rust-server 启动期 GenerateValidator 与敏感信息脱敏。\n\n论文\n- Spatial-UMI-Dream：用度量几何扩展世界动作模型（5B，605 小时 RGB-D UMI 数据） — 把 UMI 手持接口的度量几何显式化到 RGB-D 预训练中，并配套 20 任务 RoboTwin-UMI 基准，跨本体迁移成功率领先基线 10.3 个百分点，对具身数据规模化路线有参考价值。\n  https://arxiv.org/abs/2611.07229\n\nGitHub与基建\n- vLLM: [Perf][RL] Validate sparse weight patches in one pass (#66021) — 16:41 CST 合入，把 RL 流程里稀疏权重补丁的校验合并为单遍扫描，减少重复遍历开销。\n  https://github.com/vllm-project/vllm/commit/dfebb42d096d5c6a04aa5a1722195e37cb8e0b2d\n- SGLang: rust-server 启动期 GenerateValidator + 梳理 Python 前端配置读取项 (#48753) — 17:02 CST 合入，rust-server 开始拒绝更多被忽略的启动配置，并新增启动期配置校验器，减少两套前端配置语义不一致导致的踩坑。\n  https://github.com/sgl-project/sglang/commit/cd81454957ed20c41ba34469cacf65b4d02ce255\n- SGLang: 从 /server_info、日志、launch_command 与崩溃转储中脱敏 access key (#48518) — 安全修复：此前访问密钥可能出现在服务信息、日志与崩溃转储中，现统一做脱敏处理。\n  https://github.com/sgl-project/sglang/commit/e93aacb\n- SGLang: rust-server 在 /generate meta_info 中上报 serving DP rank (#48572) — 便于在多 DP 部署下定位请求实际落在哪个 rank，排障与流量观测更直接。\n  https://github.com/sgl-project/sglang/commit/9877a30\n- llama.cpp: 实现 WebGPU group norm kernel (#31490) — 16:01 CST 合入，补齐 WebGPU 后端的归一化算子，浏览器/端侧推理可用算子覆盖面扩大。\n  https://github.com/ggml-org/llama.cpp/commit/cf659f240b232e15700b1721bbb43c1d973c52e9\n\nSource: https://github.com/vllm-project/vllm/commit/dfebb42d096d5c6a04aa5a1722195e37cb8e0b2d",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/vllm-project/vllm/commit/dfebb42d096d5c6a04aa5a1722195e37cb8e0b2d",
+    "verified_at": "2026-11-07T09:04:32Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
