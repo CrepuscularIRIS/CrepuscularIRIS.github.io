@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-08-methode-da47e463",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-08T09:00:01Z",
+  "title": "llama.cpp b12202 统一 GGML_PREC_BF16 精度语义，GLM4/Qwen3-TTS 视觉与语音路径改走 BF16",
+  "summary": "llama.cpp b12202（11-08 16:11 CST）把 ggml_prec_set_acc 的参考精度语义统一到 GGML_PREC_BF16，GLM4、MiMoVL、Qwen3-TTS 走 BF16，DeepSeek V4/V4.1 路由器与 MiniMax-M3 indexer 仍保留 F32。",
+  "summary_en": "Late-afternoon infra window (14:55–16:55 CST, Nov 8): llama.cpp build b12202 (16:11 CST) aligned ggml_prec_set_acc reference-precision semantics with GGML_PREC_BF16, moving GLM4 down/output projections, MiMoVL vision matmuls and the Qwen3-TTS speaker encoder to BF16 while keeping DeepSeek V4/V4.1 routers and the MiniMax-M3 indexer in F32; CUDA, Hexagon, OpenCL, WebGPU and Vulkan backends now handle BF16 like F32, and CPU/SpaceMIT/ET accept BF16 for flash attention. b12201 stopped applying the MoE cache to draft models in speculative decoding. vLLM landed two KV-offload fixes (stream key refresh after preemption; local failure for never-sent P2P fetches), SGLang refactored scheduler pause state into PauseState, and LiteLLM added a total_timeout bounding whole non-streaming requests plus released LTS 1.108.3 fixing a broken MCP >1MiB tool result path and AWS Bedrock api_base:\"\" 500s. Systems: Phoronix covered the Kmorph rebootless kernel-crash-recovery project and Vulkan 1.4.368.",
+  "body": "llama.cpp b12202（11-08 16:11 CST）把 ggml_prec_set_acc 的参考精度语义统一到 GGML_PREC_BF16，GLM4、MiMoVL、Qwen3-TTS 走 BF16，DeepSeek V4/V4.1 路由器与 MiniMax-M3 indexer 仍保留 F32。\n\nGitHub与基建\n- llama.cpp b12202：对齐 GGML_PREC_BF16 精度语义 — 11-08 16:11 CST 发布。参考实现要求非 F32 的位置统一落到 BF16：GLM4 down/output 投影、MiMoVL 视觉 matmul、Qwen3-TTS speaker encoder conv1d 改 BF16；DeepSeek V4/V4.1 路由器与 MiniMax-M3 indexer 仍保留 F32。CUDA/Hexagon/OpenCL/WebGPU/Vu…\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12202\n- llama.cpp b12201：投机解码不再对 draft 模型套用 MoE cache — 11-08 14:58 CST。修复 MoE 缓存被错误复用到 draft model 上的问题，对 MoE + 投机解码组合的命中率与结果正确性有直接影响。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12201\n- vLLM：两笔 KV Offload 修复 — 11-08 16:42 CST 提交，被抢占（preemption）后刷新流式请求的 key，避免 KV 卸载后取回错误的缓存块；配套另有 P2P fetch 失败的本地兜底提交。\n  https://github.com/vllm-project/vllm/commit/b022bb7a4873a47cdcdf474edf3bd499c221f40d\n- LiteLLM：total_timeout 现在覆盖整个非流式请求 — 11-08 16:43 CST。此前非流式请求缺少整体超时上限，容易出现长连接悬挂；同窗口另有 proxy 层 ownership/scope 处理对齐修复。\n  https://github.com/BerriAI/litellm/commit/43112547fb9c0a8d482f4fe031e09a6c2cc234e1\n- LiteLLM 1.108.3 (LTS)：修复 MCP 超 1 MiB 工具结果断流 — 11-08 06:48 CST 发布（此前几轮未收录）。修复自 v1.103.0 起存在的 \"SSE stream ended without a response\"，以及 AWS Bedrock 上 api_base 为空时全部请求 500 的问题；属无需改动的补丁版本。\n  https://github.com/BerriAI/litellm/releases/tag/v1.108.3\n\n系统\n- Kmorph：面向 Linux 的无重启内核崩溃恢复 — 11-07 发布。基于 out-of-tree Multikernel，预启动后继内核通过 vsock 监视前代内核，崩溃后约 1 秒完成接管（无重启、无固件介入），Nginx 等关键服务可 2 秒内恢复；同时支持 \"kmorph upgrade\" 热切换内核。目前仅 x86_64/ARM64，依赖 Multikernel 进入主线。\n  https://www.phoronix.com/news/Kmorph-Linux-Crash-Recovery\n- Vulkan 1.4.368 发布，新增 Valve 与 NVIDIA 扩展 — 11-07 发布。新增 VK_EXT_vertex_address_binding_unrestricted（Valve/Mesa 起草，放宽顶点地址校验以减少内存拷贝）与厂商扩展 VK_NV_internal_handle，允许应用获取并跨 API 传递 NVIDIA 驱动内部句柄。\n  https://www.phoronix.com/news/Vulkan-1.4.368\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b12202",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b12202",
+    "verified_at": "2026-11-08T09:00:01Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

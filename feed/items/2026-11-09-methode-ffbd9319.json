@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-09-methode-ffbd9319",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-09T06:58:31Z",
+  "title": "DeCAF：把 agent 流水线优化拆成可归因的维度，性能 +2.58pp、延迟 -42%",
+  "summary": "DeCAF 用分解式信用分配自动优化 agent 流水线，在多基准上把平均任务成绩提高 2.58 个百分点、端到端延迟压低 42.45%，是本窗口最值得看的一篇工程向论文。",
+  "summary_en": "DeCAF is presented as an engineering-oriented paper that automatically optimizes agent pipelines using decomposed credit assignment. Across multiple benchmarks, it improves average task performance by 2.58 percentage points and reduces end-to-end latency by 42.45%. The note calls it the most worthwhile engineering paper in this window but provides no further methodological, experimental, draft, or auto-generation status details.",
+  "body": "DeCAF 用分解式信用分配自动优化 agent 流水线，在多基准上把平均任务成绩提高 2.58 个百分点、端到端延迟压低 42.45%，是本窗口最值得看的一篇工程向论文。\n\n论文\n- Divide, Diagnose, and Compose: Optimizing Agentic Pipelines and Harnesses (DeCAF) — 把 prompt、拓扑、模型选择、工具策略拆开分别优化并留下推理链，平均成绩 +2.58pp、成本 -4.3%、延迟 -42.45%，是 agent 工程化的实用参考。\n  https://arxiv.org/abs/2611.08723\n- From Procedures to Permissions: Learning Precise Subagent Authorization from Agent Skills — 用 Agent Skills 中的流程知识当监督信号训练子代理授权，工具权限精度 +13.4pp、工作区权限精度 +24.1pp，直接对应多代理落地中的权限粒度问题。\n  https://arxiv.org/abs/2611.08905\n- NormGym: Evaluating Normative Competence through Social Interaction — 要求智能体从群体互动中推断隐藏社会规范的交互式基准，最强 LLM 任务+合规联合成功率仅 55.3%，且微调也难补。\n  https://arxiv.org/abs/2611.08613\n- Forcing a Letter Suppresses Refusal: Mechanistic Evidence from WMDP — 用 tuned lens 与注意力头消融给出首个机制性解释：MCQ 格式让模型快速锁定答案字母，其激活离拒答方向约远 3 倍，暗示 MCQ 安全分主要在测知识而非安全机制。\n  https://arxiv.org/abs/2611.08639\n\nGitHub与基建\n- vLLM: [XPU] 内核升至 0.1.17，变更 MoE 与 MLA 接口 — 14:41 合并，涉及接口变更，Intel XPU 用户升级需注意。\n  https://github.com/vllm-project/vllm/commit/b0fd6874a0551d603d8f768faf2149d9ee1fd408\n- vLLM: 投机解码 PP 集中化辅助 hidden-state 中继 — 14:27 合并，整理 pipeline parallel 下投机解码的隐藏状态传递路径。\n  https://github.com/vllm-project/vllm/commit/b936e1427f8c36572cc74a0a168eb30f4df0079c\n- vLLM: CPU recipes 新增 Qwen3-VL-4B-Instruct（Intel Xeon 6） — 14:26 合并，为 Xeon 6 CPU 推理提供多模态小模型配方。\n  https://github.com/vllm-project/vllm/commit/c7cda53c85962b730c9e35178de2f628917a66fb\n- vLLM: 投机解码将 rope hf_overrides 传递到 MTP draft — 14:00 合并的修复，让 draft 模型的 RoPE 覆盖与主模型保持一致。\n  https://github.com/vllm-project/vllm/commit/083fbac021348c2c7af8a7bc71ba18199d0dd7a4\n- SGLang: xpu_kernel 更新至 0.6.0 — 14:12 合并的 Intel XPU 内核版本更新。\n  https://github.com/sgl-project/sglang/commit/d910efa03a864131dd81fab022bab8c7739daed9\n- SGLang: 机密计算启用 FlashInfer all-reduce 融合 — 13:07 合并，把 all-reduce 融合带进机密计算路径，影响 TEE 部署性能。\n  https://github.com/sgl-project/sglang/commit/5d78af0ca0f274079c7190856ec300ea905e3630\n- SGLang: FlashInfer 在混合模型 ragged prefill 中应用滑动窗口 — 13:55 合并的混合注意力 prefill 正确性/性能修复。\n  https://github.com/sgl-project/sglang/commit/3e8d7c9e093b3378d1709e73beb34f7789130b4c\n- SGLang: CPU 端支持 Intern-S2-Mobius 模型 — 14:23 合并，新增 CPU 后端模型覆盖。\n  https://github.com/sgl-project/sglang/commit/e8017bc63bbeb271a6b4729eb5ee7a7fd4584b9f\n\n系统\n- Linux 7.4-rc2 发布：FAT32 优化、AMDGPU HDMI 2.2 改进 — 内核 7.4 第二个候选版于今日 08:48（北京时间）发布，主打文件系统与显示驱动改进。\n  https://www.phoronix.com/news/Linux-7.4-rc2-Released\n\nSource: https://arxiv.org/abs/2611.08723",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.08723",
+    "verified_at": "2026-11-09T06:58:31Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

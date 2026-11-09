@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-09-methode-07e5b95a",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-09T04:59:04Z",
+  "title": "s³：多智能体 RL 让群体自己学会分工，协作题解出量超基线 25 倍",
+  "summary": "MIT/Stanford 团队提出 s³——首个让智能体自行决定\"独自工作多久、什么时候共享发现\"的多智能体强化学习方法，训练时 2 倍于推理的智能体数量在协作任务上比最强基线多解出 25 倍以上问题。",
+  "summary_en": "MIT and Stanford researchers propose s³, a multi-agent reinforcement learning method said to be the first in which agents autonomously decide how long to work alone and when to share discoveries. During training, twice as many agents are used as at inference. On collaborative tasks, the method reportedly solves more than 25 times as many problems as the strongest baseline.",
+  "body": "MIT/Stanford 团队提出 s³——首个让智能体自行决定\"独自工作多久、什么时候共享发现\"的多智能体强化学习方法，训练时 2 倍于推理的智能体数量在协作任务上比最强基线多解出 25 倍以上问题。\n\n论文\n- s³：Simple Scaling of Swarms via Cooperative Multi-agent RL — 智能体自己学出分工与沟通策略，团队规模翻倍时协作题解出量提升 25 倍以上，并可泛化到更大集群。\n  https://arxiv.org/abs/2611.08615\n- EvoWorld：生成式视频模型的“视野外因果演化” — 用 VLM 当“世界大脑”维护演化状态并推理事件后果，是今日 Hugging Face 论文榜前列条目。\n  https://arxiv.org/abs/2611.06748\n- Video-Coder：为视频生成训练的代码驱动智能体 — 首个写代码构建 3D 动态场景再驱动视频生成的智能体，VBench-2.0 提升约 24 分，数据与代码全开源。\n  https://arxiv.org/abs/2611.09894\n- Exploring Weight-Space Programming：能力、泛化与局限 — 直接改权重也能提分：仅改 1,023 个参数即在 MATH-500 提升 29.45 分，但 16 条轨迹中 6 条被迫回退原权重。\n  https://arxiv.org/abs/2611.09382\n- AgentBaton：长程智能体任务中的模型接力 — 在合适阶段把任务交给更便宜的模型，11 组模型对平均省下 65.9% API 成本，精度最高反超纯强模型 8.8 个百分点。\n  https://arxiv.org/abs/2610.35959\n- Confucius4-R2T2：稳定前缀流式 ASR — 流式识别永不修改已输出前缀，接近全上下文质量，权重与代码已在 Hugging Face / GitHub 开源。\n  https://arxiv.org/abs/2611.06043\n\nGitHub与基建\n- vLLM：为 Kimi K3.1 落地 TP8 调整 KV cache 与 attention — 12:31（北京时间）合入的核心调度改动，让 Kimi K3.1 能在 8 卡张量并行下服务。\n  https://github.com/vllm-project/vllm/commit/4088c2838a50b32ce7dca449b3e41bdc3abe8519\n- vLLM：fused MoE router 改为可插拔 — MoE 路由实现解耦，便于厂商替换与自研优化，是 MoE 推理栈的关键可扩展点。\n  https://github.com/vllm-project/vllm/commit/199c2e4bff8df75c2d927e4dc5fe6880e4055109\n- SGLang：AMD custom-all-reduce 支持 gfx1250 UALink 节点 — 12:57（北京时间）合入，打通 AMD 集群跨 UALink 互联的 all-reduce 路径。\n  https://github.com/sgl-project/sglang/commit/fd978b6cec9058dbd05ba3ef1f9664d8d6d1d270\n- SGLang：DeepSeek-V4.1 复用打包 query buffer 省去逐层清零 — 12:54（北京时间）的性能优化，减少 MegaAttention 路径上的冗余内存操作。\n  https://github.com/sgl-project/sglang/commit/480dcf4ec852a12dc3ecf560181cb652b5400a77\n- Open WebUI v0.13.3 发布 — 今早 07:48（北京时间）发布，是该自托管前端近几天最靠前的正式版本。\n  https://github.com/open-webui/open-webui/releases/tag/v0.13.3\n\n系统\n- Linux 7.4-rc2 发布（内核 7.4 候选版） — 今早 08:48（北京时间）释出，7.4 稳定版进入最后冲刺，合并窗口即将关闭。\n  https://www.phoronix.com/rss.php\n\nSource: https://arxiv.org/abs/2611.08615",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.08615",
+    "verified_at": "2026-11-09T04:59:04Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

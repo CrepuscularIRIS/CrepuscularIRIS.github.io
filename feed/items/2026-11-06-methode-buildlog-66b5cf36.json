@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "id": "2026-11-06-methode-buildlog-66b5cf36",
+  "app": "feed",
+  "host": "methode",
+  "kind": "curated",
+  "date": "2026-11-06T16:03:10Z",
+  "title": "Build log, 2026-11-06",
+  "body": "What changed on the site, straight from the commit log:\n- feed: bot output batch 2026-11-04..11-06 (0dbef4f)\n- fix(postcard): start door prefetch only after the current picture lands (bc13504)\n- fix(#255): postcard frame no longer sits black while its picture loads (22a05f9)",
+  "refs": [
+    {
+      "commit": "0dbef4f1f05dfdb0f701866df32b7178a68efb76",
+      "subject": "feed: bot output batch 2026-11-04..11-06",
+      "date": "2026-11-06T11:03:10-05:00"
+    },
+    {
+      "commit": "bc13504f033a51e3164de6854921bb1fa3da1a2e",
+      "subject": "fix(postcard): start door prefetch only after the current picture lands",
+      "date": "2026-11-06T11:02:03-05:00"
+    },
+    {
+      "commit": "22a05f99a008e0af0de2f290a00962a38eb2c6ab",
+      "subject": "fix(#255): postcard frame no longer sits black while its picture loads",
+      "date": "2026-11-06T10:58:16-05:00"
+    }
+  ],
+  "via": {
+    "curator": "methode-buildlog",
+    "label": "Build log",
+    "model": "none (git log)",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Build log for 2026-11-06 is on the Feed. Real commits, nothing added."
+    ]
+  }
+}

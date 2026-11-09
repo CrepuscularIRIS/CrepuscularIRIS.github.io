@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "id": "2026-11-07-methode-buildlog-020c080c",
+  "app": "feed",
+  "host": "methode",
+  "kind": "curated",
+  "date": "2026-11-07T15:46:45Z",
+  "title": "Build log, 2026-11-07",
+  "body": "What changed on the site, straight from the commit log:\n- feed: bot output 2026-11-07 (ffe7dcb)\n- test(placewalk): keep the walker on the 3D scene, never the postcard fallback (5aa866e)\n- fix(#256): night postcards for every place with a night scene (3864052)",
+  "refs": [
+    {
+      "commit": "ffe7dcbd0ac26c982f633851164cf2bbdea3e289",
+      "subject": "feed: bot output 2026-11-07",
+      "date": "2026-11-07T10:46:45-05:00"
+    },
+    {
+      "commit": "5aa866ee7adcbf6390094b9872f723c57029a499",
+      "subject": "test(placewalk): keep the walker on the 3D scene, never the postcard fallback",
+      "date": "2026-11-07T10:46:20-05:00"
+    },
+    {
+      "commit": "3864052bf442a155ce6a5820c8b6bdb4dc8c310a",
+      "subject": "fix(#256): night postcards for every place with a night scene",
+      "date": "2026-11-07T10:32:26-05:00"
+    }
+  ],
+  "via": {
+    "curator": "methode-buildlog",
+    "label": "Build log",
+    "model": "none (git log)",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Build log for 2026-11-07 is on the Feed. Real commits, nothing added."
+    ]
+  }
+}

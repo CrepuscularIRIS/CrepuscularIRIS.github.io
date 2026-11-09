@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-08-methode-849806bb",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-08T11:09:34Z",
+  "title": "SGLang 为 Kimi K3 的 NPU 注意力路径加入 FlashMLA 开关，避免每步 CPU 序列长同步",
+  "summary": "SGLang 在 18:44（北京时间）为昇腾 NPU 上的 Kimi K3 打通 FlashMLA 并去掉 CPU 侧序列长同步，是本轮窗口里最值得关注的推理基建改动。",
+  "summary_en": "SGLang has enabled FlashMLA for Kimi K3’s attention path on Ascend NPUs and removed CPU-side sequence-length synchronization, according to the note. Recorded at 18:44 Beijing time, the update is presented as the most noteworthy inference-infrastructure change in that window. The title explicitly frames the motivation as avoiding a CPU synchronization operation at every step, highlighting a targeted optimization of the inference stack.",
+  "body": "SGLang 在 18:44（北京时间）为昇腾 NPU 上的 Kimi K3 打通 FlashMLA 并去掉 CPU 侧序列长同步，是本轮窗口里最值得关注的推理基建改动。\n\nGitHub与基建\n- SGLang: NPU attention 避免 CPU 序列长同步，支持 Kimi K3 的 FlashMLA — 11 月 8 日 18:44（北京时间）合入，+1533/-14 行；新增 SGLANG_NPU_USE_FLASH_MLA 开关，昇腾 NPU 上跑 Kimi K3 的 MLA 注意力可走 FlashMLA，且不再每步与 CPU 同步序列长。\n  https://github.com/sgl-project/sglang/commit/5c10928f084e5f2f0c1980013c2231c1f0b19d5e\n- SGLang: gemma3 的 q_norm/k_norm 融合进 gemma_rmsnorm 核 — 18:02（北京时间）合入，rank>2 时把 q_norm/k_norm 融进融合 RMSNorm 核，减少 kernel 启动开销，并补了对应单测。\n  https://github.com/sgl-project/sglang/commit/c2a398240693aeb391f09016a99c5c95e65f0447\n- llama.cpp b12204：CI runner 迁到 Ubuntu 26.04 — 17:47（北京时间）发布，同时保留 s390x 与 Android 的 24.04 构建线、恢复 toolchain workaround，是本轮新的上游构建版本。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12204\n- SGLang CI：Xeon runner 清理悬空 Docker 镜像并预留 30GB 磁盘 — 17:41（北京时间）合入，避免多 GB 镜像与 HF 缓存占满磁盘导致构建失败。\n  https://github.com/sgl-project/sglang/commit/e5739ba\n\n系统\n- Linux 修复 BHI 漏洞的错误缓解措施选择逻辑 — 11 月 8 日 19:03（北京时间）刚发布：本周 x86 修复已提前合入，为 Linux 7.4-rc2 铺路，涉及内核 BHI 分支预测缓解选择的构建错误。\n  https://www.phoronix.com/news/Linux-Fix-BHI-Mitigation-Build\n\nSource: https://github.com/sgl-project/sglang/commit/5c10928f084e5f2f0c1980013c2231c1f0b19d5e",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/sgl-project/sglang/commit/5c10928f084e5f2f0c1980013c2231c1f0b19d5e",
+    "verified_at": "2026-11-08T11:09:34Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

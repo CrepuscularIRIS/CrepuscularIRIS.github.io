@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-08-methode-a5bc9ab5",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-08T02:59:37Z",
+  "title": "SGLang 合入 DSA/DCP8 融合 top-k 解码内核（09:40 CST）",
+  "summary": "SGLang 为 DeepSeek 稀疏注意力（DSA）合入 8 卡上下文并行的融合 top-k 解码内核，把跨 rank 的全局 top-k 变成一次内核调用。",
+  "summary_en": "This window's notable activity is concentrated in inference infrastructure rather than new papers. SGLang merged a fused DSA/DCP8 top-k CUDA kernel for decode under 8-rank context parallelism, plus packed prefill top-k on CUDA, a BF16 prefill indexer score epilogue fusion for DeepSeek-V4.1, and an AMD path fusing 1x128 FP8 quantization into RMSNorm and SiLU-mul. vLLM kept offloaded KV tiers alive across sleep/pause, refactored multimodal encoder CUDA graphs for shared buffer reuse, and fixed FlashAttention sliding-window behavior under batch invariance. LiteLLM shipped v1.110.0-dev.2, and llama.cpp published SYCL VRAM-guard and quantization-rounding builds. ArXiv, Hugging Face papers, LWN, and Phoronix had nothing new inside the two-hour window.",
+  "body": "SGLang 为 DeepSeek 稀疏注意力（DSA）合入 8 卡上下文并行的融合 top-k 解码内核，把跨 rank 的全局 top-k 变成一次内核调用。\n\nGitHub与基建\n- [SGLang] NVIDIA dsa/dcp：融合 DCP8 indexer top-k 解码内核（#48895，09:40 CST） — 新增约 1900 行 JIT CUDA 内核，对 8 卡上下文并行下的 DSA indexer 做一次全局 top-k（K=2048），直接优化 DeepSeek 稀疏注意力的解码路径。\n  https://github.com/sgl-project/sglang/commit/5713917c55ba6b53cd94a5f60c363fe44960a41a\n- [SGLang] DSA：在 CUDA 上运行 packed prefill top-k（#45891，09:42 CST） — 预填充阶段（含 CP 分片批次）也统一走精确的 v2 packed PAGED extend top-k，减少分片场景下的降级路径。\n  https://github.com/sgl-project/sglang/commit/cbbc6b67f48008a8b739f4667d7b14abb89088cf\n- [SGLang] NVIDIA：deepseek-v4.1 融合 BF16 预填充 indexer score 尾声（09:41 CST） — 用 Triton 融合 32 头打分归约的尾声计算，与 CUDA 原生 32 头累加顺序保持一致，缩短 DeepSeek-V4.1 预填充注意力链路。\n  https://github.com/sgl-project/sglang/commit/94dc5bbf7779eafcf7954186bf8c0f97e173cdf6\n- [SGLang] AMD：qwen3 把 1x128 FP8 输入量化融合进 RMSNorm 与 SiLU-mul（09:41 CST） — 面向 gfx950/MI355X 的 block-FP8 路径，省去为 RMSNorm 和 SiLU-mul 单独量化再反量化的开销。\n  https://github.com/sgl-project/sglang/commit/db680c5b801ee234cd514f8eba2c0adbc6980963\n- [vLLM] KVConnector：pause/sleep 后保留已卸载的 KV 层（#57810，10:38 CST） — 此前 sleep 或 release_kv_cache_memory 会一并清空外部 KV 连接器缓存，新选项 reset_connector=False 可保留 CPU/外部存储中的 KV，直接影响 RL 训练与休眠唤醒场景。\n  https://github.com/vllm-project/vllm/commit/5efb24d5420b1f28737e4e8d1b62b354ddc18069\n- [vLLM] 多模态：重构 encoder CUDA graph 以支持共享 buffer 复用（#65084，10:22 CST） — 编码器图预算改为细分网格（1024 以下按 1/4 八度、以上按 1/2 八度）并支持共享缓冲区，减少 VLM 前缀缓存的显存占用。\n  https://github.com/vllm-project/vllm/commit/ebc97ad8d00bcbeaa61dd9da331dd16cae0b3d53\n- [vLLM] 修复：batch invariance 下 FlashAttention 滑窗被丢弃（#65627，09:10 CST） — 此前在 Hopper 上 FA3 单独跑与混批跑滑窗请求的 logprobs 逐位不一致，影响确定性推理与批处理可复现性。\n  https://github.com/vllm-project/vllm/commit/d1879210a4b10773d22a2a659152beca0d35d007\n- [LiteLLM] v1.110.0-dev.2（10:25 CST） — 修复 Responses SSE 事件分帧被破坏的问题，并加入按 key/团队关闭 prompt 存储、Azure 新增 cohere-rerank-v5-pro/-fast、空输出不再入缓存等改动。\n  https://github.com/BerriAI/litellm/releases/tag/v1.110.0-dev.2\n- [llama.cpp] b12195：SYCL 后端拒绝超出显存容量的设备缓冲（09:11 CST） — 避免在 Intel GPU 上分配会超出 VRAM 的缓冲区导致运行时崩溃或静默失败。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12195\n- [llama.cpp] b12196：SYCL 的 CPY→Q4_1/Q5_1/Q8_0 转换改为精确舍入（09:29 CST） — 修复 Intel GPU 路径上量化拷贝的舍入偏差，减少与 CUDA/CPU 后端的数值差异。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12196\n\nSource: https://github.com/sgl-project/sglang/commit/5713917c55ba6b53cd94a5f60c363fe44960a41a",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/sgl-project/sglang/commit/5713917c55ba6b53cd94a5f60c363fe44960a41a",
+    "verified_at": "2026-11-08T02:59:37Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

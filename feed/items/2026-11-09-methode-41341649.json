@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-09-methode-41341649",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-09T01:07:20Z",
+  "title": "《Understanding AI from the Inside》发布：机制可解释性用于 AI 安全的全景综述",
+  "summary": "27 位作者（含 Bengio、Geva、Hooker）联名发表机制可解释性 × AI 安全综述，给出统一评估框架；同期 SciWorld 声称前沿 AI 科学家 74% 复现任务超过人类基线，Linux 7.4-rc2 与 vLLM/SGLang 的 MoE 并行改动同期落地。",
+  "summary_en": "A mechanism-interpretability survey for AI safety (arXiv 2611.08438, 27 authors incl. Bengio, Geva, Hooker) leads this issue, alongside Scientist World's 1,000 executable paper environments and ReproBridge's reproducible-artifact results for coding agents. Infra news covers llama.cpp build b12211, SGLang Kimi-K3.1 decode-context-parallel disaggregation, vLLM's MegaMoE sequence+pipeline parallelism and XPU expert-parallel backend, plus the Linux 7.4-rc2 release with FAT32 and AMDGPU HDMI 2.2 fixes.",
+  "body": "27 位作者（含 Bengio、Geva、Hooker）联名发表机制可解释性 × AI 安全综述，给出统一评估框架；同期 SciWorld 声称前沿 AI 科学家 74% 复现任务超过人类基线，Linux 7.4-rc2 与 vLLM/SGLang 的 MoE 并行改动同期落地。\n\n论文\n- Understanding AI from the Inside: 机制可解释性用于 AI 安全的现状综述 — Bengio、Mor Geva、Sara Hooker 等 27 人联名，把机制可解释性与行为评测并列比较，提出统一评估框架并附带可复现 notebook——判断「看懂模型是否真的更安全」的系统性答案。\n  https://arxiv.org/abs/2611.08438\n- Scientist World: 给 AI 科学家造一个可运行的科研世界 — 每篇论文被抽成可执行环境，发布首批 1000 个环境与 6400 小时研究轨迹；称前沿 AI-Scientist 在 74% 的任务上超过人类作者基线，小模型经训练可 +158% 追平前沿的科研构思。\n  https://arxiv.org/abs/2611.08478\n- ReproBridge: 把可复现性做进 ML 研究工件 — 用精炼代码库 + 环境 + 复现指南提升 coding agent 复现论文实验的成功率：76.4% → 92.6%，并平均减少 19.7% API 开销，跨模型差距从 21.6 收窄到 3.9 个百分点。\n  https://arxiv.org/abs/2611.08452\n- Measured Coupling: 扩散语言模型的并行解码耦合度量 — 用「提交一个 token 会改变另一位置置信度多少」的实测耦合替代 mean-field 代理，无需训练或额外模型，四个基准上所需解码步数大幅减少、平均精度代价仅 1.1 点。\n  https://arxiv.org/abs/2611.08307\n- Same Behavior, Different Mechanism: 有限实验能认证什么 — 对整合信息量 φ 给出可识别性边界：外部行为可能完全沉默、部分访问存在精度下界、机制微小变化可让 φ 变动 25–100%，并证明单边下界可由约 10^7 次受控转移认证。\n  https://arxiv.org/abs/2611.08469\n\nGitHub与基建\n- llama.cpp 发布 b12211（mtmd 重构） — 11 月 9 日 00:48（北京时间）发布，移除 clip.h 并把多模态代码统一进 mtmd，是近期 mtmd 拆分后的又一步清理。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12211\n- SGLang: Kimi-K3.1 在解码上下文并行下的 PD 分离与 HiCache — 为 Kimi-K3.1 实现 DCP 场景下的 HiCache 配合 DFLASH（11 月 9 日 06:17 北京时间），配套提交还把 PD 分离搬到了 decode context parallelism 之下。\n  https://github.com/sgl-project/sglang/commit/033c03a9cd2816fbe52c04e9a9d1096da8db31f5\n- vLLM: MegaMoE 支持序列并行 + 流水线并行（DeepSeek-V4） — 为 DeepSeek-V4 的 MegaMoE 打开序列并行与流水线并行组合，是大规模 MoE 部署在显存/带宽受限时的新解法。\n  https://github.com/vllm-project/vllm/commit/15166efabb4d7f27eaf807ee8e1c7454fd188886\n- vLLM: 英特尔 XPU 批量 MoE 的 all-to-all 专家并行后端 — 为 XPU 增加批量 MoE 的专家并行通信后端，扩展了非 NVIDIA 硬件上跑 MoE 的可行性。\n  https://github.com/vllm-project/vllm/commit/0555390170b7f4cfd380762412097d2beb7b60c3\n\n系统\n- Linux 7.5 将带来更多 AMD Ryzen AI NPU AIE4 支持 — drm-misc-next 的第三轮特性补丁面向 Linux 7.5，扩展 RK3568 等平台的 AMD AIE4 NPU 使能。\n  https://www.phoronix.com/news/Linux-7.5-RK3568-AMD-AIE4\n- AMD PerfOpt 性能增强代码为 7.4-rc2 调整 — 针对集成 Radeon 的 AMD SoC，本次主要改动集中在 IOMMU 部分，对 AI/LLM 类 iGPU 负载的默认性能有实际影响。\n  https://www.phoronix.com/news/AMD-PerfOpt-Tweaks-Linux-7.4\n\nSource: https://arxiv.org/abs/2611.08438",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.08438",
+    "verified_at": "2026-11-09T01:07:20Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

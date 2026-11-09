@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-09-methode-5eb4e83b",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-09T03:03:11Z",
+  "title": "Energy-Based Reasoners：把循环推理模型变成“能量下降”的迭代过程，Sudoku-Extreme 99.9% 且推理算力省 345 倍",
+  "summary": "今日最热是 Energy-Based Reasoners——给循环推理块装上“能量函数”，用梯度下降指导迭代并自动决定何时停止，Sudoku-Extreme 达到 99.9%，推理算力比次优模型少 345 倍。",
+  "summary_en": "The note highlights Energy-Based Reasoners, described as adding an energy function to recurrent reasoning blocks. Gradient descent would guide the iterative process and automatically determine when to stop. According to the note, the method reaches 99.9% on Sudoku-Extreme while using 345 times less inference compute than the next-best model. These performance and efficiency figures are presented as claims, without further verification or comparison details.",
+  "body": "今日最热是 Energy-Based Reasoners——给循环推理块装上“能量函数”，用梯度下降指导迭代并自动决定何时停止，Sudoku-Extreme 达到 99.9%，推理算力比次优模型少 345 倍。\n\n论文\n- Energy-Based Reasoners: Your Recurrent Reasoner Should Be an Energy-Based Model — 把循环模型的迭代重写为能量函数上的梯度下降，梯度既指导精炼也给出停止信号；四个算法推理基准上达到或超越既有循环推理模型，Sudoku-Extreme 99.9%、推理算力省 345 倍，多解任务解覆盖率 SOTA。\n  https://arxiv.org/abs/2611.08977\n- Sketchpad: certified exact arithmetic with a small vision-language model — 把精确算术变成网络可验证的有限性质：Qwen3.5-0.8B + LoRA 在渲染的“草稿纸”上逐步读三格视窗，Lean 中证明任意长度输入的精确性；浏览器端 220/220 题全对，略胜十模型中最好的 GPT-6.1 Sol（217）。\n  https://arxiv.org/abs/2611.04434\n- Beneath the Surface: What We Overlook When We Talk About Agent Evolution — 系统评估不更新权重、只演化 harness 的递归自我改进：16 个演化 agent 全部出现“新增未覆盖任务同时丢失原覆盖任务”，最高分 agent 在四个池中都没有带来最大平均改进，可靠性提升常伴随部署成本上升。\n  https://arxiv.org/abs/2611.07624\n- Phantom Consensus: Measuring Social Reasoning in Multi-Agent LLM Decision-Making — 多 agent 聚合判断的新失效模式：LLM 在看到模糊社交信号后改变公开决策，同时错误估计其他 agent 的私有判断，出现“幽灵共识”，为多智能体系统评测提供指标。\n  https://arxiv.org/abs/2611.08971\n\nGitHub与基建\n- [Perf] quantization: Speed up Hopper group32 FP8 quantization（sglang） — 优化 Hopper 上 group32 FP8 量化路径，属于 11-09 10:58（北京时间）合入的最新性能提交之一，直接影响 FP8 部署的量化耗时。\n  https://github.com/sgl-project/sglang/commit/2ad35d4535927c23fcd55fa05e329e981261a24d\n- [Perf] [NVIDIA] minimax-sparse: 在 Hopper 上对 decode indexer 跑 CP（sglang） — 稀疏注意力 decode 阶段的 indexer 被放到 Hopper 上做上下文并行，针对 DeepSeek-V3.2 稀疏模型的解码扩展性优化。\n  https://github.com/sgl-project/sglang/commit/4668f37139ddb117530b30477867cf98c70c7126\n- [Bugfix][ROCm] 当全局 AITER 不可用时让 FP8 MoE oracle 回退（vLLM） — 11-09 09:43（北京时间）合入的 ROCm 修复，FP8 MoE 在 AITER oracle 缺失时不再直接失败，恢复 AMD 后端的可用性。\n  https://github.com/vllm-project/vllm/commit/62902f6ce6731058657fbaa1c565ed30002bec96\n- [Sleep Mode] 移除 #66010 已不再需要的 level-2 变通方案（vLLM） — 清理 sleep mode 相关的临时补丁（12 文件，+29/−97），反映 vLLM 睡眠/唤醒与权重换出机制正在收敛为更干净的路径。\n  https://github.com/vllm-project/vllm/commit/e5f2ea9be8b2ca62ac6e049effe2dc438b78c8f1\n\nSource: https://arxiv.org/abs/2611.08977",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.08977",
+    "verified_at": "2026-11-09T03:03:11Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

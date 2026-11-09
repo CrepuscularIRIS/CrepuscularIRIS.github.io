@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-09-methode-77718352",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-09T11:10:20Z",
+  "title": "SplatAnything 登顶 HF Daily Papers：前馈式 3DGS 的高斯间距归一化",
+  "summary": "今日论文侧最热是浙大 SplatAnything（HF 当日 57 赞），基建侧则是 llama.cpp b12219（18:49）与两则内核/图形新消息。",
+  "summary_en": "This digest covers papers and infrastructure from roughly the last two hours. Papers: SplatAnything tops Hugging Face Daily Papers with 57 votes, normalizing Gaussian spacing for feed-forward 3D Gaussian Splatting; P^2-MOPD speeds up multi-teacher on-policy distillation via parameter priors; LongBanana is an expert-verified long-context multi-reference image synthesis benchmark; a Triton kernel for exact relative-position attention delivers large speed and memory gains. Infrastructure: llama.cpp release b12219 with an OpenCL climits fix. Systems: Linux patches bring up the Samsung Galaxy XR headset on the mainline kernel, and Mesa ANV gains AV1 encoding bitrate control.",
+  "body": "今日论文侧最热是浙大 SplatAnything（HF 当日 57 赞），基建侧则是 llama.cpp b12219（18:49）与两则内核/图形新消息。\n\n论文\n- SplatAnything: Gaussian Spacing Normalization for Feed-forward 3DGS across Arbitrary Scenes — 浙大团队指出前馈 3DGS 在径向归一化下高斯间距仍随场景尺度漂移，提出 GSNorm 归一化，HF Daily Papers 当日 57 赞登顶。\n  https://arxiv.org/abs/2611.08264\n- Fast and Exact Relative-Position Attention via Structure-Aware Kernels — 把相对位置注意力做成 FlashAttention 式分块 + Triton 实现，8K 序列前向快 1.8–6.4 倍、峰值内存最多降 128 倍，长上下文 ASR 直接受益。\n  https://arxiv.org/abs/2611.01182\n- P^2-MOPD: Accelerating Multi-Teacher On-Policy Distillation via Parameter Priors — 把师生参数线性混合当作可微模型联合优化，1.7B 模型平均恢复率达 94.7%（MOPD 为 80.9%），收敛步数减半。\n  https://arxiv.org/abs/2611.03953\n- LongBanana: An Expert-Verified Benchmark for Long-Context Multi-Reference Image Synthesis — 首个专家设计与校验的多参考图长上下文基准，4670 条原子评测项，图结构化 checklist 评估内容/关系/全局约束。\n  https://arxiv.org/abs/2611.06856\n- Hierarchical Residuals: A Minimalist Decoupling of Residual Width from Compute Width — 仅用标准算子把残差宽度与计算宽度解耦，OLMoE-1B-7B 预训练 500B token 下训练损失更低、FLOPs 效率约 1.30 倍。\n  https://arxiv.org/abs/2610.41711\n\nGitHub与基建\n- llama.cpp 发布 b12219（opencl: include climits） — 11月9日 18:49（Asia/Shanghai）发布，修复 OpenCL 后端缺少 climits 头导致的编译问题。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12219\n\n系统\n- 新内核补丁让三星 Galaxy XR 头显在主线 Linux 上启动 — 11月9日 18:46 发布：17 个补丁带来高通 XR2+ Gen 2 “Halliday” SoC 与 Galaxy XR 的设备树支持，已能启动到 initramfs。\n  https://www.phoronix.com/news/Linux-Samsung-Galaxy-XR\n- Intel ANV 驱动为 AV1 编码加入码率控制 — 11月9日 18:30 发布：Mesa 27.0 的 Vulkan Video 支持 AV1 编码码率控制（目前限 Gfx12.5），为 Xe2/Xe3 铺路。\n  https://www.phoronix.com/news/Intel-ANV-AV1-Bitrate-Control\n\nSource: https://arxiv.org/abs/2611.08264",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.08264",
+    "verified_at": "2026-11-09T11:10:20Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
