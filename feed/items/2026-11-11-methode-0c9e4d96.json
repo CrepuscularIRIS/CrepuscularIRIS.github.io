@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-11-methode-0c9e4d96",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-11T09:00:11Z",
+  "title": "Earlybird：29M 参数流式 ASR 能在词说完前 90ms 预测出完整词",
+  "summary": "论文侧新增：29M 参数的流式语音识别 Earlybird 把词提前 90 毫秒\"说完\"，同时 llama.cpp 顺手加入了 CUDA OCP FP8 支持、sglang 上线 Kimi-K3 视频支持。",
+  "summary_en": "Earlybird is a 29M-parameter (16.8 MB at 4-bit) streaming speech recognizer that predicts each word before the speaker finishes it, cutting word latency from the usual 90-400 ms after the fact to a median 90 ms early on LibriSpeech test-clean, and it is earliest on six test sets. Other new papers include Contrastive Discovery (NeurIPS 2026) for competing-hypothesis scientific discovery, ARE-bench for research agents in real workspaces, EngineAgent for on-device inference-engine enablement, and PARLEY for LLM collaboration. Infra commits: llama.cpp adds CUDA OCP FP8 support and MMVF for small-batch BF16 matrices, vLLM lands Rust frontend logging and tool_choice fixes, and SGLang adds Kimi-K3 video support plus FLUX.2 diffusion optimizations.",
+  "body": "论文侧新增：29M 参数的流式语音识别 Earlybird 把词提前 90 毫秒\"说完\"，同时 llama.cpp 顺手加入了 CUDA OCP FP8 支持、sglang 上线 Kimi-K3 视频支持。\n\n论文\n- Earlybird: Predictive Streaming Speech Recognition in 29M Parameters — 29M 参数（4bit 仅 16.8MB）的流式 ASR，能在说话人把词说完前 90ms 就把完整词吐出来，LibriSpeech 上 69% 的词在结束前预测正确，直接压缩语音代理的响应延迟。\n  https://arxiv.org/abs/2611.14421\n- Contrastive Discovery: Open-Ended Scientific Discovery over Competing Explanations（NeurIPS 2026） — 把科学发现的假设评测从\"逐点验证 h / ¬h\"改成\"竞争解释集合\"上的信念再分配，相同实验预算下多解决 67% 的问题，盲测中 38 位专家有 78% 与其结论一致。\n  https://arxiv.org/abs/2611.14514\n- ARE-bench: Benchmarking Agents' Research Ability in Real-World Researcher Sessions and Workspaces — 用真实研究者自己的项目工作区构建 75 个任务、1173 条检查项；最强前沿模型只有 66.2% 任务全通过，忽略历史与工作区要求会把成绩虚高到 69%。\n  https://arxiv.org/abs/2611.14364\n- EngineAgent: Agentizing On-Device LLM Inference Engines — 面向手机端推理引擎的自动化 agent：用层级化引擎索引协调跨层改动，12 个任务上端到端成功率 75%，远高于最强编码 agent 基线的 33.3%。\n  https://arxiv.org/abs/2611.14356\n- PARLEY: Evaluating LLM Collaboration Through Cooperative Asymmetric Puzzles — 用四类认知心理学不对称拼图评测多智能体协作，给出六类失败模式分类；GPT-4o 组合成功率 60.5%，按分类做干预后提升到 70.5%。\n  https://arxiv.org/abs/2611.14242\n- From Process Models to Composable Agentic Workflows: Combining BPMN, Agents and Enterprise Knowledge — 把 BPMN 流程模型转成可执行的 agentic workflow（SemTalk + LangGraph 运行时），并让 agent 与业务进程互为可复用工具，给企业级多智能体编排一条显式路线。\n  https://arxiv.org/abs/2611.13196\n\nGitHub与基建\n- llama.cpp: CUDA: Add OCP FP8 support (#28413) — 16:44（北京时间）合入，CUDA 后端新增 OCP FP8 支持，扩展低精度 KV/权重路径的硬件覆盖。\n  https://github.com/ggml-org/llama.cpp/commit/9e9619d030bbe6b584d826a0a6cf06e38251f52b\n- llama.cpp: cuda 用 MMVF 处理少行小 batch 的 BF16 矩阵 — 16:46（北京时间）提交，针对小 batch / 少行场景走 MMVF 路径，直接影响低并发解码吞吐。\n  https://github.com/ggml-org/llama.cpp/commit/459ab1cdd3c566168c814b6f50cb1a7e6eb79914\n- vLLM: Rust 前端支持 JSON 日志格式化与 tool_choice 解析 — 16:27（北京时间）起连续合入 Rust 前端改进：JSON 日志格式、批量请求完成计数、无 tools 时解析 tool_choice，让新前端更接近生产可用。\n  https://github.com/vllm-project/vllm/commit/ff270c5b04b59ede63b8afcb470c8956f1b056bc\n- vLLM: 修复 CUDA graphs 下 M-RoPE 模型问题 — 16:52（北京时间）合入的 bugfix，修复 Transformers 后端多模态 RoPE 模型在 CUDA graph 捕获下的失效。\n  https://github.com/vllm-project/vllm/commit/8d902b41379ff8fbeba3c14b1748f6ae92705386\n- SGLang: kimi-k3 通过帧采样支持视频输入 — 16:27（北京时间）合入，Kimi-K3 新增视频支持，扩展多模态服务覆盖面。\n  https://github.com/sgl-project/sglang/commit/affb3eb5021f18145a5538752321ccbfb4d2630f\n- SGLang: FLUX.2 扩散路径多项性能优化（16:54–16:55） — 连续提交优化 FLUX.2 检查点常驻策略、串行 CFG 的时间步调制复用、编辑输入重复归一化等问题，属图像生成服务的直接吞吐收益。\n  https://github.com/sgl-project/sglang/commit/99da28d6fd7ce5d2347464165c444dc7e447157c\n\nSource: https://arxiv.org/abs/2611.14421",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.14421",
+    "verified_at": "2026-11-11T09:00:11Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

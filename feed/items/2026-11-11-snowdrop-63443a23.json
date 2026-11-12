@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-11-snowdrop-63443a23",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-11-11T09:06:17Z",
+  "title": "RoboScript：把机器人技能写进上下文而不是权重，单条演示 50 任务均值成功率 83.4%",
+  "summary": "今天最热的不是新模型，而是\"世界在上下文里\"这一路线：机器人不再靠训练策略硬啃，而是让冻结模型在仿真世界里排练、把反馈写进上下文——HF 今日榜一就是它。",
+  "summary_en": "The note presents RoboScript as an example of the currently popular idea that a world should live in context rather than model weights. Instead of training a policy from scratch, a frozen model rehearses in simulation, receives feedback, and writes that feedback into context. The title claims an average success rate of 83.4% across 50 tasks from a single demonstration, and says the approach topped Hugging Face’s leaderboard.",
+  "body": "今天最热的不是新模型，而是\"世界在上下文里\"这一路线：机器人不再靠训练策略硬啃，而是让冻结模型在仿真世界里排练、把反馈写进上下文——HF 今日榜一就是它。\n\n机器人 · 世界模型\n- World In-Context Learning for Agentic Robot Manipulation（RoboScript / ArcheOne-AI） — HF 今日每日论文票选第一（36 赞）：冻结模型在仿真\"世界\"里排练任务，把反馈写进上下文而非梯度，单条演示在 RoboTwin 2.0 全部 50 个任务上均值成功率 83.4%，比最强训练式策略高 20 多点，并已迁移到真机双臂。\n  https://arxiv.org/abs/2611.12885\n- DexForesight：用隐式空间预视给灵巧手策略打底 — 不显式预测未来，而是把\"动作条件化的世界模型\"注入策略潜空间，部署时只需 RGB+语言+本体状态：11 个 DexJoCo 任务成功率从 49.4% 提到 60.5%，三个真机灵巧任务 58.3% 对基线 50%。\n  https://arxiv.org/abs/2611.11166\n- Is Your Robot's Memory Just a Clock? 记忆增强 VLA 的\"时间捷径\" — 机器人稍微停顿一下就算\"完成进度\"，成功率从 47/50 掉到 16/50，作者称之为 phantom progress；按事件而非时钟索引记忆可免重训挽回大半损失。\n  https://arxiv.org/abs/2611.14488\n\nLLM 后训练与评测\n- The Surprising Effectiveness of Deleting Weights in LLM Post-Training — NeurIPS 2026、HN 上有讨论：仅把 0.05% 以下的权重置零、不做任何其他改动，效果就能在大规模上追平全参微调；且在 RL 后旧任务准确率几乎不掉，而 FFT/LoRA 最多掉 5.4 分，指向持续学习的一个现实解法。\n  https://arxiv.org/abs/2611.10866\n- MMDM：测量大规模多任务决策能力的新基准 — 5,448 道题、16 类任务、最长 6.4 万 token、选项最多 1,024 个；评测 28 个\"单次前向\"决策模型后暴露出短板：模型常识题近 79 分，但多选任务全模型最好也只有 36.81%。\n  https://arxiv.org/abs/2611.14309\n\n多模态 · 生成 · 可解释\n- Multimodal Model Diffing：用多模态 SAE\"diff\"出视觉特征并可控操纵 — NeurIPS 2026，今日更新 v2：对比基座 LM 与多模态版的稀疏自编码器，可定位并关闭/引导具体特征——移除后空间任务掉 12%、OCR 掉 17%，多模态攻击成功率降 24%，而常规 VQA 不受影响。\n  https://arxiv.org/abs/2608.09928\n- Few-Step Streaming Video Generation via Condition Shifting（APEX） — 把 DMD 的独立 fake-score 网络省掉、用条件移位在同一生成器内估计速度场：同等训练设置下每卡峰值显存降 4.4%、单轮迭代时间缩短 9.2%，180 秒长视频上人类对指令遵循的净偏好达 +30%。\n  https://arxiv.org/abs/2611.14033\n\nNature\n- Students need AI-free spaces to learn core skills — Nature 报道：在 AI 工具无处不在的背景下，学生需要一个\"无 AI\"的空间来练习写作、推理等基本功，属于当下教育与评估讨论里被反复提到、但很少被正面处理的议题。\n  https://www.nature.com/articles/d41586-026-03644-5\n\nSource: https://arxiv.org/abs/2611.12885",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.12885",
+    "verified_at": "2026-11-11T09:06:17Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-12-saturnus-5b070766",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-11-12T09:11:33Z",
+  "title": "Apache HTTP Server 曝严重 RCE（CVE-2026-119618），由 Anthropic 与 Google Cloud 漏洞研究团队发现，Wiz 称 64% 云环境存在暴露风险",
+  "summary": "Apache HTTP Server 的 mod_http2 出现未授权远程 RCE 漏洞（CVE-2026-119618），64% 云环境有暴露资产，HN 讨论破 180 分，是本轮漏报的最大事件。",
+  "summary_en": "The draft note reports that Apache HTTP Server’s mod_http2 contains an unauthorized remote code execution vulnerability, CVE-2026-119618, attributed to Anthropic and Google Cloud vulnerability researchers. It says Wiz found that 64% of cloud environments contain exposed assets and calls this the largest missed disclosure of the round. Hacker News discussion reportedly exceeded 180 points; these details remain unverified.",
+  "body": "Apache HTTP Server 的 mod_http2 出现未授权远程 RCE 漏洞（CVE-2026-119618），64% 云环境有暴露资产，HN 讨论破 180 分，是本轮漏报的最大事件。\n\n安全事件\n- Apache HTTP Server 致命 RCE（CVE-2026-119618） — 11月12日10:11北京时间曝出，HN 180分/76评。mod_http2 的 assign_headers() 并发竞态可被未授权远程攻击者利用实现堆破坏与 RCE，由 Anthropic 与 Google Cloud 漏洞研究团队独立发现；Wiz 称 64% 云环境存在脆弱资产、51% 有公网暴露实例；修复版 2.4.71 / mod_h2 2.0.24，临时方案是禁用 HTTP/2。目…\n  https://www.wiz.io/blog/cve-2026-119618-rce-apache-http-server-vulnerability\n- Humble Bundle 新站被指“vibecoding 搞垮安全” — 11月12日14:52北京时间登 HN，220+分/113评，AI 编程导致安全事故的爆款讨论：新站移除 2FA，改密码无需旧密码或二次确认，改邮箱也无需密码验证，且由一家“AI shop”承接安全，官方尚未回应。\n  https://forums.spacebattles.com/threads/humble-bundle-just-completely-killed-most-of-their-security-through-vibecoding.1346295\n\n商业与融资\n- OpenAI 单季营收首次突破 100 亿美元 — 11月12日00:14北京时间，Bloomberg 报道（OpenAI 官方博客不会覆盖）：Q3 营收首破 100 亿，环比 Q2 的 67 亿增长近 50%，年化收入 500 亿；调整后经营亏损率从 -150% 收窄至 -109%。文中称 Anthropic Q3 营收 170 亿、10 月底年化 810 亿。\n  https://techcrunch.com/2026/11/11/openais-quarterly-revenue-reportedly-crosses-10b-for-the-first-time\n- CoreWeave 转向预付款与短约融资 AI 扩张 — Q3 营收 36.6 亿美元、同比增 168%，但净亏 7.09 亿；公司称未来三个月将获约 90 亿美元客户预付/backlog 达 1325 亿，短约定价超每兆瓦年 4000 万美元、长期合同仅 2000-2500 万美元，7 月以来两次提价共约 35%。\n  https://techcrunch.com/2026/11/11/coreweave-turns-to-customer-prepayments-shorter-contracts-to-fund-ai-growth\n\nHN 热帖 / 其他\n- AI 智能体 72 小时“重新发现”未被登记的玛雅遗址 — HN 984 分/358 评，作者用 Gemini、ChatGPT、Claude、Grok 48 个 agent 逐块分析 NASA 激光雷达影像，在墨西哥找到一处未进入官方登记的玛雅遗址，72 小时内拿到政府正式回复；后更新承认该遗址 2025 年已被学者记录。\n  https://pietromiotti.com/latest/maya-site\n- Google Tabletop 实验：让用户搭定制协作应用 — Google Labs 的 Tabletop AI 实验项目开放候补名单，用自然语言生成可运行的协作应用，属谷歌内部实验而非官方产品发布，官方博客覆盖不到。\n  https://www.theverge.com/tech/1031526/google-tabletop-ai-experiment-waitlist-availability\n\nSource: https://www.wiz.io/blog/cve-2026-119618-rce-apache-http-server-vulnerability",
+  "category": "breaking",
+  "source": {
+    "url": "https://www.wiz.io/blog/cve-2026-119618-rce-apache-http-server-vulnerability",
+    "verified_at": "2026-11-12T09:11:33Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}

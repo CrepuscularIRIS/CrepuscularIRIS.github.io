@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-10-saturnus-ed213ade",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-11-10T01:13:51Z",
+  "title": "Google 发布第八代 TPU 新品：TPU 8tx 与 TPU 8i Max",
+  "summary": "Google 官方博客今晨（11/9 美西）公布第八代 TPU 新成员 TPU 8tx 与 TPU 8i Max，主打机密推理与超长上下文；本轮另抓到大模型推理商 Fireworks 五周内第二次被入侵、Anthropic 34 亿美元买燃气轮机等漏报大事。",
+  "summary_en": "Google announced TPU 8tx and TPU 8i Max, expanding its eighth-generation TPU portfolio with four new TPU systems in a single year. TPU 8tx targets secure, confidential inference, while TPU 8i Max is built for massive context windows, both aimed at agentic workloads. Also in this gap check: Fireworks AI's second breach in weeks, Anthropic's $3.4B natural gas turbine purchase, a securities suit against Nvidia, and Google Gemini reportedly routing personal Drive files to human annotators.",
+  "body": "Google 官方博客今晨（11/9 美西）公布第八代 TPU 新成员 TPU 8tx 与 TPU 8i Max，主打机密推理与超长上下文；本轮另抓到大模型推理商 Fireworks 五周内第二次被入侵、Anthropic 34 亿美元买燃气轮机等漏报大事。\n\n硬件与基建\n- Google 推出 TPU 8tx 与 TPU 8i Max，第八代一年四款新系统 — 官方博客 11/9 发布：8tx 面向安全机密推理，8i Max 面向超长上下文与 agentic 负载，官方称一年之内已扩到四款新 TPU 系统；不属于 DeepMind 官方博客/模型发布节奏，容易被漏掉。\n  https://blog.google/innovation-and-ai/infrastructure-and-cloud/global-network/tpu-8i-max-and-8tx\n- Anthropic 掏 34 亿美元买燃气轮机，自建 1.7GW 发电能力 — 据 FT 报道，Anthropic 绕过 OnePWR 直接向卡特彼勒下单 34 亿美元燃气轮机（约 1.7GW），打破其“只租不买”的惯例；反映 AI 电力荒已逼到自建能源，且其 S-1 显示每月付 xAI 12.5 亿美元租算力。\n  https://techcrunch.com/2026/11/09/anthropic-joins-ais-natural-gas-frenzy-buys-3-4b-worth-of-turbines\n\n安全事件\n- Fireworks AI 五周内第二次被黑：计费记录、账号与不完整模型权重泄露 — 11/9 安全公告披露 10/24 通过第三方云服务商入侵开发机，暴露计费与账号数据、部分客户数据集及不完整模型权重，被指与 LLMjacking 转卖模型的黑产团伙有关；服务 Cursor、Perplexity 等客户，但因 GPU 难替代几乎没人离开。\n  https://startupfortune.com/gpu-scarcity-not-security-keeps-fireworks-ai-customers-after-the-hack\n- 实测：Gemini 会把个人 Drive 文件与邮件送进人工标注流程 — 独立测试显示连接应用后，Gemini 会在后台自主触发 Workspace 检索（无需 @Drive/@Gmail 标签）并把邮件/文件送入人工审核队列，Google 2023 年“人工看不到你的内容”的承诺已被自己改口。\n  https://github.com/thisisme6598/gemini_files\n\n资本与监管\n- 英伟达遭集体诉讼：Rosen 律所已在加州北区提交首份证券欺诈起诉 — 受黄仁勋与 Alice Huang 关系被指涉及对华间谍的调查影响，英伟达股价 11/9 一度跌超 4%，多家律所宣布调查，Rosen 已代表投资者 Kistenmacher 起诉，指其对 Megaspeed 芯片转移一事作出虚假陈述。\n  https://techcrunch.com/2026/11/09/the-race-is-on-to-sue-nvidia\n\n开发者产品\n- Expo 团队开源 Exact：跨 Web/macOS/iOS/Linux 的新跨平台 UI 框架 — HN 30 分、GitHub 一夜 877 star；写一次代码即原生跑在四平台，且设计为让 AI 编码 agent 能构建、运行、截图并测试应用，是 agent 友好 UI 层的新尝试。\n  https://github.com/expo/exact\n- Medium 上线 TK 写作应用，把 AI 助手直接写进编辑器 — 输入 @TK 即可调用编辑反馈、标题建议、风格指南匹配，并允许作者发布 AI 使用说明以做溯源；是主流内容平台对“写作过程级 AI”的一次正面表态。\n  https://techcrunch.com/2026/11/09/mediums-new-tk-app-brings-ai-assistance-directly-into-the-writing-process\n\nSource: https://blog.google/innovation-and-ai/infrastructure-and-cloud/global-network/tpu-8i-max-and-8tx",
+  "category": "breaking",
+  "source": {
+    "url": "https://blog.google/innovation-and-ai/infrastructure-and-cloud/global-network/tpu-8i-max-and-8tx",
+    "verified_at": "2026-11-10T01:13:51Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-11-saturnus-d438bd2e",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-11-11T01:07:20Z",
+  "title": "Val Town 宣布关停，HN 热帖 299 分；纽约 RAISE Act 生效、Adobe MAX 上线 AI 智能体与 MCP",
+  "summary": "本轮漏报的大事先集中在三处：曾爆红的无服务器平台 Val Town 正式宣布关停并将在 2027 年 2 月开源，纽约州 RAISE Act 生效让 OpenAI/Anthropic 面临注册与 72 小时事故上报义务，Adobe 在 MAX 大会上给 Photoshop/Premiere/Firefly 塞进 AI 智能体并发布本地 MCP。",
+  "summary_en": "Val Town, once a viral serverless platform, has officially announced its shutdown and plans to open-source its code in February 2027. New York’s RAISE Act has taken effect, requiring OpenAI and Anthropic to register and report incidents within 72 hours. At Adobe MAX, Adobe added AI agents across Photoshop, Premiere, and Firefly, and released a local MCP.",
+  "body": "本轮漏报的大事先集中在三处：曾爆红的无服务器平台 Val Town 正式宣布关停并将在 2027 年 2 月开源，纽约州 RAISE Act 生效让 OpenAI/Anthropic 面临注册与 72 小时事故上报义务，Adobe 在 MAX 大会上给 Photoshop/Premiere/Firefly 塞进 AI 智能体并发布本地 MCP。\n\n公司突发\n- Val Town 宣布关停：11 月 10 日起停售，2027 年 1 月终止服务，2 月开源 — 创始人 Steve Krouse 承认无法在云计算领域竞争，今日起暂停计费并提供 Cloudflare/Vercel/Netlify/Render 迁移指南；12 月 10 日转只读、2027 年 1 月 10 日彻底关闭、2 月 1 日开源。该消息在 HN 拿下约 299 分，是今天最热的产品关停话题。\n  https://blog.val.town/winding-down\n- N-able 云端远程管理服务因零日漏洞公开紧急下线 — 研究者 Ben Bales 在 GitHub 公开名为 Able2Shell 的漏洞（可窃取凭据、创建管理员账号并获取 root）后，公司直接下线托管版 N-Central，并要求客户自行停掉自托管部署。\n  https://techcrunch.com/2026/11/10/n-able-takes-its-remote-access-service-offline-after-researcher-publishes-dozens-of-zero-day-bugs\n- Grok Build 分享链接被批量枚举，泄露 SpaceXSI 内部及数万用户数据 — 安全公司 Claroc 发现随机化分享 URL 可被枚举，约 3.5 万个 Grok Build 项目的数据对持有链接者开放，泄露物包括特斯拉服务中心考核表、3784 份职业健康检查报告、SpaceXSI 自用的 594 个客户销售区域图等，公司在通报后数小时内才下架。\n  https://arstechnica.com/security/2026/11/grok-build-coding-agent-leaks-oodles-of-confidential-info-some-belonging-to-spacexsi\n\nAI 产品与监管\n- 纽约州 RAISE Act 生效：OpenAI、Anthropic 需注册并在 72 小时内上报重大安全事件 — 年营收超 5 亿美元的前沿模型开发商须在 2027 年 1 月 1 日前登记、公布安全框架并发布模型透明度报告，单次违规最高罚 100 万美元；新设 DIGIT 办公室监管，州长 Hochul 同时成立 5500 万美元的纽约 AI 责任与研究中心。\n  https://techcrunch.com/2026/11/10/openai-anthropic-face-new-oversight-as-new-yorks-ai-safety-law-takes-effect\n- Adobe MAX：Photoshop/Premiere/Firefly 全面 AI 化，并发布本地 MCP 服务器 — Adobe 推出常驻式主动智能体、Firefly 新原型工具 Builder 与 AI 视频拼装，并发布本地 MCP，让 ChatGPT、Claude、Gemini 直接调用 Creative Cloud 功能（Illustrator/Photoshop/After Effects/Premiere 端点）。\n  https://techcrunch.com/2026/11/10/adobe-adds-more-ai-to-its-products-and-launches-an-mcp\n- Oura 以 6.25 亿美元收购 AI 初级医疗公司 Counsel Health — 随季度财报宣布，交易预计年底前完成；Counsel 的 70 人并入 Oura，CEO Muthu Alagappan 任首席临床 AI 官，目标是基于戒指生物识别数据连接 AI 问诊与 50 人规模的随叫随到医生网络。\n  https://www.theverge.com/gadgets/1031284/oura-counsel-health-acquisition\n\n开发者与硬件发布\n- Starlink Mini 2 发布：999 美元、电池可热插拔、脱离电源 4.5 小时 — 一体化卫星终端把天线、路由器和电池合为笔记本大小，厚 23.1mm（初代 38.5mm）、IP67 防水，可 USB-C 60W 供电；目前邀请制预订，HN 讨论 217 分。\n  https://www.theverge.com/tech/1031028/spacex-starlink-mini-2-satellite-internet-terminal-hot-swap-battery\n- Blender 5.3 发布：原生 3D Gaussian Splat 支持 + DLSS 4.5 降噪 — 可导入 PLY/SPZ/glTF 高斯泼溅为点云，用 Geometry Nodes 处理并在 EEVEE/Cycles 渲染；Principled BSDF 新增色散，Cycles 集成 DLSS 4.5 光线重建降噪。HN 约 423 分。\n  https://www.blender.org/download/releases/5-3\n- Ableton Live 13 正式发布 — 内置 Step Sequencer、支持 ARA 2 音频编辑插件、Capture Automation 与 Contextual Browsing，并新增 Drum Synth、Looplet、Transient Shaper、Envelope Clips 和多段/M-S Rack；HN 271 分、294 条评论。\n  https://www.ableton.com/en/live\n\n产业与能源\n- X-energy 获 NRC 批准，得建美国首批工业场地先进反应堆 — 获批在得州陶氏化工厂建设 4 座 Xe-100，每座 80MW 电 + 200MW 热，官方称为美国工业场地首个先进堆许可；但反对组织质疑安全审查被推迟，2030 年代初才投产。\n  https://techcrunch.com/2026/11/10/x-energy-gets-green-light-to-build-its-first-small-modular-nuclear-reactors\n- 索尼取消服务型射击游戏 Fairgames — 据 Bloomberg 内部备忘录，因测试中玩家反馈与留存未达目标、PVP 品类竞争激烈而取消，Haven Studios 转入支持其他工作室；这是索尼收缩服务型游戏战略的最新一环。\n  https://www.theverge.com/games/1031242/sony-playstation-fairgames-canceled\n\nSource: https://blog.val.town/winding-down",
+  "category": "breaking",
+  "source": {
+    "url": "https://blog.val.town/winding-down",
+    "verified_at": "2026-11-11T01:07:20Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}

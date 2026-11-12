@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-10-methode-13f9d949",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-10T07:03:45Z",
+  "title": "Sage-Taiyi：元认知架构驱动的 AI 科学家，在化学条件优化中把产率从微量提到 84%",
+  "summary": "Sage-Taiyi 用元认知调度让 AI 科研系统学会\"先想清楚再动手\"，Hugging Face Daily Papers 今日新上榜，同时 llama.cpp 与 vLLM/SGLang 在两小时内连发多个性能与新硬件提交。",
+  "summary_en": "Sage-Taiyi is presented as a metacognitive architecture that enables an AI research system to “think before acting” through metacognitive scheduling. Its chemical-condition optimization reportedly raised yield from trace levels to 84%. The note says it newly appeared on Hugging Face Daily Papers, while llama.cpp and vLLM/SGLang reportedly issued several performance improvements and new-hardware commits within two hours.",
+  "body": "Sage-Taiyi 用元认知调度让 AI 科研系统学会\"先想清楚再动手\"，Hugging Face Daily Papers 今日新上榜，同时 llama.cpp 与 vLLM/SGLang 在两小时内连发多个性能与新硬件提交。\n\n论文\n- Sage-Taiyi: A Metacognitive Architecture for Scientific Discovery — 用元认知监控/控制决定\"下一步研究什么\"，Taiyi-Bench 265 任务八项指标全胜；在化学实验中把钴催化羰基化产率从微量提到 84%。\n  https://arxiv.org/abs/2611.12762\n- SIRIS: Can LLMs Tell When Simulation Errors Matter in AI-Driven Systems — 构造受扰动仿真器工作负载对，测 13 个前沿模型能否识别\"仿真局限会让推荐失效\"——最强的模型也会抛弃本可用的推荐，直接命中 LLM 系统研究选型痛点。\n  https://arxiv.org/abs/2611.10329\n- JoVox: Joint Hierarchical Flow Matching for Lightweight Voxel Generation — 联合建模体素层级分布，比 TRELLIS.2 训练吞吐高 8 倍、前向 FLOPs 仅 1/15，Chamfer 距离还低 11%。\n  https://arxiv.org/abs/2611.10690\n- FewStepRL: Fine-tuning Few-step Diffusion Models with Reinforcement Learning — 系统性地把 FlowGRPO/AWM/DiffusionNFT 等 RL 目标改写到少步扩散模型上，把长采样 rollout 的训练成本压下来。\n  https://arxiv.org/abs/2611.08240\n- Horizon-Scalable Q-Learning — 自动在一步/多步 TD 目标间切换来抑制长程误差累积，且无需动作密度，可直接配合 flow/diffusion 策略。\n  https://arxiv.org/abs/2611.10987\n- RL-ATTACK: A Generalized Black-Box Adversarial Attack on Language Models via Reinforcement Learning — 用 RL 训练通用黑盒攻击器，直面对齐/越狱防御的攻防工程需求。\n  https://arxiv.org/abs/2611.08711\n- Guardrail Erosion in Domain Fine-Tuned Large Language Models — 对生物医学领域微调模型做配对审计，量化\"拒答护栏\"在领域微调后被侵蚀的程度。\n  https://arxiv.org/abs/2611.08780\n- TRIO: Task Refinement with Individual Optimization for RAG — EMNLP 2026 Findings：用查询扩展、裁判、回答三个智能体迭代优化 RAG，并用一致性投票判断检索是否充分。\n  https://arxiv.org/abs/2611.02810\n\nGitHub与基建\n- llama.cpp b12243：解除 oneDNN fused SDPA 在 head_dim=64 的门控 — SYCL/oneDNN 后端放开融合 SDPA 限制，长上下文推理在 Intel 侧更易吃满算力（北京时间 11-10 14:52 发布）。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12243\n- llama.cpp b12244：升级 oneAPI 2026.2 / oneDNN 2026.1 / Level Zero 1.34.0 — Intel GPU 侧依赖栈滚动更新，vulkan/oneapi 构建跟进（北京时间 11-10 14:18 发布）。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12244\n- vLLM: 移除 EPLB/AITER GDN/Moondream3 的 step-path GPU 同步 — AMD ROCm 路径上的多处 host 同步被清除，直接降低小批量解码延迟抖动。\n  https://github.com/vllm-project/vllm/commit/68776b023c46e89c9b15215e714961c4ab97a38f\n- vLLM: Llama-4 融合 MoE 专家权重在拷贝到 GPU 前强制连续 — 修复融合 MoE 权重布局问题，是 Llama-4 在 vLLM 上部署的常见踩坑点。\n  https://github.com/vllm-project/vllm/commit/499a3d1e1e338e3e866c0719cfe1f429e2b0b762\n- vLLM Rust 前端：流式输出 DeepSeek DSML 工具调用参数 — Rust 侧补齐 DeepSeek 系列工具调用的流式解析，Agent 场景首 token 体验改善。\n  https://github.com/vllm-project/vllm/commit/96710245ece8fe57a0df3ea18cdc79cbb8ce93cf\n- SGLang: Ascend NPU 纯 MLA 注意力启用 mixed-chunk — 昇腾后端 MLA 走混合分块路径，国产 NPU 上的长上下文吞吐有望提升。\n  https://github.com/sgl-project/sglang/commit/d565013acdcb4590d6b88ffb7557a6f83f3a4793\n- SGLang: 为 RTX PRO 5000 增加 Triton block-fp8 GEMM 配置 — 补齐 Blackwell 工作站卡（72GB）的 fp8 块状 GEMM 调优表，覆盖 8 种常见形状。\n  https://github.com/sgl-project/sglang/commit/ae1347a5c36a668ace327a60f6929c0f5949eabf\n\nSource: https://arxiv.org/abs/2611.12762",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.12762",
+    "verified_at": "2026-11-10T07:03:45Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

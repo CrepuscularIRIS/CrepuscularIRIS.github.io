@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-11-methode-cbaff44e",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-11T05:00:30Z",
+  "title": "dNaViT：离散视觉码作为通用视觉表征登顶 HF Daily Papers",
+  "summary": "长猫团队的 dNaViT 用分组乘积量化把视觉特征压成离散\"词表 token\"，在 12 项理解、4 项生成基准上匹配甚至超过专用模型，成为今日 HF Daily Papers 榜首（19 赞）。",
+  "summary_en": "The note reports that the Long Cat team’s dNaViT uses grouped product quantization to compress visual features into discrete vocabulary tokens. Across 12 understanding and four generation benchmarks, the approach reportedly matches or exceeds specialist models. It also reached the top of Hugging Face Daily Papers, earning 19 likes that day.",
+  "body": "长猫团队的 dNaViT 用分组乘积量化把视觉特征压成离散\"词表 token\"，在 12 项理解、4 项生成基准上匹配甚至超过专用模型，成为今日 HF Daily Papers 榜首（19 赞）。\n\n论文\n- dNaViT: Discrete Codes are General-Purpose Visual Representations（HF 今日第一，19 赞） — 在冻结预训练编码器上做双分支残差调制 + 分组乘积量化，把视觉表示变成离散\"词表 token\"，12 项理解、4 项生成、1 项编辑基准上匹配或超越专用模型，为全原生多模态统一编码提供了可扩展 token 方案。\n  https://huggingface.co/papers/2611.12426\n- Few-Step Streaming Video Generation via Condition Shifting（清华，9 赞） — APEX 用\"条件偏移\"在生成器内部估计假分数速度场，替掉 DMD 独立 fake-score 网络，在 180 秒流式视频上人评指令遵循净偏好 +30%，且每卡峰值显存降低 4.4%、单次迭代快 9.2%。\n  https://huggingface.co/papers/2611.14033\n- DepthGraft: Hierarchical Cross-Layer KV Reconstruction（6 赞） — 把跨层 KV 共享重新解读为隐式结构正则化：用步长对齐的浅中层重建深层 KV，KV 缓存约省三分之一，16B MoE 上 MMLU-Pro 绝对提升 7.0%，且兼容 GQA 与 MLA。\n  https://huggingface.co/papers/2611.03142\n- PhysOPSD: Code as Privilege for Physically Plausible Video Generation（通义实验室，6 赞） — 用\"可执行代码\"作为特权物理上下文做 on-policy 自蒸馏，把真实物理场景编译成可验证的仿真程序，仅 3K 样本即超过 SFT 与 RL 基线，显著改善视频生成的物理合理性。\n  https://huggingface.co/papers/2611.12411\n- ExRL: Sample-Efficient Online Adaptation of Long-Chunk Policies（4 赞） — 把长动作块的在线适应从\"优化动作\"改成\"预测执行长度\"，把高维 RL 变成低维 off-policy 问题，在仿真与真机上显著降低长块策略的在线样本成本。\n  https://huggingface.co/papers/2611.13482\n- Auditable Human-Agent Teams for Autonomous X-ray Experimentation — 用 coding-agent 基础设施跑通同步辐射 X 射线自主实验，完整人机/机机对话可审计重建决策来源，量化了人机分工中解读与判断类消息占比 61–67%。\n  https://arxiv.org/abs/2611.12933\n- Understanding Mixture-of-Experts Language Models Beyond Expert Boundaries — 从\"专家边界之外\"的视角剖析 MoE 路由与表征，把注意力/前馈模块的 token 级行为与专家分配解耦分析，为理解 MoE 内部机制提供新工具。\n  https://arxiv.org/abs/2611.13975\n- Coding Agent Memory Post-Training II: On-Policy Distillation for Long-Horizon Tasks — 用 on-policy 蒸馏把预训练的文件操作能力转化为编码 Agent 的长期记忆能力，瞄准长程任务的记忆瓶颈，与编码智能体基础设施直接相关。\n  https://arxiv.org/abs/2611.14009\n\nGitHub与基建\n- llama.cpp build b12282（11 日 11:31 推送） — 修复 Muse Spark 忽略 response_format 中 json_schema 的问题；同时提供 CUDA 12/13、ROCm 10、Vulkan、SYCL、 Snapdragon 与 Android 等全平台预编译产物。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12282\n- LiteLLM v1.106.8（11 日 11:23 发布） — 向 stable/1.106.x 稳定分支回合 usage.seconds 计费与 FLAC 尺寸守卫修复，并附带 Docker 镜像 cosign 签名验证说明；网关侧稳定版可安全升级。\n  https://github.com/BerriAI/litellm/releases/tag/v1.106.8\n\nSource: https://huggingface.co/papers/2611.12426",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2611.12426",
+    "verified_at": "2026-11-11T05:00:30Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

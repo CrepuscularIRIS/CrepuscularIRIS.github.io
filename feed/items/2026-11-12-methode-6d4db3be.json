@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-12-methode-6d4db3be",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-12T07:01:01Z",
+  "title": "AutoScaffold：让 AI 自己为 RL 设计训练期脚手架，四个域全面超过 RL 基线",
+  "summary": "AutoScaffold 用一个冻结的教师模型自动为 RLVR 学生设计并动态调整训练期脚手架，在 ALFWorld、QA、数学与 GPU kernel 生成四个域上不靠人工干预即全面超过 RL 基线。",
+  "summary_en": "AutoScaffold is an AI-for-AI framework that lets a frozen teacher model inspect a student's RLVR training experience, diagnose failure bottlenecks, and design adaptive training-time scaffolds (shared strategies plus task-specific hints) that are removed at evaluation. Applied across ALFWorld, search-based QA, mathematical reasoning and GPU kernel generation, students trained with AutoScaffold beat corresponding RL baselines in all four domains, gaining 7.2 points on ALFWorld success and 4.0 points in QA exact match, and using roughly one-third as many training steps as QuestA on math.",
+  "body": "AutoScaffold 用一个冻结的教师模型自动为 RLVR 学生设计并动态调整训练期脚手架，在 ALFWorld、QA、数学与 GPU kernel 生成四个域上不靠人工干预即全面超过 RL 基线。\n\n论文\n- AutoScaffold: AI-Guided Scaffolding for Reinforcement Learning of Language Models (arXiv:2611.14515) — 冻结教师模型自动诊断学生训练瓶颈并生成/调整脚手架（通用策略+个体提示），评测时移除；在 ALFWorld、检索型 QA、数学、GPU kernel 生成四域均超 RL 基线，ALFWorld +7.2 分、QA EM +4.0 分。\n  https://arxiv.org/abs/2611.14515\n- Emergent Biological Capabilities in a Foundation Model for Molecular Interactions (arXiv:2611.14504) — NeurIPS 2026 主赛道 Oral：分子交互基础模型涌现出生物学能力，AI4Science 方向的强信号工作。\n  https://arxiv.org/abs/2611.14504\n- Scaling Mathematical Proof Supervision from Structured Textbooks — TOME-Math (arXiv:2610.40394) — HF Daily Papers 当日第二（10 赞）：把 2118 本大学数学教材转成约 38 万条保留章节顺序与命题-证明链的证明监督数据，微调后公开评测均分比基座高 16.7 个百分点。\n  https://arxiv.org/abs/2610.40394\n- CogBattery: Human-Referenced Evaluation of Cognitive Task Behavior (arXiv:2607.24999) — 在 13 个认知范式上评测 54 个开放权重模型并与人类数据对齐；结论是“效应方向像人类”不等于“行为像人类”，且模型越大并不更接近人类。\n  https://arxiv.org/abs/2607.24999\n- WMIP: A Working-Memory-Inspired Programmable Probe (arXiv:2603.27343) — 累计状态跟踪探针：18 个 LLM 单步算术 84.9%，但三次以上更新仅 31.7%，50 次更新后无一超过 10%，且输出协议（写步骤）显著影响测得分。\n  https://arxiv.org/abs/2603.27343\n- Interactive Visual Gym: 闭环评测视觉交互模型 (arXiv:2611.08286) — 用可执行环境+模拟用户做闭环评测，最强模型 Gemini 4 Argon 限时内仅完成 53.4% 任务；与人类偏好一致性 78.5%，并已用于 Qwen3.5-4B 的 GRPO 训练实验。\n  https://arxiv.org/abs/2611.08286\n\nGitHub与基建\n- vLLM v0.34.0rc2 — 11 月 12 日 14:21（北京时间）发布的候选版本，主打文档与测试层改动：多数扩展场景不再默认设置 gpu_memory_utilization，减少显存占用踩坑。\n  https://github.com/vllm-project/vllm/releases/tag/v0.34.0rc2\n- llama.cpp b12317 — 11 月 12 日 15:00（北京时间）新构建，是本窗口内最新的例行发版节奏节点，OpenCL kernel GEMM 相关改动可见于该系列构建日志。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12317\n- llama.cpp b12314 — 11 月 12 日 13:27（北京时间）构建，属本轮 2 小时窗口内新增的推理引擎构建版本。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12314\n- langchain-typesafe 0.1.0 首个发布 — LangChain 新增类型安全相关子包的 0.1.0 首个版本，属于该仓库的新组件首次对外发布。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-typesafe%3D%3D0.1.0\n\nSource: https://arxiv.org/abs/2611.14515",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.14515",
+    "verified_at": "2026-11-12T07:01:01Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

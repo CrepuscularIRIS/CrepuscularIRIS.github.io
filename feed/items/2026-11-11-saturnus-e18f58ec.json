@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-11-saturnus-e18f58ec",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-11-11T03:07:27Z",
+  "title": "Anthropic 提交 IPO S-1：估值 1.4 万亿美元区间，7 位创始人各自套现约 2.5 亿美元",
+  "summary": "Anthropic IPO 招股书披露 7 位联合创始人各卖 337.8 万股、按 70–78 美元区间每人套现约 2.5 亿美元；OpenAI 收编 AI 旅行创业公司 Odessia，巴西桑托斯港疑遭勒索软件致大规模系统中断。",
+  "summary_en": "Anthropic’s IPO filing reportedly places the company’s valuation in the $1.4 trillion range. The prospectus says seven co-founders each sold 3.378 million shares at $70–$78, cashing out roughly $250 million apiece. The note also reports that OpenAI acquired AI travel startup Odessia and that a suspected ransomware attack caused major system outages at Brazil’s Port of Santos.",
+  "body": "Anthropic IPO 招股书披露 7 位联合创始人各卖 337.8 万股、按 70–78 美元区间每人套现约 2.5 亿美元；OpenAI 收编 AI 旅行创业公司 Odessia，巴西桑托斯港疑遭勒索软件致大规模系统中断。\n\nAI 公司：IPO、并购与融资\n- Anthropic 提交 IPO S-1：7 位创始人各套现约 2.5 亿美元，估值 1.4 万亿美元 — 11 月 11 日 03:57 台北时间披露：每位创始人卖 337.8 万股，$74 中位价下人均约 2.5 亿美元（$70–78 区间）；出售后各持约 3.2% A 类股，合计仍掌握 51.1% 投票权，Red Hastings 拟通过 DAF 认购 3 亿美元 —— 属财务/监管披露，官方博客不会覆盖\n  https://techcrunch.com/2026/11/10/all-7-anthropic-founders-will-each-cash-out-about-250m-in-ipo\n- OpenAI 收购 AI 旅行代理创业公司 Odessia — 11 月 11 日 05:08 台北时间：Sonder 创始人 Francis Davidson 加入 OpenAI，Odessia（红杉领投 600 万美元种子轮）已关停，属人才式收购；OpenAI 称旅行是 ChatGPT 高频需求，但未公布具体产品计划\n  https://techcrunch.com/2026/11/10/openai-acquires-odessia-travel-startup-created-by-sonder-founder\n- Proximal Ventures 完成首支基金募资 2750 万美元，主攻 AI+制药服务 — 11 月 11 日 03:47 台北时间：前 SignalFire 投资人 Sahir Raoof 的首支基金，投 pre-seed/seed（50 万–150 万美元），已投 7 家（含前 OpenAI 高管 Fidji Simo 创办的 ChronicleBio），LP 含 SignalFire、Kleiner Perkins\n  https://techcrunch.com/2026/11/10/proximal-ventures-raises-debut-fund-to-back-startups-bringing-ai-to-drug-development\n\n安全与漏洞\n- 巴西最大港口桑托斯港大规模 IT 中断，疑与国际勒索组织 N0n 有关 — 11 月 11 日上午（HN 热帖）：11 月 6 日断电后二次爆发，官网、内网、闸口门禁系统全瘫，巴西联邦将安保等级升至 II；勒索团伙称索取 23 BTC（约 240 万美元）并威胁泄露船舶动态数据，货物处理明显放缓\n  https://uknip.co.uk/news/uk/uk-news/brazils-largest-port-hit-by-major-it-outage-amid-suspected-ransomware-cyberattack\n- 微软 FORGE Lab：用 AI 扫描发现 Rust 标准库（std/core）内存安全漏洞 — 11 月 9 日发布、11 月 11 日登上 HN 首页：多个纯 safe Rust 代码可触发未定义行为的安全漏洞，归纳出三类错误信任模式（不 panic、信任用户实现、信任底层系统），部分问题仍未修复\n  https://forge-blog.github.io/posts/rust-std-memory-safety\n- Meta Ray-Ban 智能眼镜被攻破：研究者拿到任意代码执行 — 通过 OTA 增量包提取完整固件、hook GraphQL 字段取全量固件 URL，且 firmware 126 及以前不校验 DAT APK 签名，可安装自签应用；HN 首页重新热议\n  https://p0pcycle.com/2026/11/06/hacking-the-meta-ray-ban-smartglasses\n\n硬件与基础设施\n- Apple 新 Mac 应用「Harbor」曝光：把 Mac 变私有 AI 推理服务器，Thunderbolt 5 集群 — 11 月 11 日 03:15 台北时间：可自动发现多台 Mac 并池化统一内存以跑超大开源权重模型，App 内直接浏览下载模型，目前以 Claris 品牌私测中 —— 本地推理方向的大动作\n  https://9to5mac.com/2026/11/10/apple-has-new-mac-app-coming-to-make-running-local-ai-models-easy\n- CPU 创业公司 Tendrils 融资 3000 万美元，宣称要「重做 CPU」 — 11 月 10 日（HN 首页）：Benchmark 领投，参与方含英国主权 AI 基金等；主打数千核并行、放弃共享可变内存与线性指令流，并同步打造并行优先的开源语言 Vine，新董事为 Jack Altman\n  https://tendrils.co/blog/2026-11-10/30m-raised\n\n平台与产品\n- X 上线自带「剪辑」功能，对标 TikTok 切片玩法并打通原创内容奖励 — 11 月 11 日 09:02 台北时间：X 周一宣布，可截取视频片段并加评论后直接发布，带「Clip from」原链标签，创作者与剪辑者可通过 Original Content Rewards 变现\n  https://techcrunch.com/2026/11/10/x-launches-its-own-clipping-feature-to-spur-influencer-engagement\n\nSource: https://techcrunch.com/2026/11/10/all-7-anthropic-founders-will-each-cash-out-about-250m-in-ipo",
+  "category": "breaking",
+  "source": {
+    "url": "https://techcrunch.com/2026/11/10/all-7-anthropic-founders-will-each-cash-out-about-250m-in-ipo",
+    "verified_at": "2026-11-11T03:07:27Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}

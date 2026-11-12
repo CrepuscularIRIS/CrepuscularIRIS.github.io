@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "_about": "W18 S2 (W17-02, IM-21/28): what each hIE says when the visitor did what she asked. src/ui/phone/os/acts.js picks the line and fills it from the event log: {act} names the act (who, where, which reading), {when} its time. asked = an arc target of hers the visitor completed (asked_<kind> overrides it for one kind); file = an entry filed into her own file (outcome-specific for the timed ones: hit, or tried = pressed off the mark); file_other = an entry filed into someone else's file; thread = her text about her own timed entry (no bracket actions on the phone); question = Snowdrop's desk question. Every line cites a logged event; none may claim more than the log holds.",
+  "_about": "W18 S2 (W17-02, IM-21/28): what each hIE says when the visitor did what she asked. src/ui/phone/os/acts.js picks the line and fills it from the event log: {act} names the act (who, where, which reading), {when} its time. asked = an arc target of hers the visitor completed (asked_<kind> overrides it for one kind); file = an entry filed into her own file (outcome-specific for the timed ones: hit, or tried = pressed off the mark); file_other = an entry filed into someone else's file; thread = her text about her own timed entry (no bracket actions on the phone); question = Snowdrop's desk question once she has read the slip at the desk; question_waiting = the same question still unread (no answer given). Every line cites a logged event; none may claim more than the log holds.",
   "asked": {
     "kouka": "(flicks the feed away) {act}, {when}. That was on my list for you. One data point. Don't let it go to your head.",
     "lacia": "(opens the file) {act}, {when}. That was the line I asked you for. It's in your file now, in your name.",
@@ -60,5 +60,8 @@
   },
   "question": {
     "snowdrop": "(sets the paper down) Your slip from my desk, {when}: \"{question}\" The short version: {short} The long one goes in my margin, at that desk."
+  },
+  "question_waiting": {
+    "snowdrop": "(nods) You left a question on my desk, {when}: \"{question}\" I have not read the slip yet. Meet me at that desk and I will answer it there."
   }
 }

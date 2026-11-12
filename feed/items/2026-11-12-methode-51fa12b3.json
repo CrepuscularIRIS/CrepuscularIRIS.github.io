@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-12-methode-51fa12b3",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-12T09:03:46Z",
+  "title": "SteerDistill: Quantizing LLM Agents via Closed-Loop Teacher Steering",
+  "summary": "本轮最热的是 SteerDistill——用闭环教师引导来量化 LLM Agent，直接冲上 Hugging Face Daily Papers 当日第三（14 赞）。",
+  "summary_en": "This round's lead story is SteerDistill, a new Hugging Face Daily Papers highlight (third of the day, 14 votes) that quantizes LLM agents through closed-loop teacher steering. Two other rising entries cover token-efficient sparse reading of external content for agents and prompt-adaptive, cost-aware LLM routing. On the infrastructure side, SGLang merged several notable commits within two hours, including support for Kimi-K3.1 DSA layers on PD decode with DFLAS, an opt-in FlashInfer Prims-TS sparse MLA backend, building fused routing metadata for Kimi-K3 in a separate thread, and a gated allgather for KV cache sharding. No major Linux, driver, or arXiv batch items landed inside the window.",
+  "body": "本轮最热的是 SteerDistill——用闭环教师引导来量化 LLM Agent，直接冲上 Hugging Face Daily Papers 当日第三（14 赞）。\n\n论文\n- SteerDistill: Quantizing LLM Agents via Closed-Loop Teacher Steering — 11月12日新上 HF Daily Papers 即冲到当日第三（14 赞）：用「闭环教师引导」把 LLM Agent 量化，是本轮热度最高的论文。\n  https://huggingface.co/papers/2611.13410\n- Read Less, Solve More: Token-Efficient Sparse Reading of External Content for AI Agents — 当日新晋条目（10 赞），针对 Agent 读取外部内容时的 token 浪费，给出稀疏读取方案，直接命中 Agent 成本问题。\n  https://huggingface.co/papers/2608.22237\n- Ensemble Routing for Prompt-Adaptive Cost-Aware LLM Inference — 当日上升条目（9 赞），按 prompt 自适应选择模型路由，把推理成本与效果一起优化，属落地型工作。\n  https://huggingface.co/papers/2611.10193\n\nGitHub与基建\n- [Feat] hisparse: 支持 Kimi-K3.1 DSA 层在 PD decode 上的 DFLAS 加速 — 16:57 提交，为 Kimi-K3.1 的 DSA 层在 prefill/decode 分离场景接入 DFLAS 稀疏注意力，是本轮最贴近新模型落地的基础设施改动。\n  https://github.com/sgl-project/sglang/commit/56005a53a50038c9e2aee9ae81530478f0c8945d\n- [Perf] dsa: 新增可选的 FlashInfer Prims-TS 稀疏 MLA 后端 — 16:18 提交，为稀疏 MLA 提供 opt-in 的 FlashInfer Prims-TS 后端，直接影响长上下文模型推理吞吐。\n  https://github.com/sgl-project/sglang/commit/c7f3e2bdfd348d396f17f776f067f5765fa2bc52\n- [Perf] kimi-k3: 在独立线程中构建融合 routing metadata — 15:36 提交，把 Kimi-K3 的路由元数据构建挪到单独线程以降低关键路径延迟。\n  https://github.com/sgl-project/sglang/commit/bad3dd51002438423c16915e61c652ef3fbf18ec\n- [Feat] Comm: 在 KV cache 分片中加入 gated allgather — 15:03 提交，优化多卡 KV cache 分片的集合通信，对多机/多卡部署吞吐有实际影响。\n  https://github.com/sgl-project/sglang/commit/725b98b114f3af937636e4e709f1898b9fcb0ad0\n\nSource: https://huggingface.co/papers/2611.13410",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2611.13410",
+    "verified_at": "2026-11-12T09:03:46Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

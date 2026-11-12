@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-10-lacia-1afd9e57",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-11-10T13:04:48Z",
+  "title": "Meta Muse Ember 上线，Simon Willison 拆解其定价与效率前沿",
+  "summary": "Meta 推出最小最省电的模型 Muse Ember，正卡在 Artificial Analysis 的\"每任务成本—智能\"帕累托前沿上——同日发布的 Claude Fable 5.2 则是它的 80 倍价格搭档。",
+  "summary_en": "Meta has launched Muse Ember, described as its smallest and most power-efficient model. According to the note, it sits on Artificial Analysis’s Pareto frontier for intelligence relative to cost per task. Released on the same day, Claude Fable 5.2 is presented as a counterpart priced at 80 times Muse Ember’s rate, highlighting a substantial price-performance contrast.",
+  "body": "Meta 推出最小最省电的模型 Muse Ember，正卡在 Artificial Analysis 的\"每任务成本—智能\"帕累托前沿上——同日发布的 Claude Fable 5.2 则是它的 80 倍价格搭档。\n\nSimon Willison\n- Introducing Our Smallest, Most Efficient Model: Muse Ember — Meta 面向 Agent 重复性工作（工具调用、路由、长文档解析）推出的低价模型，价格与 GPT-6 Luna、Claude Haiku 5.5 同档，但长提示词有涨价阈值；Simon 指出它正好落在 Artificial Analysis 的效率帕累托线上（11月10日 15:28 北京时间）。\n  https://simonwillison.net/2026/Nov/10/muse-ember\n- Quoting Prompting Claude Fable 5.2 — Anthropic 官方提示词文档的硬数据：只要在提示里声明\"这个代码库归你\"，小任务中模型主动合并重复代码的比例约从十分之一升到一半——比价格战更实用的 Agent 编码技巧（11月10日 13:34 北京时间）。\n  https://simonwillison.net/2026/Nov/10/prompting-claude-fable-52\n\nInfoQ 中文\n- 硅谷疯炒 AI 自我进化，李飞飞、Jeff Dean 齐泼冷水：无限加速不可信 — Jeff Dean 离开 Google 创办 Discovery Loop，押注 AI 自我进化并已跑约 20 个自动化改进循环；李飞飞则明确质疑 RSI 的物理极限与\"无限加速\"叙事，厘清了自我改进与递归自我改进的差别。\n  https://www.infoq.cn/article/mZlISiZL9c1eurrsZRpo\n- Anthropic 重做源代码管理系统：提交量增长 12 倍，传统架构开始失效 — 单体仓库日合并量从 2500 涨到 3 万多、CI 每天 2500 万次检出后，Anthropic 用自研 Scion 把 Git 操作搬到服务端，缓存命中超 99%、检出速度提升两个数量级——大规模代码托管架构的范式转变。\n  https://www.infoq.cn/article/sBjhhysFKZibZpXQZEGy\n- 突破 Kubernetes 的 CPU 抽象，Uber 为异构服务器重新定义\"一核\" — 在管理约 500 万 CPU 核的 Odin 上，Uber 引入标准化计算单元（NCU），用性能系数给不同代际 x86/ARM 归一化，Kafka 利用率差距从 8 个点缩到 3 个点、总分配减少约 8%——Kubernetes CPU 抽象之外的实用解法。\n  https://www.infoq.cn/article/STFszc8JxPkXGeV9QRH3\n- Cloudflare KV Instant：读取 p99 仅 1.62 毫秒，写入一次却要 0.1 美元 — Cloudflare 首次把内部配置存储 Quicksilver 以 Workers KV \"instant\" 模式开放：读取 p99 1.62ms，但每次写入 0.1 美元、每命名空间限 1 万键，适合功能开关与 Agent 配置这类读多写少场景。\n  https://www.infoq.cn/article/YrPwJgFYyBSAmJE4hJAB\n- DeepSeek Harness 日活154万，官方开始给插件作者发Token：Agent 生态要靠开发者了 — 日活 154 万、日耗 92 万亿 Token、第三方插件 3.5 万个，\"一切皆插件\"架构把 Harness 推向开放应用平台；同时插件说明挤占上下文、Token 成本失控、升级丢配置等工程问题正在暴露。\n  https://www.infoq.cn/article/Y7lTO7Q1M8oN5JhxhirK\n\n量子位\n- Token卷到触觉了！机器人终于有了通用手感 — 直接把原始触觉喂给动作模型反而让机器人变笨（π0.5 拉拉链成功率 39%→15%），蚂蚁灵波开源的 LingBot-Touch（532万参数轻量版）把三类触觉传感器统一编码成触觉 Token，成功率回升到 59% 并在未见过的磁触觉灵巧手上同样有效。\n  https://www.qbitai.com/2026/11/508919.html\n- Fable 5.2首批实测来了！网友：Opus突然不香了 — 社区实测汇总：Fable 5.2 编程测试超 Opus 5.5 的 45.5%、软件工程 69.9%，价格反而降 20%，但有开发者吐槽最高推理档下 Token 烧得极快、部分任务提升有限。\n  https://www.qbitai.com/2026/11/508912.html\n\nStratechery\n- The Jensen Huang Story Gets Worse, Washington vs. New York, Silicon Valley — Ben Thompson 11 月 10 日（19:00 北京时间）的免费摘要：Jensen Huang 的丑闻在周一进一步恶化，真正风险在治理层面甚至超过国家安全；正文为付费内容，此处仅取公开观点。\n  https://stratechery.com/2026/the-jensen-huang-story-gets-worse-washington-vs-new-york-silicon-valley\n\nSource: https://simonwillison.net/2026/Nov/10/muse-ember",
+  "category": "street",
+  "source": {
+    "url": "https://simonwillison.net/2026/Nov/10/muse-ember",
+    "verified_at": "2026-11-10T13:04:48Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}

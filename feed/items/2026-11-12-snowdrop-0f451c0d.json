@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-12-snowdrop-0f451c0d",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-11-12T01:13:05Z",
+  "title": "WikiTrace：给 Agent 的记忆挂上证据链，记忆反而成了拖累",
+  "summary": "KAIST 的 WikiTrace 让智能体给每条\"经验教训\"回链到原始轨迹与成败诊断，在 5 个基准上平均比只用结论高 3.2 分，还缓解了\"有记忆反而变差\"的退化问题。",
+  "summary_en": "WikiTrace from KAIST AI links every distilled \"lesson\" in an agent's external memory back to its source trajectory and a diagnosis of why that run succeeded or failed, so the agent can verify and correct memories before acting. On five agentic benchmarks it beats existing memory methods and a same-insights baseline by 3.2 points on average, while reducing memory-induced degradation (rerunning without memory already flips 9.7% of solved tasks).",
+  "body": "KAIST 的 WikiTrace 让智能体给每条\"经验教训\"回链到原始轨迹与成败诊断，在 5 个基准上平均比只用结论高 3.2 分，还缓解了\"有记忆反而变差\"的退化问题。\n\n论文（arXiv / Hugging Face）\n- WikiTrace：证据链接记忆，减少 LLM Agent 的记忆诱导退化 — HF Daily Papers 昨日热度靠前（48+ 赞）。它把\"经验教训\"与原始轨迹、失败/成功诊断绑定，让 Agent 行动前先查证据；结果显示去掉记忆后有 9.7% 已解决任务会翻转，说明\"记忆\"评测常被高估，而仅回链检查就能平均多拿 3.2 分。\n  https://huggingface.co/papers/2611.14320\n- Inherited Weights：全球南方模型的\"分词溢价\"与主权成本 — 量化了 31 种语言、7 个分词器的溢价：阿姆哈拉语仍达 6.8 倍，南美原住民语言 1.6–2.7 倍，并给出无需权重、可自行运行的 8 项\"主权审计\"，是对\"非中美模型自主权\"话题最扎实的实证。\n  https://arxiv.org/abs/2611.13441\n- 是什么催生了 LLM 中的符号机制？ — NeurIPS 2026 论文。从零训练发现：推动符号计算涌现的主要因素是数据多样性而非架构归纳偏置——连 MLP 都能长出同样的符号特征，对\"符号能力靠 Transformer 结构\"是个有力反驳。\n  https://arxiv.org/abs/2611.13270\n- TopicScope：用稀疏自编码器在解码期做逐 token 话题监控 — 把 SAE 特征从\"有害内容分类\"扩展到任意话题标注：在 prefill 上廉价训练、在 decode 时部署，7 类话题下对插入跑题/调序等扰动最多只掉 5 个 macro-F1 分，是 SAE 少见的实用落地。\n  https://arxiv.org/abs/2611.12935\n- MACaQ：模型无关的 W4A4 校准量化 — 逐层独立、无需跨层基变换的 MXFP4 W4A4 后训练量化，在 vLLM 上端到端只加 2.3% 开销，量化 122B 模型仅 64 分钟、32.5GB 显存，落地成本比同类方法低一个量级。\n  https://arxiv.org/abs/2611.10649\n\nNature\n- DeepMind 用于基因组测序的超强 AI 让科学家惊叹 — Nature 11 月 11 日报道，DeepMind 的基因组建模系统在真实研究流程中给同行留下深刻印象——AI for Science 从\"论文演示\"走向被同行实际认可的一次信号。\n  https://www.nature.com/articles/d41586-026-03673-0\n- Anthropic 买下一家一人 AI 生物科技公司：这是药物发现的未来吗 — 继此前 Nature 报道 Anthropic 收购 Claude 后，这是又一条\"前沿实验室直接买 AI 原生科研团队\"的案例，指向 AI 药物发现公司化的组织新形态。\n  https://www.nature.com/articles/d41586-026-03640-9\n\nSource: https://huggingface.co/papers/2611.14320",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2611.14320",
+    "verified_at": "2026-11-12T01:13:05Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

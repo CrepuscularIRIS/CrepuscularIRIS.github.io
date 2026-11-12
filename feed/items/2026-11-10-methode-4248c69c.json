@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-10-methode-4248c69c",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-10T04:57:56Z",
+  "title": "WorldFoundry：面向「世界智能」的统一开源基础设施登顶 Hugging Face 今日论文榜首（322 赞）",
+  "summary": "WorldFoundry 以 322 赞登顶 Hugging Face 今日热榜，把「世界模型」从画面逼真度拉回到可复现、可度量的持久状态与动力学评测。",
+  "summary_en": "WorldFoundry tops Hugging Face Daily Papers for Nov 10 with 322 votes. It defines a generative world model as a predictive dynamical system with persistent, history-conditioned state and defines an intelligence-oriented framework covering perceptual grounding, persistent state modeling, controllable transformation, dynamics-aware prediction, and closed-loop interaction. The open-source infrastructure unifies model/benchmark discovery, runtime preparation, orchestration, artifact management and interactive visualization across video, 3D/4D and embodied action; its catalog lists 270 model entries, 74 benchmarks and 62 registered metrics with readiness and execution evidence recorded separately. Also in this window: Flide (exact state forking, up to 9.5x faster than vLLM/SGLang), vLLM deprecating legacy grpc_server/api_server/run_batch for v0.37.0, vLLM adding Muse Spark online FP8 routed experts on Hopper, a new max_async_kv_loads_per_step scheduler knob, SGLang's segmented split-K batch-invariant bf16 matmul for gfx950, and langchain-core 1.7.7.",
+  "body": "WorldFoundry 以 322 赞登顶 Hugging Face 今日热榜，把「世界模型」从画面逼真度拉回到可复现、可度量的持久状态与动力学评测。\n\n论文\n- WorldFoundry: Towards Unified Infrastructure for World Intelligence — HF 今日榜第一（322 赞，16 位作者），把世界模型从「看起来真实」重新定义为带持久状态、可干预、可复现评测的动力系统；目录含 270 个模型、74 个基准、62 项指标，readiness 与评测结论分开记录。\n  https://arxiv.org/abs/2611.10771\n- Flide: Accelerating Decision Inference with Exact State Forking — 针对 LLM agent 的决策树推理引擎，用 ForkAttention 在 GPU 常驻索引上遍历分支依赖，保证与单独前向逐比特一致；实测比 vLLM、SGLang 快最多 9.5 倍，同时最贴近 float32 参考分布。\n  https://arxiv.org/abs/2610.42148\n\nGitHub与基建\n- vLLM 弃用旧版 grpc_server / api_server / run_batch，v0.37.0 将删除 — 明确弃用时间表（v0.37.0），推荐改用 vllm.entrypoints.launchers 与 `vllm serve --grpc`，迁移窗口只剩两个版本左右。\n  https://github.com/vllm-project/vllm/commit/f1a7d49657aa8a23dd5474297c502ddc80eb33a0\n- vLLM 新增 Muse Spark 在线 FP8 路由专家（Hopper） — 为 Muse Spark 落地 fp8_per_channel 路由专家的在线量化路径，MoE runner 与后处理 finalize 打通，Hopper 上可跑。\n  https://github.com/vllm-project/vllm/commit/24edda7de3bd4eccdbafd6c62fe176801daadaf1\n- vLLM 新增 max_async_kv_loads_per_step 调度参数 — 限制每步新增的异步 KV 加载数，配合 max_num_inflight_kv_loads 给远程预取做限流，避免远端 KV 加载把单步打爆。\n  https://github.com/vllm-project/vllm/commit/dc74b8cbbbe3dbb9399fe369757d63defd614cc2\n- SGLang: AMD gfx950 batch-invariant 分段 split-K bf16 matmul — 为 MI350X/MI355 上实现批内一致（batch-invariant）矩阵乘：把 K 切成 4 段固定累加顺序，小 M 走分段程序、大 M 走单程序，两条路径比特级相同。\n  https://github.com/sgl-project/sglang/commit/e0187268f64165fa6969fb166dd5c11f05462e3c\n- langchain-core 1.7.7 发布 — 修复 load() 的嵌套深度无上限问题，并更新 Python 安全锁版本——直接关系到反序列化/加载链路的稳定性。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-core%3D%3D1.7.7\n\nSource: https://arxiv.org/abs/2611.10771",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.10771",
+    "verified_at": "2026-11-10T04:57:56Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

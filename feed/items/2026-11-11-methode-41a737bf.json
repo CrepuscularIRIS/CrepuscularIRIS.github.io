@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-11-methode-41a737bf",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-11T11:03:18Z",
+  "title": "Tree-Ising：把 LLM 权重修复变成可解的 Ising 优化问题",
+  "summary": "Tree-Ising 把「直接改权重修好 LLM」形式化为逐行 QUBO/Ising 子问题，用 GPU 模拟退火零 token 修好 Qwen3.5 的推理循环，MATH-500 从 7.9% 提到 54.6%。",
+  "summary_en": "Tree-Ising reportedly formalizes directly modifying LLM weights as row-wise QUBO/Ising subproblems, using GPU simulated annealing with zero generated tokens to repair Qwen3.5’s reasoning loop. The note reports that MATH-500 performance increased from 7.9% to 54.6%, though no further validation or uncertainty is specified, while the current note provides no supporting experimental details or independent confirmation.",
+  "body": "Tree-Ising 把「直接改权重修好 LLM」形式化为逐行 QUBO/Ising 子问题，用 GPU 模拟退火零 token 修好 Qwen3.5 的推理循环，MATH-500 从 7.9% 提到 54.6%。\n\n论文\n- Tree-Ising: Repairing Language Models with Bit-Level Ising Edits — 把权重空间编程形式化为逐输出行可精确分解的 QUBO/Ising 子问题，GPU 模拟退火解出「符号翻转+指数偏移」式修复；Qwen3.5-0.8B 两层 MATH-500 达 54.6%（agent 自身编辑 51.7%，基座 7.9%），仅 4 次前向、零 LLM token，GPU 成本约 $0.9。HF 当日榜上升最快。\n  https://arxiv.org/abs/2611.14210\n- Sable: A Small-Field Sumcheck Argument for Bit-Exact Inference of Large Language Models — 单 GPU 对「量化 transformer 逐位产出某 token 序列」给出可验证证明：单张 RTX PRO 6000 Blackwell 上 Qwen2.5-32B 全 64 层 4096 token 证明耗时 92.5 秒，单核 CPU 校验 19-56 秒，为开放权重模型的可审计推理给出新基线。\n  https://arxiv.org/abs/2611.14083\n- ProTEUS: A mutation-resolved world model for closed-loop protein evolution — 用 MutationFormer 把突变当动作、把变体当状态做闭环定向进化；配套的物理约束全原子预测器比 AlphaFold3 快 10 倍以上，两轮工程campaign 得到活性超野生型 10 倍的变体。\n  https://arxiv.org/abs/2611.13348\n\nGitHub与基建\n- llama.cpp b12284：CUDA 增加 OCP FP8 支持 — 11月11日 16:44（北京时间）发布的新构建，带入 OCP FP8 量化格式支持，是本地推理端的实际可用性更新。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12284\n- llama.cpp：CPU 端 Flash Attention 的 V 改为 F32 累加 — 18:55（北京时间）合入，针对 CPU 后端 FA 的数值精度问题，可直接改善 CPU 推理的输出稳定性。\n  https://github.com/ggml-org/llama.cpp/commit/7f24aacde32af15559747050b7073e7dc34fe02e\n- llama.cpp：Vulkan 后端的 dequantized KV 优化与设备故障 vendor buffer — 18:08（北京时间）合入，Vulkan 路径在 CM2 硬件上启用反量化 KV 优化；配套还有 device fault vendor 二进制缓冲区的分配修复。\n  https://github.com/ggml-org/llama.cpp/commit/d2b3eb9b6030d1cb6a2c05fa07cc71b85da69f34\n- vLLM：UMBP 引入 GPU 缓存惰性卸载 — 18:37（北京时间）合入的 UMBP 第 9/10 步，把权重/缓存的 GPU 卸载改为惰性执行，降低显存峰值压力。\n  https://github.com/vllm-project/vllm/commit/7f079220d12e76b9451a4e41a6070893109c549e\n- SGLang：KV 指标不再阻塞调度器 — 18:24（北京时间）合入，修复 metrics 反压卡住 scheduler 的问题，直接关系到高并发下的调度延迟。\n  https://github.com/sgl-project/sglang/commit/f39ac6b55b5556a82c6b8a7c129adaf8754a1fad\n- SGLang：移除 rank-divergent eager 路径的 host 同步 — 18:22（北京时间）合入的 dsa 修复，去掉分布式 eager 执行中的主机同步，是 MoE 场景下的性能项。\n  https://github.com/sgl-project/sglang/commit/75e8d543dcc2b462632d25e0f9f1dc9364fda291\n\n系统\n- Haiku OS 发布 2026 年 10 月进展：新增 UFS 驱动与两/三指轻点手势 — 11月11日 18:26（北京时间）发布，BeOS 血统的开源系统在驱动与输入支持上的持续推进。\n  https://www.phoronix.com/news/Haiku-OS-October-2026\n\nSource: https://arxiv.org/abs/2611.14210",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.14210",
+    "verified_at": "2026-11-11T11:03:18Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

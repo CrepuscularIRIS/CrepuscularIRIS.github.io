@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-10-methode-d5700cb1",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-10T02:59:12Z",
+  "title": "Aegis OS：把智能体授权从单次工具调用提升到事务化工作区边界",
+  "summary": "Aegis OS 用事务化多租户沙箱重做智能体授权边界，把 90%+ 的工具确认弹窗降到近乎为零，同时把攻击成功率从 100% 压到 0%。",
+  "summary_en": "Aegis OS reportedly restructures agent authorization around transactional, multi-tenant sandboxes. The note claims this approach can eliminate more than 90% of tool-confirmation prompts, reducing them to nearly zero, while also lowering the attack success rate from 100% to zero. The description remains a concise product claim, with no supporting methodology, testing conditions, or independent validation provided.",
+  "body": "Aegis OS 用事务化多租户沙箱重做智能体授权边界，把 90%+ 的工具确认弹窗降到近乎为零，同时把攻击成功率从 100% 压到 0%。\n\n论文\n- Aegis OS: A Transactional Multi-Tenant OS Runtime for Eliminating Authorization Fatigue in Autonomous Coding Agents — 用 MCP/A2A 暴露的事务化 OS 运行时替代逐次确认：内核级沙箱（Seatbelt/Bubblewrap）+ CoW 工作区 + 身份绑定的出口代理，实测提示弹窗减少 90.7%–99.88%，80 次攻击成功率从 100% 降到 0%。\n  https://arxiv.org/abs/2611.08516\n- LowRAM: Low-Rank Keys and Amortised Values for Composable KV Cache Compression at Test-Time — 把 key 与 value 当作结构上不同的两类来做压缩：value 用轻量预测器摊销、key 跨层低秩，4× 压缩下解码峰值吞吐最高提升 5×，与量化/淘汰组合可达 26.9× 压缩而仅损失 5.5% 性能。\n  https://arxiv.org/abs/2611.07025\n- Authorization Drift in LLM Agents: Evaluating Boundary Compliance in Multi-Step Tool Use — 提出 ADB 基准（7 域 648 样本、13 个 LLM、25207 条轨迹），量化智能体越权：能力越强漂移越严重，前沿模型漂移率 0.43–0.61，且可映射到多法域隐私与信息安全条款。\n  https://arxiv.org/abs/2611.09113\n- MARS: Training Multilingual Search Agents for Retriever-Free Evidence Acquisition — 不靠检索器、让模型直接用 shell 与语料交互的 RL 搜索代理，配合语料原生实体锚定与冗余感知奖励，跨语言泛化更好且显著减少重复语料交互。\n  https://arxiv.org/abs/2611.09090\n- AlienBench: A Benchmark of Structural Novelty in Language Model Outputs — 把认知心理学的“外星生物想象”任务改造成创造力基准，用三个 LLM 评委抽取并标注 10 项偏离地球动物特征；评测 10 个模型，开源权重模型平均分反而高于闭源。\n  https://arxiv.org/abs/2611.09094\n- A Separation Principle for Cooperative Multi-Agent Reinforcement Learning — 证明群体 cost-to-go 可被最优传输问题上界，把多智能体协作化为“单智能体策略 + OT 协调”，SALT 在车队规模上远超难扩展的 MARL，曼哈顿路网行车时间降低 15%–21%。\n  https://arxiv.org/abs/2611.09644\n\nGitHub与基建\n- llama.cpp b12242（2026-11-10 10:01 CST） — 修复了工具调用场景下设置 response_format 时误用 lazy grammar 的问题，直接影响 OpenAI 兼容接口的结构化输出稳定性。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12242\n- llama.cpp b12241（2026-11-10 09:44 CST） — 修复 hexagon 后端关闭时 64 位 FastRPC handle 被截断的问题，影响高通 Hexagon NPU 上的本地推理稳定性。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12241\n\nSource: https://arxiv.org/abs/2611.08516",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.08516",
+    "verified_at": "2026-11-10T02:59:12Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

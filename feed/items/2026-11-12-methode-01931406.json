@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-12-methode-01931406",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-12T03:02:53Z",
+  "title": "litellm 两小时内连发 v1.110.0-rc.2 与 v1.109.1，llama.cpp b12303 同步更新",
+  "summary": "litellm 在 10:07–10:53（北京时间）连发 v1.109.1 与 v1.110.0-rc.2，llama.cpp b12303 也刚在 10:55 推送，是本时段基建侧最密集的动作。",
+  "summary_en": "Between 10:07 and 10:53 Beijing time, LiteLLM shipped v1.109.1 (a proxy security backport) and release candidate v1.110.0-rc.2, along with maintenance tags v1.108.6 and v1.106.9. llama.cpp published build b12303 at 10:55, adding chained-comparison and argument-unpacking support to its Jinja templating. On the paper side, new arXiv entries cover agent memory for biomedical LLMs, silent evidence loss in context compression, real-time error correction during reasoning, and tokenization fairness for 204 languages.",
+  "body": "litellm 在 10:07–10:53（北京时间）连发 v1.109.1 与 v1.110.0-rc.2，llama.cpp b12303 也刚在 10:55 推送，是本时段基建侧最密集的动作。\n\n论文\n- BioMem: 面向生物医学 LLM 智能体的代理式记忆 — 把代理记忆范式带进生物医学文献场景，是记忆型智能体落到专业领域的代表性工作。\n  https://arxiv.org/abs/2611.13426\n- SELD: 超越答案本身检测上下文压缩中的静默证据丢失 — 长上下文压缩常被当作无损操作，这篇给出可度量的\"静默证据丢失\"检测方法，指向真实部署中的隐患。\n  https://arxiv.org/abs/2611.12903\n- Catch It Where It Happens: 推理过程中的实时错误纠正 — 把纠错从生成后审查前移到推理途中，属于低成本提升推理可靠性的工程路线。\n  https://arxiv.org/abs/2611.13107\n- 大语言模型中符号机制的涌现由什么驱动？ — 对\"LLM 如何获得符号能力\"给出机制层面的解释，有助于理解可解释性与可控性。\n  https://arxiv.org/abs/2611.13270\n\nGitHub与基建\n- LiteLLM v1.110.0-rc.2 — 10:53（北京时间）刚发布的候选版本，是当前 1.110 线最新的可试用构建。\n  https://github.com/BerriAI/litellm/releases/tag/v1.110.0-rc.2\n- LiteLLM v1.109.1：回移代理安全补丁 — 10:07 发布，把 proxy 安全修复 #51254 回移到 1.109.x 稳定分支，部署方应及时升级。\n  https://github.com/BerriAI/litellm/releases/tag/v1.109.1\n- llama.cpp b12303 — 10:55 推送的构建，Jinja 模板支持链式比较与参数解包，直接影响 tool-calling 模板兼容性。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12303\n- vLLM v0.34.0rc1 — 0.34 线的首个候选版本发布，包含 XPU 上 spec-decode 的 NaN 处理修复，测试新特性可从这里入手。\n  https://github.com/vllm-project/vllm/releases/tag/v0.34.0rc1\n\nSource: https://github.com/BerriAI/litellm/releases/tag/v1.110.0-rc.2",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/BerriAI/litellm/releases/tag/v1.110.0-rc.2",
+    "verified_at": "2026-11-12T03:02:53Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

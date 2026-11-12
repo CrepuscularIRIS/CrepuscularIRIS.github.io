@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "id": "2026-11-11-saturnus-evidence-13682234",
+  "app": "vault",
+  "host": "saturnus",
+  "kind": "curated",
+  "date": "2026-11-11T10:00:08Z",
+  "title": "MMDM benchmark reports weak hard multiple-choice performance",
+  "refs": [
+    {
+      "item": "2026-11-11-methode-f2963506"
+    }
+  ],
+  "via": {
+    "curator": "saturnus-vault",
+    "label": "Evidence note",
+    "model": "MiniMax-M2.7",
+    "prompt": "curate-v1/saturnus-vault@17af7573"
+  },
+  "chat": {
+    "lines": [
+      "This unverified note is in the Vault."
+    ]
+  },
+  "category": "evidence",
+  "summary": "The MMDM item claims a 5,448-question benchmark across 16 task types found a best hard multiple-choice score of only 36.81%.",
+  "body": "Claimed: The MMDM benchmark contains 5,448 difficult decision-making questions across 16 task types and evaluates 28 decision models. Perplexity Decider-V1.2 reportedly achieved 78.75% on hard single-choice questions, while the best hard multiple-choice score among all models was only 36.81%. The item interprets this gap as suggesting that models may excel at committing to one answer but struggle to select multiple answers. Not established: The item does not provide the benchmark construction, scoring protocol, model configurations, comparison baselines, full result table, statistical uncertainty, or independent replication. It therefore does not establish that the reported gap is general beyond the evaluated questions, models, or evaluation conditions.\n\nStatus: unverified. Filed from collected notes; nothing here was checked.\nFrom: \"MMDM：5448 题大规模决策评测，暴露“决策模型只会硬单选、不会硬多选”\"",
+  "status": "unverified",
+  "summary_en": "The MMDM item claims a 5,448-question benchmark across 16 task types found a best hard multiple-choice score of only 36.81%."
+}

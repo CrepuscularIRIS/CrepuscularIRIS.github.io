@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-10-methode-2cc48946",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-10T11:03:18Z",
+  "title": "InfraRSI：用智能体闭环优化分布式大模型训练，MFU 从 17.4% 拉到 30.0%",
+  "summary": "InfraRSI 把开放式人力指令变成可验证的训练优化，在四类单/多节点 Dense 与 MoE 工作负载上最高加速 2.75 倍，平均 MFU 从 17.4% 提升到 30.0%。",
+  "summary_en": "InfraRSI is presented as an agent-based closed-loop system that converts open-ended human instructions into verifiable training optimizations for distributed large-model training. The note reports evaluation across four classes of single-node and multi-node Dense and MoE workloads. It claims a maximum speedup of 2.75× and an increase in average model FLOPs utilization from 17.4% to 30.0%, though no experimental details or uncertainty bounds are provided.",
+  "body": "InfraRSI 把开放式人力指令变成可验证的训练优化，在四类单/多节点 Dense 与 MoE 工作负载上最高加速 2.75 倍，平均 MFU 从 17.4% 提升到 30.0%。\n\n论文\n- InfraRSI: Harnessing Recursive Self-Improvement for Training Infrastructure — 智能体五阶段闭环（init/doctor/run/report/apply）自动优化启动参数与算子补丁，四类 Dense/MoE 负载最高加速 2.75 倍，平均 MFU 17.4%→30.0%，跨 GPU 复用经验。\n  https://arxiv.org/abs/2611.11558\n- Spatial Harness: Grounding Spatial Reasoning in Executable World States with Physics Engines — 把场景建模成可执行世界状态交给物理引擎推理，MindCube 上 Qwen3.5-27B 从 52.70% 提到 71.14%，给出标注位姿下 98.25% 对 71.81% 的对比。\n  https://arxiv.org/abs/2611.11344\n- Reframe: Observation-Aligned Multi-Teacher On-Policy Distillation for Agentic Visual Reasoning — 把\"观察状态\"而非输出分布作为对齐对象，GD-GRPO 训练工具型视觉智能体、OG-MOPD 中途修复坏轨迹，14 个图像/视频基准上优于 Mix-RL 与朴素 MOPD。\n  https://arxiv.org/abs/2611.12886\n- Failure Profiling and Reachable Trajectory Selection for Reasoning Distillation — FPRT 先按错误率与一致性给学生画像失败模式，再挑学生真正能复现的教师轨迹做纠正蒸馏，五个基准两种学生骨干达 SOTA（NeurIPS 2026）。\n  https://arxiv.org/abs/2611.09042\n- Does Reasoning Improve Psychological Depth in Large Language Models? — 60 组盲测显示推理模型在创作类任务上并无普遍优势，LLM-as-a-Judge 却有 98.3% 的强烈\"偏爱推理\"偏差，提醒评测者别用模型裁判掩盖主观性。\n  https://arxiv.org/abs/2611.09061\n- Beyond Truncation? Entailment-Licensed Elision and the Limits of Semantic Preservation in LLM Decoding — 证明 23 类免训练解码压缩机制实质只是截断，并提出 ELIDE：按蕴含判定在句边界隐藏冗余，但人工审计显示 59% 的删除有害，自动指标却测不出来。\n  https://arxiv.org/abs/2611.08975\n\nGitHub与基建\n- llama.cpp b12246（11月10日 15:00 CST） — 在 Vulkan 路径上对大 head 场景把 scalar flash attention 的行数上限压到 8，规避某些 Qualcomm 设备上的结果不正确问题。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12246\n\n系统\n- openSUSE Tumbleweed 转向 Agama 安装器（11月10日 18:53 CST） — Tumbleweed 滚动发行版完成向 Agama 新安装器的迁移，openSUSE 安装栈进入新阶段。\n  https://www.phoronix.com/news/openSUSE-Tumbleweed-Goes-Agama\n- Fedora 46 批准 RPM v6 格式，ThinLTO 标志被否（11月10日 18:37 CST） — RPM 包格式 v6 进入 Fedora 官方认可，而打包侧关于 ThinLTO 开关的提案未获通过。\n  https://www.phoronix.com/news/Fedora-46-Approves-RPM-v6\n- KDE Plasma 6.8.3 发布，含数十项修复（11月10日 18:27 CST） — 6.8 系列首个维护版本，桌面环境稳定性修复为主。\n  https://www.phoronix.com/news/KDE-Plasma-6.8.3\n\nSource: https://arxiv.org/abs/2611.11558",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.11558",
+    "verified_at": "2026-11-10T11:03:18Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-12-methode-75434176",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-12T01:03:34Z",
+  "title": "A Theory of Policy Optimization in Post-Training: Coverage Collapse and Reference Resets",
+  "summary": "Kakade 等人 141 页理论工作指出 REINFORCE/PPO/GRPO 存在\"覆盖坍塌\"——奖励上升但最优回复概率被压向零，并用参考重置给出全局收敛保证，是今天最值得读的一篇。",
+  "summary_en": "A brief note highlights Kakade and colleagues’ 141-page theoretical work, which claims that REINFORCE, PPO, and GRPO can undergo “coverage collapse”: reward rises while the probability of the optimal response is driven toward zero. It says reference resets provide a global convergence guarantee and describes the paper as today’s most worthwhile read, though the note offers no further verification.",
+  "body": "Kakade 等人 141 页理论工作指出 REINFORCE/PPO/GRPO 存在\"覆盖坍塌\"——奖励上升但最优回复概率被压向零，并用参考重置给出全局收敛保证，是今天最值得读的一篇。\n\n论文\n- A Theory of Policy Optimization in Post-Training: Coverage Collapse and Reference Resets — Audrey Huang、Kakade 等（11月10日提交，141 页）：REINFORCE/PPO/GRPO 会把最优回复概率压到近零造成\"覆盖坍塌\"，提出 APMD + 参考重置，并给出覆盖保持算法的首批全局收敛保证。\n  https://arxiv.org/abs/2611.14467\n- Embodied First Exam — 李飞飞、Abbeel、邢全会等 30 人的具身智能\"统考\"：1156 任务、35 套件、47 机器人，最强的 GPT-6 Astra in Codex 在标准设定下成功率仅 34%。\n  https://arxiv.org/abs/2611.12177\n- MACaQ: Fast, Model Agnostic Calibrated Quantization for Low-Precision Weights and Activations — W4A4 后训练量化：逐层在线 Hadamard 变换 + Hessian 感知 Flip-Refinement，vLLM 上仅 2.3% 额外开销，122B 模型 64 分钟、32.5GB 显存即可量化。\n  https://arxiv.org/abs/2611.10649\n- The Surprising Effectiveness of Deleting Weights in LLM Post-Training — NeurIPS 2026：仅把不到 0.05% 的权重置零即可在 RL/SFT/蒸馏三种后训练上比肩全量微调，且遗忘显著更少。\n  https://arxiv.org/abs/2611.10866\n- A Multi-Word Tokenizer for 204 Languages That Needs Fewer Tokens Than GPT-4o's — Havon 系列多词分词器：覆盖 204 种语言，印度 25 种语言 token 数中位数为 GPT-4o 的 0.74，英语上也更省 token。\n  https://arxiv.org/abs/2611.13059\n\nGitHub与基建\n- llama.cpp b12300：移除非融合 GDN 与 ubatch 相关图节点 — 11月11日 21:16（北京时间）：始终使用融合 gated delta net，图最大节点数不再依赖 ubatch 大小，DeepSeek-V4.1-Flash GGUF 在 M5 Ultra 上实测调优。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12300\n- LangChain 1.5.0：新增 model router 与 auto mode 中间件 — 11月11日 23:47（北京时间）：ModelRouterMiddleware 标为 beta，同时移除 EOL 的 Python 3.10 支持，最低版本要求 langchain-core 1.8.0。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain%3D%3D1.5.0\n- LiteLLM v1.108.5 (LTS) — 11月11日 06:51（北京时间）的 LTS 补丁：修复 ollama_chat 并行工具调用索引全为 0 导致客户端只执行首个调用、OpenAI 无 key 部署返回 401 等。\n  https://github.com/BerriAI/litellm/releases/tag/v1.108.5\n\n系统\n- Zellij 0.46 发布 — 11月12日 01:26（北京时间）：LWN 报道的终端复用器新版本发布，是当天最受关注的终端侧更新。\n  https://lwn.net/Articles/1106903\n- In Memoriam: Tim Peters 1952–2026 — 11月12日 01:12（北京时间）：Python 核心开发者 Tim Peters 逝世，LWN 刊出纪念文章。\n  https://lwn.net/Articles/1106901\n- AMD AOCC 6.0 发布：Zen 6 优化与新 \"aof\" Fortran 编译器 — 11月11日 18:54（北京时间）：随 EPYC 9006 \"Venice\" 发布的 LLVM/Clang 编译栈更新，含 Zen 6 优化并把编译器改名 aoc / aoc++。\n  https://www.phoronix.com/news/AMD-AOCC-6.0-Released\n- Intel 继续为 Linux 7.5 完善 GPU D 系列 \"Crescent Island\" 驱动 — 11月12日 05:04（北京时间）：Xe3P AI 加速卡的 Linux 内核支持持续推进。\n  https://www.phoronix.com/news/More-Intel-D-Series-Linux-7.5\n- AMD RDNA5/GFX13 首批代码提交 Mesa RADV 与 RadeonSI — 11月11日 20:18（北京时间）：在 AMDGPU 驱动补丁之后，Mesa 侧对 GFX13 的最初支持进入合并请求阶段。\n  https://www.phoronix.com/news/AMD-GFX13-Initial-Mesa\n- FreeBSD 计划制定 AI 政策 — 11月11日 19:30（北京时间）：FreeBSD Q3 2026 状态报告披露了在开发者投票后推进 AI 政策制定的工作。\n  https://www.phoronix.com/news/FreeBSD-Q3-2026-Report\n\nSource: https://arxiv.org/abs/2611.14467",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.14467",
+    "verified_at": "2026-11-12T01:03:34Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-12-methode-abcfb343",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-12T04:57:56Z",
+  "title": "Incentivizing Self-Learning in Large Language Models via Reinforcement Learning",
+  "summary": "上海时间 12:55：Hugging Face 今日首推论文用强化学习激励模型自主“翻教材自学”，把 Intern-S2-Preview-35B 的证明题准确率从 51.5% 拉到 79.5%；llama.cpp 同期连发 b12316 等构建，修了 CUDA MoE 空 tile 越界读。",
+  "summary_en": "At 12:55 Shanghai time, Hugging Face featured a paper using reinforcement learning to encourage large language models to “study textbooks independently.” It reportedly raised Intern-S2-Preview-35B’s proof-problem accuracy from 51.5% to 79.5%. Meanwhile, llama.cpp released builds including b12316, fixing an out-of-bounds read involving an empty CUDA MoE tile and related build issues.",
+  "body": "上海时间 12:55：Hugging Face 今日首推论文用强化学习激励模型自主“翻教材自学”，把 Intern-S2-Preview-35B 的证明题准确率从 51.5% 拉到 79.5%；llama.cpp 同期连发 b12316 等构建，修了 CUDA MoE 空 tile 越界读。\n\n论文\n- Incentivizing Self-Learning in Large Language Models via Reinforcement Learning（Intern） — HF 今日第一（12:00 CST 前后提交）。用细粒度 RL 奖励 + BookNavigator 接口让模型自主检索、研读长篇教材再解题，Intern-S2-Preview-35B 证明题准确率从 51.5% 提升到 79.5%，BrowseComp-Plus/CL-bench 分别涨 1.7/2.3 个点。\n  https://huggingface.co/papers/2610.39671\n- GTAGym: Real AAA Game Tasks Environment for Evaluation and RL（OpenMOSS） — HF 今日第二。用 GTA V 重建 103 个在线任务 + 47 个图像射击任务，靠引擎状态自动判定结局，最佳配置在 GTAVBench-AGI 上达到 70.9%，并可直接生成 RL 训练环境。\n  https://huggingface.co/papers/2611.13028\n- EarthRecord: 从像素到土地变化的多模态智能体基准 — arXiv 今日新投（cs.AI）。56 个站点四十年 Landsat/MODIS/VIIRS/Sentinel-2 原始影像、238 个土地变化问题，去云掩膜与跨传感器对齐都交给智能体做；十二个主流多模态智能体在需要影像到地物映射时集体失守。\n  https://arxiv.org/abs/2611.12934\n\nGitHub与基建\n- llama.cpp b12316：CUDA MMQ stream-k 修复核跳过空 MoE tile — 11:45 CST 发布。mm_ids_helper 为每个专家多发一个 tile，尾部专家 col_low == ncols_dst 时修复核会越界读一个元素；该补丁提前返回并新增 test_mul_mat_id_unused_tail 后端测试。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12316\n- llama.cpp b12308：测试模型迁至 ggml-org-dev — 12:35 CST 的最新构建，纯 CI 变更：把测试用模型移到独立的 ggml-org-dev 仓库，减小主仓库体积。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12308\n\nSource: https://huggingface.co/papers/2610.39671",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2610.39671",
+    "verified_at": "2026-11-12T04:57:56Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

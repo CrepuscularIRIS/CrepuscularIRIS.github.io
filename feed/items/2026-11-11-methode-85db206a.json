@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-11-methode-85db206a",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-11T03:01:48Z",
+  "title": "llama.cpp b12274 加入 FP8 KV-cache 支持，量化推理显存再压一档",
+  "summary": "llama.cpp b12274（11月11日 10:52 北京时间）合入 FP8 KV-cache 支持并打通 Gemma 4 端到端测试，同窗口内 HF 日榜第一的 WICL/RoboScript 也在机器人领域刷出新范式。",
+  "summary_en": "llama.cpp release b12274 (Nov 11, 02:52 UTC / 10:52 Beijing) adds FP8 KV-cache support with scaled-cache handling and Gemma 4 end-to-end tests, while Hugging Face's Nov 11 daily papers rank the WICL/RoboScript robot-manipulation work as paper of the day. Also covered: sglang's MXFP4 JIT dequant kernel and FlashAttention-4 FP8 KV cache for head_dim 256/512, vLLM's Kimi-K3.1-Pro B300 AgentX presets, LiteLLM v1.110.0-rc.1 with cosign-signed images, and Ubuntu 26.10 rolling out upki certificate-revocation support.",
+  "body": "llama.cpp b12274（11月11日 10:52 北京时间）合入 FP8 KV-cache 支持并打通 Gemma 4 端到端测试，同窗口内 HF 日榜第一的 WICL/RoboScript 也在机器人领域刷出新范式。\n\n论文\n- World In-Context Learning for Agentic Robot Manipulation (WICL / RoboScript) — HF 11月11日日榜第一（11 赞）。冻结模型在模拟器中\"彩排\"任务，把世界反馈写进上下文而非权重，RoboTwin 2.0 全部 50 个任务平均成功率 83.4%，无梯度更新即超最强训练策略 20 多分。\n  https://arxiv.org/abs/2611.12885\n- Predictive Surprise as Self-Grounding Concept Bottleneck for Interpretable Time Series — HF 11月11日日榜第三。用冻结预测器的\"预测惊奇度\"同时定位时序分段并聚类成概念词表，17 个基准上逼近黑盒精度且优于全部可解释基线，1% 标签下癫痫任务仍保持约 98% 准确率。\n  https://arxiv.org/abs/2611.12955\n- Do large language models rank moral values? A transitivity test of moral competence — 从首 token 概率提取道德取舍选择概率并检验序数排序的传递性：多数选择集只呈现弱或不稳定序，聚合后的\"传递结构\"与任何单个选择集都不匹配——对 LLM 道德评测方法论有直接冲击。\n  https://arxiv.org/abs/2611.10265\n- MAGE: Towards Generalizable Multi-timescale EEG Representations — 多时间尺度注意力 + 可训练聚合模块，让 EEG 基础模型按任务自动选择最合适的时间尺度，7 个数据集上稳定超过现有 EEG 基础模型且参数更少。\n  https://arxiv.org/abs/2611.09928\n- The Invisible Gap: Romanized Indic Generation Fails Where Automatic Metrics Succeed — 证明 BGE-M3/BERTScore 会系统性误判罗马化印地语、泰卢固语、卡纳达语生成质量：母语者给 GPT-5.5 的分比 Claude Opus 4.8 高 1.43 分，而自动指标均值只差 0.004，并揭示脚本泄漏与输出崩塌两类失败模式。\n  https://arxiv.org/abs/2611.09085\n\nGitHub与基建\n- llama.cpp b12274: Add FP8 KV-cache support — 11月11日 10:52（北京时间）发布：新增 FP8 KV-cache 支持与缩放因子（scale）映射修复，并打通 Gemma 4 的 FP8 端到端测试，长上下文显存占用可进一步压缩。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12274\n- llama.cpp b12270: MUL_MAT 补齐 src1 精度测试 — 11月11日 09:59（北京时间）为 MUL_MAT 矩阵乘路径补上 src1 精度回归测试，属于量化后端正确性的基础性加固。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12270\n- sglang: MXFP4 MoE 权重量化改用 JIT kernel — 新增 sgl-kernel JIT 反量化 kernel（e2m1→fp32 位运算实现），替代 triton_kernels 路径，减少 MoE 模型的 kernel 依赖与调度开销。\n  https://github.com/sgl-project/sglang/commit/ed15b28\n- sglang: FA4 支持 SM90 FP8 e4m3 KV cache（head_dim 256/512, Gemma-4） — FlashAttention-4 后端新增大 head_dim 的 FP8 KV cache 路径，把 FP8 量化能力推进到新一代长上下文多模态模型。\n  https://github.com/sgl-project/sglang/commit/a93e89f\n- vLLM: Kimi-K3.1-Pro 增加 B300 AgentX 预设 — 为 Kimi-K3.1-Pro 补齐 Blackwell B300 上的 AgentX 推理预设并对齐 InferenceX 配置，面向 B300 集群的部署可直接套用。\n  https://github.com/vllm-project/vllm/commit/ff870bf\n- LiteLLM v1.110.0-rc.1 — 11月11日 08:06（北京时间）发布，146 个提交：修复 OpenAI 托管工具的 tool_choice 解析、Gemini 3.1 Pro 预览版 200k 以上缓存读取计价，并继续对 Docker 镜像做 cosign 签名。\n  https://github.com/BerriAI/litellm/releases/tag/v1.110.0-rc.1\n\n系统\n- Ubuntu 26.10 开始逐步落地 upki 证书吊销支持 — 11月11日 09:43（北京时间）报道：因改动较晚，upki 先只在 curl 包启用，Canonical 计划在 27.04 接入 OpenSSL，向全栈\"浏览器级\"证书验证与吊销推进。\n  https://www.phoronix.com/news/Ubuntu-26.10-Does-upki\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b12274",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b12274",
+    "verified_at": "2026-11-11T03:01:48Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

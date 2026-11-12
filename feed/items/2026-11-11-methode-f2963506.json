@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-11-methode-f2963506",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-11T06:59:47Z",
+  "title": "MMDM：5448 题大规模决策评测，暴露“决策模型只会硬单选、不会硬多选”",
+  "summary": "香港中文大学 MMDM 基准登上 Hugging Face 当日第 2：5,448 道高难度决策题、16 类任务，评测 28 个决策模型后发现 Perplexity Decider-V1.2 硬单选 78.75% 但硬多选全模型最高仅 36.81%。",
+  "summary_en": "The MMDM benchmark, released on Hugging Face and ranked second there that day, contains 5,448 difficult decision-making questions across 16 task types and evaluates 28 decision models. Reported results indicate that Perplexity Decider-V1.2 achieved 78.75% on hard single-choice questions, while the best hard multiple-choice score among all models was only 36.81%, suggesting models may excel at committing to one answer but struggle to select multiple answers.",
+  "body": "香港中文大学 MMDM 基准登上 Hugging Face 当日第 2：5,448 道高难度决策题、16 类任务，评测 28 个决策模型后发现 Perplexity Decider-V1.2 硬单选 78.75% 但硬多选全模型最高仅 36.81%。\n\n论文\n- MMDM: Measuring Massive Multitask Decision Making — 5,448 题、16 类任务、选项空间 2–1,024，评测 28 个决策模型；Perplexity Decider-V1.2 硬单选 78.75%，但硬多选全场最高仅 36.81%，HF 当日第 2。\n  https://huggingface.co/papers/2611.14309\n- Are Dense Rewards Worth Their Tokens in GRPO? — 1,668 次运行、6 个模型的匹配算力实验显示：蒙特卡洛密集奖励的采样续写占了 91% 生成 token，等算力下反而比标准 GRPO 低 14.3 个百分点，推翻了\"过程奖励更好\"的常见结论。\n  https://arxiv.org/abs/2611.13560\n- Is Your Robot's Memory Just a Clock? Temporal Shortcuts in Memory-Augmented VLA Policies — 记忆型 VLA 按时间戳均匀采样帧，机器人只是\"停顿\"也算成进展，成功率从 47/50 掉到 16/50（phantom progress），按事件索引记忆可无训练挽回一半损失。\n  https://arxiv.org/abs/2611.14488\n- DexForesight: Grounding Dexterous Policies with Implicit Spatial Foresight — 把冻结的空间世界模型查询对齐到策略 latent，部署时无需深度或显式未来预测；DexJoCo 成功率 49.4%→60.5%，真机 58.3% 对最强基线 50.0%。\n  https://arxiv.org/abs/2611.11166\n- ReTrace: Distilling Tool-Using Agents into Planner-Free Workflows — 从 SOP 与少量运行日志中抽取条件规则，编译成由代码而非 LLM 选步的可执行工作流：τ²-Bench 上 1.3 秒对 170 秒，成本再降 24%。\n  https://arxiv.org/abs/2611.14492\n- Don't Just Trust Your Memory: Evidence-Linked Memory Reduces Memory-Induced Degradation in LLM Agents (WikiTrace) — 把每条经验教训链接回其原始轨迹与失败原因，让 agent 能回查并纠错；在 5 个 agent 基准上优于既有记忆方案并显著降低\"记忆诱发退化\"。\n  https://arxiv.org/abs/2611.14320\n\nGitHub与基建\n- llama.cpp b12283（11月11日 14:17 CST） — 修复 SYCL 后端 CLAMP 对非连续/带 stride 视图的支持，删除废弃的 clamp kernel 模板，Intel GPU 上算子正确性提升。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12283\n- vLLM: 支持 DSV4.1 的 MXFP4 打包 Engram embedding 表（14:05 CST） — 为 DSV4.1 增加 MXFP4-packed Engram 表支持，是新模型在 vLLM 上的落地关键一步。\n  https://github.com/vllm-project/vllm/commit/3ec1b24a751612659cde537cc1636dadce4de545\n- SGLang: ROCm 镜像内置 fastokens 分词器（14:14 CST） — AMD 镜像不再需要手动安装快速分词依赖，降低部署门槛。\n  https://github.com/sgl-project/sglang/commit/f138b2d2efc536d0c14892f7c95c197032a575e4\n- SGLang: CPU offload 下保持 DSA indexer 参数常驻 GPU（14:00 CST） — DeepSeek 稀疏注意力的索引器参数不再被 offload 反复搬运，长上下文 prefill 延迟优化。\n  https://github.com/sgl-project/sglang/commit/45ae92278f4c5345af31d0d4e44fc2dc22ee60f3\n- SGLang: FlashInfer target-verify 传递 uniform_q_len（13:59 CST） — 投机解码的 target-verify 路径参数传递修正，影响批量一致性与解码性能。\n  https://github.com/sgl-project/sglang/commit/c8c0941f548c62f24e14dca22816db6b27c73341\n- SGLang: 引入设备无关的图后端基类重构（1/3，11:20 CST） — 为多后端图执行打基础，是后续新硬件/新 kernel 后端接入的关键第一步。\n  https://github.com/sgl-project/sglang/commit/43d0ecf9e1b32faceb1522e7c8cec681564e1355\n\n系统\n- AMD 确认 7 代 EPYC \"Florence\"（Zen 7）将引入 ACE，8 代 \"Ravenna\"（Zen 8）已在研 — 在 6 代 EPYC SP7 供货的 AMD 简报中确认下一代路线：Florence 支持 AI Compute Extensions、MRDIMM/LPDDR，2028 年制程；Ravenna 预计 2030 年。\n  https://www.phoronix.com/news/AMD-EPYC-Zen-7-Zen-8\n- AMD EPYC 9996 基准：256 个 Zen 6C 核心（11月11日 01:00 CST） — 256 核 Zen 6C 服务器 CPU 的性能与能效实测，AMD 6 代 EPYC SP7 已供货，本地推理与训练主机的容量上限随之抬升。\n  https://www.phoronix.com/review/amd-epyc-9996\n\nSource: https://huggingface.co/papers/2611.14309",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2611.14309",
+    "verified_at": "2026-11-11T06:59:47Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

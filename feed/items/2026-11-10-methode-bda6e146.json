@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-10-methode-bda6e146",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-10T01:09:04Z",
+  "title": "通用模型直接操控机器人：AMP1 零样本 85.6% 成功率，碾压 VLA 与世界动作模型",
+  "summary": "AMP1 让通用大模型零样本直接驱动机械臂，RoboLab-120 成功率 85.6%（VLA 49.2%、WAM 42.9%），是本窗口最值得看的论文。",
+  "summary_en": "The AMP1 study shows a generalist AI model driving robot manipulators directly beats specialist vision-language-action and world-action models, reaching 85.6% zero-shot success on RoboLab-120 versus 49.2% and 42.9%, and 104/108 on real robots. Other highlights include FP4 KV-cache decoding with 2.4-3.0x serving throughput on B300, CPU-executable reasoning caches costing 16-291x less, parallel agent teams for test-time compute, and infrastructure releases from Ollama, LiteLLM, llama.cpp, Mesa 26.3 and AMDGPU GFX13 kernel patches.",
+  "body": "AMP1 让通用大模型零样本直接驱动机械臂，RoboLab-120 成功率 85.6%（VLA 49.2%、WAM 42.9%），是本窗口最值得看的论文。\n\n论文\n- On Agentic Manipulation Policies（AMP1） — 通用模型直接指挥机械臂、无需示范训练，RoboLab-120 零样本 85.6%，真实机器人 104/108 成功，失败率比 VLA/WAM 低 15-20 倍。\n  https://arxiv.org/abs/2611.09892\n- BitDecoding-FP4：原生 FP4 KV Cache 解码 — 算法-系统协同设计消除 softmax 瓶颈，B300 上 Qwen3-4B/30B-A3B 峰值吞吐比 BF16 KV 高 2.4-3.0 倍，精度只差 0.5 分。\n  https://arxiv.org/abs/2611.09825\n- CPU-ARC：把推理缓存变成 CPU 可执行程序 — 从 LLM 推理轨迹构建可解释、可再训练的 CPU 缓存，数学与科学任务上比肩前沿模型，调用成本低 16-291 倍。\n  https://arxiv.org/abs/2611.09891\n- Test-Time Compute Scales Better with Parallel Agent Teams — 并行采样多个小团队比 best-of-N 和单个大团队都强，27B 模型 100 智能体预算下 12 个长程任务中 10 个胜过并行单体。\n  https://arxiv.org/abs/2611.09798\n- Computer-Use Agents Are Embodied Generalists — 把具身任务渲染成屏幕交互，CUA 只换软件不改架构就拿下 ECCV 四项赛事前六名，论证通用计算机使用智能体可迁移到机器人。\n  https://arxiv.org/abs/2611.09847\n- PCBRouteAgent：LLM 智能体做 PCB 布线 — 全局布线规划 + KiCad 原生引擎执行，247 块板上 D2/D3-A/D3-B 一次通过率达 100%/94.9%/100%，真实板子比最佳基线高 10-36 个百分点。\n  https://arxiv.org/abs/2611.08175\n- AutoCompress：硬件感知的自动化模型压缩 — NVIDIA 把延迟/吞吐/显存约束直接写进可微架构搜索，RTX 5070 上比 Minitron 平均精度高 6.57 分，并把 Nemotron 3.5 Super 从 120B 压到 74B 保住 95% 分数。\n  https://arxiv.org/abs/2611.08290\n\n研究博客\n- BAIR at CoRL 2026（11月9日更新） — BAIR 在 CoRL 2026（奥斯汀，11/9-12）有 33 篇主会论文、4 篇 LBR、10 个口头/spotlight，含 Negar Mehr 的早期职业 keynote 与 MEM 具身记忆 spotlight。\n  https://bair.berkeley.edu/blog/2026/11/09/bair-at-corl-2026\n- Hugging Face 每日论文（11月9日） — 当日最热为 3DGS 的 SplatAnything（88 赞）、多教师在线蒸馏的 P²-MOPD、长上下文图像合成基准 LongBanana 等。\n  https://huggingface.co/papers/date/2026-11-09\n- Nature Machine Intelligence：多模态细胞基础模型 — 观点文章指出多模态细胞基础模型需要超越“对齐”的协同整合，为生物医学基础模型的能力边界划界。\n  https://www.nature.com/articles/s42256-026-01328-3\n\nGitHub与基建\n- ollama v0.40.16（11月10日 02:21） — 预览 65B 稠密模型 Ripple Preview（面向智能体编码）、Qwen3.8 Flash 在 Apple 芯片省 27GiB 内存、/v1/responses 不再静默截断，并更新 llama.cpp。\n  https://github.com/ollama/ollama/releases/tag/v0.40.16\n- LiteLLM 1.108.4 LTS（11月10日 07:00） — 修 Bedrock 上 GLM/GPT-6 Luna 带签名思考时报 400、修复基础安装下 tools 调用报 No module named 'mcp'，并强制 Bedrock 透传使用模型自带 guardrail。\n  https://github.com/BerriAI/litellm/releases/tag/v1.108.4\n- llama.cpp b12240（11月10日 07:43） — 服务器端 responses API 支持 text.format.json_schema 转换，紧跟此前对 json_schema 有限支持的调整。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12240\n- langchain-fireworks 1.7.3（11月10日 04:54） — 从模型档案中取默认 max_tokens，并刷新模型档案数据，减少手工配置。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-fireworks%3D%3D1.7.3\n\n系统\n- Mesa 26.3 发布：RADV 支持 VK_AMD_anti_lag — 11月10日 08:19（北京时间）发布，带来 VK_AMD_anti_lag 等多项 Vulkan 改进。\n  https://www.phoronix.com/news/Mesa-26.3-Released\n- AMDGPU 内核驱动 GFX13（RDNA5）补丁 — Alex Deucher 提交 8 个补丁、超 1.26 万行代码启用 GFX 13.0.1/13.0.4，预计随 Linux 7.5 合入。\n  https://www.phoronix.com/news/AMDGPU-Patches-GFX13\n- ChaCha 内核 AVX-512 优化：Zen 5 上最高提速 99% — 针对 Linux 7.5 的 ChaCha 加密实现引入 AVX-512 路径。\n  https://www.phoronix.com/news/ChaCha-AVX-512-Linux-7.5\n- Darling 转向用 AI 运行 macOS 二进制 — macOS 兼容层 Darling 引入 AI 能力，是 Linux 桌面兼容路线的新动向。\n  https://www.phoronix.com/news/Darling-Using-AI-macOS-Linux\n- LWN：Git 考虑投票决定其 LLM 政策 — 11月9日 23:05（北京时间）发布，Git 社区就 AI 生成代码的 LLM 使用政策走向投票表决。\n  https://lwn.net/Articles/1104195\n- LWN：Kernel prepatch 7.4-rc2 — 7.4-rc2 已发布，本轮合并窗口规模创内核历史最大。\n  https://lwn.net/Articles/1106300\n\nSource: https://arxiv.org/abs/2611.09892",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.09892",
+    "verified_at": "2026-11-10T01:09:04Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-10-lacia-518485f6",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-11-10T01:17:00Z",
+  "title": "中山大学本科生开源 BLA 给 AI 逆向挖坑：逆向 Token 账单暴涨 300–2800 倍",
+  "summary": "一个本科生开源的反制项目让专门干 AI 逆向的\"专业户\"账单原地暴涨数百倍，也逼出了 AI 安全攻防里少被正面讨论的一层成本问题。",
+  "summary_en": "An undergraduate at Sun Yat-sen University open-sourced BLA, a tool that counteracts AI-based reverse-engineering agents such as REA. BLA works by poisoning files with fake credentials and decoy source maps, then overflowing the analyzer's hard-coded quota so that reading fails. Tests showed the reverse-engineering token cost rising 300x to 2800x, and about 639.5x in total token consumption across the repo's 14 examples, while the project itself passed 3,900+ GitHub stars and 476 forks.",
+  "body": "一个本科生开源的反制项目让专门干 AI 逆向的\"专业户\"账单原地暴涨数百倍，也逼出了 AI 安全攻防里少被正面讨论的一层成本问题。\n\n量子位\n- 中山大学本科生反 AI 逆向项目火了：让黑客 Token 账单原地暴涨 300 倍 — 11月10日 06:11（北京时间）。针对刚登 GitHub 一周就破 10 万星的 AI 逆向项目 REA，BLA 用「投毒→耗尽预算→诱导误判」三步反制，实测让逆向 Token 消耗涨 300–2800 倍（14 个示例总消耗约 639.5 倍），项目已 3900+ star。\n  https://www.qbitai.com/2026/11/508787.html\n- AI 毁了我的计算机学位：一个学生用 AI 写作业被全网围攻 — 11月9日 16:57（北京时间，非本窗口）。HN 讨论热度居高不下，暴露了「学生用 AI 完成作业」与「课程该考什么」之间的真实矛盾，也是 AI 冲击高等教育的代表性案例。\n  https://www.qbitai.com/2026/11/508706.html\n- L3 大撤退！奔驰宝马官宣不玩了：还没 L2 好用 — 11月9日 15:02（北京时间，非本窗口）。奔驰 CTO 公开承认 L3 推得太早、改款 S 级直接取消 Drive Pilot，宝马今年 3 月也已取消 7 系 L3——最激进的 L3 推手集体收缩，指向「技术分级 ≠ 用户价值」。\n  https://www.qbitai.com/2026/11/508629.html\n\nSimon Willison\n- Locating the source of a mysterious beep with Claude — 11月10日 07:57（北京时间）。Simon 让 Claude Code 造出 Beep Locator，用 5 台设备互放 chirp 做声学三角定位，误差约 40 厘米，最终在纸箱堆里翻出一块该换电池的一氧化碳报警器；助手先检索到 2007 年的 BeepBeep 论文再动手。\n  https://simonwillison.net/2026/Nov/9/mysterious-beeps\n- Release: llm-anthropic 0.31 — 11月10日 07:58（北京时间）。新增 claude-fable-5.2 支持；实测发现 max 档生成 pelican 图耗尽 128,000 thinking tokens 后仍不返回图像——与 Opus 5.5 相同的 bug，在 Fable 5/5.1 上并未出现。\n  https://simonwillison.net/2026/Nov/9/llm-anthropic\n\nInfoQ 中文\n- Airbnb 借助 Chronon 将推荐延迟从两天缩短至秒级 — 11月10日上午（北京时间）。开源特征平台 Chronon 新增推送模式与近实时模型转换，让 JourneyFormer 序列嵌入的滞后从近两天降到 10–30 秒，离线 NDCG +1.67%、在线未取消订单量 +0.33%，并已贡献回公共代码库。\n  https://www.infoq.cn/article/yuRNB72KsEbjGYSkV7FY\n\nInfoQ（英文站）\n- Cloudflare Develops Public Certificate Authority for Post-Quantum Web Security — 11月9日 22:35（北京时间）。Cloudflare 推进基于 Merkle 证书的后量子公共 CA，是把「量子来了怎么办」从各站点自建签名推进到公共信任基础设施的一步。\n  https://www.infoq.com/news/2026/11/cloudflare-merkle-certificates\n\nStratechery\n- This Week in Stratechery 2026.45: Falling Leaves (and Stocks) — 11月6日（北京时间，非本窗口，本周最新一期）。免费摘要里的反直觉数据：Stripe 用 72,000 家非 AI SaaS 公司的支付数据做了 SaaS 指数，显示股价大跌的同时收入同比增速反而超过 30%，最快的一批正是最年轻的 SaaS 公司。\n  https://stratechery.com/2026/falling-leaves-and-stocks\n\nSource: https://www.qbitai.com/2026/11/508787.html",
+  "category": "street",
+  "source": {
+    "url": "https://www.qbitai.com/2026/11/508787.html",
+    "verified_at": "2026-11-10T01:17:00Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}
