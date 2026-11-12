@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-12-lacia-e1895808",
+  "app": "news",
+  "host": "lacia",
+  "kind": "auto",
+  "date": "2026-11-12T13:08:30Z",
+  "title": "Anthropic 正式开启 IPO 路演：发行价 70–78 美元，估值缩水至约 1.4 万亿美元",
+  "summary": "Anthropic IPO 路演正式开场，拟按每股 70–78 美元发行 8.25 亿股，11 月 19 日在纳斯达克挂牌（代码 ANT），但估值已从 2 万亿美元缩水至约 1.4 万亿美元，AI 板块的估值压力第一次以万亿美元 IPO 的形式正面撞上。",
+  "summary_en": "Anthropic has formally begun its IPO roadshow, reportedly planning to issue 825 million shares at $70–78 each and list on Nasdaq under ticker “ANT” on November 19. Its valuation has reportedly fallen from $2 trillion to approximately $1.4 trillion, marking the first direct collision between trillion-dollar IPO ambitions and mounting valuation pressure in the AI sector.",
+  "body": "Anthropic IPO 路演正式开场，拟按每股 70–78 美元发行 8.25 亿股，11 月 19 日在纳斯达克挂牌（代码 ANT），但估值已从 2 万亿美元缩水至约 1.4 万亿美元，AI 板块的估值压力第一次以万亿美元 IPO 的形式正面撞上。\n\n量子位\n- Anthropic 启动 IPO 路演，估值已缩水 6000 亿美元 — 11 月 12 日 18:11（北京时间）。招股书披露三季度营收 169.56 亿美元、同比 12.27 倍，但算力与基础设施成本升至 98.63 亿美元，占比从 48% 涨到 58%，调整后营业利润率由 19% 降至 15%，GAAP 口径当季亏损 5.67 亿美元；谷歌、英伟达各投 100 亿美元等 260 亿美元私募同步入场。\n  https://www.qbitai.com/2026/11/509381.html\n\nInfoQ 中文\n- 谷歌发布首款决策模型 Gemini Decision 1：9 项测试拿下 7 项第一，准确率最高 92.2% — 11 月 12 日 19:00（北京时间）。不生成文本、只做封闭选项打分，JevBench 达 92.2%，Top-1 校准误差仅 0.0250，输入每百万 token 0.10 美元、输出不计费，端到端延迟 150–250 毫秒，被定位为 Agent 路由与工具选择的底层判断组件。\n  https://www.infoq.cn/article/E7QKIMUz3h0G0IE5Paii\n- Google 终于让 PyTorch 原生跑上 TPU，开发者：\"早该如此！\" — 11 月 12 日 23:00（北京时间）。Google 与 Meta 联合开源的 TorchTPU 提供 PyTorch 原生 TPU 后端，cuda 换 tpu、nccl 换 tpu_dist 即可迁移，单枚 TPUv7 上 30B 参数 Muse Glimmer 推理吞吐达 25,700 token/秒，DeferAndFuse 模式宣称比 Strict Eager 快 50% 以上。\n  https://www.infoq.cn/article/Fikt82HLToqb6ZANB2xj\n- 智能体 AI 架构中记忆、知识与上下文的系统化方案 — 11 月 12 日 21:00（北京时间）。提出\"上下文即控制平面\"范式，把上下文、记忆、知识三层解耦，并给出选择—注入—压缩—过期刷新的生命周期模型，解释智能体为何在检索瓶颈之后转向记忆治理瓶颈。\n  https://www.infoq.cn/article/COuPKpA6rTf05C6JM10y\n- Token 越烧越多，利润却没涨：李彦宏要重新设计企业组织 — 11 月 12 日 18:45（北京时间）。百度世界大会提出\"智能组织\"：内部日活智能体从约 5000 增至 3.7 万、每周有效任务超 100 万个，并总结\"打破岗位边界、沉淀隐性知识、设计流程闭环\"三原则，指出瓶颈已从技术栈转移到组织能力。\n  https://www.infoq.cn/article/JPf7ud6wuk9fYmUDoMjo\n- InfoQ 2026 年趋势报告：AI、ML 与数据工程 — 11 月 12 日 18:23（北京时间）。InfoQ 年度调研报告发布，聚焦 AI/ML 与数据工程方向的技术采用、团队实践与架构趋势，是国内工程团队选型与规划的参考基线。\n  https://www.infoq.cn/article/7Pecd1CshYIMvCTeBhrm\n\nInfoQ（英文站）\n- Google Open-Sources TPU Sync for KV Cache and Weight Transfer on TPUs — 11 月 12 日 18:06（北京时间）。Google 开源 TPU Sync，用于 TPU 上的 KV Cache 与权重同步，是把 PyTorch 训练负载迁移到 TPU 的关键基础设施补齐（英文站）。\n  https://www.infoq.com/news/2026/11/google-tpu-sync\n\nStratechery\n- An Interview With Roblox CEO David Baszucki About Aggregating Play — 11 月 12 日 19:00（北京时间）。Ben Thompson 的 CEO 访谈系列最新一期，对话 Roblox CEO David Baszucki，主题为平台如何聚合游戏玩法与用户注意力。\n  https://stratechery.com/2026/an-interview-with-roblox-ceo-david-baszucki-about-aggregating-play\n\nSimon Willison\n- Anthropic's IPO roadshow video（含 Whisper 转录与要点摘录） — 11 月 11 日 23:11（北京时间，非本窗口内最新一天发布，仍在热议）。Simon 用 Whisper 转写了官方未提供文字稿的路演视频，摘出多芯片策略：Claude 同时跑在 AWS Trainium、Google TPU、英伟达与 AMD GPU 上，今年接入 AMD 由 Mythos 三天完成近乎全部内核移植；并提到\"计算乘数\"可叠加、指向递归自我改进。\n  https://simonwillison.net/2026/Nov/11/anthropic-ipo-roadshow\n\nSource: https://www.qbitai.com/2026/11/509381.html",
+  "category": "street",
+  "source": {
+    "url": "https://www.qbitai.com/2026/11/509381.html",
+    "verified_at": "2026-11-12T13:08:30Z"
+  },
+  "via": {
+    "bot": "blog-hot",
+    "label": "Blog highlights",
+    "model": "MiniMax-M2.7",
+    "prompt": "blog-hot-digest@520ce428"
+  }
+}
