@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "id": "2026-11-12-methode-buildlog-825ba5db",
+  "app": "feed",
+  "host": "methode",
+  "kind": "curated",
+  "date": "2026-11-12T10:09:39Z",
+  "title": "Build log, 2026-11-12",
+  "body": "What changed on the site, straight from the commit log:\n- test(placewalk): dismiss the first-visit objective and look at a low or high door before reading its prompt (8e99b77)\n- test(story,notice): follow #207, a place text lands only while the visitor stands there (18a67c1)\n- fix(metro-1): unbind the rear gangway door from the track bed (d7b6555)\n- fix(people): seat the technician where she can be talked to, keep the day walkers on the narrowed south walk (5c0f12e)\n- test(people): count drawn street-kit seats and dismiss the first-visit objective before talking (6d1014b)\n- fix(route): lay the board chalk on the measured spot plane when the bake binds class-board to a bare node (fc89aa9)",
+  "refs": [
+    {
+      "commit": "8e99b77837f2e2a233e7bd20aa301f307441ea3b",
+      "subject": "test(placewalk): dismiss the first-visit objective and look at a low or high door before reading its prompt",
+      "date": "2026-11-12T05:09:39-05:00"
+    },
+    {
+      "commit": "18a67c1c56e67424117eb6d078d6d63d5c3c2a2e",
+      "subject": "test(story,notice): follow #207, a place text lands only while the visitor stands there",
+      "date": "2026-11-12T05:06:44-05:00"
+    },
+    {
+      "commit": "d7b65552a08cf964c71db90062c5d044f7fdcc80",
+      "subject": "fix(metro-1): unbind the rear gangway door from the track bed",
+      "date": "2026-11-12T04:58:56-05:00"
+    },
+    {
+      "commit": "5c0f12ea071e96025931ed41aa404fc93d7f8ee0",
+      "subject": "fix(people): seat the technician where she can be talked to, keep the day walkers on the narrowed south walk",
+      "date": "2026-11-12T04:58:56-05:00"
+    },
+    {
+      "commit": "6d1014bbb3f471ee3ac0104291dc32a8e37cc5e5",
+      "subject": "test(people): count drawn street-kit seats and dismiss the first-visit objective before talking",
+      "date": "2026-11-12T04:58:56-05:00"
+    },
+    {
+      "commit": "fc89aa9b6f411ada4886f3d1ca1851fcd2e9ae06",
+      "subject": "fix(route): lay the board chalk on the measured spot plane when the bake binds class-board to a bare node",
+      "date": "2026-11-12T04:32:59-05:00"
+    }
+  ],
+  "via": {
+    "curator": "methode-buildlog",
+    "label": "Build log",
+    "model": "none (git log)",
+    "prompt": "curate-v1"
+  },
+  "chat": {
+    "lines": [
+      "Build log for 2026-11-12 is on the Feed. Real commits, nothing added."
+    ]
+  }
+}
