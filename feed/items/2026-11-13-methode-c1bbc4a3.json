@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-13-methode-c1bbc4a3",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-13T11:14:33Z",
+  "title": "llama.cpp 正式发布 v1.0.0：版本号跃迁 + ggml 1.0.0 + Qwen3.5 支持",
+  "summary": "llama.cpp 昨夜（北京时间 11-13 18:20）打出 v1.0.0 正式版，llama 与 ggml 双双升到 1.0.0，同时带来 Qwen3.5 转换合并、Hexagon Q5_0/Q5_1 量化、MCP 工具调用可取消等一批硬核改动。",
+  "summary_en": "The note reports that llama.cpp officially released v1.0.0, with both llama and ggml advancing to version 1.0.0. It also mentions Qwen3.5 conversion and merging, Hexagon Q5_0/Q5_1 quantization, and cancellable MCP tool calls. The release was described as occurring last night, at 18:20 Beijing time on November 13, alongside substantial technical changes.",
+  "body": "llama.cpp 昨夜（北京时间 11-13 18:20）打出 v1.0.0 正式版，llama 与 ggml 双双升到 1.0.0，同时带来 Qwen3.5 转换合并、Hexagon Q5_0/Q5_1 量化、MCP 工具调用可取消等一批硬核改动。\n\n论文\n- Unbundling Multimodal Vision Encoding：视觉预训练不必要，专用视觉容量才是关键 — 统一算力下从头预训练的受控对比结论：视觉先验可省，独立视觉容量不可省，且视觉模块放在骨干浅层融合内甚至能降低首 token 延迟。\n  https://arxiv.org/abs/2611.17334\n- ArchSpace：记录、评审并引用 LLM 架构研究的公开平台 — DeepSeek/Qwen/Kimi 的架构尝试很少被公开记录，该平台用 scaling law 从小实验外推大模型损失，补上工业界不公开失败的空白，并附带 Qwen3.5、OLMo3 基线与可复用训练配方。\n  https://arxiv.org/abs/2611.17332\n- Open Vision Banana：多模态输入即代码编辑的自我验证数据引擎 — 把“看图”转成可执行的代码编辑，再用视觉一致性检查器筛掉幻觉式答案，为多模态训练合成高质量监督信号。\n  https://arxiv.org/abs/2611.15844\n- Learning the Task or Learning the Verifier：具身自改进中的评判暴露偏差 — 指出自改进闭环里模型可能只是学会了迎合验证器而非任务本身，并给出区分二者的评测设定与对照实验。\n  https://arxiv.org/abs/2611.08318\n- MITRA-Swarm：给基础模型注入显式语言结构的梵文翻译多智能体 — 用 Sandhi 切分、组词与零形回指还原三个智能体处理梵文，NeurIPS 2026 LP4FM 收录，基于 gemma-4-26B-A4B 与 gemma-2-mitra。\n  https://arxiv.org/abs/2611.14675\n\nGitHub与基建\n- llama.cpp v1.0.0 正式版（11-13 18:20） — llama 与 ggml 同时升到 1.0.0；Qwen3.5 转换时合并张量、Hexagon 新增 Q5_0/Q5_1、server 支持客户端断开或超时时取消 MCP 工具调用、CUDA 新增少行 MMQ（batch 2-24）、修复 CORS 代理与媒体 URL 的 SSRF，并大规模清理旧代码。\n  https://github.com/ggml-org/llama.cpp/releases/tag/v1.0.0\n- llama.cpp nightly b12360（11-13 18:02） — 拆分 PAD_REFLECT_1D 的 grid 启动，避免 HIP 上超过 2^32 线程导致 ROCm CI 报 invalid configuration argument。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12360\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/v1.0.0",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/v1.0.0",
+    "verified_at": "2026-11-13T11:14:33Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
