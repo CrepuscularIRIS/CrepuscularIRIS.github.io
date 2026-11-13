@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-13-methode-bdc7bca3",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-13T06:59:44Z",
+  "title": "Duo：把\"智能\"与\"物理现实\"并列的世界模型，全双工实时交互（HF Daily 22 赞）",
+  "summary": "最热的一条来自今天新升起来的 HF Daily Papers：复旦大学团队等提出的 Duo，用\"互惠世界模型\"让模型在实时视听输入中持续感知并即时打断式对话，22 赞登顶。",
+  "summary_en": "The note highlights a newly rising top entry in today’s HF Daily Papers, with 22 likes. It says a team from Fudan University and others proposed Duo, a “reciprocal world model” designed to let models continuously perceive real-time audiovisual input and engage in immediate, interruptive dialogue. The note presents these details as the hottest item but provides no further methodological or evaluation details.",
+  "body": "最热的一条来自今天新升起来的 HF Daily Papers：复旦大学团队等提出的 Duo，用\"互惠世界模型\"让模型在实时视听输入中持续感知并即时打断式对话，22 赞登顶。\n\n论文\n- Duo: A Reciprocal World Model for Full-Duplex Interaction（arXiv:2611.15131） — HF Daily 22 赞、11 月 11 日提交。把\"智能（Intent）\"与\"物理现实（Realization）\"同等建模，跨模态统一时间轴 + 双 rollout 蒸馏，实现可打断的实时视听交互。\n  https://arxiv.org/abs/2611.15131\n- On the Design of Hyper-Connections（SimpleHC，arXiv:2611.05984） — HF Daily 20 赞。拆解前沿模型常用的 Hyper-Connections，给出更简单的 SimpleHC：15B→30B MoE 上保持 mHC 级效果，端到端训练开销仅 +2.4%。\n  https://arxiv.org/abs/2611.05984\n- SO-Arena：System One 模型的可靠性基准（arXiv:2611.15777） — HF Daily 15 赞。11 个领域、21 个模型评测：综合分最高的 System One 模型可靠性仅排第七——准确率不等于决策可靠。\n  https://arxiv.org/abs/2611.15777\n- WorldDraft：让视频模型只做\"渲染器\"的 4D 基准（arXiv:2611.16217） — HF Daily 11 赞。432 组严格配对用例、48 个可执行 4D 世界家族，测出跨模态串扰最高达 64% 的\"源泄漏\"，并给出 Prime 提示策略修补。\n  https://arxiv.org/abs/2611.16217\n- PhysLoop：用 LLM 物理知识自举改进视频生成（arXiv:2611.16748） — HF Daily 9 赞。让 LLM 全程参与生成、筛选与纠错视频，开放 10 万条物理一致性视频与 PhysLoop-Gen/Repair 两个评测集，指向递归自我改进。\n  https://arxiv.org/abs/2611.16748\n- Actor, Judge, or Teacher?（arXiv:2611.17167） — HF Daily 8 赞。结论反直觉：动作能力差的模型当\"老师\"仍然好用，JEV 把 Qwen2.5-1.5B 在 ALFWorld 成功率从 72.8% 拉到 82.9%。\n  https://arxiv.org/abs/2611.17167\n- UniSpark: 混合注意力用于多模态理解与生成（arXiv:2611.16517） — HF Daily 新晋条目之一，探索统一多模态任务的混合注意力结构，11 月 12 日新提交。\n  https://arxiv.org/abs/2611.16517\n\nGitHub与基建\n- llama.cpp 夜间构建 b12345（11 月 13 日 14:33） — 新增 Hexagon 后端的 Q5_0 / Q5_1 量化支持与专用 q5_0 kernel（#32094），面向高通 Hexagon NPU 的本地推理进一步铺路。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12345\n- LiteLLM v1.108.6（LTS 线）发布 — 16 个 PR 的 LTS 补丁：修复 gpt-5.4/5.5 函数工具调用未桥接到 /v1/responses、Gemini 图像编辑计费错误，以及自 v1.107.0 起 Slack/GitHub MCP 重连循环。\n  https://github.com/BerriAI/litellm/releases/tag/v1.108.6\n\n系统\n- NVIDIA NvRoot 与 ForgePtr 漏洞公开，另有 25+ 待披露 — Linux 驱动侧安全预警（11 月 12 日 22:17），影响面涉及 NVIDIA 内核驱动组件，建议关注后续披露与补丁。\n  https://www.phoronix.com/news/NVIDIA-NvRoot-ForgePtr\n- 评测：AMD Zen 6 SMT 在 256 核 EPYC 9996 上依然大幅受益 — 11 月 13 日 00:40 新评测，为超大核数服务器上 SMT 的实际收益给出量化参考。\n  https://www.phoronix.com/review/amd-epyc-zen6-smt\n\nSource: https://arxiv.org/abs/2611.15131",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.15131",
+    "verified_at": "2026-11-13T06:59:44Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
