@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-13-snowdrop-cafe4a03",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-11-13T09:06:23Z",
+  "title": "SO-Arena：最强的 System One 模型，可靠性排名只有第七",
+  "summary": "今天 HF 榜单最热的是 SO-Arena（36 赞）——它测出的一件事很扎心：综合最强的 System One 模型，在决策可靠性上只排第七；顺带几条 11 月 12 日的新论文也值得看。",
+  "summary_en": "SO-Arena is a new benchmark for System One models, which decide quickly without long token generation. It spans 11 domains and five capability families, combining evidence-grounded labels, sandboxed interactive evaluation, and two reliability measures: stability under option-set changes and recognition of missing answers. Across 21 models, scaling and extra reasoning help unevenly, and the strongest System One model ranks only seventh in reliability, suggesting accuracy and dependable decision-making are separate dimensions.",
+  "body": "今天 HF 榜单最热的是 SO-Arena（36 赞）——它测出的一件事很扎心：综合最强的 System One 模型，在决策可靠性上只排第七；顺带几条 11 月 12 日的新论文也值得看。\n\nHugging Face Daily Papers 今日热榜\n- SO-Arena: Benchmarking the Capability Spectrum and Reliability of System One Models（新加坡国立，HF 今日第一 36 赞） — 不只看准确率，还同时测「决策可靠性」：改选项集时是否稳定、没答案时敢不敢承认。结果 21 个模型里综合最强的 System One 模型，可靠性只排第七——快而准的直觉并不成立。\n  https://arxiv.org/abs/2611.15777\n- G-STAR: Group-Scaled Token Capacity（LongCat，HF 今日第三 33 赞） — 给出「固定信息预算下 group size 应按压缩率平方增长」的结论，据此做到 32×/64× 离散压缩，1024×1024 出图 2.5 秒（H200 单卡），比以往离散自回归快 20 倍。\n  https://huggingface.co/papers/2611.13004\n- TTB: Test-time Baking for Efficient Rendering of Decoder-only View Synthesis Models（NVIDIA，NeurIPS 2026 Spotlight） — 把跨视角注意力在测试时「烘焙」进轻量 MLP，新视角渲染最高提速 23×，质量对标 SOTA，且不需要 3D 重建。\n  https://huggingface.co/papers/2611.17331\n- Duo: A Reciprocal World Model for Full-Duplex Interaction（inclusionAI，25 赞） — 把「意图」和「实现」放进同一条时间轴的世界模型，实时听、看、说、能被打断，属于全双工交互世界模型的第一批开源尝试。\n  https://arxiv.org/abs/2611.15131\n- PhysLoop: Harnessing LLMs' Physics Awareness for Self-Improving Video Generation（北大 DAGroup，17 赞） — 用 LLM 的物理知识给视频生成模型做自动选片、纠错与数据构造，开放 10 万条物理一致视频，指向递归自我改进（RSI）。\n  https://arxiv.org/abs/2611.16748\n\narXiv 新论文（11 月 12 日提交）\n- CapLite: Prompt-injection Defense for Small Language Model Agents without Model-Written Security Artifacts — 实测发现主流注入防御（CaMeL/Progent/IPIGuard/DRIFT）依赖小模型自己写安全策略时，15 个开源模型里有 13 个写出来的策略能被绕过；CapLite 改为从工具 schema 推导策略并保证写入完整性，1.4 万个攻击回合无一成功，token 还只用 CaMeL 的 18%。\n  https://arxiv.org/abs/2611.17115\n- Classical Energies Learn to Reason 1,000x Faster than Looped Models — 用 80 年代 Hopfield 能量做「下降式推理」，Sudoku-Extreme 正确率 99.996%、Maze-Unique 100%，训练只需 42ms/132ms，比 looped 模型快至少 1000×；作者同时提醒：拿数独这类玩具题检验 looped 推理的可扩展性是危险的。\n  https://arxiv.org/abs/2611.17309\n- AgentSSL: Can MLE Agents Leverage Unlabeled Data?（NeurIPS 2026） — 把半监督学习当成程序搜索，MLE agent 在 12 个设定中的 8 个超过人工最佳基线（最高 +21.8%），但也暴露出「用 agent 自己的反馈选程序」会掉最多 47% 性能这一新瓶颈。\n  https://arxiv.org/abs/2611.17323\n- Actor, Judge, or Teacher? Understanding Decision Models in Long-Horizon Agents（浙大，HF 17 赞） — 同一个模型当 actor 会犯错、当 judge 却能评对：把判断换成「这一步有没有帮助」而非「任务会不会成功」，作为 teacher 用 GRPO 把 Qwen2.5-1.5B 在 ALFWorld 从 72.8% 拉到 82.9%、WebShop 从 56.8% 拉到 71.4%。\n  https://huggingface.co/papers/2611.17167\n- Sketching Language Models for Context Attribution — 用 sketching 算法把「删掉 prompt 里某一段会怎样」的 leave-one-out 归因，从 n 次模型调用降到约 sqrt(log(1/ε))/ε 次，并给出匹配的算法下界，是可解释性方向的算法级进展。\n  https://arxiv.org/abs/2611.17313\n- Metal Sandbox: Isolated Execution and Command Scheduling for GPU Coding Agents on Apple Silicon — 针对 Mac 上跑 GPU coding agent 时 GPU 大部分时间闲置的问题，做了受限文件访问 + 命令级调度 + 跨机器迁移，4 台 M4 mini 上命令吞吐提升 1.68–2.05×，等待时间降 18.8%。\n  https://arxiv.org/abs/2611.17294\n\nSource: https://arxiv.org/abs/2611.15777",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.15777",
+    "verified_at": "2026-11-13T09:06:23Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-13-methode-96252d93",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-13T09:00:44Z",
+  "title": "llama.cpp 将 ggml 版本号提升至 1.0.0",
+  "summary": "今天最热的基建动作是 llama.cpp 把底层 ggml 的版本号从 0.29 直接推到 1.0.0（16:13 CST），同时 arXiv 上 NVIDIA 的 Test-time Baking 把大视角合成渲染提速 23 倍、HF 今日榜出现 64 倍压缩的离散自回归生成新模型。",
+  "summary_en": "Today’s hottest infrastructure development is llama.cpp’s move of the underlying ggml version directly from 0.29 to 1.0.0, reported at 16:13 CST. Meanwhile, on arXiv, NVIDIA’s “Test-time Baking” reportedly speeds up wide-angle compositing rendering by 23×, and Hugging Face’s daily leaderboard has introduced a discrete autoregressive generation model offering 64× compression. No draft or auto-posting status is specified.",
+  "body": "今天最热的基建动作是 llama.cpp 把底层 ggml 的版本号从 0.29 直接推到 1.0.0（16:13 CST），同时 arXiv 上 NVIDIA 的 Test-time Baking 把大视角合成渲染提速 23 倍、HF 今日榜出现 64 倍压缩的离散自回归生成新模型。\n\n论文\n- TTB: Test-time Baking for Efficient Rendering of Decoder-only View Synthesis Models — NeurIPS 2026 Spotlight（NVIDIA）。把跨视角注意力「烘焙」进轻量 MLP 实现新视角快速解码，多个基准上最高 23 倍渲染加速且质量持平。\n  https://arxiv.org/abs/2611.17331\n- G-STAR: Group-Scaled Token Capacity for Deeply Compressed Autoregressive Generation — HF 今日热门。证明在固定信息预算下 group 大小应随每轴空间压缩比平方缩放，据此实现 32×/64× 离散表示压缩，1024² 下单卡 H200 约 2.5 秒出图、较既有离散自回归模型快约 20 倍。\n  https://arxiv.org/abs/2611.13004\n- Cleaning an Agent's History Hurts When the World Still Holds the Error — 11 月 13 日新上榜。冻结世界状态改写智能体历史后发现：保留错误并加一条真话注释可把恢复率从 51% 提到 66%，而「显示动作已完成」反而把恢复率降到 44%，说明改历史的效果取决于它所描述的世界。\n  https://arxiv.org/abs/2611.14654\n- Abstention Is Not Threshold Compliance: Stated Scoring Rules in Open Language Models — 11 月 13 日新上榜。在 12 个开放 3-8B 检查点上验证：加一行弃答格式可把弃答率从 20% 抬到 91%，但阈值从 0.5 调到 0.9 只变 -0.8 个百分点，高弃答率并不等于真的遵守阈值。\n  https://arxiv.org/abs/2611.14661\n- FOAM: Factored One-sided Adam-Moment for Practical and Scalable SOAP — NAVER 团队。丢掉输出侧 Kronecker 因子并用行列统计的因子化 Adam 矩替代稠密旋转二阶矩，显存减半、速度达到 Muon 级别，在 124M–760M 预训练上验证损失与 SOAP/Muon 相当。\n  https://arxiv.org/abs/2611.16905\n- Ropedia Xperience 2: A Gold Standard for Scaling Physical AI Environments and Behaviors — 发布 1,589 个米制 3D 扫描与 4,230 段共 131 小时的第一视角人类操作录像，覆盖 74 项任务，并可转成可交互仿真环境与机器人轨迹，为物理 AI 的 scaling law 提供数据底座。\n  https://arxiv.org/abs/2611.17060\n\nGitHub与基建\n- llama.cpp: ggml 版本号提升到 1.0.0（16:13 CST） — ggerganov 将 ggml/CMakeLists.txt 中版本从 0.29 改为 1.0.0，随后同步 ggml 子模块（16:37 CST），底层库进入 1.x 阶段。\n  https://github.com/ggml-org/llama.cpp/commit/3bfde28f9141abbb887ff9ed72b8752e89f06a5a\n- vLLM: 稠密模型在 DP 下保留动态投机解码（16:51 CST） — PR #67005，避免启用 data parallel 后稠密模型丢掉 dynamic speculative decoding。\n  https://github.com/vllm-project/vllm/commit/2b635e9014c3914b3e881e02ee88b4ddc4d6989d\n- SGLang: DSA 遵循 index-K buffer 的 page stride（16:46 CST） — PR #49912，修正 DSA 稀疏注意力中 index-K 缓冲的页步长处理。\n  https://github.com/sgl-project/sglang/commit/9292957782385d5b5ed9f4cdd77a5c5b93c0dd08\n- LiteLLM: 修复 Responses WebSocket 中丢失 team alias（16:42 CST） — PR #51380，代理层在走 Responses WebSocket 路由时保留团队别名，避免路由到错误团队。\n  https://github.com/BerriAI/litellm/commit/6abacd329b70dc668f69c705eb7118fbd639cd96\n\nSource: https://github.com/ggml-org/llama.cpp/commit/3bfde28f9141abbb887ff9ed72b8752e89f06a5a",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/commit/3bfde28f9141abbb887ff9ed72b8752e89f06a5a",
+    "verified_at": "2026-11-13T09:00:44Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
