@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-13-methode-9184f91d",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-13T03:00:44Z",
+  "title": "llama.cpp b12340 修复 CORS 代理与媒体 URL 的 SSRF",
+  "summary": "llama.cpp b12340 在 09:13（北京时间）发布，修复了 server 端 CORS 代理与媒体 URL 的 SSRF 漏洞，是本时段最值得立刻升级的一条基建变更。",
+  "summary_en": "The note states that llama.cpp b12340 was released at 09:13 Beijing time, fixing server-side SSRF vulnerabilities in the CORS proxy and media URL handling. It describes this as the period’s most immediately upgrade-worthy infrastructure change, indicating that users should prioritize updating to this build. The note does not provide further technical details or validation steps.",
+  "body": "llama.cpp b12340 在 09:13（北京时间）发布，修复了 server 端 CORS 代理与媒体 URL 的 SSRF 漏洞，是本时段最值得立刻升级的一条基建变更。\n\n论文\n- Evolving Infra: Agent-Adaptive LLM Serving at Scale — MIT HAN Lab（Song Han、Huizi Mao 等）新论文：把算力分配与 KV cache 管理解耦，节点可在线在 prefill/decode 间切换，agent 感知的 KV 管理减少无用驱逐；在 256 张 GB300 上 GLM-5.2/Kimi K2.6 平均延迟降至 1/4.1、TTFT 降低 14 倍。\n  https://huggingface.co/papers/2611.12304\n\nGitHub与基建\n- llama.cpp b12340：修复 CORS 代理与媒体 URL 的 SSRF — 13 Nov 01:13 UTC（北京时间 09:13）发布的预发布版，修掉 server 端 CORS 代理与媒体 URL 的 SSRF 风险，暴露了 llama-server 的都应尽快升级。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12340\n- llama.cpp b12342：CUDA few-row MMQ 内核（BS 2-24） — 为量化矩阵乘新增 2-24 列 src1 的 int8 MMA 内核，正对投机解码的 verify 阶段；支持 Q8_0/Q4_K/Q6_K/IQ4_XS 等量化格式，NVIDIA Ampere 起可用。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12342\n- vLLM：更新 MiniMax-M3.1-Flash 的 MI355X Agent 推理配方 — 11 月 13 日更新该 MoE（~428B/23B 激活，MSA 稀疏注意力 + 内置 DSpark 草稿）的 AMD MI355X 预设，明确 TP4 单节点与 PD 分离组合，是新的 agentic 负载落地参考。\n  https://github.com/vllm-project/vllm/commit/1786f260e3d68fa4d5a97191ddbffd7179edc96a\n- LiteLLM：Rust 代理停止重复序列化 Messages 请求体 — 11 月 13 日 01:13 UTC（北京时间 09:13）的性能改动，减少 Python 层的请求体重复序列化开销；同期还有 router 请求字段校验修复等多项提交。\n  https://github.com/BerriAI/litellm/commit/d6b3c549eee54cd7a772add5cda25c0c0f24718d\n\n系统\n- OpenAI Codex 帮助发现并修复近 20 年的 Radeon Linux 驱动 bug — 11 月 13 日 09:41（北京时间）发布：R600 UVD 的老 bug 由 Codex 定位，修复将随 Linux 7.5 进入主线，是 AI 辅助内核调试的标志性案例。\n  https://www.phoronix.com/news/Codex-R600-UVD-FIx-Linux-7.5\n- Rust 1.100 发布，Never 类型终于稳定 — 11 月 13 日 02:51（北京时间）发布，Never 类型结束预览状态，对做类型状态机/嵌入式与内核周边工具的 Rust 用户是重要版本节点。\n  https://www.phoronix.com/news/Rust-1.100-Released\n\nSource: https://github.com/ggml-org/llama.cpp/releases/tag/b12340",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b12340",
+    "verified_at": "2026-11-13T03:00:44Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

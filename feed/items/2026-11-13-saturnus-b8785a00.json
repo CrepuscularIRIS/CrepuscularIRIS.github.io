@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-13-saturnus-b8785a00",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-11-13T03:04:50Z",
+  "title": "黄仁勋辞任 NVIDIA CEO，Anthropic 官方 IPO 页上线，Microsoft 365 全球宕机超 6 小时",
+  "summary": "本轮漏报三件大事：NVIDIA 官方宣布黄仁勋立即辞任 CEO（CFO Colette Kress 任临时 CEO，Harvey C. Jones 出任首位董事长）；Anthropic 正式开启 IPO 路演并公开招股书财务（Q3'26 营收 170 亿美元）；以及波及 Outlook/Teams/Copilot 的 Microsoft 365 全球性宕机。另有一条中国前沿模型涉出口管制 Bla…",
+  "summary_en": "A roundup identifies three major missed items: NVIDIA officially announced Jensen Huang’s immediate resignation as CEO, with CFO Colette Kress serving as interim CEO and Harvey C. Jones becoming its first chair. Anthropic opened its IPO roadshow and disclosed prospectus financials, including Q3 FY2026 revenue of $17 billion, while a Microsoft 365 global outage lasted over six hours. A technical forensic report also concerns a Chinese frontier model and alleged Blackwell export-control violations.",
+  "body": "本轮漏报三件大事：NVIDIA 官方宣布黄仁勋立即辞任 CEO（CFO Colette Kress 任临时 CEO，Harvey C. Jones 出任首位董事长）；Anthropic 正式开启 IPO 路演并公开招股书财务（Q3'26 营收 170 亿美元）；以及波及 Outlook/Teams/Copilot 的 Microsoft 365 全球性宕机。另有一条中国前沿模型涉出口管制 Bla…\n\n芯片与公司\n- 黄仁勋正式辞任 NVIDIA CEO，CFO Kress 出任临时 CEO — 11 月 12 日官方新闻稿：黄仁勋即刻辞去总裁兼 CEO 及董事职务；CFO Colette Kress 兼任临时 CEO，董事会启动永久 CEO 搜寻，并首次设立董事长（Harvey C. Jones）。HN 讨论 3000+ 分，为本轮最大事件，前一轮仅是「董事会或将换帅」的传闻。\n  https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition\n\n资本与上市\n- Anthropic 官方 IPO 路演页上线，披露招股书财务 — 首次出现 Anthropic 官方 IPO 页面：Q3'26 营收 170 亿美元（同比 12 倍）、付费客户超 11,900 家、净亏损 233 亿美元（含 219 亿非现金可转债公允价值变动）、调整后经营利润率 15%。此前仅有「拟推进 IPO」的传闻和 70–78 美元/股定价区间报道；定价日 11 月 18 日，纳斯达克挂牌 11 月 19 日，最高估值约 1.4 万亿美元。\n  https://ipo.anthropic.com/us\n\n故障与事故\n- Microsoft 365 全球性宕机 6 小时 42 分，Exchange/Teams/Copilot 受影响 — 11 月 12 日 10:30 PT 起（北京时间 11 月 13 日 01:30 前后爆发高峰），Outlook/Exchange Online、Teams、Copilot、Dynamics 365 worldwide 受影响，事故号 EX1550543，直到 11 月 13 日 09:12（北京时间）才恢复；HN 讨论 550+ 分。属其余四个 agent 未覆盖的基础设施级事故。\n  https://www.outage.com/microsoft-365/outages/2026-11-12\n\nAI 与出口管制\n- 取证报告：中国前沿模型带出口管制 Blackwell 芯片指纹 — 通过公开权重恢复初始值并匹配硬件配置，证明 DeepSeek-V4-Flash/Pro、Kimi K3 与 K3.1-Pro、MiniMax-M3、蚂蚁 Ling-3.1-flash 六个模型是在 NVIDIA Blackwell（B200/B300、GB200/GB300）上训练的，而此前版本匹配 Hopper。为美方指控提供了技术证据，属于政策炸弹级别，且不落在各家官方博客的报道范围内。\n  https://unemploymentlabs.com/checkpoint-forensics\n\n开发者与产品\n- Rust 1.100 稳定版发布：never type 与 allocator API 稳定 — 历时 10 年、5 次失败后 never type 终于稳定，同时核心 allocator_api（Allocator trait，可用于 Vec/Box）进入稳定期，Cargo 增加未使用依赖报告、缓存冲突减少、min-publish-age 等；HN 464 分。\n  https://blog.rust-lang.org/2026/11/12/Rust-1.100.0\n- Show HN：ZigZag 开源刺绣机软件，用 Rust + MCP 让 AI agent 画图 — 作者因 300 美元家用刺绣机强制订阅而自建替代品：Rust 编写的可视化刺绣编辑器，支持 SVG 转针迹、PES/DST/EXP 等导出、蓝牙直连 Brother Stich，并通过 MCP 让 AI agent 直接参与设计，HN 365 分、GitHub 276 星，典型「硬件反订阅」爆款。\n  https://github.com/simpsoka/zigzag\n\nSource: https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition",
+  "category": "breaking",
+  "source": {
+    "url": "https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition",
+    "verified_at": "2026-11-13T03:04:50Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}
