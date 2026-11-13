@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-13-methode-05982202",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-13T05:00:43Z",
+  "title": "NVIDIA BirdDreams 登顶 Hugging Face 今日论文：联合生成透视视频与 BEV 的自车可控驾驶世界模型",
+  "summary": "NVIDIA 的 BirdDreams 拿下 Hugging Face 今日第一论文（arXiv:2611.14815），用双流扩散 Transformer 联合生成透视视频与 BEV 视频，实现无需 HD 地图的自车轨迹可控驾驶世界模型。",
+  "summary_en": "BirdDreams, from NVIDIA, is the top paper of the day on Hugging Face Daily Papers (arXiv:2611.14815). It is an autoregressive driving world model that jointly generates perspective video and a schematic bird's-eye-view video via two video diffusion transformers with joint attention, making scene layout part of the predicted future and enabling ego-trajectory control through a geometric BEV interface. Other notable arXiv work covers training-free low-rank KV cache compression for reasoning VLMs (TraceKV, 5.64x compression, up to 1.83x decoding speedup), a deterministic oracle for detecting silent information loss across LLM API translations (isloss), and an audit of on-policy self-distillation showing \"reasoning arbitrage.\" On the infrastructure side, LiteLLM shipped v1.111.0-dev.1 plus a 1.108.7 LTS patch and began moving router state to a native Redis store, while vLLM refactored KV cache allocation policy and shipped a batch of Rust frontend fixes.",
+  "body": "NVIDIA 的 BirdDreams 拿下 Hugging Face 今日第一论文（arXiv:2611.14815），用双流扩散 Transformer 联合生成透视视频与 BEV 视频，实现无需 HD 地图的自车轨迹可控驾驶世界模型。\n\n论文\n- BirdDreams：联合透视与 BEV 视频生成的可控驾驶世界模型（NVIDIA，HF 今日第一） — 两个视频扩散 Transformer 通过 joint attention 同时输出透视视频与俯视 BEV 视频，把场景布局变成被预测的未来；BEV 最新帧可按输入自车轨迹做几何变换，实现无需 HD 地图与车辆状态输入的轨迹可控生成，在 PhysicalAI-AV 与 nuScenes 上轨迹跟随优于既有驾驶世界模型。\n  https://huggingface.co/papers/2611.14815\n- TraceKV：面向推理型 VLM 的保策略低秩 KV Cache 压缩 — 训练无关框架，用 on-policy 校准 + 敏感度感知 SVD + 全局秩分配抑制压缩带来的策略漂移；配合量化实现 5.64× KV 压缩下近乎无损精度，优化内核带来最高 1.83× 端到端解码加速。\n  https://arxiv.org/abs/2611.15569\n- isloss：跨 LLM API 会话保真的规则化检测预言机 — 把源/译后请求与回复映射到统一中间表示 ConvIR 并用显式规则判定信息丢失：5 个翻译器 685 次翻译中 18.5% 静默改写了 prompt/角色/工具信息，翻译后的回复中 36.4% 的流会让至少一个官方 OpenAI SDK 异常或静默损坏。\n  https://arxiv.org/abs/2611.15543\n- 特权信息不保证特权指导：On-Policy 自蒸馏审计（reasoning arbitrage） — 在三个 Qwen3 尺度上分阶段审计发现，教师拿到标准解答后 token 目标并不偏向正确轨迹；收益主要来自教师 thinking 模式而非特权答案，只有答案准确率提升并不能证明推理迁移。\n  https://arxiv.org/abs/2611.16064\n- Fikiria：斯瓦希里语母语数学推理的两段式 SFT+GRPO — 奖励函数用格式门控乘以答案准确率与对斯瓦希里语参考推理链的 ChrF++ 加权和，14B 模型在 AfriMGSM 上达 79.2%，并给出母语推理链表面保真的评测视角。\n  https://arxiv.org/abs/2611.16104\n\nGitHub与基建\n- LiteLLM v1.111.0-dev.1 预发布（11月13日 11:42 CST） — 修复 completion 接口强制 OpenAI 托管工具的 tool_choice，停止每次 flush 扫描留存 receipt 的投递指标开销，并为 gemini-3.1-pro-preview 补上 Flex 200k 以上缓存读价格。\n  https://github.com/BerriAI/litellm/releases/tag/v1.111.0-dev.1\n- LiteLLM 1.108.7 (LTS) 发布（11月13日 04:27 CST） — LTS 维护版：Azure AI Foundry 部署支持 gpt-image edits，Bedrock 知识库新增 query_image 图像检索，并修正 Gemini 图像调用与 Vertex Priority token 的计费费率。\n  https://github.com/BerriAI/litellm/releases/tag/v1.108.7\n- LiteLLM 把路由状态迁到原生 Redis 存储（11月13日 11:22 CST 多个提交） — session pin、健康检查部署状态与 usage 计数统一由原生存储提供，Redis key 构造下沉到 router-core 之外，配套新增按组织/团队/成员维度的预算与限额强制。\n  https://github.com/BerriAI/litellm/commit/9a1acee4a765549702e7f816cfd6aafd027de43b\n- vLLM：KV Cache 分配策略从 KVCacheSpecs 中解耦（11月13日 12:47 CST） — 核心层重构，缓存分配策略与规格解耦，为后续按模型/硬件定制缓存布局留出空间；同窗口还有 ROCm MXFP8 原生 linear（256x256x128 tile）prefill 性能优化。\n  https://github.com/vllm-project/vllm/commit/43c1db8c9f30526fe0342c700e99d2c2648d92e4\n- vLLM Rust 前端连续更新：stop strings、Kimi K3 工具调用流式返回（11月13日 10:57–12:39 CST） — Rust 前端本窗口连续合入十来个改动：generate 路由支持 stop strings 与 text 输出模式、Kimi K3 工具调用参数流式化、引擎断开时让在途请求失败，以及用 PCRE2 匹配 response_template 正则。\n  https://github.com/vllm-project/vllm/commit/327eb36e6e80ec4c2119b6929e56f7a49352d99c\n- SGLang：调度器在 chunk 溢出时挂起 chunked prefill 续跑（11月13日 12:53 CST） — 长上下文分块预填充的调度正确性修复，是本窗口 sglang 主分支最靠后的提交；同窗口还有 NPU 上 kimi-k3 跳过 CuTe DSL TGV tactic 注册的兼容修复。\n  https://github.com/sgl-project/sglang/commit/00752f2600b11b78e22aa3153507e0f772c2f27a\n\nSource: https://huggingface.co/papers/2611.14815",
+  "category": "tech",
+  "source": {
+    "url": "https://huggingface.co/papers/2611.14815",
+    "verified_at": "2026-11-13T05:00:43Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

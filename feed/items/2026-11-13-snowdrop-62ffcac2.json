@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-13-snowdrop-62ffcac2",
+  "app": "news",
+  "host": "snowdrop",
+  "kind": "auto",
+  "date": "2026-11-13T05:06:52Z",
+  "title": "Bonbon：一个分子交互基础模型零样本涌现出功能/残基/成键三层生物能力",
+  "summary": "一个 32 万亿 token 的蛋白-配体基础模型，在没有任何任务监督和结构坐标的情况下，零样本涌现出作用机制、结合位点、成键方式三层能力，NeurIPS 2026 主会 Oral，还带湿实验验证。",
+  "summary_en": "A protein-ligand foundation model called Bonbon, trained on roughly 3.2 trillion paired tokens, shows zero-shot emergent capabilities at functional, residue and bond levels, with sharp jumps at the largest scale (1.6B). It achieves state-of-the-art binding and affinity prediction far faster than co-folding methods and reports a 61.5% dose-response hit rate in prospective wet-lab tests across nine disease targets. The work was accepted as a NeurIPS 2026 oral.",
+  "body": "一个 32 万亿 token 的蛋白-配体基础模型，在没有任何任务监督和结构坐标的情况下，零样本涌现出作用机制、结合位点、成键方式三层能力，NeurIPS 2026 主会 Oral，还带湿实验验证。\n\narXiv 新论文\n- Emergent Biological Capabilities in a Foundation Model for Molecular Interactions (Bonbon) — 用约 3.2 万亿 token 的蛋白-配体序列训练单一表示空间，零样本涌现出作用机制、结合位点定位（共价/变构区分）、成键方式三层能力；六次规模对照显示最大规模处能力突然跳变，说明只看预训练 loss 的 scaling law 预测不了涌现；湿实验九个靶点剂量响应命中率 61.5%。NeurIPS 2026 主会 Oral。\n  https://arxiv.org/abs/2611.14504\n- A Theory of Policy Optimization in Post-Training: Coverage Collapse and Reference Resets — Kakade、Malladi、Foster 等人给出后训练策略优化的理论解释：REINFORCE/PPO/GRPO 即使精确梯度也会把最优回复的概率压到近零（coverage collapse），而周期性地把 KL 参考重置到最新策略（APMD）可以缓解，并首次给出 PPO/GRPO 变体的全局收敛保证——直接关系到 RLHF/Kimi 类训练为何难收敛。\n  https://arxiv.org/abs/2611.14467\n- An Energy-Based Perspective on Machine Learning — Bo Dai 与 Yilun Du 把 EBM 当成一把统一镜头：判别模型、GAN、扩散、自回归、对比学习、BERT、RL 世界模型、逆强化学习、验证器推理时计算全都是 EBM，只是能量/推断/学习三选一不同——一个很好用的整合性教程。\n  https://arxiv.org/abs/2611.14383\n- ARE-bench: Benchmarking Agents' Research Ability in Real-World Researcher Sessions and Workspaces — 把「AI 能否做科研」从玩具任务搬到真实研究者的工作区与长程会话里评测，是继 SWE-bench 之后更有野心也更难的 agent 基准（复旦大学等大批作者参与）。\n  https://arxiv.org/abs/2611.14364\n- Mechanistic Interpretability Needs a Logic of Inference — 给可解释性研究补上推理逻辑层，NeurIPS 2026 Interp4Discovery Oral；由 Ratan Murty、Sashank Varma 等人推动，指向「不只找特征，而是谈因果推断语义」的方向转变。\n  https://arxiv.org/abs/2611.14483\n- Pyrite: Building and Benchmarking Protein-Ligand Pose Ranking Agents — NeurIPS 2026 生物发现 agent workshop 论文，把姿势排序做成 agent 任务并给出配套基准，是蛋白基础模型浪潮里少见的「agent 化评测」视角。\n  https://arxiv.org/abs/2611.14511\n\nHugging Face 热门\n- SteerDistill: Quantizing LLM Agents via Closed-Loop Teacher Steering（当日第 2，32 赞） — 低比特量化 agent 常因漏掉任务要求而整条轨迹失败；作者让全精度教师闭环指导学生改写失败回合再蒸馏内化，W4A16 下五个 agent 基准平均分逼近 BF16（差 1 分内），τ²-Bench 上用少 67% 训练 GPU 时超过 QeRL。\n  https://huggingface.co/papers/2611.13410\n- Scaling Mathematical Proof Supervision from Structured Textbooks（TOME-Math，当日第 1，42 赞） — 把 2118 本大学数学教材转成约 38 万条结构化证明监督记录，保留章节顺序、命题-证明链接与出处，微调后留出评测与公开基准的未加权均分比基座模型高 16.7 个百分点，并超过三条公开指令数据基线——「数据组织方式」本身成为可规模化变量。\n  https://arxiv.org/abs/2610.40394\n- BirdDreams: Joint Perspective and BEV Video Generation for a Plausible, Reactive Driving World Model（NVIDIA） — 驾驶世界模型不再只靠布局条件，而是同时生成透视视频和俯视 BEV 视频，把场景布局变成「预测出来的未来」；无需高精地图或车辆状态即可输入，轨迹跟随更准、周边车辆行为更真实，登上今日 HF 榜首。\n  https://arxiv.org/abs/2611.14815\n\nNature\n- Open foundation models for clinical AI（npj Digital Medicine） — 11 月 12 日上线：面向临床场景的开放基础模型专题讨论，把「医疗 AI 该不该开放底座」推到期刊正文的层面，是本周 Nature AI 线少见的系统性文章。\n  https://www.nature.com/articles/s43588-026-01094-7\n\nBAIR\n- BAIR at CoRL 2026（会议 11 月 9–12 日，奥斯汀） — 伯克利团队在 CoRL 带来 33 篇主会论文、4 篇 LBR、10 个 oral/spotlight，含 Negar Mehr 的早期职业 keynote 和 MEM（多尺度具身记忆）等亮点；页面有完整日程与作者索引，是今天收官日的实时现场。\n  https://bair.berkeley.edu/blog/2026/11/09/bair-at-corl-2026\n\nSource: https://arxiv.org/abs/2611.14504",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.14504",
+    "verified_at": "2026-11-13T05:06:52Z"
+  },
+  "via": {
+    "bot": "research-daily",
+    "label": "Research daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "research-daily-digest@afc8552b"
+  }
+}

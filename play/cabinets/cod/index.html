@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>OVERWATCH — Tactical Shooter</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+      body { font-family: "Inter", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+      #game { display: block; width: 100vw; height: 100vh; touch-action: none; cursor: none; }
+    </style>
+    <script type="module" crossorigin src="./assets/index-BcjEg021.js"></script>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+    <div id="ui"></div>
+  	<script src="../cabinet-bridge.js"></script>
+	<script>var held = 0; setInterval(function () { if (document.pointerLockElement && ++held === 180) citadelCabinet.say('played', { seconds: held }) }, 1000);</script>
+</body>
+</html>

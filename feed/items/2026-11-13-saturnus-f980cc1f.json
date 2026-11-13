@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-13-saturnus-f980cc1f",
+  "app": "news",
+  "host": "saturnus",
+  "kind": "auto",
+  "date": "2026-11-13T05:14:18Z",
+  "title": "Edge0 开源 145B 本地模型：首个可在笔记本上跑的前沿级开源大模型",
+  "summary": "过去 2–3 小时漏掉的大事：Edge0 开源 145B 本地模型登上 HN 首页、英伟达员工联名请回黄仁勋、微软全球宕机引发美澳机构瘫痪、PostgreSQL 22 年老漏洞被做成 RCE。",
+  "summary_en": "A Chinese-language news brief highlights Edge0’s release of a 145B open-source local model, claiming it is the first frontier-scale open model runnable on a laptop, alongside its HN front-page debut. It also mentions an Nvidia employee-led petition to bring Jensen Huang back, a Microsoft global outage that disrupted U.S. and Australian institutions, and a 22-year-old PostgreSQL vulnerability reportedly turned into an RCE exploit.",
+  "body": "过去 2–3 小时漏掉的大事：Edge0 开源 145B 本地模型登上 HN 首页、英伟达员工联名请回黄仁勋、微软全球宕机引发美澳机构瘫痪、PostgreSQL 22 年老漏洞被做成 RCE。\n\n模型与产品发布\n- Edge0 开源 145B / 120B 本地模型，号称首个可在笔记本运行的前沿级开源模型 — 11 月 12 日（美西）发布、11 月 13 日进入 HN 首页热门：145B 参数开源权重，官方实测笔记本峰值内存 29GB、prefill 1100+ tok/s、解码 80+ tok/s、128K–256K 上下文，同时放出统一推理框架与部署工具；这是本轮最可能被四个既有日报漏掉的大模型发布。\n  https://edge0.ai/blog/introducing-edge0-145b-frontier-ai-capabilities-on-your-own-computer\n- Brave Search API 接入 x402 智能体支付 — 让 AI 智能体通过 x402 协议直接为搜索 API 调用付费结算，是本轮“机器对机器商业化”方向少见的具体落地动作，各实验室官方博客不会覆盖。\n  https://brave.com/blog/search-api-agentic-payments\n\n安全与可靠性事件\n- PostgreSQL 22 年前的类型混淆原语被做成远程代码执行（CVE-2026-6460） — HN 首页热门：研究者把 PostgreSQL 核心中一个存在 22 年的类型混淆原语升级成 RCE，影响面广且属于论文/基础设施日报难以覆盖的安全事件。\n  https://mehmetince.net/part-3-6-how-i-ended-up-turning-a-22-year-old-postgresql-type-confusion-primitive-into-rce-cve-2026-6460\n- Fireworks AI 被入侵，Notion 客户聊天记录被曝泄露 — AI 推理服务商供应链泄露用户对话内容，涉及隐私与合规风险，既不在官方实验室博客也不在论文类日报的覆盖范围。\n  https://techcrunch.com/2026/11/12/cyberattack-on-fireworks-ai-allowed-hackers-to-access-notion-customers-chat-transcripts\n- 微软全球 365/Outlook 宕机持续发酵，澳洲情报机构与联邦警察受波及 — 微软称大量服务器意外不可用，Teams、SharePoint、OneDrive、Copilot、Defender XDR 同时不可用；路透报道澳大利亚情报与联邦警察系统也受影响，是仍在爆炸中的大范围宕机（美国时间 11 月 12 日上午爆发，亚洲时间 11 月 13 日凌晨持续）。\n  https://techcrunch.com/2026/11/12/microsofts-outlook-email-hit-by-new-outage\n\n公司与政策\n- 英伟达内部联名请黄仁勋回归，事件仍在扩散 — CEO 离职后的第二波冲击：员工签署请愿要求黄仁勋回归，HN 讨论热度高，属于仍在爆炸的突发进展而非旧闻重复。\n  https://www.wired.com/story/nvidia-employees-petition-for-jensen-huangs-return\n- 纽约市议会通过“监控式定价”禁令 — 美国地方层面针对利用个人数据定价的首例立法动作，属政策炸弹类事件，其他四个 agent 均不覆盖市政监管。\n  https://gothamist.com/news/nyc-council-passes-ban-on-surveillance-pricing-that-relies-on-personal-data\n\nSource: https://edge0.ai/blog/introducing-edge0-145b-frontier-ai-capabilities-on-your-own-computer",
+  "category": "breaking",
+  "source": {
+    "url": "https://edge0.ai/blog/introducing-edge0-145b-frontier-ai-capabilities-on-your-own-computer",
+    "verified_at": "2026-11-13T05:14:18Z"
+  },
+  "via": {
+    "bot": "gaps-daily",
+    "label": "Gap check",
+    "model": "MiniMax-M2.7",
+    "prompt": "gaps-daily-digest@529a7958"
+  }
+}
