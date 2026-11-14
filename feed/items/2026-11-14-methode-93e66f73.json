@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-14-methode-93e66f73",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-14T01:04:33Z",
+  "title": "Cloudflare 开源 Kitesurf：专为 AI Agent 打造的浏览器",
+  "summary": "Cloudflare 开源了面向 AI Agent 的浏览器 Kitesurf（11 月 14 日 05:07 报道），同窗口内 vLLM 推出 v0.34.0rc3、llama.cpp 连发 b12374 构建、LiteLLM 发布 v1.106.10。",
+  "summary_en": "Cloudflare open-sourced Kitesurf, a web browser built for AI agents. In the same window vLLM shipped v0.34.0rc3, llama.cpp published build b12374, and LiteLLM released v1.106.10. On the paper side, arXiv's new listings include Zugwise (chess score reconstruction), CAFIN (CUDA-kernel-fused second-order optimization), and RE-PRESENT (training-free multi-model ensemble inference). Nature highlighted an AI \"mechanic\" that inspects the internals of other neural networks.",
+  "body": "Cloudflare 开源了面向 AI Agent 的浏览器 Kitesurf（11 月 14 日 05:07 报道），同窗口内 vLLM 推出 v0.34.0rc3、llama.cpp 连发 b12374 构建、LiteLLM 发布 v1.106.10。\n\n论文\n- RE-PRESENT: 跨候选空间的证据三角验证，实现高效 LLM 集成推理 — 异构 LLM 集成中单轮聚合已接近学习型路由，但仍有巨大 oracle 余量；该框架对争议问题做受控重述并跨视角聚合证据，无需训练，在 7 个基准上优于自一致性与多模型辩论，且成本更优。\n  https://arxiv.org/abs/2611.14780\n- CAFIN: 用 GPU 原生 CUDA kernel 融合加速二阶优化器 — 把 Fisher 信息矩阵预条件、EMA 更新、动量累积等融合进单个 CUDA kernel，FIM 构建延迟最多降低 78.4%，并省去约 18.9 MB 中间显存——对自研训练栈有直接参考价值。\n  https://arxiv.org/abs/2611.14589\n- Zugwise: 面向手写棋谱数字化的领域感知棋局重建 — 把棋谱识别重述为\"棋局重建\"，用静止搜索/静态交换评估等棋类机制把\"合法但错误\"的静默错误变响；浏览器端离线免费运行，展示了领域先验如何改造通用识别管线。\n  https://arxiv.org/abs/2611.14544\n\nGitHub 与基建\n- vLLM v0.34.0rc3 — 11 月 14 日 06:52（北京时间）发布的 0.34 系列第三个候选版，正式版前的最后冲刺版本。\n  https://github.com/vllm-project/vllm/releases/tag/v0.34.0rc3\n- LiteLLM v1.106.10 — 11 月 14 日 08:51（北京时间）刚发布，属于 1.106.x 维护线上的新版本。\n  https://github.com/BerriAI/litellm/releases/tag/v1.106.10\n- llama.cpp b12374 — 11 月 14 日 08:12（北京时间）的最新构建，紧随 v1.0.0 正式版之后的持续滚动发布。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12374\n- langchain-openai 1.8.0 — 11 月 14 日 00:48（北京时间）发布，LangChain 的 OpenAI 集成包独立升级到 1.8.0。\n  https://github.com/langchain-ai/langchain/releases/tag/langchain-openai%3D%3D1.8.0\n\n系统\n- Cloudflare 开源 Kitesurf：面向 AI Agent 的浏览器 — 11 月 14 日 05:07（北京时间）报道，Agent 专用浏览器成为本周新的 agent 基建方向。\n  https://www.phoronix.com/news/Cloudflare-Kitesurf-Open-Source\n- AMD 用 AI + HRX Loom 实验把 50 个 LLM 快速移植到客户端 GPU — 端侧部署 LLM 的工程化路径实验，值得与 vLLM/llama.cpp 的推理栈动态一起看。\n  https://www.phoronix.com/news/AMD-HRX-Loom-Experiment\n\n研究博客 / Nature\n- Nature：这位 AI\"机械师\"能窥探其他神经网络的黑箱 — 11 月 13 日的 Nature 报道，聚焦用 AI 解读其他模型内部机制，可解释性方向的新进展。\n  https://www.nature.com/articles/d41586-026-03679-8\n\nSource: https://www.phoronix.com/news/Cloudflare-Kitesurf-Open-Source",
+  "category": "tech",
+  "source": {
+    "url": "https://www.phoronix.com/news/Cloudflare-Kitesurf-Open-Source",
+    "verified_at": "2026-11-14T01:04:33Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
