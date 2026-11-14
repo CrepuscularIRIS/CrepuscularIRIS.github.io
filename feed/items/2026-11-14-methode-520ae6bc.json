@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-14-methode-520ae6bc",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-14T04:58:11Z",
+  "title": "vLLM 合入 Kimi-K3 图像元数据输入支持，新模型接入进入倒计时",
+  "summary": "vLLM 本窗口连续合入 Kimi-K3 多模态（图像仅元数据）输入与 Kimi-K3.1-Pro 的 MI355X 配方，llama.cpp 也放出了 b12375 预发布构建。",
+  "summary_en": "vLLM has reportedly merged support for Kimi-K3 multimodal input limited to image metadata, along with a MI355X recipe for Kimi-K3.1-Pro, in the same window. Separately, llama.cpp has released a b12375 prerelease build, suggesting preparations for adding the new model are nearing a countdown, although the note does not confirm official release timing.",
+  "body": "vLLM 本窗口连续合入 Kimi-K3 多模态（图像仅元数据）输入与 Kimi-K3.1-Pro 的 MI355X 配方，llama.cpp 也放出了 b12375 预发布构建。\n\n论文\n- Fit-LRP: 在非凸多面体上拟合线性松弛以验证神经网络 — 把 LiRPA/α,β-CROWN 的边界从轴对齐盒换成精确多面体约束，最难区域分支数减少 47 倍、最坏验证时间缩短 15 倍，CPU 上比 GPU 上的 CROWN 还快 6.1 倍。\n  https://arxiv.org/abs/2611.16003\n- Beyond Named Mechanisms: 把经济制度当作 AI Agent 的设计空间 — 多智能体研究沿用人类社会的拍卖/市场/价格词汇，本文提出把“位置、权利义务、分配、信息、时间”等拆成可组合的制度坐标系，用来探索智能体经济组织的新形态。\n  https://arxiv.org/abs/2611.15017\n\nGitHub与基建\n- vLLM: 支持 Kimi-K3 图像 metadata-only 输入（EPD） — 新增 kimi_k3 多模态处理器与 AMD/NVIDIA 后端实现及测试，新一代 Kimi 多模态模型接入已就绪（11-14 12:13 北京时间）。\n  https://github.com/vllm-project/vllm/commit/24fe0a99f1062f7351852804f2cd38668f7423bd\n- vLLM: 新增 Kimi-K3.1-Pro 的 MI355X 推理配方 — AMD Instinct MI355X 上并发 48 的多模态部署配方，为新模型落地提供现成配置（11-14 11:25 北京时间）。\n  https://github.com/vllm-project/vllm/commit/dcd6e77b58bfefc62f0fe9cabeac596341cf7a59\n- SGLang: rust-server 支持 HTTP/2（h2c）与 256 字节请求 ID — Rust 服务端可与 HTTP/1.1 并行提供 h2c，客户端请求 ID 上限放宽到 256 字节，改善网关与多路复用部署体验。\n  https://github.com/sgl-project/sglang/commit/19668f7b9bee449057879a74de2ced640953e8d6\n- llama.cpp 发布预发布构建 b12375 — 移除 chat 层的 Mistral workaround，并更新各平台 CUDA/ROCm/Vulkan 等构建产物（11-14 12:14 北京时间）。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12375\n- LiteLLM 发布 v1.111.0-dev.2 — 成本表把 Fireworks 的 DeepSeek V4 Flash 后继指向 deepseek-v4p1-flash，proxy 新增客户用量统计与下钻，并修复动态限流 v3 的配额分配逻辑（11-14 03:05 北京时间）。\n  https://github.com/BerriAI/litellm/releases/tag/v1.111.0-dev.2\n\nSource: https://github.com/vllm-project/vllm/commit/24fe0a99f1062f7351852804f2cd38668f7423bd",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/vllm-project/vllm/commit/24fe0a99f1062f7351852804f2cd38668f7423bd",
+    "verified_at": "2026-11-14T04:58:11Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
