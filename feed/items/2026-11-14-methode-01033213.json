@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-14-methode-01033213",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-14T03:06:18Z",
+  "title": "vLLM 合入 DeepSeek-V4 DeepGEMM 内核运行时 JIT 预热",
+  "summary": "vLLM 为 DeepSeek-V4/V4.1 加入 DeepGEMM 内核运行时 JIT 预热（11月14日 10:01 北京时间），把首 token 的编译等待挪到服务启动期。",
+  "summary_en": "Infrastructure-focused digest for the 08:55-10:55 window (Asia/Shanghai) on 14 Nov 2026. vLLM merged a commit that warms DeepGEMM kernels for DeepSeek-V4/V4.1 so they JIT-compile at runtime during startup, plus a MoE change masking DP padding rows in grouped top-k routing by default. SGLang's rust-server now forwards video frame and token caps to multimodal processors, and LiteLLM fixed OpenRouter non-streaming failure handling and billing. llama.cpp shipped builds b12373 and b12370 plus a Metal mul_mv offset overflow fix; Hugging Face transformers released v5.23.0. On the paper side, HF Daily Papers surfaced JustRUA, HiVe-Mem, and Ropedia Xperience 2. LWN covered the XRAID zoned-XFS RAID announcement and Buildroot's 25th anniversary.",
+  "body": "vLLM 为 DeepSeek-V4/V4.1 加入 DeepGEMM 内核运行时 JIT 预热（11月14日 10:01 北京时间），把首 token 的编译等待挪到服务启动期。\n\n论文\n- JustRUA: A Controlled Study of GPT-6 Robot-Use Agents — 把 GPT-6 机器人代理的 harness、动作接口、经验复用、场景几何逐项拆开在同一框架里对比：仅靠精简 harness（保留完整 episode 历史、每步动作提前停止）就把 RoboDojo 仿真分数从 29.7 抬到 50.3，无需学习策略或自我改进循环。\n  https://arxiv.org/abs/2611.16009\n- HiVe-Mem: Interleaving Horizontal Memory Expansion and Vertical Evidence Composition — 多模态 Agent 的记忆框架：横向把记忆扩成关系图补全检索盲区，纵向为每条记忆保留摘要/字幕/视觉锚点/原图等多种证据并用可训练选择器动态组合，三个基准上稳定提升且 token 消耗比最强基线低约 90%。\n  https://arxiv.org/abs/2611.12872\n\nGitHub与基建\n- [DeepSeek-V4] 运行时 JIT 预热 DeepGEMM 内核（vLLM #64827） — 新增 kernel_warmup 机制，让 DeepSeek-V4/V4.1 的 DeepGEMM FP8/FP4 内核在运行时预编译，避免首个请求被 JIT 编译拖住；新增两组 warmup 测试覆盖 mega-MoE 与 MHC prenorm 路径。提交时间 11月14日 10:01（北京时间）。\n  https://github.com/vllm-project/vllm/commit/b11ae058d62270964b21a469233ad7d3ab1a6560\n- [Perf][MoE] grouped top-k 路由默认屏蔽 DP padding 行（vLLM #66799） — MoE 场景下把数据并行带来的 padding 行在分组 top-k 路由中默认掩掉，避免填充 token 参与专家打分造成的负载与精度偏差；提交时间 11月14日 10:18（北京时间）。\n  https://github.com/vllm-project/vllm/commit/fee9686811b7c060c404dba0c6a5a6007de4659b\n- [KV Connector][NIXL] 从流水并行 prefill 阶段拉取 KV（vLLM #65336） — 配合混合 KV cache 管理器，支持从流水并行的 prefill 阶段取 KV，是长上下文分布式部署的关键一步。\n  https://github.com/vllm-project/vllm/commit/ea0e80845dedfbcec72053a7b17caade285a4b1e\n- [Feat] rust-server 向多模态处理器传递视频帧数与 token 上限（SGLang #50407） — SGLang 新 Rust 服务端把视频抽帧上限和 token 预算显式传给多模态处理器，长视频输入的预处理成本可控；提交时间 11月14日 10:56（北京时间）。\n  https://github.com/sgl-project/sglang/commit/c5d7c598049655046ccbdb8ae8d95b8e3aa3d2b3\n- LiteLLM 修复 OpenRouter 非流式失败被吞的问题 — OpenRouter 返回 finish_reason 错误时此前不会抛错；现在会向上抛出并把失败调用的 usage/成本计入成功日志（重试成功的场景也会为两次调用计费），提交时间 11月14日 11:02（北京时间）。\n  https://github.com/BerriAI/litellm/commit/8ef451a1879d20135c374d61ae09a4fee24969c9\n- LiteLLM 发布 1.108.8（LTS）与 v1.111.0-dev.2 — LTS 分支 1.108.8 于 11月14日 04:48（北京时间）发布，主线 v1.111.0-dev.2 于 03:05 发布，同窗口内已有多个 provider 适配与计费修复合入。\n  https://github.com/BerriAI/litellm/releases/tag/v1.108.8\n- llama.cpp 构建 b12373 / b12370 及 Metal mul_mv 溢出修复 — 新增 b12373、b12370 两个 nightly 构建（北京时间 07:17 与 07:02），另有 Metal 后端 mul_mv 目标偏移溢出的修复提交，减少 Apple 平台长上下文下的越界风险。\n  https://github.com/ggml-org/llama.cpp/releases/tag/b12373\n- Transformers v5.23.0 发布 — 11月13日 22:10（北京时间）发布，新版 transformers 继续跟进 v5 系列接口变更与新模型支持，是各类推理栈的底层依赖。\n  https://github.com/huggingface/transformers/releases/tag/v5.23.0\n\n系统\n- Announcing XRAID: declustered parity RAID for zoned XFS — LWN 报道 zoned XFS 上专门做去簇（declustered）的奇偶校验 RAID 实现，面向高容量 HDD 场景补充设备管理与堆叠层能力，是存储方向少见的一手工程披露（11月13日 22:39 北京时间）。\n  https://lwn.net/Articles/1107473\n- 25 years of Buildroot — LWN 会员文章回顾嵌入式 Linux 构建系统 Buildroot 二十五年：从最初的简易 makefile 到如今完整的交叉编译与包管理框架，是理解嵌入式工具链演进的史料级材料。\n  https://lwn.net/Articles/1103395\n\nSource: https://github.com/vllm-project/vllm/commit/b11ae058d62270964b21a469233ad7d3ab1a6560",
+  "category": "tech",
+  "source": {
+    "url": "https://github.com/vllm-project/vllm/commit/b11ae058d62270964b21a469233ad7d3ab1a6560",
+    "verified_at": "2026-11-14T03:06:18Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}

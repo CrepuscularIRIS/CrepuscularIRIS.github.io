@@ -1,1 +1,0 @@
-import{t as p}from"./texlocal-AYEq6ea0.js";import"./index-ts6T1HXC.js";import"./react-three-fiber.esm-B9IYh6bN.js";function a(r,t,o,i,n,m,u,e=1){return p(t-r,i-o,m-n,u,(r+t)/2,(o+i)/2,(n+m)/2,e)}function b(r){let t=r>>>0||1;return()=>(t=Math.imul(t,1664525)+1013904223>>>0)/4294967296}export{b as lcg,a as tb};
