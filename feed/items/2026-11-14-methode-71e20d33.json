@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "2026-11-14-methode-71e20d33",
+  "app": "news",
+  "host": "methode",
+  "kind": "auto",
+  "date": "2026-11-14T06:58:04Z",
+  "title": "Together Compiler：首个面向 AI 推理的持续编译 agent 循环，前沿模型 TPS 最高提升 2.6 倍",
+  "summary": "arXiv cs.AI 13:00（北京时间 11 月 14 日）新公告里，Together AI 的 Together Compiler 用 agent 爬山式持续编译，在 Kimi K3、GLM 5.3、MiniMax M3.1 Flash、DeepSeek v4.1 Flash 上把推理吞吐做到开源引擎的 2.6 倍。",
+  "summary_en": "According to the note, Together AI announced Together Compiler on arXiv cs.AI, describing it as the first continuous compilation agent loop designed for AI inference. The note does not specify draft or auto status. It presents an agentic, hill-climbing compilation approach and reports inference throughput up to 2.6 times that of open-source engines on Kimi K3, GLM 5.3, MiniMax M3.1 Flash, and DeepSeek v4.1 Flash. The announcement appeared at 13:00 Beijing time on November 14.",
+  "body": "arXiv cs.AI 13:00（北京时间 11 月 14 日）新公告里，Together AI 的 Together Compiler 用 agent 爬山式持续编译，在 Kimi K3、GLM 5.3、MiniMax M3.1 Flash、DeepSeek v4.1 Flash 上把推理吞吐做到开源引擎的 2.6 倍。\n\n论文\n- Together Compiler: Continual Compilation for AI Inference — Together AI 的持续编译 agent 循环：用分层持久引擎化解\"测量吞吐 vs 保真度\"矛盾，在 Kimi K3、GLM 5.3、MiniMax M3.1 Flash、DeepSeek v4.1 Flash 上比开源引擎高至多 2.6 倍 TPS，batch=1 下 M3.1 Flash 达 1111 TPS。\n  https://arxiv.org/abs/2611.14681\n- Termination Lag: Coding Agents Solve Early but Stop Late — 38–82% 的成功运行首次改码就已正确，但 Qwen3-Coder/Laguna-XS 仍多花 35–60% 的步数做验证和探索，甚至有 1–8% 把自己已解对的补丁改坏——直接影响 agent 成本与 token 预算。\n  https://arxiv.org/abs/2611.14960\n- Leaderboard Hacking: Preference-Based Model Evaluations are Vulnerable to Manipulation — 指出 Arena 类 Bradley-Terry 榜单可被策略投票/提示/提名操纵，单个攻击可抬升 10–20 位，组合可达 45 位，对所有开放投票的偏好式评测通用。\n  https://arxiv.org/abs/2611.14769\n- RSI-PDEbench: A Benchmark for Self-Improving Agents in PDE Solving — 1001 个 PDE 案例、42 类方程模板，递归自改进 agent（带验证门控）比单次基线通过率提升 106–182%，且模型调用量减少约 47%。\n  https://arxiv.org/abs/2611.14949\n- Emergent Vision-Shaped Thinking in Text-Only Reasoning through Multimodal Training — 因果消融显示多模态训练会重塑纯文本推理的内部表征（Chameleon-7B 上 BBH navigate 下降 27.6pp 而布尔运算不受影响），提示 VLM 后训练会隐式影响文本推理方式。\n  https://arxiv.org/abs/2611.14942\n- SynthCorp: A Platform for Creating Benchmarks for Data Agents — 用可复现事件模拟生成企业级\"数据 estates\"与验证过的 gold 程序，7 个 estate、256 个任务，针对数据 agent 这类易饱和的评测方向。\n  https://arxiv.org/abs/2611.14765\n\nGitHub与基建\n- vLLM: 优化初始化时的垃圾回收（#64542） — 11 月 14 日 13:00（北京时间）合入，通过冻结启动期对象减少 init 阶段 GC 开销，直接缩短引擎启动时间。\n  https://github.com/vllm-project/vllm/commit/449576cd736544461357e835ca74b44a993668ea\n- vLLM: MRV2 投机解码在纯 context-K/V prefill 下不再构建 draft attention metadata — 14:16（北京时间）合入，减少投机解码路径上的无效注意力元数据构建开销。\n  https://github.com/vllm-project/vllm/commit/165156b59ba013a6353b70237e11366900cb99d3\n- SGLang: 多模态重构 4/9，把 feature transport 与预处理从 base processor 拆出 — 14:44（北京时间）合入，重写 CUDA IPC 特征传输与处理放置逻辑，是多模态服务栈的关键一步。\n  https://github.com/sgl-project/sglang/commit/04eece19ada1bf2fee46ab52f19e570f581f2118\n- llama.cpp: Hexagon 后端新增 IQ2_XXS 与 NVFP4 支持 — 12:57（北京时间）合入，为高通 Hexagon 端补上新量化格式与 NVFP4 支持。\n  https://github.com/ggml-org/llama.cpp/commit/61dbf49228c8a96b72e40c89d93cb7c003411f8c\n- LiteLLM: 修复 Anthropic 同步 messages 流在 OpenAI/Azure 上的回归 — 13:34（北京时间）合入，恢复同步流式行为；同时 13:33 修复 Magistral 推理按原生层级发送（link: https://github.com/BerriAI/litellm/commit/ccb7f753c9a73ddaea862b19871ce3a8ea354016）。\n  https://github.com/BerriAI/litellm/commit/e87d7bd7147932334179cda2653ed69b570f36a9\n\n系统\n- Wine 11.22 发布：在 ARM64 上引入 x86 AVX 模拟 — 11 月 14 日 09:35（北京时间）发布，ARM64 平台跑 x86 应用的兼容性与性能进一步提升。\n  https://www.phoronix.com/news/Wine-11.22-Released\n\nSource: https://arxiv.org/abs/2611.14681",
+  "category": "tech",
+  "source": {
+    "url": "https://arxiv.org/abs/2611.14681",
+    "verified_at": "2026-11-14T06:58:04Z"
+  },
+  "via": {
+    "bot": "infra-daily",
+    "label": "Papers and infrastructure daily",
+    "model": "MiniMax-M2.7",
+    "prompt": "infra-daily-digest@30a84312"
+  }
+}
